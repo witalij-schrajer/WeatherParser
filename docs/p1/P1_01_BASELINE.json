@@ -1,0 +1,123 @@
+{
+  "capturedOn": "2026-10-15",
+  "scope": "P1.01 entry audit",
+  "branch": "master",
+  "headCommit": null,
+  "remoteCount": 0,
+  "versionedOrUntrackedFileCount": 26,
+  "implementationSourceCount": 0,
+  "solutionProjectCount": 2,
+  "requirementIdCount": 84,
+  "checks": [
+    "Matching and unique German/English requirement IDs",
+    "Solution references exactly the two existing projects",
+    "Both projects have net10.0 lockfiles",
+    "Unit tests reference the library source; package consumer remains deferred"
+  ],
+  "files": [
+    {
+      "path": ".editorconfig",
+      "sha256": "25A753B015BADB35CF9DFC85BA9BBEF0B994E6B0721BCD7F59D391562C58EF09"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "45D1EBE416EFFA856AA74F8F23ED2EE865CEBB3A828F93F0DF8841A24285501C"
+    },
+    {
+      "path": "AGENTS.en.md",
+      "sha256": "C6CEDE38C15D488B663E3C52E273D7B7ADBCD9E9A5EAD449A2E777CDF25D940D"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "78352FB5352A713871473A484598F348D3E5F7E4E36F7540FB6EBBADD7B1D01A"
+    },
+    {
+      "path": "DEPENDENCIES.en.md",
+      "sha256": "C7584404B6C3EC930B3137DCD8FD4E0ABA51B20DA0DFD40F3B67A43B196C06D8"
+    },
+    {
+      "path": "DEPENDENCIES.md",
+      "sha256": "79846D3B2059BC0E1001F7F0FD6C846BD14EDB294FB764874974337E06F662B5"
+    },
+    {
+      "path": "DEVELOPMENT_PLAN.en.md",
+      "sha256": "E7C459CABAAD389759D3EF4C01940B1EB5E5F63889F6FEB4F2D530D9C982CA79"
+    },
+    {
+      "path": "DEVELOPMENT_PLAN.md",
+      "sha256": "9CF4B7292A28FCFEE657449A7512D3838C98F154C332731C0929863AAA44531A"
+    },
+    {
+      "path": "Directory.Build.props",
+      "sha256": "95569E721916B87CCDEE5918568A32D3B6BDF8242FF658FFE3DE55D9CFA5D2F3"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "sha256": "C75607FC0A116BFCFE92A03A62328C5D9910E30815EC444DE0BAE90D4512C3E8"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "F271C121B44D6C5B0C2A150A901EB5A064BF48F1EA907EB98FE0BFF5D21D770A"
+    },
+    {
+      "path": "NuGet.Config",
+      "sha256": "F545A7E2EA14AC53CDFB91217CAE67B8FF14275313F6298F9A3331D205B6C948"
+    },
+    {
+      "path": "PHASE_P1_PLAN.en.md",
+      "sha256": "95803BCAC085A7462ACA374A62DDC98C90437A5418864AC1D97F53A70821650A"
+    },
+    {
+      "path": "PHASE_P1_PLAN.md",
+      "sha256": "2244A3D2D2260D6448F02B250F17CF9FFB857E006FA85FA170D07E5F8EA4B88E"
+    },
+    {
+      "path": "README.en.md",
+      "sha256": "896BB5544914B64DED59C39DB2CBA7733FB1F2E100C4A93CC7764956C4DB3391"
+    },
+    {
+      "path": "README.md",
+      "sha256": "733E1F42258FA8319C989239B0EC7AB793170707D1D511294C50476222016338"
+    },
+    {
+      "path": "REQUIREMENTS.en.md",
+      "sha256": "AFF79D1A958DCB6E1288F29E42BB2DFBDFB7E4871FAC776C73B2C1A5DE1DB836"
+    },
+    {
+      "path": "REQUIREMENTS.md",
+      "sha256": "E5F93C734446D1753807426460D546C43888DF39F5C4290F1EEA01B470B4073D"
+    },
+    {
+      "path": "WeatherParser.slnx",
+      "sha256": "C36470DEAAE6C314D01D1CC717652643D902F9D8800C6A85AB38C1861F5FE029"
+    },
+    {
+      "path": "global.json",
+      "sha256": "1E3811718244A2AA32777B879DD8906BF2D37F4DEFCE3526B6F3263E702390DA"
+    },
+    {
+      "path": "src/WeatherParser.Parsing/WeatherParser.Parsing.csproj",
+      "sha256": "F8EF553C11D6CDFB148B6D2FAE534985995F279DE4AA74061E5513F9BC0FCD49"
+    },
+    {
+      "path": "src/WeatherParser.Parsing/packages.lock.json",
+      "sha256": "2241481B7E74DCDCD600303146B730ECC12CBD8E49AA55755EF95EE499FE229A"
+    },
+    {
+      "path": "tests/WeatherParser.Package.Tests/README.en.md",
+      "sha256": "2AD4CB6A085A8D1E660C0E184E4A47833EF2B16E30BF0E076D61155008C6FD6D"
+    },
+    {
+      "path": "tests/WeatherParser.Package.Tests/README.md",
+      "sha256": "D21E0E65F264A4430091811B07AB5913867047B6DB109422293D7E00977FD509"
+    },
+    {
+      "path": "tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj",
+      "sha256": "06F788262DAFF25A44F24BBF1CF4059138D356AB6CAFBD42A7103BA11293A02E"
+    },
+    {
+      "path": "tests/WeatherParser.Parsing.Tests/packages.lock.json",
+      "sha256": "11713E8EE587BE9E28CADC7489B12AF43FEB68B773393B9DE3122491FEC7924F"
+    }
+  ]
+}

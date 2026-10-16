@@ -1,0 +1,429 @@
+{
+  "reviewDate": "2026-10-15",
+  "scope": "P1.02 tooling and dependency review",
+  "installedSdk": "10.0.303",
+  "installedVs": "18.8.3",
+  "selectedSdkUpdate": "10.0.402",
+  "sdkUpdateInstalled": false,
+  "libraryExternalPackageCount": 0,
+  "directTestPackageCount": 6,
+  "transitiveTestPackageCount": 10,
+  "directVersions": [
+    {
+      "id": "FluentAssertions",
+      "installed": "8.11.0",
+      "latestStable": "8.11.0",
+      "matches": true
+    },
+    {
+      "id": "Microsoft.CodeCoverage",
+      "installed": "18.11.0",
+      "latestStable": "18.11.0",
+      "matches": true
+    },
+    {
+      "id": "Microsoft.NET.Test.Sdk",
+      "installed": "18.11.0",
+      "latestStable": "18.11.0",
+      "matches": true
+    },
+    {
+      "id": "Moq",
+      "installed": "4.21.0",
+      "latestStable": "4.21.0",
+      "matches": true
+    },
+    {
+      "id": "MSTest.TestAdapter",
+      "installed": "4.5.1",
+      "latestStable": "4.5.1",
+      "matches": true
+    },
+    {
+      "id": "MSTest.TestFramework",
+      "installed": "4.5.1",
+      "latestStable": "4.5.1",
+      "matches": true
+    }
+  ],
+  "vulnerabilityQuery": "Succeeded; no reported packages",
+  "deprecationQuery": "Succeeded; no reported packages",
+  "sources": [
+    "https://api.nuget.org/v3/index.json"
+  ],
+  "packages": [
+    {
+      "id": "FluentAssertions",
+      "version": "8.11.0",
+      "scope": "Direct",
+      "licenseType": "file",
+      "license": "LICENSE",
+      "metadataSha256": "8C308EE262E14C88A7A4C518093FB0BCA5F0230E66DBEE47D3809238C5E37EAB",
+      "licenseFileSha256": "17AC3BC2C02976982C7309ED66137805293A4FBB043A095B4479A5D631F476DA",
+      "notices": [
+        {
+          "name": "LICENSE",
+          "sha256": "17AC3BC2C02976982C7309ED66137805293A4FBB043A095B4479A5D631F476DA"
+        }
+      ],
+      "source": "https://www.nuget.org/packages/FluentAssertions/8.11.0"
+    },
+    {
+      "id": "Microsoft.CodeCoverage",
+      "version": "18.11.0",
+      "scope": "Direct",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "2D043C98FAE44E965C87A13D75B0D20D72A5A2BC08EC3F7FC48413D1CFB690B3",
+      "licenseFileSha256": null,
+      "notices": [
+        {
+          "name": "ThirdPartyNotices.txt",
+          "sha256": "4FC4244935BBE3516164402C573F053A5D246571ED4D357E6CCCD8EBEC296BBC"
+        }
+      ],
+      "source": "https://www.nuget.org/packages/Microsoft.CodeCoverage/18.11.0"
+    },
+    {
+      "id": "Microsoft.NET.Test.Sdk",
+      "version": "18.11.0",
+      "scope": "Direct",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "84D55DA3BBA186DA041A678D9ABDC60D77D484E6DC074CE4329CE898D9723377",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.11.0"
+    },
+    {
+      "id": "Moq",
+      "version": "4.21.0",
+      "scope": "Direct",
+      "licenseType": "expression",
+      "license": "BSD-3-Clause",
+      "metadataSha256": "A22ABE73A4554097B99E937783B1A3B14FA4044ABEF4EC294A056CF5B3CCA246",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/Moq/4.21.0"
+    },
+    {
+      "id": "MSTest.TestAdapter",
+      "version": "4.5.1",
+      "scope": "Direct",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "9A46F071D46A53C1E89381BBB716F437D25E9B2E81BE3E76DE971049FC2F2958",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/MSTest.TestAdapter/4.5.1"
+    },
+    {
+      "id": "MSTest.TestFramework",
+      "version": "4.5.1",
+      "scope": "Direct",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "FBC98507BE37898F7B652EC8A79609EEB14FFCD97012C0DEE1E3DE9A1C710B46",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/MSTest.TestFramework/4.5.1"
+    },
+    {
+      "id": "Castle.Core",
+      "version": "5.2.1",
+      "scope": "Transitive",
+      "licenseType": "expression",
+      "license": "Apache-2.0",
+      "metadataSha256": "A4F50701DB368C4D7DD70438ED9843E4B4436138640F2D67EA1720100F729378",
+      "licenseFileSha256": null,
+      "notices": [
+        {
+          "name": "ASL - Apache Software Foundation License.txt",
+          "sha256": "AB1FD16EF97A3CD6C19DC263C0B9900B01932996B671D2AC0452C38183F9274D"
+        },
+        {
+          "name": "LICENSE",
+          "sha256": "1BF6D24645729F179F69F7F624572635986123B09E6241849CCBB945208649E1"
+        }
+      ],
+      "source": "https://www.nuget.org/packages/Castle.Core/5.2.1"
+    },
+    {
+      "id": "Microsoft.ApplicationInsights",
+      "version": "2.23.0",
+      "scope": "Transitive",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "184C649613D487D2B11466882AD83E375BF94F6AA228AFAE78DD4005BB0BB2A0",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/Microsoft.ApplicationInsights/2.23.0"
+    },
+    {
+      "id": "Microsoft.Testing.Extensions.Telemetry",
+      "version": "2.5.1",
+      "scope": "Transitive",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "09E3D87A78E35BF36B58814CE36876A53027949FD1588A4A403D4A6C6892E319",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/Microsoft.Testing.Extensions.Telemetry/2.5.1"
+    },
+    {
+      "id": "Microsoft.Testing.Extensions.TrxReport.Abstractions",
+      "version": "2.5.1",
+      "scope": "Transitive",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "033B7BAAD1084649746BDD50564C9315E3B2266C989C07E8E661BD16F864E443",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/Microsoft.Testing.Extensions.TrxReport.Abstractions/2.5.1"
+    },
+    {
+      "id": "Microsoft.Testing.Platform",
+      "version": "2.5.1",
+      "scope": "Transitive",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "C8217F1CB8C0FDA8460C8A63EF55E10A7CE984FB0DD5CE173739ECC267E2D609",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/Microsoft.Testing.Platform/2.5.1"
+    },
+    {
+      "id": "Microsoft.Testing.Platform.MSBuild",
+      "version": "2.5.1",
+      "scope": "Transitive",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "7EF0AA5F625C7F581E8341823C6F08F00C8D9618168C5663346116F8BADFAFE2",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/Microsoft.Testing.Platform.MSBuild/2.5.1"
+    },
+    {
+      "id": "Microsoft.TestPlatform.ObjectModel",
+      "version": "18.11.0",
+      "scope": "Transitive",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "0CF2373D0BC81EE42D51679FEF567CBACFF7B3BE05E685EC802A6B05164D85A7",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/Microsoft.TestPlatform.ObjectModel/18.11.0"
+    },
+    {
+      "id": "Microsoft.TestPlatform.TestHost",
+      "version": "18.11.0",
+      "scope": "Transitive",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "5FFC102EB28B66F9D30A2F366E147FC385030435FA92FF2F0CDFE27903CA7034",
+      "licenseFileSha256": null,
+      "notices": [
+        {
+          "name": "ThirdPartyNotices.txt",
+          "sha256": "E2CE7628E0F67D0D724EEA9D9286A6938BF1EEDD253FC84B23D72AE54778A5F7"
+        }
+      ],
+      "source": "https://www.nuget.org/packages/Microsoft.TestPlatform.TestHost/18.11.0"
+    },
+    {
+      "id": "MSTest.Analyzers",
+      "version": "4.5.1",
+      "scope": "Transitive",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "9D8B12FE74F6FB36C4971D21EA5B41D4D54A9FF9B49CDE1629226E2499C2F219",
+      "licenseFileSha256": null,
+      "notices": [],
+      "source": "https://www.nuget.org/packages/MSTest.Analyzers/4.5.1"
+    },
+    {
+      "id": "System.Diagnostics.EventLog",
+      "version": "6.0.0",
+      "scope": "Transitive",
+      "licenseType": "expression",
+      "license": "MIT",
+      "metadataSha256": "544F3832B68D39C8C765769AD6824B0B0E99E202452B2B826E452DB21EC999EE",
+      "licenseFileSha256": null,
+      "notices": [
+        {
+          "name": "LICENSE.TXT",
+          "sha256": "D7A68596AB69B06F51CA278A6545148E4269A9381C26D597C13DF5D88E08CF5B"
+        },
+        {
+          "name": "THIRD-PARTY-NOTICES.TXT",
+          "sha256": "A6344BFB229BC08D1071CEC400EEA216E307439F961C5943EC1B56D2245ACB95"
+        }
+      ],
+      "source": "https://www.nuget.org/packages/System.Diagnostics.EventLog/6.0.0"
+    }
+  ],
+  "assetSelections": [
+    {
+      "package": "Castle.Core/5.2.1",
+      "compile": [
+        "lib/net6.0/Castle.Core.dll"
+      ],
+      "runtime": [
+        "lib/net6.0/Castle.Core.dll"
+      ]
+    },
+    {
+      "package": "FluentAssertions/8.11.0",
+      "compile": [
+        "lib/net6.0/FluentAssertions.dll"
+      ],
+      "runtime": [
+        "lib/net6.0/FluentAssertions.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.ApplicationInsights/2.23.0",
+      "compile": [
+        "lib/netstandard2.0/Microsoft.ApplicationInsights.dll"
+      ],
+      "runtime": [
+        "lib/netstandard2.0/Microsoft.ApplicationInsights.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.CodeCoverage/18.11.0",
+      "compile": [
+        "lib/net8.0/Microsoft.VisualStudio.CodeCoverage.Shim.dll"
+      ],
+      "runtime": [
+        "lib/net8.0/Microsoft.VisualStudio.CodeCoverage.Shim.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.NET.Test.Sdk/18.11.0",
+      "compile": [
+        "lib/net8.0/_._"
+      ],
+      "runtime": [
+        "lib/net8.0/_._"
+      ]
+    },
+    {
+      "package": "Microsoft.Testing.Extensions.Telemetry/2.5.1",
+      "compile": [
+        "lib/net9.0/Microsoft.Testing.Extensions.Telemetry.dll"
+      ],
+      "runtime": [
+        "lib/net9.0/Microsoft.Testing.Extensions.Telemetry.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Testing.Extensions.TrxReport.Abstractions/2.5.1",
+      "compile": [
+        "lib/net9.0/Microsoft.Testing.Extensions.TrxReport.Abstractions.dll"
+      ],
+      "runtime": [
+        "lib/net9.0/Microsoft.Testing.Extensions.TrxReport.Abstractions.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Testing.Platform/2.5.1",
+      "compile": [
+        "lib/net9.0/Microsoft.Testing.Platform.dll"
+      ],
+      "runtime": [
+        "lib/net9.0/Microsoft.Testing.Platform.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Testing.Platform.MSBuild/2.5.1",
+      "compile": [
+        "lib/net9.0/Microsoft.Testing.Extensions.MSBuild.dll"
+      ],
+      "runtime": [
+        "lib/net9.0/Microsoft.Testing.Extensions.MSBuild.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.TestPlatform.ObjectModel/18.11.0",
+      "compile": [
+        "lib/net8.0/Microsoft.TestPlatform.CoreUtilities.dll",
+        "lib/net8.0/Microsoft.TestPlatform.PlatformAbstractions.dll",
+        "lib/net8.0/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll"
+      ],
+      "runtime": [
+        "lib/net8.0/Microsoft.TestPlatform.CoreUtilities.dll",
+        "lib/net8.0/Microsoft.TestPlatform.PlatformAbstractions.dll",
+        "lib/net8.0/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.TestPlatform.TestHost/18.11.0",
+      "compile": [
+        "lib/net8.0/Microsoft.TestPlatform.CommunicationUtilities.dll",
+        "lib/net8.0/Microsoft.TestPlatform.CoreUtilities.dll",
+        "lib/net8.0/Microsoft.TestPlatform.CrossPlatEngine.dll",
+        "lib/net8.0/Microsoft.TestPlatform.PlatformAbstractions.dll",
+        "lib/net8.0/Microsoft.TestPlatform.Utilities.dll",
+        "lib/net8.0/Microsoft.VisualStudio.TestPlatform.Common.dll",
+        "lib/net8.0/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll",
+        "lib/net8.0/testhost.dll"
+      ],
+      "runtime": [
+        "lib/net8.0/Microsoft.TestPlatform.CommunicationUtilities.dll",
+        "lib/net8.0/Microsoft.TestPlatform.CoreUtilities.dll",
+        "lib/net8.0/Microsoft.TestPlatform.CrossPlatEngine.dll",
+        "lib/net8.0/Microsoft.TestPlatform.PlatformAbstractions.dll",
+        "lib/net8.0/Microsoft.TestPlatform.Utilities.dll",
+        "lib/net8.0/Microsoft.VisualStudio.TestPlatform.Common.dll",
+        "lib/net8.0/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll",
+        "lib/net8.0/testhost.dll"
+      ]
+    },
+    {
+      "package": "Moq/4.21.0",
+      "compile": [
+        "lib/net6.0/Moq.dll"
+      ],
+      "runtime": [
+        "lib/net6.0/Moq.dll"
+      ]
+    },
+    {
+      "package": "MSTest.Analyzers/4.5.1",
+      "compile": [
+        null
+      ],
+      "runtime": [
+        null
+      ]
+    },
+    {
+      "package": "MSTest.TestAdapter/4.5.1",
+      "compile": [
+        null
+      ],
+      "runtime": [
+        null
+      ]
+    },
+    {
+      "package": "MSTest.TestFramework/4.5.1",
+      "compile": [
+        "lib/net9.0/MSTest.TestFramework.dll"
+      ],
+      "runtime": [
+        "lib/net9.0/MSTest.TestFramework.dll"
+      ]
+    },
+    {
+      "package": "System.Diagnostics.EventLog/6.0.0",
+      "compile": [
+        "lib/net6.0/System.Diagnostics.EventLog.dll"
+      ],
+      "runtime": [
+        "lib/net6.0/System.Diagnostics.EventLog.dll"
+      ]
+    }
+  ]
+}

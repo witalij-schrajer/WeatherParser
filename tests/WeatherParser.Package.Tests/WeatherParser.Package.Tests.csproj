@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" PrivateAssets="all" />
+    <PackageReference Include="MSTest.TestAdapter" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeCoverage" PrivateAssets="all" />
+    <PackageReference Include="FluentAssertions" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="WeatherParser.Parsing" />
+  </ItemGroup>
+</Project>

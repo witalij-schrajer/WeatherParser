@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" PrivateAssets="all" />
+    <PackageReference Include="MSTest.TestAdapter" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeCoverage" PrivateAssets="all" />
+    <PackageReference Include="Moq" PrivateAssets="all" />
+    <PackageReference Include="FluentAssertions" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/WeatherParser.Parsing/WeatherParser.Parsing.csproj" />
+  </ItemGroup>
+</Project>

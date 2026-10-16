@@ -1,0 +1,9 @@
+Du bist ein .NET-Build-Experte. Erzeuge NUR den vollstaendigen Inhalt einer .csproj-Datei fuer ein neues Projekt "tools/WeatherParser.Coverage/WeatherParser.Coverage.csproj".
+
+Anforderungen:
+- SDK-Projekt (Microsoft.NET.Sdk), TargetFramework net10.0.
+- Es ist eine reine Klassenbibliothek fuer Coverage-Report-Tooling (kein Test-, kein CLI-Projekt).
+- IsPackable auf false setzen (wird nicht als NuGet-Paket veroeffentlicht).
+- Nullable aktivieren, ImplicitUsings aktivieren.
+- Das Projekt liegt in einer Solution, in der Directory.Packages.props mit ManagePackageVersionsCentrally=true existiert. Es werden KEINE zusaetzlichen PackageReference-Eintraege benoetigt (reines XML-Parsing mit System.Xml.Linq aus dem SDK).
+- Gib die Antwort NUR als einen einzigen XML-Codeblock mit dem vollstaendigen csproj-Inhalt aus, ohne weitere Erklaerungen davor oder danach.
