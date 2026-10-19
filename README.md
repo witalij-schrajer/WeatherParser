@@ -23,7 +23,7 @@ English is the sole maintained language for project documentation and instructio
 
 ## Project status
 
-As of 2026-10-19, the solution contains the library, source-reference tests, isolated package-consumer tests and coverage tooling. Export-entity scaffolding, parser-endpoint validation and the `AddWeatherParsing` DI entry point exist. P1.05/P1.06 record 6 and then 8 passing unit tests; P1.04 records 2 passing package-consumer tests, and P1.07 records coverage collection. These are historical results, not a new test run. **Weather-source parsers and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. Full P1 acceptance remains open; no GitHub or public package publication is claimed.
+As of 2026-10-19, the solution contains the library, source-reference tests, isolated package-consumer tests and coverage tooling. Parser-endpoint validation and the `AddWeatherParsing` DI entry point exist; the unused export-entity scaffolding was removed on 2026-10-19 and will be reintroduced test-first in P2. P1.05/P1.06 record 6 and then 8 passing unit tests; P1.04 records 2 passing package-consumer tests, and P1.07 records coverage collection. These are historical results, not a new test run. **Weather-source parsers and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. Full P1 acceptance remains open; no GitHub or public package publication is claimed.
 
 ## Workflow role and execution
 
@@ -91,7 +91,7 @@ These commands are not implemented yet. Both export formats contain the same obs
 
 Each functional export object type has its own strongly typed C# entity marked `[Serializable]`, including nested export objects. This includes station lists and entries, observation datasets, forecast runs and steps, and quality/period metadata. Reusable value entities may be shared.
 
-JSON uses `System.Text.Json.JsonSerializer`; XML uses `System.Xml.Serialization.XmlSerializer`. Both formats and MQTT JSON use the same prepared export entities. Serializer-specific rules control field names, omitted values and UTC without a timezone suffix. Serializer services use constructor injection. Export-entity scaffolding exists under `src/WeatherParser.Parsing/Entities`; complete serializer contracts and their acceptance remain assigned to P2.
+JSON uses `System.Text.Json.JsonSerializer`; XML uses `System.Xml.Serialization.XmlSerializer`. Both formats and MQTT JSON use the same prepared export entities. Serializer-specific rules control field names, omitted values and UTC without a timezone suffix. Serializer services use constructor injection. The earlier, untested export-entity scaffolding was removed on 2026-10-19; P2 introduces each entity test-first together with its serializer contracts.
 
 ## Shared observation data
 
@@ -228,7 +228,7 @@ Track lock files. For requested package updates, resolve once without `--locked-
 
 **Current reproducibility limitation (2026-10-19):** the package-consumer lock file records an earlier artifact of `WeatherParser.Parsing` version `0.1.0-initial`. A fresh-cache locked restore against the rebuilt package fails content-hash validation (`NU1403`). The sequence above therefore does not yet establish clean-cache reproducibility. Package version/content and the consumer lock file must be reconciled in a reviewed packaging change; the documentation migration preserves the existing lock files.
 
-The library contains export-entity scaffolding and tested endpoint-validation/DI behavior; weather-source parsers remain pending. The package-consumer project exists in the solution and uses a versioned `PackageReference`, without a source reference. See the [package-consumer guide](tests/WeatherParser.Package.Tests/README.md). Full P1 acceptance remains pending. Build the CLI example only after library completion in P3.
+The library contains tested endpoint-validation/DI behavior (export entities follow in P2); weather-source parsers remain pending. The package-consumer project exists in the solution and uses a versioned `PackageReference`, without a source reference. See the [package-consumer guide](tests/WeatherParser.Package.Tests/README.md). Full P1 acceptance remains pending. Build the CLI example only after library completion in P3.
 
 Historical initial-scaffolding verification on 2026-10-15: solution listing and restore succeeded; Release build completed with 0 warnings and 0 errors. Both projects present at that time had lock files. That initial empty-scaffolding result was not test/coverage evidence; later evidence is recorded in P1.04–P1.07.
 

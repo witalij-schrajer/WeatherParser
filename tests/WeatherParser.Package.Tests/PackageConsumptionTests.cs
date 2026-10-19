@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WeatherParser.Parsing.Entities;
+using WeatherParser.Parsing.Parsing;
 
 namespace WeatherParser.Package.Tests;
 
@@ -39,7 +39,7 @@ public sealed class PackageConsumptionTests
     [TestMethod]
     public void Package_exposes_only_the_expected_library_assembly()
     {
-        Assembly assembly = typeof(GeoLocation).Assembly;
+        Assembly assembly = typeof(ParserEndpointDefinition).Assembly;
 
         assembly.GetName().Name.Should().Be("WeatherParser.Parsing");
 
