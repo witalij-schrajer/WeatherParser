@@ -20,7 +20,7 @@ The local qwen3-coder:30b model wrote every documentation change from Claude's b
 | `AGENTS.md` | Consistency table under "Documentation" (plan step 5), adapted to CONTRIBUTING.md sections and the P1.10 files |
 | `PHASE_P1_PLAN.md`, `DEVELOPMENT_PLAN.md` | P1.11 row; the 2026-10-15 scaffolding paragraph moved from README |
 
-Commits: `0394dda` (guide, README reduction, pointer, consistency table), `ba93447` (single-source fixes), `83579f4` (coverage outputs under `TestResults/`). All three are Markdown-only.
+Commits: `0394dda` (guide, README reduction, pointer, consistency table), `ba93447` (single-source fixes), `83579f4` (coverage outputs under `TestResults/`), `1276cd7` (this record, status documents), `8a96f58` (review fixes, see "Review fixes"). All are Markdown-only.
 
 ## README paragraphs removed and their destination
 
@@ -37,6 +37,8 @@ Commits: `0394dda` (guide, README reduction, pointer, consistency table), `ba934
 | P1.01 entry audit paragraph | Already in `DEVELOPMENT_PLAN.md`; README links the records |
 | P1.02 review paragraph | Already in `DEVELOPMENT_PLAN.md` |
 | Test counts in "Project status" | Replaced by a link to the P1 records |
+| "Additional decisions dated 2026-10-14" and "P0 clarifications dated 2026-10-14" (review fix, `8a96f58`) | Verbatim copies of the same AGENTS.md sections, which remain the maintained text; README keeps a short "Decisions dated 2026-10-14" pointer to AGENTS.md and REQUIREMENTS.md |
+| "Visual Studio 2026 and SDK 10.0.303 are the verified local starting point" in the platform paragraph (review fix) | Replaced by links to DEPENDENCIES.md (pinned SDK, toolchain), CONTRIBUTING.md (setup) and docs/COMPATIBILITY.md |
 
 The requirements-style sections of README.md (planned CLI, export, data contract, MOSMIX, architecture, configuration, sources, dated decisions, phase sequence) are product description, not procedures or status history; they stay, because README.md is also the NuGet package description.
 
@@ -78,7 +80,7 @@ The README edits were committed before the local package check, which then ran o
 | Links | Every relative link and anchor in CONTRIBUTING.md, README.md, AGENTS.md, PHASE_P1_PLAN.md, DEVELOPMENT_PLAN.md, the package README, docs/COMPATIBILITY.md, DEPENDENCIES.md and the P1.10 record resolves. Anchors were checked with GitHub's heading rules. The only missing target was this record, created now |
 | Language/privacy | No non-English prose added; no absolute user paths, IP addresses, user names or tokens. Hits for "R76S" (the public hardware model named in REQUIREMENTS.md) and "password" (AGENTS.md rule text) are not findings. Historical `docs/p1` content is unchanged |
 | Status | Every CONTRIBUTING.md procedure item has exactly one status line (20); the reference subsections of section 6 (parameters, exit codes, run directory) belong to its first item; section 9 has no status |
-| Single source | CONTRIBUTING.md commands contain only the literals `18.11.0` and `0.1.0-initial`, both listed in "Version literals" with their source. README prose version statements were replaced by links. **Finding:** README.md still carries two dated binding-decision texts with versions (platform policy 2026-10-14, identical to REQ-004 and AGENTS.md, and "Additional decisions dated 2026-10-14" with SDK 10.0.303); changing them is a requirements decision and was left open |
+| Single source | CONTRIBUTING.md commands contain only the literals `18.11.0` and `0.1.0-initial`, both listed in "Version literals" with their source. README prose version statements were replaced by links; after the review fix README.md contains no SDK version and no setup instruction (finding 4, resolved). The binding texts in REQUIREMENTS.md (REQ-004) and AGENTS.md still name SDK 10.0.303 as the historical starting point of 2026-10-14; they are requirements and rules, not README or guide content, so they are outside this check and unchanged |
 | Requirement IDs | `b6100e2` and `83579f4`: 84 unique IDs, REQ-001 to REQ-112, identical order; SHA-256 of the ID sequence `54710941fc36deb375dcce1c15b052ca94ca05e4c7093a5b09dc4bdb96639af` for both |
 | Comment language | 83 tracked files (`src`, `tests`, `tools` C#; `scripts/*`; `*.props`, `*.csproj`, `*.runsettings`, `*.slnf`, `.config/*.json`, `global.json`, `NuGet.Config`), 715 comment lines: no non-ASCII characters and no German words; no finding |
 | Preservation | Committed content, reference `b6100e2`. Byte-identical: `LICENSE` (`1eda1c9d…`), `P1_01_BASELINE.json` (`a8c92586…`), `P1_02_DEPENDENCY_INVENTORY.json` (`cdb0a62e…`). Append-only: `P1_01_BASELINE.md` to `P1_07_COVERAGE_CONTRACT.md` unchanged; `P1_08_COVERAGE_EVALUATION.md` has the reference as an exact prefix plus 3,442 bytes of dated additions (acceptance, correction note) |
@@ -108,8 +110,28 @@ No item is Planned or OPEN.
 1. **The documented whole-solution build could not work.** `dotnet restore`/`build WeatherParser.slnx` always fails with NU1403 on the package consumer, because its committed lock is stale by design (the package embeds the commit ID). CONTRIBUTING.md and the README quickstart therefore use `WeatherParser.Ci.slnf`, as the CI script does, and build the consumer separately (section 4).
 2. **Fresh clones lack `artifacts/local-nuget`.** Every restore fails with NU1301 until the folder exists; the first command of section 2 and of the quickstart creates it.
 3. **Coverage outputs in the repository root.** The first draft wrote `changed-files.txt` and `baseline.json` to the root, leaving untracked files; they now go to the gitignored `TestResults/product/`.
-4. **Dated decision copies in README.md** contain version literals (single-source check); left unchanged, decision open.
+4. **Dated decision copies in README.md** contained version literals and the outdated SDK 10.0.303 setup instruction. Resolved in `8a96f58` (review fix 3).
 5. **CRLF in the packed README/LICENSE** on Windows checkouts with `core.autocrlf=true`; content is otherwise identical to the committed blobs.
+6. **Stale coverage report selection** (review fix 1).
+7. **Incomplete package procedure** (review fix 2).
+
+## Review fixes (2026-10-19)
+
+An external review of `1276cd7` confirmed the Release build, 162 tests, package creation and consumption, package hash and content, 137 relative links, the requirement-ID order, the preservation checks and the recorded gate hash, and found three defects. qwen fixed them from Claude's briefs in `8a96f58`.
+
+1. **Stale coverage selection.** Section 5 picked the first `.coverage` file under `TestResults/product`, so a repeated run could evaluate an older report. Every run now writes to a new timestamped directory `TestResults/product-<UTC>` and requires exactly one raw report in it.
+2. **Incomplete package procedure.** Section 4 lacked the plan's explicit checks. It now lists the package entries, compares the packed README.md and LICENSE with the working-tree files, records the packed SHA-512, runs the locked consumer restore after the refresh, and compares the restored `.nupkg.sha512` with the packed hash, all before the consumer tests and the `git restore`.
+3. **Contradictory record and outdated README.** The acceptance list was marked complete although finding 4 was open, and README.md still contained outdated SDK setup text. Both README copies of the AGENTS.md decision sections were replaced by a pointer, and the platform paragraph links DEPENDENCIES.md, CONTRIBUTING.md and docs/COMPATIBILITY.md. Finding 4 is now resolved, and the acceptance list below reflects it.
+
+**Re-verification of `8a96f58`.** The powershell blocks of sections 2, 4 and 5 were extracted verbatim from CONTRIBUTING.md and executed in a fresh clone, with the isolated package folder and CLI home and with only the placeholders filled (target `ea8040e` and its measured report):
+- Section 2: 0 warnings, 0 errors.
+- Section 4 package check: only the allowed entries; no README/LICENSE mismatch; packed and restored SHA-512 `wP4N8jpqba9omUJxj6WS/s87p1kXOQdteXS3a8o/4UWkW1fbQWk9wPVyLMyUg3kLG5B830LSEzpPwUeDm+QeSA==` equal; 2 consumer tests passed; tree clean.
+- Section 5, executed twice: two separate directories (`product-20261019T204455Z`, `product-20261019T204500Z`), each with exactly one raw report; both gates passed; tree clean.
+
+**CI run on the README revision `8a96f58`:** `pwsh ./scripts/ci-local.ps1 -Commit 8a96f58 -TargetRef ea8040e -RunSettings coverage.runsettings`, exit 0, `artifacts/ci/8a96f58-20261019T204516Z`.
+- Seven Markdown files changed; all tests passed (15, 91, 54 and 2 consumer).
+- Package SHA-512: `wJs4pui3ZKoN+5m4QRHSJYxjlQP32/MqZ7/uavnyuVbBh0Ocd4zAB1szloV+Y7E7erbfl6rDfPbdq1ZIyiMB1A==`.
+- Gate documentation-only: "Block coverage 54/56 (96.43%) is at or above baseline 54/56 (96.43%)". The `gate-result.json` SHA-256 `36aa8f6f…` equals that of the `83579f4` run, because the gate content is identical.
 
 ## Acceptance criteria (plan section 9)
 
@@ -118,7 +140,7 @@ No item is Planned or OPEN.
 - [x] The "Version literals" table exists, and each literal equals its source.
 - [x] README.md follows the mapping, and every removed paragraph has a recorded destination.
 - [x] The consistency table is in AGENTS.md under "Documentation".
-- [x] All documentation checks of plan section 6 pass and are recorded, including the package-readme, requirement-ID, comment-language and preservation checks; the single-source finding 4 is recorded.
-- [x] The README commit contains only Markdown, has a recorded P1.09 run and gate result (documentation-only), and the consumer lock is not committed with it.
+- [x] All documentation checks of plan section 6 pass and are recorded, including the package-readme, requirement-ID, comment-language and preservation checks; finding 4 of the single-source check is resolved in `8a96f58`.
+- [x] The README commit contains only Markdown, has a recorded P1.09 run and gate result (documentation-only; latest `8a96f58`), and the consumer lock is not committed with it.
 - [x] Interim delivery (part a): the checks pass for the current revision.
 - [x] Completion (part b): done for P1.08 closure, P1.09 and P1.10; no item is Planned; no item is OPEN.
