@@ -322,8 +322,8 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
         $version = ($version | Where-Object { $_ -ne '' } | Select-Object -First 1)
     }
     
-    $nupkgPath = Join-Path $PassDir "WeatherParser.Parsing.$version.nupkg"
-    Invoke-Native 60 'dotnet' @('pack', 'src/WeatherParser.Parsing', '-c', 'Release', '--no-build', '-o', $PassDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    $nupkgPath = Join-Path $script:RunDir "WeatherParser.Parsing.$version.nupkg"
+    Invoke-Native 60 'dotnet' @('pack', 'src/WeatherParser.Parsing', '-c', 'Release', '--no-build', '-o', $script:RunDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
 
     if (!(Test-Path $nupkgPath)) {
         Fail 60 "Pack failed, no .nupkg created"
@@ -379,7 +379,7 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
         }
 
         $hash = [Convert]::ToBase64String([System.Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes($nupkgPath)))
-        $hash | Out-File -FilePath (Join-Path $PassDir 'package-hash.txt') -Encoding utf8NoBOM
+        $hash | Out-File -FilePath (Join-Path $script:RunDir 'package-hash.txt') -Encoding utf8NoBOM
     } finally {
         if ($zip) {
             $zip.Dispose()
@@ -407,7 +407,7 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
         $version = ($version | Where-Object { $_ -ne '' } | Select-Object -First 1)
     }
     
-    $nupkgPath = Join-Path $PassDir "WeatherParser.Parsing.$version.nupkg"
+    $nupkgPath = Join-Path $script:RunDir "WeatherParser.Parsing.$version.nupkg"
     $localNuGetPath = Join-Path $CloneDir "artifacts/local-nuget"
     New-CiDirectory $localNuGetPath
     Copy-Item $nupkgPath $localNuGetPath
@@ -416,7 +416,7 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
     $lockJsonContent = [IO.File]::ReadAllText($lockJsonPath)
     
     # Targeted text replacement for contentHash
-    $contentHash = Get-Content (Join-Path $PassDir 'package-hash.txt')
+    $contentHash = Get-Content (Join-Path $script:RunDir 'package-hash.txt')
     $contentHash = $contentHash.Trim()
     $pattern = '(?s)("WeatherParser\.Parsing"\s*:\s*\{.*?"contentHash"\s*:\s*")[^"]*(")'
     $lockJsonContent = [regex]::new($pattern).Replace($lockJsonContent, '${1}' + $contentHash + '${2}', 1)
@@ -442,8 +442,8 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
     }
 
     # Parse old and new JSON to verify only contentHash changed
-    $oldLockJson = git -C $CloneDir show HEAD:tests/WeatherParser.Package.Tests/packages.lock.json
-    $newLockJson = Get-Content $lockJsonPath
+    $oldLockJson = (Invoke-Native 70 'git' @('show', 'HEAD:tests/WeatherParser.Package.Tests/packages.lock.json') -WorkingDirectory $CloneDir).Output -join "`n"
+    $newLockJson = [IO.File]::ReadAllText($lockJsonPath)
     
     $oldJson = $oldLockJson | ConvertFrom-Json -AsHashtable
     $newJson = $newLockJson | ConvertFrom-Json -AsHashtable
@@ -452,7 +452,7 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
     $oldContentHash = $oldJson.dependencies.'net10.0'.'WeatherParser.Parsing'.contentHash
     $newContentHash = $newJson.dependencies.'net10.0'.'WeatherParser.Parsing'.contentHash
     
-    if ($oldContentHash -ne $contentHash) {
+    if ($newContentHash -ne $contentHash) {
         Fail 70 "Consumer lock file contentHash not updated correctly"
     }
 
@@ -468,7 +468,7 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
     }
 
     # Verify package hash matches
-    $expectedSha512 = Get-Content (Join-Path $PassDir 'package-hash.txt')
+    $expectedSha512 = Get-Content (Join-Path $script:RunDir 'package-hash.txt')
     $sha512Path = Join-Path "$script:WorkDir/nuget-packages" "weatherparser.parsing/$version/weatherparser.parsing.$version.nupkg.sha512"
     if (!(Test-Path $sha512Path)) {
         Fail 70 "Package SHA512 file not found: $sha512Path"
