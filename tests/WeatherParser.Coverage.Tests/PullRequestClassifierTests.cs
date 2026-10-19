@@ -46,6 +46,23 @@ public sealed class PullRequestClassifierTests
         result.Should().Be(expectedCategory);
     }
 
+    // Regression tests: a file extension other than .md or a folder name must never grant the documentation-only bypass.
+    [TestMethod]
+    [TestCategory("T-P1-23")]
+    [DataRow("notes.txt")]
+    [DataRow("docs/notes.txt")]
+    [DataRow("src/WeatherParser.Parsing/docs/Foo.cs")]
+    [DataRow("tools/documentation/Build.ps1")]
+    [DataRow("README.md;tests/WeatherParser.Coverage.Tests/Fixtures/changes-docs-only.txt")]
+    public void Classify_NonMarkdownPathEvenInDocumentationFolder_ReturnsCode(string changedFiles)
+    {
+        var changes = new ChangedFileList(changedFiles.Split(';'));
+
+        var result = _pullRequestClassifier.Classify(changes);
+
+        result.Should().Be(PullRequestCategory.Code);
+    }
+
     [TestMethod]
     [TestCategory("T-P1-23")]
     public void Classify_EmptyList_ExpectedResult()
