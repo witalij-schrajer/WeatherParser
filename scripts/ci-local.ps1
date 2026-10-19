@@ -136,8 +136,10 @@ function Invoke-RestoreStage([string]$CloneDir, [string]$PassDir, [string]$Proje
     
     # Create local package source directory if it doesn't exist
     $localNuGetPath = Join-Path $CloneDir "artifacts/local-nuget"
-    New-CiDirectory $localNuGetPath
-    Write-CiLog "Created empty local package source $localNuGetPath (gitignored, absent in fresh clones)"
+    if (!(Test-Path $localNuGetPath)) {
+        New-CiDirectory $localNuGetPath
+        Write-CiLog "Created empty local package source $localNuGetPath (gitignored, absent in fresh clones)"
+    }
     
     if ($FaultInjection -eq 'LockDrift' -and $PassDir -eq (Join-Path $script:RunDir 'current')) {
         Write-CiLog "FAULT INJECTION: LockDrift"
