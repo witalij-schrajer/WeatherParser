@@ -1,6 +1,6 @@
 # P1.12 – P1 Acceptance Record
 
-**Audit decision (2026-10-19): ACCEPTED for the P1 package/test/coverage foundation. Platform runtime status: PROVEN for the P1-scope checks executed on the NanoPi R76S (Debian 13 ARM64). Formal acceptance by the user is pending.** Implements the [P1.12 plan](P1_12_ACCEPTANCE_HANDOFF_PLAN.md); the next phase is described in the [P2 handoff](P2_HANDOFF.md).
+**Audit decision (2026-10-19): ACCEPTED for the P1 package/test/coverage foundation. Platform runtime status: PROVEN for the P1-scope checks executed on the NanoPi R76S (Debian 13 ARM64). P1 accepted by the user on 2026-10-19 ([acceptance](#p1-acceptance-2026-10-19)).** Implements the [P1.12 plan](P1_12_ACCEPTANCE_HANDOFF_PLAN.md); the next phase is described in the [P2 handoff](P2_HANDOFF.md).
 
 This is acceptance of the P1 foundation only, not release readiness (P9), not full hardware acceptance (P9) and not a hosted GitHub CI result.
 
@@ -131,7 +131,7 @@ All tests named below ran and passed in the candidate run unless a row says othe
 
 ## 10. Decision
 
-**ACCEPTED** (audit decision; formal acceptance by the user pending). Every mandatory P1 foundation criterion has current, traceable passing evidence from the committed candidate `6ac88e7` and its fresh-clone run against the genuine bootstrap seed `0a2dabe`, and every test ID T-P1-01 to T-P1-24 has a passing outcome. The platform-runtime status is PROVEN for the P1-scope checks executed on the Debian 13 ARM64 target, so no runtime deferral is needed. P2 may start on a separate instruction; see the [P2 handoff](P2_HANDOFF.md).
+**ACCEPTED** (audit decision; P1 formally accepted by the user on 2026-10-19, see "P1 acceptance" below). Every mandatory P1 foundation criterion has current, traceable passing evidence from the committed candidate `6ac88e7` and its fresh-clone run against the genuine bootstrap seed `0a2dabe`, and every test ID T-P1-01 to T-P1-24 has a passing outcome. The platform-runtime status is PROVEN for the P1-scope checks executed on the Debian 13 ARM64 target, so no runtime deferral is needed. P2 may start on a separate instruction; see the [P2 handoff](P2_HANDOFF.md).
 
 ## 11. Documentation revision (plan step 8)
 
@@ -187,3 +187,12 @@ A second external review of `2c273c5` confirmed the earlier evidence: 162 tests 
 | `-ResumeFrom` with an extra `.coverage` file in the target pass | 20 | "Unexpected raw coverage report: target/coverage/raw/…/extra.coverage" |
 
 **Gate statement.** All three corrections change tooling, tests and the CI script, not the product library. `WeatherParser.Coverage*.dll` is excluded from the product gate, so product coverage stays at 54/56. Measured against its parent on its own, each correction commit would be a code change with equal coverage, which the gate rejects below 100%. Following the user's disposition for section 12, the candidate's complete change scope since the accepted bootstrap baseline was evaluated instead: `6ac88e7` against `0a2dabe`, gate passed at 54/56 against 52/56 (section 2).
+
+## P1 acceptance (2026-10-19)
+
+The user formally accepted P1 on 2026-10-19, on the evidence of this record and after the corrections of sections 12 and 13.
+- **Accepted foundation:** candidate `6ac88e783ce10fa6d676860ba831ee371abd9cdf`, two-pass run `artifacts/ci/6ac88e7-20261019T213031Z` against the bootstrap seed `0a2dabe`, gate passed at 54/56 against 52/56.
+- **Test IDs:** all 24 have passing outcomes.
+- **Platform:** ARM64 runtime PROVEN at P1 scope, with the platform note of section 4.
+- **Not included:** release readiness, full hardware acceptance, the REQ-084 checks and a hosted GitHub CI run (all later phases or separate instructions).
+- **Next phase:** P2, as described in the [P2 handoff](P2_HANDOFF.md). It starts only on a separate instruction.

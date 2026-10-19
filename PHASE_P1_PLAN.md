@@ -1,6 +1,6 @@
 # WeatherParser – P1 detailed plan
 
-As of 2026-10-19. **P0 is complete. P1.01-P1.11 are complete; the Visual Studio build limitation is resolved; clean-checkout reproducibility is verified on Windows x64 (P1.09), on Debian 13 ARM64 by P1.10 (accepted)**. P1.08's evaluator, runner and pinned tooling are accepted; the user explicitly accepted its missing original Red-step evidence. Local CI (P1.09) is accepted. P1.10 platform foundations are verified on the NanoPi R76S and accepted; P1.11 developer instructions are verified and accepted; the P1.12 audit decision is ACCEPTED ([record](docs/p1/P1_12_ACCEPTANCE.md)); formal P1 acceptance by the user is pending.
+As of 2026-10-19. **P0 is complete. P1.01-P1.12 are complete and P1 is accepted by the user (2026-10-19); the Visual Studio build limitation is resolved; clean-checkout reproducibility is verified on Windows x64 (P1.09), on Debian 13 ARM64 by P1.10 (accepted)**. P1.08's evaluator, runner and pinned tooling are accepted; the user explicitly accepted its missing original Red-step evidence. Local CI (P1.09) is accepted. P1.10 platform foundations are verified on the NanoPi R76S and accepted; P1.11 developer instructions are verified and accepted; P1 is accepted ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); P2 starts only on a separate instruction ([P2 handoff](docs/p1/P2_HANDOFF.md)).
 
 Basis: [requirements](REQUIREMENTS.md), [development plan](DEVELOPMENT_PLAN.md) and [repository rules](AGENTS.md).
 
@@ -53,7 +53,7 @@ Names are provisional. Create projects only when needed. No empty infrastructure
 | P1.09 | Prepare local CI job sequence/artifacts | Implemented and verified on Windows x64 (2026-10-19): fresh-clone pipeline, seven fault injections, genuine bootstrap seed on `0a2dabe` (52/56 blocks, Release); passing two-pass run (documentation-only `ef9b9ac` against `0a2dabe`); `-BaselinePath` settings validation after review; **accepted by the user 2026-10-19** ([acceptance](docs/p1/P1_09_LOCAL_CI.md#p109-acceptance-2026-10-19)); [plan](docs/p1/P1_09_LOCAL_CI_PLAN.md); [record](docs/p1/P1_09_LOCAL_CI.md) |
 | P1.10 | Verify Debian/ARM64 package foundations | Implemented and verified (2026-10-19) on the NanoPi R76S, Debian 13 ARM64: full CI run on the target, package consumer, conversion and gate on ARM64, gate passed (54/56 against 52/56); Class A NU1004 finding, projects stay RID-neutral; **accepted by the user 2026-10-19** ([acceptance](docs/p1/P1_10_DEBIAN_ARM64.md#p110-acceptance-2026-10-19)); [plan](docs/p1/P1_10_DEBIAN_ARM64_PLAN.md); [record](docs/p1/P1_10_DEBIAN_ARM64.md); [compatibility](docs/COMPATIBILITY.md) |
 | P1.11 | Complete English developer instructions/evidence | Implemented and verified (2026-10-19): `CONTRIBUTING.md` holds every procedure with platform and status (decision D), README reduced, consistency table in AGENTS.md, Windows walkthrough and documentation checks passed; **accepted by the user 2026-10-19** ([acceptance](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md#p111-acceptance-2026-10-19)); [plan](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md); [record](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md) |
-| P1.12 | Accept phase and document P2 handoff | Audit done (2026-10-19): decision ACCEPTED for the P1 foundation, formal user acceptance pending; candidate `6ac88e7` against the bootstrap seed `0a2dabe`, gate passed (54/56 against 52/56), all 24 test IDs passed (T-P1-06, T-P1-13, T-P1-17 and T-P1-24 after review corrections), ARM64 runtime PROVEN at P1 scope; [plan](docs/p1/P1_12_ACCEPTANCE_HANDOFF_PLAN.md); [acceptance record](docs/p1/P1_12_ACCEPTANCE.md); [P2 handoff](docs/p1/P2_HANDOFF.md) |
+| P1.12 | Accept phase and document P2 handoff | Complete (2026-10-19): audit decision ACCEPTED, **P1 accepted by the user 2026-10-19** ([acceptance](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); candidate `6ac88e7` against the bootstrap seed `0a2dabe`, gate passed (54/56 against 52/56), all 24 test IDs passed (T-P1-06, T-P1-13, T-P1-17 and T-P1-24 after review corrections), ARM64 runtime PROVEN at P1 scope; [plan](docs/p1/P1_12_ACCEPTANCE_HANDOFF_PLAN.md); [acceptance record](docs/p1/P1_12_ACCEPTANCE.md); [P2 handoff](docs/p1/P2_HANDOFF.md) |
 
 ### Test-driven starting point
 
@@ -139,6 +139,8 @@ P1 completes only after this evidence. P2 builds on the package/test foundation 
 ## Binding phase status and sequence
 
 **2026-10-15: P0 complete; P1 solution/project scaffolding created. P1 is not yet accepted.**
+
+**2026-10-19: P1 accepted by the user (see the [P1 acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)). P2 is next and starts only on a separate instruction.**
 
 Sequence with unchanged phase IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Complete and accept the entire library first, including station selection, DWD/OsthessenWetter/MOSMIX_S/MOSMIX_L parsers, output entities, JSON/XML, XSDs, MQTT serializer and DI. Then begin P3 with the CLI usage example, configuration and example broker transport. Public release remains P9.
 

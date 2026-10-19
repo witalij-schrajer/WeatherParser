@@ -1,5 +1,5 @@
 # P2 Handoff – Export Entities, Serialization and Output Schemas
-**Prepared 2026-10-19 by P1.12. P2 has not started; implementation needs a separate instruction and the user's confirmation of the P1 acceptance.**
+**Prepared 2026-10-19 by P1.12; P1 was accepted by the user on 2026-10-19. P2 has not started; implementation needs a separate instruction.**
 
 ## 1. Accepted foundation
 
@@ -11,7 +11,7 @@
 | Baseline | native block counters 54/56 of `WeatherParser.Parsing.dll` |
 | Bootstrap seed | `0a2dabe` |
 | CI script | `scripts/ci-local.ps1` at the foundation SHA |
-| Acceptance record | [P1.12 acceptance record](P1_12_ACCEPTANCE.md) (audit decision ACCEPTED, formal user acceptance pending) |
+| Acceptance record | [P1.12 acceptance record](P1_12_ACCEPTANCE.md) (P1 accepted by the user 2026-10-19) |
 
 ## 2. Entry points
 

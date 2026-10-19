@@ -1,6 +1,6 @@
 # WeatherParser rules
 
-**Phase status (2026-10-15): P0 complete; P1 started with solution/project scaffolding. Domain implementation, tests and coverage acceptance remain pending.**
+**Phase status (2026-10-19): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)). P2 (export entities, serialization, output schemas) starts only on a separate instruction ([P2 handoff](docs/p1/P2_HANDOFF.md)).**
 
 These rules apply throughout the repository. Current explicit user instructions take precedence. Binding requirements are in [REQUIREMENTS.md](REQUIREMENTS.md); project status and usage are in [README.md](README.md).
 
@@ -183,6 +183,8 @@ These are documentation decisions; they do not generate application code yet.
 ## Binding phase status and sequence
 
 **2026-10-15: P0 complete; P1 solution/project scaffolding created. P1 is not yet accepted.**
+
+**2026-10-19: P1 accepted by the user (see the [P1 acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)). P2 is next and starts only on a separate instruction.**
 
 Sequence with unchanged phase IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Complete and accept the entire library first, including station selection, DWD/OsthessenWetter/MOSMIX_S/MOSMIX_L parsers, output entities, JSON/XML, XSDs, MQTT serializer and DI. Then begin P3 with the CLI usage example, configuration and example broker transport. Public release remains P9.
 
