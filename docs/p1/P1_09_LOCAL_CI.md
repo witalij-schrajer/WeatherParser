@@ -1,6 +1,6 @@
 # P1.09 – Local CI Job Sequence: Result Record
 
-**Status (2026-10-19): implemented and verified on Windows x64; the genuine initial bootstrap seed is not yet established, and P1.09 acceptance is pending review.** Implements the [P1.09 plan](P1_09_LOCAL_CI_PLAN.md). The script was generated and repaired by the local qwen3-coder:30b model; Claude reviewed each version, ran every build and verification run, and described each defect to qwen, which wrote all script fixes.
+**Status (2026-10-19): implemented and verified on Windows x64; the genuine initial bootstrap seed is established on commit `0a2dabe`; P1.09 acceptance is pending review.** Implements the [P1.09 plan](P1_09_LOCAL_CI_PLAN.md). The script was generated and repaired by the local qwen3-coder:30b model; Claude reviewed each version, ran every build and verification run, and described each defect to qwen, which wrote all script fixes.
 
 ## Decisions (user, 2026-10-19)
 
@@ -38,6 +38,31 @@ Evidence of the two-pass and bootstrap runs:
 - **Collection settings (both passes identical except `commit`):** SDK 10.0.402, `Microsoft.CodeCoverage` 18.11.0, `dotnet-coverage` 18.11.0 (manifest and tool), collector "Code Coverage", run settings `none`, exclusions `*.Tests.dll` and `WeatherParser.Coverage*.dll`, RID `win-x64`, configuration Release.
 - **Durations:** two-pass 27 s, bootstrap 20 s.
 
+## Genuine initial bootstrap seed (2026-10-19)
+
+Run by user instruction on the committed revision `0a2dabe` (the reviewed script `1b6e6d0` plus the documentation commit), after the verification runs above:
+
+```powershell
+pwsh ./scripts/ci-local.ps1 -Commit 0a2dabe -TargetRef 0a2dabe -Bootstrap
+```
+
+- **Justification:** no accepted integrated pipeline baseline existed before this run. The runner tests and the 57/63 measurement at `b6100e2` were evaluator/runner evidence in a Debug build, not an accepted pipeline baseline; the earlier bootstrap run on `1b6e6d0` was a mechanics check on a WIP commit. This is the first accepted, fault-free full-pipeline run of the branch (plan section 4, initial-bootstrap decision).
+- **Result:** exit 0 in 20 s; run directory `artifacts/ci/0a2dabe-20261019T171822Z/` (local, gitignored). Every stage passed: 0 build warnings; tests 8 / 91 / 54 / 2 passed; package-content check passed; the consumer restored the same-run package (SHA-512 `eR1GVAXBWRwNCyMqYpt7IWcLGYFlQvhIivbUMJYjEKnvz62VuJ0NHJ5flMBhgZcjR/OYmGb9twvJVFPfflJu9g==`). The gate passed in bootstrap mode: Measurement, Minimum (52/56 = 92.86%) and Baseline ("Initial bootstrap").
+- **Seed baseline** `current/bootstrap-baseline.json`, written by `write-baseline` and read back by the script (commit and counters checked against the gate result):
+
+  ```json
+  {"commitId":"0a2dabeaa4b4baa836b87d7a4aa1a456e3dcb552","toolName":"Microsoft.CodeCoverage","toolVersion":"18.11.0","format":"native-xml","exclusions":["*.Tests.dll","WeatherParser.Coverage*.dll"],"blocksCovered":52,"blocksNotCovered":4}
+  ```
+
+- **Collection settings of the seed:** SDK 10.0.402, `Microsoft.CodeCoverage` 18.11.0, `dotnet-coverage` 18.11.0 (manifest and tool), collector "Code Coverage", run settings `none`, exclusions as above, RID `win-x64`, configuration Release.
+- **Provenance (SHA-256 of the run artifacts):**
+  - `current/bootstrap-baseline.json`: `06c6ade34a0b7d19b1e899ac42f41e0723ebd7880acf8022470c034e444dde65`
+  - `current/collection-settings.json`: `865f19a0c8b09d01b0b942163c328cec0089b02d695730e46a69d850a304edb9`
+  - `current/coverage/coverage.xml`: `067a24c5e7599d6ac7da213153bbc0f4f498f9ef1b1c65607bc68f08c045c1a7`
+  - `gate-result.json`: `040ef8d2592972b5f72f6847cbdcaf4046b4bf5c9cb23b85823f410699712c67`
+  - `commits.json`: `cc70431da647a9e7083ed1ec1c6fc228d92dd22c91514f81b2e9c6492f6daea5`
+- **Consequence:** the bootstrap exception is used up for this branch. Every later candidate is compared normally with a comparable baseline, for example `0a2dabe` remeasured by the two-pass procedure (`-TargetRef 0a2dabe`). Below 100%, a code change must strictly increase block coverage; documentation-only changes may keep it equal. Losing these local artifacts, changing platform or lacking older tooling never justifies another bootstrap. Because the run directory is local, the baseline values above are the durable record; the two-pass procedure remeasures the target anyway.
+
 ## Fault injections (T-P1-08, T-P1-19)
 
 | Fault | Expected | Actual | Diagnostic |
@@ -68,7 +93,6 @@ In every fault run the run directory, `ci.log`, `commits.json` (with `faultInjec
 ## Open items
 
 - **Verification run 1 of the plan ("a two-pass run which passes") cannot pass today.** Every target with the runner (`b6100e2` or later) has the same library coverage, and the script itself is a code change, so the gate correctly reports equal coverage below 100% (exit 90). This is the situation described in the P1.10 plan (decision h) and the P1.12 plan: a passing two-pass run requires a strict coverage improvement through meaningful tests.
-- **Genuine initial bootstrap seed:** not established. The plan requires it on a committed, accepted revision; the verification commits are local WIP commits. The seed run (`-Commit C -TargetRef C -Bootstrap` on the accepted commit `C`) and its record are still to be done.
 - **Stale committed consumer lock file:** `README.md` is the packed package readme. The README edits since `2f8c670` (including this package's procedure section) change the package hash, so the committed `tests/WeatherParser.Package.Tests/packages.lock.json` no longer matches a freshly packed package. The CI script is unaffected because it rewrites the `contentHash` in its clone, but a manual locked consumer restore in the working tree fails until the lock is refreshed as described in step 3 of the [P1.11 plan](P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md).
 - **No hosted CI:** a local run is not a GitHub Actions run; creating a workflow needs separate authorization.
 - **Platform:** Windows x64 only; Debian/ARM64 is P1.10.
@@ -76,13 +100,13 @@ In every fault run the run directory, `ci.log`, `commits.json` (with `faultInjec
 ## Acceptance criteria (plan section 9)
 
 - [x] Decisions a–e recorded with the user's choice.
-- [ ] A run of the verified commit from a fresh clone exits 0 with every listed file: met by the bootstrap mechanics run only; the two-pass run correctly exits 90 (see open items).
+- [ ] A run of the verified commit from a fresh clone exits 0 with every listed file: met by the bootstrap runs (mechanics check and seed); the two-pass run correctly exits 90 (see open items).
 - [x] Each `-FaultInjection` value and the TargetRef=Commit case exit with the documented code; run directory and `ci.log` kept.
 - [x] `-Bootstrap -FaultInjection GateFailure` exits 90 and keeps `ci.log` and `gate-result.json`.
 - [x] Two-pass runs write `collection-settings.json` for both passes; `IncomparableTarget` exits 85.
 - [x] Separate `current/` and `target/` directories; the gate evaluates the current pass's report.
 - [x] Locked consumer restore; only the `contentHash` changes; restored hash equals the packed hash.
-- [ ] Genuine initial bootstrap seed: open.
+- [x] Genuine initial bootstrap seed identified once on `0a2dabe`, with a passing full pipeline, justification, `current/bootstrap-baseline.json` and settings/provenance (section "Genuine initial bootstrap seed").
 - [x] The `.nupkg` contains only the allowed entries.
 - [x] No step uses the global `dotnet-coverage`, a secret or the developer working tree.
 - [x] This record and the documents named in section 7 are updated.
