@@ -126,6 +126,13 @@ function Invoke-RestoreStage([string]$CloneDir, [string]$PassDir, [string]$Proje
     
     $env:NUGET_PACKAGES = Join-Path $script:WorkDir 'nuget-packages'
     
+    # Create local package source directory if it doesn't exist
+    $localNuGetPath = Join-Path $CloneDir "artifacts/local-nuget"
+    if (!(Test-Path $localNuGetPath)) {
+        New-Item -ItemType Directory -Path $localNuGetPath | Out-Null
+        Write-CiLog "Created empty local package source $localNuGetPath (gitignored, absent in fresh clones)"
+    }
+    
     if ($FaultInjection -eq 'LockDrift' -and $PassDir -eq (Join-Path $script:RunDir 'current')) {
         Write-CiLog "FAULT INJECTION: LockDrift"
         $lockJsonPath = Join-Path $CloneDir "src\WeatherParser.Parsing\packages.lock.json"
