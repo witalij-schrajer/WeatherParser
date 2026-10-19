@@ -597,6 +597,7 @@ function Invoke-ConversionStage([string]$CloneDir, [string]$PassDir) {
         runSettingsSha256 = "none"
         exclusions = @("*.Tests.dll", "WeatherParser.Coverage*.dll")
         rid = $rid
+        configuration = 'Release'
     }
 
     $collectionSettings | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $PassDir 'collection-settings.json')
@@ -636,7 +637,7 @@ function Invoke-BaselinePass() {
         $targetSettings | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'target/collection-settings.json')
     }
 
-    $fieldsToCompare = @('sdkVersion', 'microsoftCodeCoverageVersion', 'dotnetCoverageToolVersion', 'collector', 'runSettingsSha256', 'rid')
+    $fieldsToCompare = @('sdkVersion', 'microsoftCodeCoverageVersion', 'dotnetCoverageToolVersion', 'collector', 'runSettingsSha256', 'rid', 'configuration')
     foreach ($field in $fieldsToCompare) {
         if ($currentSettings.$field -ne $targetSettings.$field) {
             Fail 85 "Incomparable measurement: field '$field' differs (current: '$($currentSettings.$field)', target: '$($targetSettings.$field)')"
