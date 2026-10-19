@@ -49,7 +49,7 @@ Names are provisional. Create projects only when needed. No empty infrastructure
 | P1.05 | Establish MSTest/Moq/FluentAssertions and TDD evidence | Complete (parser-endpoint validation, 6 passing tests); [record](docs/p1/P1_05_TDD_BASELINE.md) |
 | P1.06 | Test-drive minimally needed package/DI contracts | Complete (`AddWeatherParsing` entry point, real DI resolution, missing registration detected, 8 passing tests); [record](docs/p1/P1_06_DI_CONTRACTS.md) |
 | P1.07 | Collect Microsoft.CodeCoverage and verify report contract | Complete (raw report, block breakdown and proven per-assembly counter mapping); [record](docs/p1/P1_07_COVERAGE_CONTRACT.md) |
-| P1.08 | Test-drive coverage evaluation/exceptions | Boundary/error cases from section 5; after P1.07 |
+| P1.08 | Test-drive coverage evaluation/exceptions | Boundary/error cases from section 5; after P1.07; [plan](docs/p1/P1_08_COVERAGE_EVALUATION.md) |
 | P1.09 | Prepare local CI job sequence/artifacts | Executable checks without production secrets; after P1.04–P1.08 |
 | P1.10 | Verify Debian/ARM64 package foundations | Package/restore evidence; runtime success only after actual execution; after P1.09 |
 | P1.11 | Complete English developer instructions/evidence | Restore/build/pack/test/coverage procedures and limits; ongoing |
@@ -63,9 +63,9 @@ Construct subjects/shared mocks in `[TestInitialize]`; verify all mocks through 
 
 ## 5. Coverage contract
 
-Microsoft.CodeCoverage provides raw reports and the block breakdown. Verify the supported format and MSTest integration for the selected stable tool revision. Blocks are not branches: do not relabel a report value as another metric without evidence. Existing line/branch requirements remain. If a required metric cannot be demonstrated, document that specific limitation and resolve it before passing coverage acceptance; never fabricate values or silently replace the metric with block coverage.
+The native block counters from the Microsoft.CodeCoverage report are the sole coverage metric, as decided on 2026-10-19, replacing the former line and branch requirements. Verify the supported format and MSTest integration for the selected stable tool revision. Line-rate, branch-rate, or any other Cobertura-derived values must never be used as or substituted for the block metric; missing or unreadable block counters will result in failure. Never fabricate values.
 
-| Case | Per-metric check |
+| Case | Block-coverage check |
 |---|---|
 | Initial implementation without measurable target-branch baseline | At least 80%; no target comparison |
 | Regular code PR, baseline below 100% | At least 80% and strictly above baseline |
@@ -92,9 +92,9 @@ These IDs are planning references, not existing tests.
 | T-P1-06 | Setup/cleanup | Subject setup and VerifyAll policy enforced |
 | T-P1-07 | Offline execution | No production HTTP/MQTT/device access |
 | T-P1-08 | Restore/versions | Reproducible clean checkout; uncontrolled changes detected |
-| T-P1-09 | Minimum | 80% passes; lower values fail each metric |
+| T-P1-09 | Minimum | 80% block coverage passes; lower values fail |
 | T-P1-10 | Regular code PR | Equality below 100% fails; actual improvement passes |
-| T-P1-11 | Mixed metrics | One improvement cannot offset another metric's failure |
+| T-P1-11 | Metric identity | Line-rate, branch-rate or other Cobertura-derived values are never accepted as or substituted for native block counters; missing native block counters fail |
 | T-P1-12 | Precision | Rounded 100% is not treated as exact 100% |
 | T-P1-13 | Broken/missing report | Failure rather than green result |
 | T-P1-14 | Bootstrap | Initially absent baseline: ≥80%, no comparison; later missing baseline fails |
@@ -107,7 +107,7 @@ These IDs are planning references, not existing tests.
 | T-P1-21 | Actual NuGet artifact | Isolated consumer uses built package revision |
 | T-P1-22 | Package boundary | No CLI/transport in package; no source reference in package test |
 | T-P1-23 | Documentation classification | Code/build/package/CI/coverage changes receive no docs bypass |
-| T-P1-24 | Report/package provenance | Counters, blocks, PDB and version traceable; blocks not relabeled as branches |
+| T-P1-24 | Report/package provenance | Counters, blocks, PDB and version traceable; block metric taken only from native block counters |
 
 ## 7. CI sequence and deliverables
 
@@ -127,7 +127,7 @@ Public PR execution receives no production secrets or privileged publishing righ
 - [ ] Actual `.nupkg` and isolated package consumption verified.
 - [ ] Meaningful TDD cycle, interfaces, constructor DI, MSTest/Moq/FluentAssertions and setup/cleanup demonstrated.
 - [ ] Microsoft.CodeCoverage report with traceable block/metric mapping available.
-- [ ] At least 80% for every required metric; bootstrap/documentation/100% rules demonstrated.
+- [ ] At least 80% for block coverage; bootstrap/documentation/100% rules demonstrated.
 - [ ] Error/comparability/provenance/PR-classification tests pass.
 - [ ] Local CI procedures/artifacts verified; truthful GitHub/ARM runtime status recorded.
 - [ ] English output/comments and complete English documentation.

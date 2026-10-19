@@ -3,6 +3,7 @@
     <Project Path="src/WeatherParser.Parsing/WeatherParser.Parsing.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/WeatherParser.Coverage.Tests/WeatherParser.Coverage.Tests.csproj" />
     <Project Path="tests/WeatherParser.Package.Tests/WeatherParser.Package.Tests.csproj" />
     <Project Path="tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj" />
   </Folder>

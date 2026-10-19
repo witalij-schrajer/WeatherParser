@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<results>
+  <modules>
+    <module id="693E8A261D622D4ABDE874DDC2B54C2FB2F52FC0" name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" blocks_covered="57" blocks_not_covered="33">
+    </module>
+    <module id="693E8A261D622D4ABDE874DDC2B54C2FB2F52FC0" name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" blocks_covered="100" blocks_not_covered="0">
+    </module>
+  </modules>
+</results>
