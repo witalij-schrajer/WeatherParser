@@ -90,6 +90,8 @@ CI runs builds, offline tests, machine-readable test/coverage results and readab
 
 ### P2 – Package entities and serialization
 
+Detailed realization plan: [P2 implementation plan](PHASE_P2_PLAN.md). Its first step checks P1 completion, extracts the accepted foundation evidence and adjusts the plan before implementation.
+
 Planned entity families: CDC/MOSMIX lists with their entries/search parameters, observations with typed values, forecast runs with steps/intervals/values, and quality/export-error metadata. Decide names/contracts before implementation. Mark all custom export types `[Serializable]`.
 
 Write tests first for present/missing values, real zeros, pressure conversions/references, UTC without suffix, inferred dates, leading zeros and special characters. Use `System.Text.Json.JsonSerializer` and `System.Xml.Serialization.XmlSerializer` with the same entities. Verify nested graphs and full documents using real serializers, not only mocks.
