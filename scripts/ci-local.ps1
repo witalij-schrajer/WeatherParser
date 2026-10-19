@@ -189,8 +189,9 @@ namespace WeatherParser.Parsing.Tests
     }
     
     $warningCount = 0
-    if ($buildOutput.Output -match '(\d+) Warning\(s\)') {
-        $warningCount = [int]$matches[1]
+    $warningMatch = [regex]::Match(($buildOutput.Output -join "`n"), '(\d+) Warning\(s\)')
+    if ($warningMatch.Success) { 
+        $warningCount = [int]$warningMatch.Groups[1].Value 
     }
     "$warningCount" | Out-File -FilePath (Join-Path $PassDir 'build-warnings.txt') -Encoding utf8NoBOM
     Write-CiLog "Build complete with $warningCount warnings"
@@ -339,7 +340,7 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
     
     # Check for ProjectReference in consumer project
     $consumerProjectPath = Join-Path $CloneDir "tests/WeatherParser.Package.Tests/WeatherParser.Package.Tests.csproj"
-    $consumerProjectContent = Get-Content -LiteralPath $consumerProjectPath
+    $consumerProjectContent = [IO.File]::ReadAllText($consumerProjectPath)
     if ($consumerProjectContent -match '<ProjectReference') {
         Fail 70 "Package consumer must not use a ProjectReference (T-P1-22)"
     }
