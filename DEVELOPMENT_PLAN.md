@@ -216,6 +216,8 @@ Sequence with unchanged phase IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P
 P1 contains only a technical package consumer as an integration test, not a CLI/application example. Before P3, accept source functionality directly through the library and its tests; CLI commands do not gate library phases. This sequence supersedes earlier numeric ordering or dependencies on P3. [P1 detailed plan](PHASE_P1_PLAN.md). The current task adds project scaffolding; domain implementation remains deferred.
 
 
+Historical initial-scaffolding verification on 2026-10-15: solution listing and restore succeeded; Release build completed with 0 warnings and 0 errors. Both projects present at that time had lock files. That initial empty-scaffolding result was not test/coverage evidence; later evidence is recorded in P1.04–P1.07.
+
 P1.01 entry audit completed on 2026-10-15: [record and starting inventory](docs/p1/P1_01_BASELINE.md). Existing scaffolding is preserved; no new domain code or test/coverage result is claimed. P1.02 review has since completed; current follow-up is recorded below.
 
 

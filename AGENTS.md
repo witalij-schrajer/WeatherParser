@@ -133,6 +133,22 @@ Source, checked 2026-10-14: [DWD procedure description, section 2.1.3/table 2.1]
 - Document changed assumptions, configuration precedence, fields, topics, units and source limitations.
 - Do not implement extra features merely because they are mentioned as future extensions.
 
+Consistency rule: [CONTRIBUTING.md](CONTRIBUTING.md) holds every developer procedure; keep the documents below in sync in the same change. Reviews enforce this table; there is no automated check.
+
+| Change in | Must update |
+|---|---|
+| `global.json` | CONTRIBUTING.md section 1, `DEPENDENCIES.md` |
+| `Directory.Packages.props`, `packages.lock.json` | `DEPENDENCIES.md` |
+| `.config/dotnet-tools.json` | `DEPENDENCIES.md`, CONTRIBUTING.md section 5 |
+| Runner commands, JSON contract or exit codes | CONTRIBUTING.md section 5, `scripts/ci-local.ps1` (shared contract) |
+| `scripts/ci-local.ps1` parameters, exit codes or run layout | CONTRIBUTING.md section 6 |
+| `scripts/prepare-debian-arm64.sh` | CONTRIBUTING.md section 7, `DEPENDENCIES.md` |
+| `coverage.runsettings` | CONTRIBUTING.md sections 5 and 7, `docs/COMPATIBILITY.md` |
+| Project added to or removed from `WeatherParser.slnx` or `WeatherParser.Ci.slnf` | CONTRIBUTING.md sections 2 and 3, README project list |
+| Phase status | README status summary, `PHASE_P1_PLAN.md`, `DEVELOPMENT_PLAN.md` |
+| `README.md` (packed package readme) | Local package check as in CONTRIBUTING.md section 4, then the P1.09 script run on the committed revision; the consumer lock is not committed |
+| `Directory.Packages.props` version used in a CONTRIBUTING.md command | The "Version literals" table of CONTRIBUTING.md and the commands listing it |
+
 ## Binding MOSMIX schema source
 
 [DWD pointforecast_dwd_extension_V1_0.xsd](https://opendata.dwd.de/weather/lib/pointforecast_dwd_extension_V1_0.xsd) is the binding basis for both parsers' MOSMIX source/XML data structures. Derive types, namespaces, elements and cardinalities from this schema; verify additional KML structures before implementation. Record schema revision and checksum for reproducible type generation/derivation. Map source types to separate public output entities; they do not replace the normalized forecast contract. Follow TDD for schema/mapping tests. No C# data structures have been generated yet.

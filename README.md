@@ -23,7 +23,7 @@ English is the sole maintained language for project documentation and instructio
 
 ## Project status
 
-As of 2026-10-19, the solution contains the library, source-reference tests, isolated package-consumer tests and coverage tooling. Parser-endpoint validation and the `AddWeatherParsing` DI entry point exist; the unused export-entity scaffolding was removed on 2026-10-19 and will be reintroduced test-first in P2. P1.05/P1.06 record 6 and then 8 passing unit tests; P1.04 records 2 passing package-consumer tests, and P1.07 records coverage collection. These are historical results, not a new test run. **Weather-source parsers and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. Full P1 acceptance remains open; no GitHub or public package publication is claimed.
+As of 2026-10-19, the solution contains the library, source-reference tests, isolated package-consumer tests and coverage tooling. Parser-endpoint validation and the `AddWeatherParsing` DI entry point exist; the unused export-entity scaffolding was removed on 2026-10-19 and will be reintroduced test-first in P2. Test and coverage evidence is kept in the [P1 records](docs/p1/). **Weather-source parsers and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. Full P1 acceptance remains open; no public package publication is claimed.
 
 ## Workflow role and execution
 
@@ -140,7 +140,7 @@ Source, checked 2026-10-14: [DWD procedure description, section 2.1.3/table 2.1]
 - Automated tests use synthetic fixtures and mocks, without mandatory live websites or production MQTT brokers.
 - Code-block coverage (as defined above) must reach at least 80%. During initial bootstrap without a measurable target-branch baseline, only this minimum applies; target-branch comparison is not applicable. An unexpectedly missing, stale or incomparable baseline in subsequent operation remains an error. Documentation-only PRs may retain the same coverage for the block metric as the target branch; decreases are forbidden. Other PRs must strictly improve the block metric below a 100% baseline; an exact 100% baseline accepts an exact 100% result. Use current commit IDs, comparable collection conditions and unrounded counter ratios. Missing PR measurements, invalid counts and zero denominators cannot pass. Microsoft.CodeCoverage reports, including the code-block breakdown, are the basis for verification; Cobertura line-rate, branch-rate or any Cobertura-derived value must never be used as or substituted for the block metric; missing or unreadable native block counters fail. Verify metric mapping and report format against real reports in P1.
 
-See the [development plan](DEVELOPMENT_PLAN.md) for phases, dependencies and acceptance gates. The [P1 detailed plan](PHASE_P1_PLAN.md) breaks the first implementation phase into work packages and tests. See [REQUIREMENTS.md](REQUIREMENTS.md) for detailed requirements and acceptance criteria, and [AGENTS.md](AGENTS.md) for contributor rules. Restore/build commands are documented below; test methods have not been implemented yet.
+See the [development plan](DEVELOPMENT_PLAN.md) for phases, dependencies and acceptance gates. The [P1 detailed plan](PHASE_P1_PLAN.md) breaks the first implementation phase into work packages and tests. See [REQUIREMENTS.md](REQUIREMENTS.md) for detailed requirements and acceptance criteria, and [AGENTS.md](AGENTS.md) for contributor rules. Developer procedures (restore, build, tests, pack, coverage, local CI, Debian/ARM64) are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Configuration and publication
 
@@ -198,64 +198,29 @@ Sequence with unchanged phase IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P
 P1 contains only a technical package consumer as an integration test, not a CLI/application example. Before P3, accept source functionality directly through the library and its tests; CLI commands do not gate library phases. This sequence supersedes earlier numeric ordering or dependencies on P3. [P1 detailed plan](PHASE_P1_PLAN.md). The current task adds project scaffolding; domain implementation remains deferred.
 
 
-## Project structure and local build
+## Development
 
-As of 2026-10-19, [WeatherParser.slnx](WeatherParser.slnx) contains four projects:
+The solution [WeatherParser.slnx](WeatherParser.slnx) contains seven projects:
 
 ```text
-WeatherParser.slnx
 src/
-  WeatherParser.Parsing/           # Packable net10.0 library
+  WeatherParser.Parsing/                # Packable net10.0 library (local test package)
 tests/
-  WeatherParser.Parsing.Tests/     # MSTest project with source reference
-  WeatherParser.Package.Tests/    # Isolated NuGet PackageReference consumer tests
+  WeatherParser.Parsing.Tests/          # MSTest project with source reference
+  WeatherParser.Package.Tests/          # Isolated NuGet PackageReference consumer tests
+  WeatherParser.Coverage.Tests/         # Coverage evaluator tests
+  WeatherParser.Coverage.Runner.Tests/  # Coverage runner tests
 tools/
-  WeatherParser.Coverage/         # Non-packable coverage-tooling library (evaluator)
-  WeatherParser.Coverage.Runner/  # Non-packable console runner for the coverage gate
+  WeatherParser.Coverage/               # Non-packable coverage evaluator library
+  WeatherParser.Coverage.Runner/        # Non-packable console runner for the coverage gate
 ```
 
-`global.json` pins SDK 10.0.402 with roll-forward disabled. Visual Studio 2026 can open `.slnx` directly. `Directory.Build.props` enables `net10.0`, nullable analysis, implicit usings and deterministic builds. `Directory.Packages.props` pins package versions, including the local `WeatherParser.Parsing` test package; see [dependencies and licenses](DEPENDENCIES.md). `NuGet.Config` configures nuget.org and the project-local `artifacts/local-nuget` source. Build the local package before the first solution restore so that the package-consumer dependency is available.
-
-Coverage gate (P1.08; implemented and tested on Windows; run automatically by the local CI script below):
+Quickstart (Windows, PowerShell 7, from the repository root):
 
 ```powershell
-dotnet tool restore
-dotnet test tests/WeatherParser.Parsing.Tests --collect:"Code Coverage" --results-directory TestResults/product
-dotnet tool run dotnet-coverage merge <raw .coverage file> -f xml -o TestResults/product/coverage.xml
-dotnet run --project tools/WeatherParser.Coverage.Runner -- evaluate --report TestResults/product/coverage.xml --changed-files <changed-files.txt> --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --bootstrap
+New-Item -ItemType Directory -Force artifacts/local-nuget
+dotnet build WeatherParser.Ci.slnf --configuration Release
+pwsh ./scripts/ci-local.ps1 -TargetRef <comparison branch> -RunSettings coverage.runsettings
 ```
 
-The runner writes the gate result as JSON to stdout and exits 0 (all rules passed), 1 (a coverage rule failed) or 2 (usage or input error). Use `--baseline <file> --expected-baseline-commit <sha>` instead of `--bootstrap` once a baseline exists; `--bootstrap` is only for the genuine first measurement. `write-baseline` creates a baseline file from a native report.
-
-Local CI sequence (P1.09; verified on Windows x64 and accepted). It needs PowerShell 7 and tests only the committed state, from a fresh clone in a temporary directory:
-
-```powershell
-pwsh ./scripts/ci-local.ps1 -TargetRef <comparison commit or branch>
-```
-
-Run artifacts (log, test results, package and hash, coverage reports, gate result) go to `artifacts/ci/<commit>-<UTC timestamp>/`. Exit codes, parameters (`-Bootstrap`, `-BaselinePath`, `-RunSettings`, `-CollectOnly`, `-ResumeFrom`, `-KeepWorkDir`, `-FaultInjection`) and the run layout are documented in the [P1.09 plan](docs/p1/P1_09_LOCAL_CI_PLAN.md) and the [result record](docs/p1/P1_09_LOCAL_CI.md).
-
-Debian 13 ARM64 target (P1.10): `scripts/prepare-debian-arm64.sh` installs the pinned .NET SDK and PowerShell 7 into user directories; then run `pwsh ./scripts/ci-local.ps1 -TargetRef <comparison branch> -RunSettings coverage.runsettings` on the target. If coverage conversion cannot run there, `-CollectOnly` on the target and `-ResumeFrom <copied run directory>` on another machine split collection and gate. Evidence and platform status: [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md), [COMPATIBILITY.md](docs/COMPATIBILITY.md).
-
-From the repository directory, the intended restore/build sequence is:
-
-```powershell
-dotnet restore src/WeatherParser.Parsing/WeatherParser.Parsing.csproj --locked-mode
-dotnet pack src/WeatherParser.Parsing/WeatherParser.Parsing.csproj --configuration Release --no-restore --output artifacts/local-nuget
-dotnet restore WeatherParser.slnx --locked-mode
-dotnet build WeatherParser.slnx --configuration Release --no-restore
-```
-
-Track lock files. For requested package updates, resolve once without `--locked-mode` and review changes. Build outputs, test reports and local secrets are excluded from Git.
-
-**Current reproducibility limitation (2026-10-19):** the package-consumer lock file records an earlier artifact of `WeatherParser.Parsing` version `0.1.0-initial`. A fresh-cache locked restore against the rebuilt package fails content-hash validation (`NU1403`). The sequence above therefore does not yet establish clean-cache reproducibility. Package version/content and the consumer lock file must be reconciled in a reviewed packaging change; the documentation migration preserves the existing lock files.
-
-The library contains tested endpoint-validation/DI behavior (export entities follow in P2); weather-source parsers remain pending. The package-consumer project exists in the solution and uses a versioned `PackageReference`, without a source reference. See the [package-consumer guide](tests/WeatherParser.Package.Tests/README.md). Full P1 acceptance remains pending. Build the CLI example only after library completion in P3.
-
-Historical initial-scaffolding verification on 2026-10-15: solution listing and restore succeeded; Release build completed with 0 warnings and 0 errors. Both projects present at that time had lock files. That initial empty-scaffolding result was not test/coverage evidence; later evidence is recorded in P1.04–P1.07.
-
-
-P1.01 entry audit completed on 2026-10-15: [record and starting inventory](docs/p1/P1_01_BASELINE.md). Existing scaffolding is preserved; no new domain code or test/coverage result is claimed. P1.02 review has since completed; current follow-up is recorded below.
-
-
-**P1.02 review (2026-10-15) complete:** [tooling/license/compatibility report](docs/p1/P1_02_TOOLING_REVIEW.md). All 16 test packages were reviewed; six direct versions were current, with no reported NuGet vulnerability/deprecation findings at that review. SDK 10.0.303 was outside servicing; the review selected 10.0.402 for an update before P1.03 acceptance. No SDK/package changes or new tests were made in P1.02. [P1.03](docs/p1/P1_03_BUILD_SETUP.md) subsequently pinned 10.0.402 and verified CLI/IDE builds; [P1.09](docs/p1/P1_09_LOCAL_CI.md#p109-acceptance-2026-10-19) verified clean-checkout reproducibility on Windows x64.
+Every developer procedure, its platform and its verification status are in [CONTRIBUTING.md](CONTRIBUTING.md); contributor rules are in [AGENTS.md](AGENTS.md), versions and licenses in [DEPENDENCIES.md](DEPENDENCIES.md), and the verified platform matrix in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md). Phase history and acceptance records: [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md), [PHASE_P1_PLAN.md](PHASE_P1_PLAN.md) and [docs/p1](docs/p1/).
