@@ -21,6 +21,10 @@ Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The lib
 | [MSTest.Analyzers](https://www.nuget.org/packages/MSTest.Analyzers/4.5.1) | 4.5.1 | Transitive test | MIT |
 | [System.Diagnostics.EventLog](https://www.nuget.org/packages/System.Diagnostics.EventLog/6.0.0) | 6.0.0 | Transitive test | MIT |
 
+## CI prerequisites
+
+`scripts/ci-local.ps1` (P1.09) requires PowerShell 7 (verified with 7.6.7 on Windows) and Git (verified with 2.55), plus the pinned .NET SDK and network access to nuget.org. No additional packages are used.
+
 ## Local .NET tools
 
 Pinned in `.config/dotnet-tools.json` (restore with `dotnet tool restore`); the global `dotnet-coverage` installation is not used.

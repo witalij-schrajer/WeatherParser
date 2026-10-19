@@ -216,7 +216,7 @@ tools/
 
 `global.json` pins SDK 10.0.402 with roll-forward disabled. Visual Studio 2026 can open `.slnx` directly. `Directory.Build.props` enables `net10.0`, nullable analysis, implicit usings and deterministic builds. `Directory.Packages.props` pins package versions, including the local `WeatherParser.Parsing` test package; see [dependencies and licenses](DEPENDENCIES.md). `NuGet.Config` configures nuget.org and the project-local `artifacts/local-nuget` source. Build the local package before the first solution restore so that the package-consumer dependency is available.
 
-Coverage gate (P1.08; implemented and tested on Windows, not yet run by a CI sequence):
+Coverage gate (P1.08; implemented and tested on Windows; run automatically by the local CI script below):
 
 ```powershell
 dotnet tool restore
@@ -226,6 +226,14 @@ dotnet run --project tools/WeatherParser.Coverage.Runner -- evaluate --report Te
 ```
 
 The runner writes the gate result as JSON to stdout and exits 0 (all rules passed), 1 (a coverage rule failed) or 2 (usage or input error). Use `--baseline <file> --expected-baseline-commit <sha>` instead of `--bootstrap` once a baseline exists; `--bootstrap` is only for the genuine first measurement. `write-baseline` creates a baseline file from a native report.
+
+Local CI sequence (P1.09; verified on Windows x64, acceptance pending). It needs PowerShell 7 and tests only the committed state, from a fresh clone in a temporary directory:
+
+```powershell
+pwsh ./scripts/ci-local.ps1 -TargetRef <comparison commit or branch>
+```
+
+Run artifacts (log, test results, package and hash, coverage reports, gate result) go to `artifacts/ci/<commit>-<UTC timestamp>/`. Exit codes, parameters (`-Bootstrap`, `-BaselinePath`, `-KeepWorkDir`, `-FaultInjection`) and the run layout are documented in the [P1.09 plan](docs/p1/P1_09_LOCAL_CI_PLAN.md) and the [result record](docs/p1/P1_09_LOCAL_CI.md).
 
 From the repository directory, the intended restore/build sequence is:
 
