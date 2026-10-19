@@ -1,6 +1,6 @@
 # WeatherParser
 
-**Phase status (2026-10-19): P0 and P1.01–P1.10 complete. SDK 10.0.402 is pinned; P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; overall P1 acceptance remains pending.**
+**Phase status (2026-10-19): P0 and P1.01–P110 complete. the SDK is pinned ([DEPENDENCIES.md](DEPENDENCIES.md)); P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; overall P1 acceptance remains pending.**
 
 WeatherParser is primarily a planned C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts. The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
@@ -14,7 +14,7 @@ The MQTT serializer is source-independent: it serializes suitable output entitie
 
 Provide documented DI registration for library parsers, serializer and required services. Consumers supply endpoints, topic configuration and external dependencies. Every doing class has an interface; output entities remain dedicated `[Serializable]` types. Preserve testability, UTC and JSON/XML compatibility.
 
-The example CLI owns arguments, application configuration, single-command process execution, exit codes, file/stdout export and optional MQTT transmission. It accesses parsing only through the package, never copied implementations. Acceptance prioritizes the public API, package versioning and independent consumption. The local test package is `WeatherParser.Parsing` version `0.1.0-initial`, built and consumed in [P1.04](docs/p1/P1_04_PACKAGE_CONSUMER.md). Public package identity, feed and publication procedure remain release decisions; no public package publication is claimed.
+The example CLI owns arguments, application configuration, single-command process execution, exit codes, file/stdout export and optional MQTT transmission. It accesses parsing only through the package, never copied implementations. Acceptance prioritizes the public API, package versioning and independent consumption. The local test package `WeatherParser.Parsing` (version in `Directory.Packages.props`) was first built and consumed in [P1.04](docs/p1/P1_04_PACKAGE_CONSUMER.md). Public package identity, feed and publication procedure remain release decisions; no public package publication is claimed.
 ## Languages
 
 English is the sole maintained language for project documentation and instructions. Use one canonical English file at each standard unsuffixed path; do not maintain German or `.en.md` counterparts. Preserve requirement IDs, commands, data fields, units, examples and original source names. This decision dated 2026-10-19 supersedes the earlier bilingual policy.

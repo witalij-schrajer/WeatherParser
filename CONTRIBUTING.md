@@ -282,9 +282,13 @@ See [section 4](#4-pack-and-package-consumer).
 
 Exit codes 30 (solution) or 70 (consumer). Restore with `--locked-mode` and review lock changes; see [section 6](#6-local-ci).
 
+*Status: Verified (Windows) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md)*
+
 ### Exit 80 "Run dotnet tool restore"
 
 Older script revisions shared the per-user tool resolver cache, so a deleted run folder broke later runs; the script now isolates `DOTNET_CLI_HOME` per run ([P1.10 record, finding 2](docs/p1/P1_10_DEBIAN_ARM64.md#findings)).
+
+*Status: Verified (Windows, Debian/ARM64) – [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
 
 ## 9. Limits
 
@@ -299,3 +303,4 @@ Older script revisions shared the per-user tool resolver cache, so a deleted run
 | Literal | Used in | Source of truth |
 |---|---|---|
 | `18.11.0` | `--tool-version` of the runner commands (section 5) | `Microsoft.CodeCoverage` in `Directory.Packages.props` |
+| `0.1.0-initial` | Stale cache entry path in section 4 | `Version` in `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj` and the `WeatherParser.Parsing` entry in `Directory.Packages.props` |
