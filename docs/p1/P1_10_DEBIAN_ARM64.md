@@ -1,6 +1,6 @@
 # P1.10 – Debian/ARM64 Package Foundations: Result Record
 
-**Status (2026-10-19): implemented and verified on Windows x64 and on the NanoPi R76S (Debian 13 ARM64); gate PASSED on ARM64; acceptance is pending.** Implements the [P1.10 plan](P1_10_DEBIAN_ARM64_PLAN.md).
+**Status (2026-10-19): implemented and verified on Windows x64 and on the NanoPi R76S (Debian 13 ARM64); gate PASSED on ARM64; accepted by the user ([acceptance](#p110-acceptance-2026-10-19)).** Implements the [P1.10 plan](P1_10_DEBIAN_ARM64_PLAN.md).
 
 ## Decisions (user, 2026-10-19)
 
@@ -132,3 +132,9 @@ Serializers, timezones, DI under load, CLI, MQTT and network sources (later phas
 - [x] ARM64 block counters and the gate result are recorded, including where conversion and gate ran.
 - [x] `docs/COMPATIBILITY.md` contains every matrix row of plan section 4, each with source and evidence status.
 - [x] The documents in plan section 7 are updated: `README.md` (target procedure), `PHASE_P1_PLAN.md` (P1.10 row), `DEVELOPMENT_PLAN.md` (phase status) and `DEPENDENCIES.md` (run settings and target prerequisites).
+
+### P1.10 acceptance (2026-10-19)
+
+The user accepted the P1.10 results on 2026-10-19, on the evidence of this record: the full two-pass run on the NanoPi R76S (Debian 13 ARM64) with conversion and gate on the target, gate PASSED with 54/56 against 52/56; the fault injections and the `-CollectOnly`/`-ResumeFrom` path on the target and on Windows; the Class A evidence with the decision to keep the projects RID-neutral (NU1004); and `docs/COMPATIBILITY.md`.
+
+Remaining outside P1.10: developer instructions (P1.11), overall P1 acceptance (P1.12) and hosted CI. The target working directory and the user-directory installs remain on the R76S until their cleanup is authorized.

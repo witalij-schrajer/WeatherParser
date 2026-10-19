@@ -1,6 +1,6 @@
 # WeatherParser
 
-**Phase status (2026-10-19): P0 and P1.01–P1.09 complete. SDK 10.0.402 is pinned; P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is implemented and verified on the NanoPi R76S, acceptance pending; overall P1 acceptance remains pending.**
+**Phase status (2026-10-19): P0 and P1.01–P1.10 complete. SDK 10.0.402 is pinned; P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; overall P1 acceptance remains pending.**
 
 WeatherParser is primarily a planned C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts. The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
