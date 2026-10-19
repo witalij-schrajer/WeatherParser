@@ -605,6 +605,25 @@ function Invoke-ConversionStage([string]$CloneDir, [string]$PassDir) {
     Write-CiLog "Conversion complete"
 }
 
+function Assert-ComparableSettings([string]$CurrentSettingsPath, [string]$BaselineSettingsPath) {
+    $currentSettings = Get-Content $CurrentSettingsPath | ConvertFrom-Json
+    $baselineSettings = Get-Content $BaselineSettingsPath | ConvertFrom-Json
+
+    $fieldsToCompare = @('sdkVersion', 'microsoftCodeCoverageVersion', 'dotnetCoverageToolVersion', 'collector', 'runSettingsSha256', 'rid', 'configuration')
+    foreach ($field in $fieldsToCompare) {
+        if ($currentSettings.$field -ne $baselineSettings.$field) {
+            Fail 85 "Incomparable measurement: field '$field' differs (current: '$($currentSettings.$field)', baseline: '$($baselineSettings.$field)')"
+        }
+    }
+
+    # Compare exclusions as arrays
+    $currentExclusions = @($currentSettings.exclusions)
+    $baselineExclusions = @($baselineSettings.exclusions)
+    if ((@($currentExclusions) -join ',') -ne (@($baselineExclusions) -join ',')) {
+        Fail 85 "Incomparable measurement: field 'exclusions' differs (current: '$(($currentExclusions) -join ',')', baseline: '$(($baselineExclusions) -join ',')')"
+    }
+}
+
 function Invoke-BaselinePass() {
     Write-CiLog "=== BASELINE PASS ==="
     $script:CurrentStageCode = 85
@@ -637,19 +656,7 @@ function Invoke-BaselinePass() {
         $targetSettings | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'target/collection-settings.json')
     }
 
-    $fieldsToCompare = @('sdkVersion', 'microsoftCodeCoverageVersion', 'dotnetCoverageToolVersion', 'collector', 'runSettingsSha256', 'rid', 'configuration')
-    foreach ($field in $fieldsToCompare) {
-        if ($currentSettings.$field -ne $targetSettings.$field) {
-            Fail 85 "Incomparable measurement: field '$field' differs (current: '$($currentSettings.$field)', target: '$($targetSettings.$field)')"
-        }
-    }
-
-    # Compare exclusions as arrays
-    $currentExclusions = @($currentSettings.exclusions)
-    $targetExclusions = @($targetSettings.exclusions)
-    if ((@($currentExclusions) -join ',') -ne (@($targetExclusions) -join ',')) {
-        Fail 85 "Incomparable measurement: field 'exclusions' differs (current: '$(($currentExclusions) -join ',')', target: '$(($targetExclusions) -join ',')')"
-    }
+    Assert-ComparableSettings (Join-Path $script:RunDir 'current/collection-settings.json') (Join-Path $script:RunDir 'target/collection-settings.json')
 
     # Write baseline using the current clone's runner
     $baselinePath = Join-Path $script:RunDir 'target/baseline.json'
@@ -684,7 +691,28 @@ function Invoke-GateStage() {
         }
     } elseif ($BaselinePath) {
         Write-CiLog "Running gate with external baseline"
-        $gate = Invoke-Native 90 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', $BaselinePath, '--expected-baseline-commit', $script:TargetSha) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        
+        # Validate external baseline settings
+        $baselineDir = Join-Path $script:RunDir 'baseline-input'
+        New-CiDirectory $baselineDir
+        
+        $copiedBaseline = Join-Path $baselineDir ([IO.Path]::GetFileName($BaselinePath))
+        $copiedSettings = Join-Path $baselineDir 'collection-settings.json'
+        
+        Copy-Item $BaselinePath $copiedBaseline
+        Copy-Item $script:BaselineSettingsPath $copiedSettings
+        
+        Assert-ComparableSettings (Join-Path $script:RunDir 'current/collection-settings.json') $copiedSettings
+        
+        # Get SHA-256 of the baseline file
+        $baselineSha256 = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData([IO.File]::ReadAllBytes($copiedBaseline)))
+        Write-CiLog "External baseline SHA-256: $baselineSha256"
+        
+        # Get SHA-256 of the settings file
+        $settingsSha256 = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData([IO.File]::ReadAllBytes($copiedSettings)))
+        Write-CiLog "External baseline settings SHA-256: $settingsSha256"
+        
+        $gate = Invoke-Native 90 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', $copiedBaseline, '--expected-baseline-commit', $script:TargetSha) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
         switch ($gate.ExitCode) {
             1 {
                 $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
@@ -792,6 +820,26 @@ try {
         Fail 20 "BaselinePath file does not exist: $BaselinePath"
     }
 
+    if ($BaselinePath) {
+        $BaselinePath = (Resolve-Path -LiteralPath $BaselinePath).Path
+        $script:BaselineSettingsPath = Join-Path (Split-Path -Parent $BaselinePath) 'collection-settings.json'
+        if (!(Test-Path $script:BaselineSettingsPath)) {
+            Fail 20 "External baseline requires a sibling collection-settings.json: $script:BaselineSettingsPath"
+        }
+        
+        # Validate baseline commit matches target
+        $baseline = Get-Content -Raw $BaselinePath | ConvertFrom-Json
+        $settings = Get-Content $script:BaselineSettingsPath | ConvertFrom-Json
+        
+        if ($baseline.commitId -ne $settings.commit) {
+            Fail 20 "External baseline JSON and settings commit mismatch: baseline has '$($baseline.commitId)', settings have '$($settings.commit)'"
+        }
+        
+        if ($baseline.commitId -ne $targetSha) {
+            Fail 20 "External baseline commit '$($baseline.commitId)' does not match TargetRef commit '$targetSha'"
+        }
+    }
+
     if ($FaultInjection -eq 'IncomparableTarget' -and ($Bootstrap -or $BaselinePath)) {
         Fail 20 "IncomparableTarget requires two-pass mode (no BaselinePath and no Bootstrap)"
     }
@@ -802,6 +850,18 @@ try {
     New-CiDirectory $script:RunDir
     Write-CiLog "Run directory: $script:RunDir"
     
+    $commitsJson = @{
+        commit = $commitSha
+        commitShort = $commitShort
+        targetRef = $TargetRef
+        targetCommit = $targetSha
+        mode = if ($Bootstrap) { "bootstrap" } elseif ($BaselinePath) { "baseline-path" } else { "two-pass" }
+        faultInjection = if ($FaultInjection) { $FaultInjection } else { $null }
+        startedUtc = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+    }
+
+    $commitsJson | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'commits.json')
+
     # Create work directory
     $script:WorkDir = Join-Path ([IO.Path]::GetTempPath()) "weatherparser-ci-$([guid]::NewGuid())"
     New-CiDirectory $script:WorkDir
@@ -827,21 +887,6 @@ try {
         $sdks = Invoke-Native 10 'dotnet' @('--list-sdks') -WorkingDirectory ([IO.Path]::GetTempPath()) -AllowedExitCodes @(0)
         Fail 10 "DotNet SDK version mismatch: global.json requires $($globalJson.sdk.version); 'dotnet --version' returned exit code $($dotnetVersion.ExitCode) and output '$reportedVersion'. Installed SDKs: $($sdks.Output -join '; ')"
     }
-
-    $commitShort = git -C "$script:WorkDir/src" rev-parse --short HEAD
-    $targetCommitShort = git -C "$script:WorkDir/src" rev-parse --short $targetSha
-
-    $commitsJson = @{
-        commit = $commitSha
-        commitShort = $commitShort
-        targetRef = $TargetRef
-        targetCommit = $targetSha
-        mode = if ($Bootstrap) { "bootstrap" } elseif ($BaselinePath) { "baseline-path" } else { "two-pass" }
-        faultInjection = if ($FaultInjection) { $FaultInjection } else { $null }
-        startedUtc = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
-    }
-
-    $commitsJson | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'commits.json')
 
     $dotnetInfo = Invoke-Native 10 'dotnet' @('--info') -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0)
     $dotnetInfo.Output | Out-File -FilePath (Join-Path $script:RunDir 'dotnet-info.txt') -Encoding utf8NoBOM
