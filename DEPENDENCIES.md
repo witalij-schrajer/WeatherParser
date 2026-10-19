@@ -21,6 +21,16 @@ Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The lib
 | [MSTest.Analyzers](https://www.nuget.org/packages/MSTest.Analyzers/4.5.1) | 4.5.1 | Transitive test | MIT |
 | [System.Diagnostics.EventLog](https://www.nuget.org/packages/System.Diagnostics.EventLog/6.0.0) | 6.0.0 | Transitive test | MIT |
 
+## Local .NET tools
+
+Pinned in `.config/dotnet-tools.json` (restore with `dotnet tool restore`); the global `dotnet-coverage` installation is not used.
+
+| Tool | Version | Scope | Declared license |
+|---|---|---|---|
+| [dotnet-coverage](https://www.nuget.org/packages/dotnet-coverage/18.11.0) | 18.11.0 | Developer tool: converts raw `.coverage` reports to native XML | Microsoft Software License Terms – Microsoft .NET Library (proprietary; use to develop and test applications; not redistributed) |
+
+Version 18.11.0 was chosen on 2026-10-19 to match `Microsoft.CodeCoverage` 18.11.0 (published on nuget.org; 18.11.2 and 18.12.0 also exist). Converting the P1.07 raw report with it reproduces the earlier counters exactly (57/33 and 189/4).
+
 ## Decision and limits
 
 FluentAssertions 8 is not MIT. Current personal/noncommercial OpenSource test usage was checked against the [versioned license](https://www.nuget.org/packages/FluentAssertions/8.11.0/License); commercial contexts and redistribution require separate assessment. Preserve third-party licenses/notices. These tools remain test-only (`PrivateAssets="all"`, nonpackable test project), outside library runtime dependencies.

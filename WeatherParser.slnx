@@ -3,11 +3,13 @@
     <Project Path="src/WeatherParser.Parsing/WeatherParser.Parsing.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/WeatherParser.Coverage.Runner.Tests/WeatherParser.Coverage.Runner.Tests.csproj" />
     <Project Path="tests/WeatherParser.Coverage.Tests/WeatherParser.Coverage.Tests.csproj" />
     <Project Path="tests/WeatherParser.Package.Tests/WeatherParser.Package.Tests.csproj" />
     <Project Path="tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
+    <Project Path="tools/WeatherParser.Coverage.Runner/WeatherParser.Coverage.Runner.csproj" />
     <Project Path="tools/WeatherParser.Coverage/WeatherParser.Coverage.csproj" />
   </Folder>
 </Solution>

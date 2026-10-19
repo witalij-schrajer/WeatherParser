@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -60,18 +61,8 @@ public sealed class CoverageReportReaderTests
         // Arrange
         var path = "report.xml";
         _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
-        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None))
-            .Returns(Task.FromResult(
-                """
-                <?xml version="1.0" encoding="utf-8"?>
-                <coverage line-rate="0.548" branch-rate="1" version="1.0" timestamp="1234567890">
-                  <packages>
-                    <package line-rate="0.5483870967741935" branch-rate="1" complexity="14" name="WeatherParser.Parsing">
-                      <classes/>
-                    </package>
-                  </packages>
-                </coverage>
-                """));
+        var coberturaXml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "report-cobertura-branch-free.xml"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None)).Returns(Task.FromResult(coberturaXml));
 
         // Act & Assert
         var exception = await Assert.ThrowsExactlyAsync<CoverageInputException>(() => _coverageReportReader.ReadAsync(path, CancellationToken.None));
@@ -85,17 +76,8 @@ public sealed class CoverageReportReaderTests
         // Arrange
         var path = "report.xml";
         _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
-        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None))
-            .Returns(Task.FromResult(
-                """
-                <?xml version="1.0" encoding="utf-8"?>
-                <results>
-                  <modules>
-                    <module name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" block_coverage="63.33" line_coverage="50.00">
-                    </module>
-                  </modules>
-                </results>
-                """));
+        var xml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "report-no-block-counters.xml"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None)).Returns(Task.FromResult(xml));
 
         // Act & Assert
         var exception = await Assert.ThrowsExactlyAsync<CoverageInputException>(() => _coverageReportReader.ReadAsync(path, CancellationToken.None));
@@ -110,19 +92,8 @@ public sealed class CoverageReportReaderTests
         // Arrange
         var path = "report.xml";
         _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
-        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None))
-            .Returns(Task.FromResult(
-                """
-                <?xml version="1.0" encoding="utf-8"?>
-                <results>
-                  <modules>
-                    <module id="29AAB4ACC418694D9B42DCFA19D90BDAF1CD70F6" name="WeatherParser.Parsing.Tests.dll" path="WeatherParser.Parsing.Tests.dll" blocks_covered="189" blocks_not_covered="4">
-                    </module>
-                    <module id="693E8A261D622D4ABDE874DDC2B54C2FB2F52FC0" name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" blocks_covered="57" blocks_not_covered="33">
-                    </module>
-                  </modules>
-                </results>
-                """));
+        var xml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "report-valid.xml"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None)).Returns(Task.FromResult(xml));
 
         // Act
         var result = await _coverageReportReader.ReadAsync(path, CancellationToken.None);
@@ -150,19 +121,8 @@ public sealed class CoverageReportReaderTests
         // Arrange
         var path = "report.xml";
         _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
-        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None))
-            .Returns(Task.FromResult(
-                """
-                <?xml version="1.0" encoding="utf-8"?>
-                <results>
-                  <modules>
-                    <module id="693E8A261D622D4ABDE874DDC2B54C2FB2F52FC0" name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" blocks_covered="57" blocks_not_covered="33">
-                    </module>
-                    <module id="693E8A261D622D4ABDE874DDC2B54C2FB2F52FC0" name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" blocks_covered="100" blocks_not_covered="0">
-                    </module>
-                  </modules>
-                </results>
-                """));
+        var xml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "report-duplicate-module.xml"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None)).Returns(Task.FromResult(xml));
 
         // Act
         var result = await _coverageReportReader.ReadAsync(path, CancellationToken.None);
@@ -238,17 +198,8 @@ public sealed class CoverageReportReaderTests
         // Arrange
         var path = "report.xml";
         _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
-        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None))
-            .Returns(Task.FromResult(
-                """
-                <?xml version="1.0" encoding="utf-8"?>
-                <results>
-                  <modules>
-                    <module name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" blocks_covered="0" blocks_not_covered="0">
-                    </module>
-                  </modules>
-                </results>
-                """));
+        var xml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "report-zero-denominator.xml"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None)).Returns(Task.FromResult(xml));
 
         // Act
         var result = await _coverageReportReader.ReadAsync(path, CancellationToken.None);
@@ -266,17 +217,8 @@ public sealed class CoverageReportReaderTests
         // Arrange
         var path = "report.xml";
         _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
-        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None))
-            .Returns(Task.FromResult(
-                """
-                <?xml version="1.0" encoding="utf-8"?>
-                <results>
-                  <modules>
-                    <module name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" blocks_covered="99999" blocks_not_covered="1">
-                    </module>
-                  </modules>
-                </results>
-                """));
+        var xml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "report-rounded-100.xml"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None)).Returns(Task.FromResult(xml));
 
         // Act
         var result = await _coverageReportReader.ReadAsync(path, CancellationToken.None);
@@ -285,5 +227,20 @@ public sealed class CoverageReportReaderTests
         result.Modules.Should().HaveCount(1);
         result.Modules[0].Blocks.Covered.Should().Be(99999);
         result.Modules[0].Blocks.NotCovered.Should().Be(1);
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-11")]
+    public async Task ReadAsync_MalformedReport_ThrowsCoverageInputException()
+    {
+        // Arrange
+        var path = "report.xml";
+        _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
+        var xml = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "report-malformed.xml"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None)).Returns(Task.FromResult(xml));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsExactlyAsync<CoverageInputException>(() => _coverageReportReader.ReadAsync(path, CancellationToken.None));
+        exception.Message.Should().Contain("not well-formed XML");
     }
 }

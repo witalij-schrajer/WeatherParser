@@ -1,4 +1,6 @@
+using FluentAssertions;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -242,5 +244,97 @@ public sealed class BaselineMetadataReaderTests
         _mockFileReader.Setup(fr => fr.ReadAllTextAsync("baseline.json", default)).Returns(Task.FromResult(json));
 
         await Assert.ThrowsExactlyAsync<CoverageInputException>(() => _reader.ReadAsync("baseline.json", default));
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-16")]
+    public async Task ReadAsync_ExistingFile_MalformedBaselineJson_ThrowsCoverageInputException()
+    {
+        var path = "baseline.json";
+        _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "baseline-malformed.json"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, default)).Returns(Task.FromResult(json));
+
+        await Assert.ThrowsExactlyAsync<CoverageInputException>(() => _reader.ReadAsync(path, default));
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-16")]
+    public async Task ReadAsync_ExistingFile_MissingCounters_ThrowsCoverageInputException()
+    {
+        var path = "baseline.json";
+        _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "baseline-missing-counters.json"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, default)).Returns(Task.FromResult(json));
+
+        await Assert.ThrowsExactlyAsync<CoverageInputException>(() => _reader.ReadAsync(path, default));
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-15")]
+    public async Task ReadAsync_StaleCommitFixture_ReadsCommitUnchanged()
+    {
+        var path = "baseline.json";
+        _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "baseline-stale-commit.json"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, default)).Returns(Task.FromResult(json));
+
+        var result = await _reader.ReadAsync(path, default);
+
+        result.Should().NotBeNull();
+        result!.CommitId.Should().Be("1962d6b437cc52186b1fb0f7bbdc061c22ba97a2");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-16")]
+    public async Task ReadAsync_OtherToolVersionFixture_ReadsToolVersionUnchanged()
+    {
+        var path = "baseline.json";
+        _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "baseline-other-tool-version.json"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, default)).Returns(Task.FromResult(json));
+
+        var result = await _reader.ReadAsync(path, default);
+
+        result.Should().NotBeNull();
+        result!.ToolVersion.Should().Be("17.0.0");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-16")]
+    public async Task ReadAsync_OtherExclusionsFixture_ReadsBothExclusions()
+    {
+        var path = "baseline.json";
+        _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "baseline-other-exclusions.json"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, default)).Returns(Task.FromResult(json));
+
+        var result = await _reader.ReadAsync(path, default);
+
+        result.Should().NotBeNull();
+        result!.Exclusions.Should().Equal("*.Tests.dll", "WeatherParser.Parsing.dll");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-24")]
+    public async Task ReadAsync_ExistingFile_ValidBaseline_ReturnsBaseline()
+    {
+        var path = "baseline.json";
+        _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "baseline-valid.json"));
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, default)).Returns(Task.FromResult(json));
+
+        var result = await _reader.ReadAsync(path, default);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("6a68906592d1b5a5f85f3751659f509d22bd8463", result.CommitId);
+        Assert.AreEqual("Microsoft.CodeCoverage", result.ToolName);
+        Assert.AreEqual("18.11.0", result.ToolVersion);
+        Assert.AreEqual("native-xml", result.Format);
+        Assert.IsNotNull(result.Exclusions);
+        Assert.AreEqual(1, result.Exclusions.Count);
+        Assert.AreEqual("*.Tests.dll", result.Exclusions[0]);
+        Assert.AreEqual(57, result.Blocks.Covered);
+        Assert.AreEqual(33, result.Blocks.NotCovered);
     }
 }

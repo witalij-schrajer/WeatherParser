@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<results>
+  <modules>
+    <module id="29AAB4ACC418694D9B42DCFA19D90BDAF1CD70F6" name="WeatherParser.Parsing.Tests.dll" path="WeatherParser.Parsing.Tests.dll" block_coverage="97.93" line_coverage="94.67" blocks_covered="189" blocks_not_covered="4" lines_covered="71" lines_partially_covered="4" lines_not_covered="0">
+      <functions />
+    </module>
+    <module id="693E8A261D622D4ABDE874DDC2B54C2FB2F52FC0" name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" block_coverage="80.00" line_coverage="80.00" blocks_covered="80" blocks_not_covered="20" lines_covered="40" lines_partially_covered="0" lines_not_covered="10">
+      <functions />
+    </module>
+  </modules>
+</results>

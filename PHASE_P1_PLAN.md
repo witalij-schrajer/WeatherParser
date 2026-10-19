@@ -49,9 +49,9 @@ Names are provisional. Create projects only when needed. No empty infrastructure
 | P1.05 | Establish MSTest/Moq/FluentAssertions and TDD evidence | Complete (parser-endpoint validation, 6 passing tests); [record](docs/p1/P1_05_TDD_BASELINE.md) |
 | P1.06 | Test-drive minimally needed package/DI contracts | Complete (`AddWeatherParsing` entry point, real DI resolution, missing registration detected, 8 passing tests); [record](docs/p1/P1_06_DI_CONTRACTS.md) |
 | P1.07 | Collect Microsoft.CodeCoverage and verify report contract | Complete (raw report, block breakdown and proven per-assembly counter mapping); [record](docs/p1/P1_07_COVERAGE_CONTRACT.md) |
-| P1.08 | Test-drive coverage evaluation/exceptions | Boundary/error cases from section 5; after P1.07; [plan](docs/p1/P1_08_COVERAGE_EVALUATION.md) |
-| P1.09 | Prepare local CI job sequence/artifacts | Executable checks without production secrets; after P1.04–P1.08 |
-| P1.10 | Verify Debian/ARM64 package foundations | Package/restore evidence; runtime success only after actual execution; after P1.09 |
+| P1.08 | Test-drive coverage evaluation/exceptions | Evaluator, runner and pinned dotnet-coverage implemented and tested on Windows (2026-10-19); acceptance pending review; [plan](docs/p1/P1_08_COVERAGE_EVALUATION.md); [closure plan](docs/p1/P1_08B_COVERAGE_GATE_COMPLETION_PLAN.md) |
+| P1.09 | Prepare local CI job sequence/artifacts | Executable checks without production secrets; after P1.04–P1.08; [plan](docs/p1/P1_09_LOCAL_CI_PLAN.md) |
+| P1.10 | Verify Debian/ARM64 package foundations | Package/restore evidence; runtime success only after actual execution; after P1.09; [plan](docs/p1/P1_10_DEBIAN_ARM64_PLAN.md) |
 | P1.11 | Complete English developer instructions/evidence | Restore/build/pack/test/coverage procedures and limits; ongoing |
 | P1.12 | Accept phase and document P2 handoff | Results, artifacts and remaining limitations; after all packages |
 

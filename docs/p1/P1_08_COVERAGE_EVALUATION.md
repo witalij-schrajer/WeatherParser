@@ -282,3 +282,23 @@ The rule results are structured with per-check verdicts and English diagnostics.
 - **Repository:** `.gitignore` pattern `*.coverage` matched the folder `tools/WeatherParser.Coverage/` case-insensitively; a negation now keeps the tool project tracked.
 - **Library coverage decision (2026-10-19):** The user decided to remove the unused, untested export-entity scaffolding (`src/WeatherParser.Parsing/Entities`, 19 files) instead of excluding it or bringing P2 serializer tests forward; P2 reintroduces each entity test-first. Re-measured with Microsoft.CodeCoverage: `WeatherParser.Parsing.dll` 57/63 blocks = 90.48% (previously 57/90 = 63.33%). Remaining uncovered blocks: `EndpointUriValidator.IsValid` 12/16 and the `ParserEndpointValidator` constructor 3/5. This measurement was converted with the global `dotnet-coverage` 18.12.0 tool and has not yet been run through an executable gate runner.
 - **Package consumer:** Repacking showed that the committed consumer lock file still pinned the P1.04 package, which predates the DI dependency added in P1.06; the consumer had been restoring a stale cached package. The cache entry was removed and the lock file now pins the current package (packed SHA-512 equals the restored hash).
+
+### P1.08 closure results (2026-10-19, Windows x64)
+
+Implemented according to the [closure plan](P1_08B_COVERAGE_GATE_COMPLETION_PLAN.md). Not yet committed at the time of writing; acceptance is pending review.
+
+- **Pinned tool (closure decision):** `dotnet-coverage` 18.11.0 is published on nuget.org and pinned in `.config/dotnet-tools.json`, matching `Microsoft.CodeCoverage` 18.11.0. The SDK 10 default created the manifest at the repository root; it was moved to `.config/` as planned. Its license is the proprietary Microsoft Software License Terms – Microsoft .NET Library (developer tool, not redistributed; see `DEPENDENCIES.md`).
+- **Counter identity:** converting the P1.07 raw report with the pinned 18.11.0 gives exactly the earlier counters: `WeatherParser.Parsing.dll` 57/33, `WeatherParser.Parsing.Tests.dll` 189/4.
+- **Runner:** `tools/WeatherParser.Coverage.Runner` with the commands `evaluate` and `write-baseline`, the JSON contract and exit codes 0/1/2 from the closure plan. An explicitly supplied `--baseline` file that does not exist is an input error (exit 2); omitting `--baseline` without `--bootstrap` fails the `Baseline` rule (exit 1).
+- **Fixtures:** all 20 fixtures in `tests/WeatherParser.Coverage.Tests/Fixtures` are loaded by at least one test; none was deleted. New: `report-passing.xml`, `baseline-passing.json`, `baseline-exact-100.json`.
+- **Tests:** 149 passing offline (`WeatherParser.Coverage.Tests` 85, `WeatherParser.Coverage.Runner.Tests` 54, `WeatherParser.Parsing.Tests` 8, `WeatherParser.Package.Tests` 2); 0 build warnings. The end-to-end tests cover every row of the closure plan's section 6, including the exact P1.09 bootstrap invocation.
+- **Self-coverage (pinned tool, each module measured by its own test project):** `WeatherParser.Coverage.dll` 827/896 = 92.30%; `WeatherParser.Coverage.Runner.dll` 378/426 = 88.73%. Both are above 80%; these tool modules are excluded from the product gate.
+- **Gate on real data:**
+  - The stored P1.07 report through the runner exits 1 at "57/90 (63.33%)".
+  - A fresh report of the current library through the exact bootstrap invocation exits 0 with 57/63 = 90.48%.
+- **How the code was produced:**
+  - The local qwen3-coder:30b model generated the runner, its tests and the fixture-based reader tests in six batches plus repair rounds.
+  - **Written by Claude:** `CommandLineParser` (three qwen attempts failed to compile or violated the contract) and `report-passing.xml` (qwen used child elements instead of the native attributes).
+  - **Corrected by Claude:** wrong assertions in qwen's tests (three baseline-reader tests expecting exceptions the reader must not throw, output-channel assertions contradicting the runner contract, a parity-based argument filter that removed nothing), and small compile errors.
+- **Deviation from TDD:** tests and implementation were generated together per batch, so a failing (Red) test before each implementation was not demonstrated per behaviour. The behaviour is covered by the tests above; the Red step is not evidenced.
+- **Not yet proven:** no non-bootstrap gate run exists yet. The closure's own changes count as a code change, so a later two-pass run against a target with the same 57/63 will fail the `Comparison` rule unless coverage strictly improves (see the P1.10 plan, decision h). Running the gate inside a CI sequence is P1.09.

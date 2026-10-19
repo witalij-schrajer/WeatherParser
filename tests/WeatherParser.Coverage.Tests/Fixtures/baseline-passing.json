@@ -1,0 +1,12 @@
+{
+  "commitId": "6a68906592d1b5a5f85f3751659f509d22bd8463",
+  "toolName": "Microsoft.CodeCoverage",
+  "toolVersion": "18.11.0",
+  "format": "native-xml",
+  "exclusions": [
+    "*.Tests.dll",
+    "WeatherParser.Coverage*.dll"
+  ],
+  "blocksCovered": 80,
+  "blocksNotCovered": 20
+}

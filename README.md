@@ -210,10 +210,22 @@ tests/
   WeatherParser.Parsing.Tests/     # MSTest project with source reference
   WeatherParser.Package.Tests/    # Isolated NuGet PackageReference consumer tests
 tools/
-  WeatherParser.Coverage/         # Non-packable coverage-tooling library
+  WeatherParser.Coverage/         # Non-packable coverage-tooling library (evaluator)
+  WeatherParser.Coverage.Runner/  # Non-packable console runner for the coverage gate
 ```
 
 `global.json` pins SDK 10.0.402 with roll-forward disabled. Visual Studio 2026 can open `.slnx` directly. `Directory.Build.props` enables `net10.0`, nullable analysis, implicit usings and deterministic builds. `Directory.Packages.props` pins package versions, including the local `WeatherParser.Parsing` test package; see [dependencies and licenses](DEPENDENCIES.md). `NuGet.Config` configures nuget.org and the project-local `artifacts/local-nuget` source. Build the local package before the first solution restore so that the package-consumer dependency is available.
+
+Coverage gate (P1.08; implemented and tested on Windows, not yet run by a CI sequence):
+
+```powershell
+dotnet tool restore
+dotnet test tests/WeatherParser.Parsing.Tests --collect:"Code Coverage" --results-directory TestResults/product
+dotnet tool run dotnet-coverage merge <raw .coverage file> -f xml -o TestResults/product/coverage.xml
+dotnet run --project tools/WeatherParser.Coverage.Runner -- evaluate --report TestResults/product/coverage.xml --changed-files <changed-files.txt> --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --bootstrap
+```
+
+The runner writes the gate result as JSON to stdout and exits 0 (all rules passed), 1 (a coverage rule failed) or 2 (usage or input error). Use `--baseline <file> --expected-baseline-commit <sha>` instead of `--bootstrap` once a baseline exists; `--bootstrap` is only for the genuine first measurement. `write-baseline` creates a baseline file from a native report.
 
 From the repository directory, the intended restore/build sequence is:
 
