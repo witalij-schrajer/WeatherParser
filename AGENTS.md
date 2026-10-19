@@ -142,6 +142,7 @@ Consistency rule: [CONTRIBUTING.md](CONTRIBUTING.md) holds every developer proce
 | `.config/dotnet-tools.json` | `DEPENDENCIES.md`, CONTRIBUTING.md section 5 |
 | Runner commands, JSON contract or exit codes | CONTRIBUTING.md section 5, `scripts/ci-local.ps1` (shared contract) |
 | `scripts/ci-local.ps1` parameters, exit codes or run layout | CONTRIBUTING.md section 6 |
+| `.github/workflows/ci.yml` (jobs, triggers, pinned actions) | CONTRIBUTING.md section 6, `DEPENDENCIES.md` |
 | `scripts/prepare-debian-arm64.sh` | CONTRIBUTING.md section 7, `DEPENDENCIES.md` |
 | `coverage.runsettings` | CONTRIBUTING.md sections 5 and 7, `docs/COMPATIBILITY.md` |
 | Project added to or removed from `WeatherParser.slnx` or `WeatherParser.Ci.slnf` | CONTRIBUTING.md sections 2 and 3, README project list |

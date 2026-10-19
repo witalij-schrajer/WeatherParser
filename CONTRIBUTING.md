@@ -237,6 +237,13 @@ pwsh ./scripts/ci-local.ps1 -TargetRef <comparison commit or branch> -RunSetting
 
 The run directory `artifacts/ci/<commit>-<UTC timestamp>/` contains `ci.log`, `commits.json`, test results, package and hash, coverage reports, `collection-settings.json` per pass, `changed-files.txt`, `gate-result.json`, `resume/`.
 
+### Hosted CI (GitHub Actions)
+*Status: Verified (Windows, Debian/ARM64 and Ubuntu x64 hosted runners) – [manual run 39332959206](https://github.com/witalij-schrajer/WeatherParser/actions/runs/39332959206) against the seed `0a2dabe`, all three jobs passed (2026-10-20)*
+
+The repository includes a GitHub Actions workflow `.github/workflows/ci.yml` that runs the same `scripts/ci-local.ps1` script as documented in CONTRIBUTING.md section 6, on Windows x64 (`windows-latest`), Ubuntu x64 (`ubuntu-latest`), and Debian 13 ARM64 (`debian:trixie` container on `ubuntu-24.04-arm`) runners.
+
+For pull requests, the workflow compares the PR head commit against the PR base commit; for manual runs, a deliberate target is specified via the `target_ref` input (e.g., the bootstrap seed `0a2dabe` or a remote branch like `origin/develop`). The workflow uses pinned actions by full commit SHA and has read-only permissions with no secrets or publishing. Run directories are uploaded as artifacts named `ci-<job>` (30 days retention) on success or failure.
+
 ### Fault injection and lock drift
 
 *Status: Verified (Windows) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md), [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
@@ -310,7 +317,7 @@ Older script revisions shared the per-user tool resolver cache, so a deleted run
 
 ## 9. Limits
 
-* Local runs are not hosted CI; no GitHub Actions workflow exists.
+* Hosted CI: the GitHub Actions workflow runs the same script for pull requests on hosted runners (see [section 6](#6-local-ci)); its checks cannot be made required on the current plan, and local and hosted runs are recorded separately.
 * Windows evidence is not ARM64 evidence.
 * The Debian/ARM64 evidence covers the package foundation at P1 scope only, not release readiness.
 * Coverage is measured as Microsoft.CodeCoverage native block coverage with the rules of [PHASE_P1_PLAN.md section 5](PHASE_P1_PLAN.md).
