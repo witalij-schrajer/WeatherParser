@@ -15,14 +15,24 @@ public sealed class RunnerEndToEndTests
 {
     private const string Commit = "6a68906592d1b5a5f85f3751659f509d22bd8463";
 
+    private StringWriter _stdout = null!;
+    private StringWriter _stderr = null!;
+    private IRunnerApplication _sut = null!;
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _stdout = new StringWriter();
+        _stderr = new StringWriter();
+        _sut = RunnerComposition.Create(_stdout, _stderr);
+    }
+
     private static string Fixture(string name) => Path.Combine(AppContext.BaseDirectory, "Fixtures", name);
 
-    private static async Task<(int ExitCode, string StdOut, string StdErr)> RunAsync(params string[] args)
+    private async Task<(int ExitCode, string StdOut, string StdErr)> RunAsync(params string[] args)
     {
-        var stdout = new StringWriter();
-        var stderr = new StringWriter();
-        var exitCode = await RunnerComposition.Create(stdout, stderr).RunAsync(args, CancellationToken.None);
-        return (exitCode, stdout.ToString(), stderr.ToString());
+        var exitCode = await _sut.RunAsync(args, CancellationToken.None);
+        return (exitCode, _stdout.ToString(), _stderr.ToString());
     }
 
     private static string[] Evaluate(string report, string changes = "changes-docs-and-csproj.txt", params string[] extra)

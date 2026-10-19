@@ -9,6 +9,21 @@ namespace WeatherParser.Coverage.Tests;
 [TestClass]
 public sealed class CoverageGateRealReportTests
 {
+    private CoverageGate _sut = null!;
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _sut = new CoverageGate(
+            reportReader: new CoverageReportReader(new FileReader()),
+            baselineReader: new BaselineMetadataReader(new FileReader()),
+            changesReader: new ChangedFileListReader(new FileReader()),
+            aggregator: new ProvenanceAggregator(),
+            evaluator: new RuleEvaluator(),
+            comparabilityChecker: new BaselineComparabilityChecker(),
+            classifier: new PullRequestClassifier());
+    }
+
     [TestMethod]
     [TestCategory("T-P1-09")]
     [TestCategory("T-P1-24")]
@@ -27,17 +42,8 @@ public sealed class CoverageGateRealReportTests
             Exclusions: new[] { "*.Tests.dll" },
             IsInitialBootstrap: true);
 
-        var coverageGate = new CoverageGate(
-            reportReader: new CoverageReportReader(new FileReader()),
-            baselineReader: new BaselineMetadataReader(new FileReader()),
-            changesReader: new ChangedFileListReader(new FileReader()),
-            aggregator: new ProvenanceAggregator(),
-            evaluator: new RuleEvaluator(),
-            comparabilityChecker: new BaselineComparabilityChecker(),
-            classifier: new PullRequestClassifier());
-
         // Act
-        var result = await coverageGate.EvaluateAsync(request, default);
+        var result = await _sut.EvaluateAsync(request, default);
 
         // Assert
         result.Passed.Should().BeFalse();
