@@ -1,6 +1,6 @@
 # WeatherParser
 
-**Phase status (2026-10-19): P0 and P1.01–P1.09 complete. SDK 10.0.402 is pinned; P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. Debian/ARM64 verification and overall P1 acceptance remain pending.**
+**Phase status (2026-10-19): P0 and P1.01–P1.09 complete. SDK 10.0.402 is pinned; P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is implemented and verified on the NanoPi R76S, acceptance pending; overall P1 acceptance remains pending.**
 
 WeatherParser is primarily a planned C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts. The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
@@ -233,7 +233,9 @@ Local CI sequence (P1.09; verified on Windows x64 and accepted). It needs PowerS
 pwsh ./scripts/ci-local.ps1 -TargetRef <comparison commit or branch>
 ```
 
-Run artifacts (log, test results, package and hash, coverage reports, gate result) go to `artifacts/ci/<commit>-<UTC timestamp>/`. Exit codes, parameters (`-Bootstrap`, `-BaselinePath`, `-KeepWorkDir`, `-FaultInjection`) and the run layout are documented in the [P1.09 plan](docs/p1/P1_09_LOCAL_CI_PLAN.md) and the [result record](docs/p1/P1_09_LOCAL_CI.md).
+Run artifacts (log, test results, package and hash, coverage reports, gate result) go to `artifacts/ci/<commit>-<UTC timestamp>/`. Exit codes, parameters (`-Bootstrap`, `-BaselinePath`, `-RunSettings`, `-CollectOnly`, `-ResumeFrom`, `-KeepWorkDir`, `-FaultInjection`) and the run layout are documented in the [P1.09 plan](docs/p1/P1_09_LOCAL_CI_PLAN.md) and the [result record](docs/p1/P1_09_LOCAL_CI.md).
+
+Debian 13 ARM64 target (P1.10): `scripts/prepare-debian-arm64.sh` installs the pinned .NET SDK and PowerShell 7 into user directories; then run `pwsh ./scripts/ci-local.ps1 -TargetRef <comparison branch> -RunSettings coverage.runsettings` on the target. If coverage conversion cannot run there, `-CollectOnly` on the target and `-ResumeFrom <copied run directory>` on another machine split collection and gate. Evidence and platform status: [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md), [COMPATIBILITY.md](docs/COMPATIBILITY.md).
 
 From the repository directory, the intended restore/build sequence is:
 

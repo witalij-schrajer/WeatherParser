@@ -1,6 +1,6 @@
 # P1.10 – Debian/ARM64 Package Foundations: Result Record
 
-**Status (2026-10-19): implemented and verified on Windows x64 and on the NanoPi R76S (Debian 13 ARM64); gate PASSED on ARM64; acceptance and the NU1004 decision are pending.** Implements the [P1.10 plan](P1_10_DEBIAN_ARM64_PLAN.md).
+**Status (2026-10-19): implemented and verified on Windows x64 and on the NanoPi R76S (Debian 13 ARM64); gate PASSED on ARM64; acceptance is pending.** Implements the [P1.10 plan](P1_10_DEBIAN_ARM64_PLAN.md).
 
 ## Decisions (user, 2026-10-19)
 
@@ -54,7 +54,7 @@ The tests specify behaviour that already existed, so there was no failing first 
 
 ## Class A – build/restore evidence on Windows (not runtime evidence)
 
-1. **RID restore and build (T-P1-20).** `dotnet restore src/WeatherParser.Parsing -r linux-arm64 --locked-mode` fails with **NU1004**, because the lock file has no `linux-arm64` section. In a throwaway clone, `--force-evaluate` adds only an empty `"net10.0/linux-arm64": {}` section, so the library has no RID-specific dependencies, and `dotnet build -c Release -r linux-arm64 --no-restore` succeeds with 0 warnings. Locked mode was not dropped, and the repository lock files are unchanged. **Finding, decision pending:** whether to add `RuntimeIdentifiers`. The target build is RID-neutral and does not need it.
+1. **RID restore and build (T-P1-20).** `dotnet restore src/WeatherParser.Parsing -r linux-arm64 --locked-mode` fails with **NU1004**, because the lock file has no `linux-arm64` section. In a throwaway clone, `--force-evaluate` adds only an empty `"net10.0/linux-arm64": {}` section, so the library has no RID-specific dependencies, and `dotnet build -c Release -r linux-arm64 --no-restore` succeeds with 0 warnings. Locked mode was not dropped, and the repository lock files are unchanged. **User decision (2026-10-19): keep the projects RID-neutral; no `RuntimeIdentifiers` are added.** The package and the target build are RID-neutral and pass in locked mode; NU1004 is a known limitation of RID-specific restores only.
 2. **Package inspection.** The `.nupkg` contains only `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, the nuspec and the NuGet metadata; there are no `runtimes/` or native assets. The nuspec's only dependency is `Microsoft.Extensions.DependencyInjection.Abstractions` 10.0.0 (`exclude="Build,Analyzers"`). That package, restored from nuget.org into an isolated package folder, has only `lib/` and `buildTransitive/` folders and no `runtimes/` folder.
 3. **Static vs. dynamic collection (Windows).** `tests/WeatherParser.Parsing.Tests` ran once with default collection and once with `--settings coverage.runsettings`, both converted with the pinned `dotnet-coverage` 18.11.0. `WeatherParser.Parsing.dll` has 54/56 blocks in both, and every function's block counters are identical. Per the plan, `coverage.runsettings` is therefore used on all platforms. This is Windows-only evidence; Windows-versus-ARM64 counters are reported descriptively below and never used for gating.
 
@@ -104,7 +104,7 @@ The target working directory `~/weatherparser-p110` and the user-directory insta
 
 ## Findings
 
-1. **NU1004 for the RID-specific locked restore** (Class A step 1); decision pending.
+1. **NU1004 for the RID-specific locked restore** (Class A step 1); the user decided to keep the projects RID-neutral.
 2. **The tool resolver cache defeated the run isolation** (found on the target with script revision `b7396d3`). `dotnet tool run` resolves local tools through the per-user cache `~/.dotnet/toolResolverCache`, which the script did not isolate.
    - On Debian, the first run's entry pointed to that run's deleted package folder, and `dotnet tool restore` does not replace an entry of the same version. Every later run therefore failed at conversion with exit 80 ("Run dotnet tool restore …"); the first `RunSettingsTamper` runs ended there.
    - On Windows, the entry pointed to the user's global `~/.nuget/packages`, so every earlier Windows run executed the pinned `dotnet-coverage` 18.11.0 from outside the run's isolated folder.
@@ -131,4 +131,4 @@ Serializers, timezones, DI under load, CLI, MQTT and network sources (later phas
 - [x] No `-Bootstrap` on the target; the gate used a baseline measured on the same target.
 - [x] ARM64 block counters and the gate result are recorded, including where conversion and gate ran.
 - [x] `docs/COMPATIBILITY.md` contains every matrix row of plan section 4, each with source and evidence status.
-- [ ] The documents in plan section 7 are updated: `DEPENDENCIES.md` is done. `README.md`, `PHASE_P1_PLAN.md` and `DEVELOPMENT_PLAN.md` are pending, because they contain uncommitted edits by another author.
+- [x] The documents in plan section 7 are updated: `README.md` (target procedure), `PHASE_P1_PLAN.md` (P1.10 row), `DEVELOPMENT_PLAN.md` (phase status) and `DEPENDENCIES.md` (run settings and target prerequisites).
