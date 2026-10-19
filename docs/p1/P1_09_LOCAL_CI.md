@@ -159,3 +159,7 @@ The user accepted the P1.09 results on 2026-10-19, after the third external revi
 - its exit 90 is correct, because coverage stays at 52/56 (92.86%) while this code change requires a strict improvement.
 
 Remaining outside P1.09: a passing coverage comparison for a code change (a strict block-coverage improvement through meaningful tests) is still required for overall P1 acceptance; Debian/ARM64 (P1.10), developer instructions (P1.11, including the commit-dependent package hash of finding 5) and hosted CI remain open.
+
+### Correction from P1.10 (2026-10-19)
+
+P1.10 found that `dotnet tool run` resolves the pinned `dotnet-coverage` through the per-user tool resolver cache (`~/.dotnet/toolResolverCache`), which the P1.09 script did not isolate. On this Windows machine the cache entry pointed to the global NuGet folder `~/.nuget/packages`, so every P1.09 run executed `dotnet-coverage` 18.11.0 from there instead of from the run's isolated package folder. The version was the pinned 18.11.0 in every run, so the recorded measurements are unaffected, and no global tool installation was used; the isolation statement above is correct only in that sense. The script isolates `DOTNET_CLI_HOME` per run since `660dc7e`; see finding 2 of the [P1.10 record](P1_10_DEBIAN_ARM64.md#findings).

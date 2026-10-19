@@ -23,7 +23,11 @@ Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The lib
 
 ## CI prerequisites
 
-`scripts/ci-local.ps1` (P1.09) requires PowerShell 7 (verified with 7.6.7 on Windows) and Git (verified with 2.55), plus the pinned .NET SDK and network access to nuget.org. No additional packages are used.
+`scripts/ci-local.ps1` (P1.09) requires PowerShell 7 (verified with 7.6.7 on Windows and on Debian 13 ARM64) and Git (verified with 2.55), plus the pinned .NET SDK and network access to nuget.org. No additional packages are used.
+
+- Debian 13 ARM64 target (P1.10): `scripts/prepare-debian-arm64.sh` installs the pinned .NET SDK 10.0.402 with Microsoft's `dotnet-install.sh` and PowerShell 7.6.7 from the official `linux-arm64` binary archive (SHA-256 checked against the release `hashes.sha256`) into user directories only; it installs no system packages. The system must already provide git, curl, tar, iconv and the .NET dependencies Microsoft lists for Debian 13 (ca-certificates, libc6, libgcc-s1, libgssapi-krb5-2, libicu76, libssl3t64, libstdc++6, tzdata). Platform evidence and vendor support: [COMPATIBILITY.md](docs/COMPATIBILITY.md).
+- Run settings: `coverage.runsettings` enables static and disables dynamic managed instrumentation of Microsoft.CodeCoverage (the dynamic profiler is unsupported on Linux ARM64); `scripts/ci-local.ps1 -RunSettings coverage.runsettings` copies it once per run and records its SHA-256 for both passes. No new package is involved.
+- Each CI run isolates the NuGet package folder and the .NET CLI home (`DOTNET_CLI_HOME`, which holds the tool resolver cache), so the pinned `dotnet-coverage` is always restored into and run from the run's own folders.
 
 ## Local .NET tools
 
