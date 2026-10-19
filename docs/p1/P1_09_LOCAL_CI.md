@@ -15,13 +15,13 @@ All five decisions of the plan's section 3 were taken as recommended:
 
 | Path | Content |
 |---|---|
-| `scripts/ci-local.ps1` | 923-line PowerShell 7 script: every stage of the plan's section 5, the parameter and exit-code tables, the `current/` and `target/` pass directories, `collection-settings.json`, seven fault injections, two-pass baseline, `-BaselinePath` (with its sibling `collection-settings.json`), `-Bootstrap` with seed output, and the finish stage |
+| `scripts/ci-local.ps1` | 935-line PowerShell 7 script: every stage of the plan's section 5, the parameter and exit-code tables, the `current/` and `target/` pass directories, `collection-settings.json`, seven fault injections, two-pass baseline, `-BaselinePath` (with its sibling `collection-settings.json`), `-Bootstrap` with seed output, and the finish stage |
 | `WeatherParser.Ci.slnf` | Solution filter with the six projects other than the package consumer |
 | `tests/WeatherParser.Coverage.Tests/PullRequestClassifierTests.cs` | Line-ending fix found by the clean-clone run (see findings) |
 
 ## Verification runs (Windows x64, PowerShell 7.6.7, Git 2.55, .NET SDK 10.0.402)
 
-Script revision of these runs: `1b6e6d0`; the review fixes (`7333ba4`) were verified separately (section "Review fixes"). Run directories are under `artifacts/ci/` (gitignored, kept locally).
+Script revision of these runs: `1b6e6d0`; the review fixes (`7333ba4`, `532bd71`) were verified separately (sections "Review fixes" and "Second review fixes"). Run directories are under `artifacts/ci/` (gitignored, kept locally).
 
 | Run | Command | Exit | Result |
 |---|---|---|---|
@@ -83,6 +83,24 @@ Verification with candidate `ef9b9ac`, a documentation-only change against `0a2d
 | `-TargetRef 0a2dabe` (two-pass) | 0 | First passing two-pass run: all five rules passed, 52/56 against the remeasured target 52/56, documentation-only change |
 | `-TargetRef 0a2dabe -FaultInjection IncomparableTarget` | 85 | Two-pass comparison unchanged after the refactoring |
 
+## Second review fixes (2026-10-19)
+
+A second external review confirmed the recorded results (155 passing tests, 52/56 blocks, the five seed hashes, package hashes and entries, fault-injection exits, the three earlier fixes) and found two more defects. qwen fixed them from Claude's descriptions (script revision `532bd71`); Claude returned one StrictMode defect in qwen's first version before verification.
+
+1. **[P2] A matching consumer lock file failed.** The consumer stage required exactly one changed line, so a committed lock that already held the packed hash exited 70. The stage now accepts either no change at all (empty `git diff --numstat` and `git status --porcelain`) or exactly the one-line `contentHash` change, logs which case applied, and keeps the JSON comparison and hash check for both.
+2. **[P3] Incomplete settings comparison.** `Assert-ComparableSettings` compared a fixed list that omitted `dotnetCoverageManifestVersion`. It now compares the union of all recorded fields except `commit` (arrays joined with `,`), so a field present on one side only is also a difference.
+
+Verification:
+
+| Check | Result |
+|---|---|
+| `Assert-ComparableSettings` extracted from the script, against the seed settings with one change each | identical and `commit`-only: pass; `dotnetCoverageManifestVersion` 18.10.0, shortened `exclusions`, an extra field, a missing `rid`: exit 85 naming the field |
+| Consumer-lock check extracted from the script, in a scratch Git repository with the real lock file | unchanged lock: pass ("already matches"); one-line hash change: pass ("rewritten"); additional `resolved` change: exit 70; unchanged lock with a different packed hash: exit 70 |
+| `-Commit 532bd71 -TargetRef ef9b9ac` (full pipeline) | exit 90: the consumer stage passes with the one-line rewrite and comparability passes; Comparison fails because the script change keeps coverage equal |
+| `-Commit 532bd71 -Bootstrap -FaultInjection ConsumerLockDrift` | exit 70 with NU1102, unchanged |
+
+The unchanged-lock case cannot be reached in a full pipeline run, because the package embeds the commit ID (see finding 5); a temporary commit whose lock held the hash of the previous commit's package was still rewritten (one line), as expected.
+
 ## Fault injections (T-P1-08, T-P1-19)
 
 | Fault | Expected | Actual | Diagnostic |
@@ -103,6 +121,7 @@ In every fault run the run directory and `ci.log` were kept. Correction: with sc
 2. **Clean-checkout defect: line-ending-dependent test.** With `core.autocrlf=true` a fresh clone checks the changed-file fixtures out with CRLF. `Classify_FromFixtureFiles_ExpectedResult` split only on LF and failed there, while passing in the working tree. Fixed in the test, plus a new CRLF test.
 3. **Block counts depend on the build configuration.** The same code measures 57/63 blocks in Debug (P1.08 figures) and 52/56 in Release (CI). Baselines are therefore only comparable within one configuration. The script builds both passes in Release, and `collection-settings.json` now records and compares `configuration` (an addition to the plan's field list).
 4. **Duplicate coverage file.** The TRX logger stores a byte-identical copy of the raw report as a test attachment. The script accepts it only after a SHA-256 comparison with the collector's report, then removes the attachment folder.
+5. **The package depends on the commit ID.** The packed `.nuspec` contains `<repository type="git" commit="…"/>`, and the assembly's informational version ends in `+<commit SHA>` (for example `0.1.0-initial+8f9f33c1…`). Two commits that differ only in the consumer lock file therefore produce packages with different `contentHash` values. The CI script handles this by rewriting the hash in its clone; a committed lock file can never hold the hash of the package built from its own commit.
 
 ## Deviations from the plan
 
@@ -113,7 +132,7 @@ In every fault run the run directory and `ci.log` were kept. Correction: with sc
 ## Open items
 
 - **Passing two-pass runs for code changes:** a code change with unchanged coverage correctly exits 90 (for example the script against `b6100e2`). The first passing two-pass run is the documentation-only candidate `ef9b9ac` against `0a2dabe` (section "Review fixes"). A passing two-pass run for a code change requires a strict coverage improvement through meaningful tests (P1.10 plan decision h, P1.12 plan).
-- **Stale committed consumer lock file:** `README.md` is the packed package readme. The README edits since `2f8c670` (including this package's procedure section) change the package hash, so the committed `tests/WeatherParser.Package.Tests/packages.lock.json` no longer matches a freshly packed package. The CI script is unaffected because it rewrites the `contentHash` in its clone, but a manual locked consumer restore in the working tree fails until the lock is refreshed as described in step 3 of the [P1.11 plan](P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md).
+- **Stale committed consumer lock file:** `README.md` is the packed package readme. The README edits since `2f8c670` (including this package's procedure section) change the package hash, so the committed `tests/WeatherParser.Package.Tests/packages.lock.json` no longer matches a freshly packed package. The CI script is unaffected because it rewrites the `contentHash` in its clone, but a manual locked consumer restore in the working tree fails until the lock is refreshed as described in step 3 of the [P1.11 plan](P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md). Because the package embeds the commit ID (finding 5), a refreshed lock matches only packages built from the commit the refresh was packed from, not the commit that contains the refreshed lock; the P1.11 plan step 3 should take this into account.
 - **No hosted CI:** a local run is not a GitHub Actions run; creating a workflow needs separate authorization.
 - **Platform:** Windows x64 only; Debian/ARM64 is P1.10.
 
