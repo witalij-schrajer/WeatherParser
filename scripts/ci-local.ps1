@@ -13,8 +13,12 @@ Comparison target for the baseline and the changed-file list (required).
 External baseline JSON; skips the baseline pass.
 .PARAMETER Bootstrap
 Explicit initial bootstrap: no baseline, minimum rule only.
+.PARAMETER CollectOnly
+Run every stage except coverage conversion, baseline writing and gate; write the resume package and exit 0 with the gate pending.
 .PARAMETER KeepWorkDir
 Keep clones and the isolated NuGet folder.
+.PARAMETER RunSettings
+Run settings file for coverage collection; copied once into the run directory and used by both passes.
 .PARAMETER FaultInjection
 Injects one fault inside the clone or the run directory.
 .EXAMPLE
@@ -30,6 +34,7 @@ param(
     [string]$BaselinePath,
     [string]$RunSettings,
     [switch]$Bootstrap,
+    [switch]$CollectOnly,
     [switch]$KeepWorkDir,
     [ValidateSet('SdkMismatch','LockDrift','FailingTest','MissingCoverage','ConsumerLockDrift','IncomparableTarget','GateFailure','RunSettingsTamper')]
     [string]$FaultInjection
@@ -44,6 +49,12 @@ function New-CiDirectory([string]$Path) {
     if (-not (Test-Path -LiteralPath $Path)) {
         New-Item -ItemType Directory -Path $Path -Force | Out-Null
     }
+}
+
+function Get-FileSha256([string]$Path) {
+    $bytes = [IO.File]::ReadAllBytes($Path)
+    $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
+    return [BitConverter]::ToString($hash).Replace('-', '').ToLowerInvariant()
 }
 
 $ErrorActionPreference = 'Stop'
@@ -555,6 +566,48 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
     Write-CiLog "Consumer complete"
 }
 
+function Write-CollectionSettings([string]$CloneDir, [string]$PassDir, [string]$ConverterToolVersion, [string]$ConverterRid) {
+    Write-CiLog "=== COLLECTION SETTINGS ==="
+    $script:CurrentStageCode = 80
+    
+    New-CiDirectory $PassDir
+    
+    # Get commit, SDK version, Microsoft.CodeCoverage version, RID
+    $commit = git -C $CloneDir rev-parse HEAD
+    
+    $sdkVersion = Invoke-Native 80 'dotnet' @('--version') -WorkingDirectory $CloneDir -AllowedExitCodes @(0,1,145,150,155)
+    $sdkVersion = if ($sdkVersion.Output.Count -gt 0) { $sdkVersion.Output[0].Trim() } else { '' }
+    
+    # Get Microsoft.CodeCoverage version from Directory.Packages.props
+    $microsoftCodeCoverageVersion = ([xml](Get-Content (Join-Path $CloneDir "Directory.Packages.props"))).Project.ItemGroup.PackageVersion | Where-Object Include -eq 'Microsoft.CodeCoverage' | Select-Object -ExpandProperty Version
+    
+    # Get dotnet-tools.json version for manifest version
+    $dotnetToolsJson = Get-Content (Join-Path $CloneDir ".config/dotnet-tools.json") | ConvertFrom-Json
+    $dotnetCoverageManifestVersion = $dotnetToolsJson.tools.'dotnet-coverage'.version
+    
+    # Get RID from dotnet --info
+    $dotnetInfo = Invoke-Native 80 'dotnet' @('--info') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    $ridLine = $dotnetInfo.Output | Where-Object { $_ -like "*RID:*" }
+    $rid = $ridLine -split ':' | Select-Object -Last 1
+    $rid = $rid.Trim()
+
+    $collectionSettings = @{
+        commit = $commit
+        sdkVersion = $sdkVersion
+        microsoftCodeCoverageVersion = $microsoftCodeCoverageVersion
+        dotnetCoverageManifestVersion = $dotnetCoverageManifestVersion
+        dotnetCoverageToolVersion = $ConverterToolVersion
+        collector = "Code Coverage"
+        runSettingsSha256 = $script:RunSettingsSha256
+        exclusions = @("*.Tests.dll", "WeatherParser.Coverage*.dll")
+        rid = $rid
+        configuration = 'Release'
+        converterRid = $ConverterRid
+    }
+
+    $collectionSettings | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $PassDir 'collection-settings.json')
+}
+
 function Invoke-ConversionStage([string]$CloneDir, [string]$PassDir) {
     Write-CiLog "=== CONVERSION ==="
     $script:CurrentStageCode = 80
@@ -584,39 +637,7 @@ function Invoke-ConversionStage([string]$CloneDir, [string]$PassDir) {
         Copy-Item $fixturePath $coverageXmlPath
     }
 
-    # Get commit, SDK version, Microsoft.CodeCoverage version, RID
-    $commit = git -C $CloneDir rev-parse HEAD
-    
-    $sdkVersion = Invoke-Native 80 'dotnet' @('--version') -WorkingDirectory $CloneDir -AllowedExitCodes @(0,1,145,150,155)
-    $sdkVersion = if ($sdkVersion.Output.Count -gt 0) { $sdkVersion.Output[0].Trim() } else { '' }
-    
-    # Get Microsoft.CodeCoverage version from Directory.Packages.props
-    $microsoftCodeCoverageVersion = ([xml](Get-Content (Join-Path $CloneDir "Directory.Packages.props"))).Project.ItemGroup.PackageVersion | Where-Object Include -eq 'Microsoft.CodeCoverage' | Select-Object -ExpandProperty Version
-    
-    # Get dotnet-tools.json version for manifest version
-    $dotnetToolsJson = Get-Content (Join-Path $CloneDir ".config/dotnet-tools.json") | ConvertFrom-Json
-    $dotnetCoverageManifestVersion = $dotnetToolsJson.tools.'dotnet-coverage'.version
-    
-    # Get RID from dotnet --info
-    $dotnetInfo = Invoke-Native 80 'dotnet' @('--info') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
-    $ridLine = $dotnetInfo.Output | Where-Object { $_ -like "*RID:*" }
-    $rid = $ridLine -split ':' | Select-Object -Last 1
-    $rid = $rid.Trim()
-
-    $collectionSettings = @{
-        commit = $commit
-        sdkVersion = $sdkVersion
-        microsoftCodeCoverageVersion = $microsoftCodeCoverageVersion
-        dotnetCoverageManifestVersion = $dotnetCoverageManifestVersion
-        dotnetCoverageToolVersion = $dotnetCoverageVersion
-        collector = "Code Coverage"
-        runSettingsSha256 = $script:RunSettingsSha256
-        exclusions = @("*.Tests.dll", "WeatherParser.Coverage*.dll")
-        rid = $rid
-        configuration = 'Release'
-    }
-
-    $collectionSettings | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $PassDir 'collection-settings.json')
+    Write-CollectionSettings $CloneDir $PassDir $dotnetCoverageVersion ([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)
 
     Write-CiLog "Conversion complete"
 }
@@ -684,24 +705,88 @@ function Invoke-BaselinePass() {
     Invoke-RestoreStage -CloneDir $targetDir -PassDir (Join-Path $script:RunDir 'target') -ProjectScope 'Product'
     Invoke-BuildStage -CloneDir $targetDir -PassDir (Join-Path $script:RunDir 'target') -ProjectScope 'Product'
     Invoke-TestStage -CloneDir $targetDir -PassDir (Join-Path $script:RunDir 'target') -ProjectScope 'Product'
-    Invoke-ConversionStage -CloneDir $targetDir -PassDir (Join-Path $script:RunDir 'target')
+    
+    if ($CollectOnly) {
+        Write-CollectionSettings $targetDir (Join-Path $script:RunDir 'target') 'not-run' 'not-run'
+        Assert-ComparableSettings (Join-Path $script:RunDir 'current/collection-settings.json') (Join-Path $script:RunDir 'target/collection-settings.json')
+        return
+    } else {
+        Invoke-ConversionStage -CloneDir $targetDir -PassDir (Join-Path $script:RunDir 'target')
 
-    $currentSettings = Get-Content (Join-Path $script:RunDir 'current/collection-settings.json') | ConvertFrom-Json
-    $targetSettings = Get-Content (Join-Path $script:RunDir 'target/collection-settings.json') | ConvertFrom-Json
+        $currentSettings = Get-Content (Join-Path $script:RunDir 'current/collection-settings.json') | ConvertFrom-Json
+        $targetSettings = Get-Content (Join-Path $script:RunDir 'target/collection-settings.json') | ConvertFrom-Json
 
-    if ($FaultInjection -eq 'IncomparableTarget') {
-        Write-CiLog "FAULT INJECTION: IncomparableTarget"
-        $targetSettings.dotnetCoverageToolVersion = "0.0.0-injected"
-        $targetSettings | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'target/collection-settings.json')
+        if ($FaultInjection -eq 'IncomparableTarget') {
+            Write-CiLog "FAULT INJECTION: IncomparableTarget"
+            $targetSettings.dotnetCoverageToolVersion = "0.0.0-injected"
+            $targetSettings | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'target/collection-settings.json')
+        }
+
+        Assert-ComparableSettings (Join-Path $script:RunDir 'current/collection-settings.json') (Join-Path $script:RunDir 'target/collection-settings.json')
+
+        # Write baseline using the current clone's runner
+        $baselinePath = Join-Path $script:RunDir 'target/baseline.json'
+        Invoke-Native 91 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'write-baseline', '--report', (Join-Path $script:RunDir 'target/coverage/coverage.xml'), '--commit', $script:TargetSha, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $targetSettings.microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--output', $baselinePath) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0)
     }
 
-    Assert-ComparableSettings (Join-Path $script:RunDir 'current/collection-settings.json') (Join-Path $script:RunDir 'target/collection-settings.json')
-
-    # Write baseline using the current clone's runner
-    $baselinePath = Join-Path $script:RunDir 'target/baseline.json'
-    Invoke-Native 91 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'write-baseline', '--report', (Join-Path $script:RunDir 'target/coverage/coverage.xml'), '--commit', $script:TargetSha, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $targetSettings.microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--output', $baselinePath) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0)
-
     Write-CiLog "Baseline pass complete"
+}
+
+function Write-ChangedFiles() {
+    Write-CiLog "=== CHANGED FILES ==="
+    $script:CurrentStageCode = 90
+    
+    $changedFiles = Join-Path $script:RunDir 'changed-files.txt'
+    Invoke-Native 90 'git' @('diff', '--name-only', "$($script:TargetSha)...$($script:CommitSha)") -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0) -CaptureStdOut $changedFiles
+}
+
+function New-ResumePackage() {
+    Write-CiLog "=== RESUME PACKAGE ==="
+    $script:CurrentStageCode = 80
+    
+    $resumeDir = Join-Path $script:RunDir 'resume'
+    New-CiDirectory $resumeDir
+    
+    # Publish runner
+    $runnerDir = Join-Path $resumeDir 'runner'
+    New-CiDirectory $runnerDir
+    Invoke-Native 80 'dotnet' @('publish', 'tools/WeatherParser.Coverage.Runner', '-c', 'Release', '--no-restore', '--no-self-contained', '-o', $runnerDir) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0)
+    
+    # Copy dotnet-tools.json
+    Copy-Item (Join-Path "$script:WorkDir/src" ".config/dotnet-tools.json") (Join-Path $resumeDir 'dotnet-tools.json')
+    
+    # Create resume.json
+    $dotnetToolsSha256 = Get-FileSha256 (Join-Path $resumeDir 'dotnet-tools.json')
+    
+    $runnerFiles = [ordered]@{}
+    $runnerEntries = @(Get-ChildItem -Path $runnerDir -Recurse -File | ForEach-Object {
+        [pscustomobject]@{ RelativePath = $_.FullName.Substring($runnerDir.Length + 1).Replace('\', '/'); FullName = $_.FullName }
+    } | Sort-Object -Property RelativePath)
+    foreach ($entry in $runnerEntries) {
+        $runnerFiles[$entry.RelativePath] = Get-FileSha256 $entry.FullName
+    }
+    
+    $collectionSettings = Get-Content (Join-Path $script:RunDir 'current/collection-settings.json') | ConvertFrom-Json
+    
+    $resumeJson = @{
+        commit = $script:CommitSha
+        targetCommit = $script:TargetSha
+        mode = if ($Bootstrap) { "bootstrap" } elseif ($BaselinePath) { "baseline-path" } else { "two-pass" }
+        collectOnly = [bool]$CollectOnly
+        scriptSha256 = Get-FileSha256 $PSCommandPath
+        dotnetToolsSha256 = $dotnetToolsSha256
+        runnerFiles = $runnerFiles
+        toolName = 'Microsoft.CodeCoverage'
+        exclusions = @('*.Tests.dll','WeatherParser.Coverage*.dll')
+        microsoftCodeCoverageVersion = $collectionSettings.microsoftCodeCoverageVersion
+        runSettingsSha256 = $script:RunSettingsSha256
+        changedFiles = 'changed-files.txt'
+        createdUtc = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+    }
+    
+    $resumeJson | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $resumeDir 'resume.json')
+    
+    Write-CiLog "Resume package written: $($runnerFiles.Count) runner files"
 }
 
 function Invoke-GateStage() {
@@ -709,8 +794,7 @@ function Invoke-GateStage() {
     $script:CurrentStageCode = 90
     
     $changedFiles = Join-Path $script:RunDir 'changed-files.txt'
-    Invoke-Native 90 'git' @('diff', '--name-only', "$($script:TargetSha)...$($script:CommitSha)") -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0) -CaptureStdOut $changedFiles
-
+    
     $coverageXmlPath = Join-Path $script:RunDir 'current/coverage/coverage.xml'
 
     $microsoftCodeCoverageVersion = ([xml](Get-Content (Join-Path "$script:WorkDir/src" "Directory.Packages.props"))).Project.ItemGroup.PackageVersion | Where-Object Include -eq 'Microsoft.CodeCoverage' | Select-Object -ExpandProperty Version
@@ -855,6 +939,14 @@ try {
         Fail 20 "Both -BaselinePath and -Bootstrap specified"
     }
 
+    if ($CollectOnly -and ($Bootstrap -or $BaselinePath)) {
+        Fail 20 "CollectOnly requires two-pass mode (no BaselinePath and no Bootstrap)"
+    }
+
+    if ($FaultInjection -in @('GateFailure', 'IncomparableTarget') -and $CollectOnly) {
+        Fail 20 "FaultInjection $FaultInjection requires a run with conversion and gate"
+    }
+
     if ($BaselinePath -and !(Test-Path $BaselinePath)) {
         Fail 20 "BaselinePath file does not exist: $BaselinePath"
     }
@@ -919,6 +1011,7 @@ try {
         targetRef = $TargetRef
         targetCommit = $targetSha
         mode = if ($Bootstrap) { "bootstrap" } elseif ($BaselinePath) { "baseline-path" } else { "two-pass" }
+        collectOnly = [bool]$CollectOnly
         faultInjection = if ($FaultInjection) { $FaultInjection } else { $null }
         startedUtc = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
     }
@@ -960,10 +1053,26 @@ try {
     Invoke-TestStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
     Invoke-PackStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
     Invoke-ConsumerStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
-    Invoke-ConversionStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
+    
+    if ($CollectOnly) {
+        Write-CollectionSettings "$script:WorkDir/src" (Join-Path $script:RunDir 'current') 'not-run' 'not-run'
+    } else {
+        Invoke-ConversionStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
+    }
+    
     Invoke-BaselinePass
-    Invoke-GateStage
-    $exit = 0
+    
+    if ($CollectOnly) {
+        Write-ChangedFiles
+        New-ResumePackage
+        Write-CiLog "collection complete, gate pending"
+        $exit = 0
+    } else {
+        Write-ChangedFiles
+        New-ResumePackage
+        Invoke-GateStage
+        $exit = 0
+    }
 } catch [CiFailure] {
     $exit = $_.Exception.ExitCode
 } catch {
