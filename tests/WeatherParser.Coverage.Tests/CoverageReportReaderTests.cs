@@ -243,4 +243,30 @@ public sealed class CoverageReportReaderTests
         var exception = await Assert.ThrowsExactlyAsync<CoverageInputException>(() => _coverageReportReader.ReadAsync(path, CancellationToken.None));
         exception.Message.Should().Contain("not well-formed XML");
     }
+
+    [TestMethod]
+    [TestCategory("T-P1-13")]
+    [TestCategory("T-P1-17")]
+    public async Task ReadAsync_ModuleCountersSumExceedsInt64_ThrowsCoverageInputException()
+    {
+        // Arrange
+        var path = "report.xml";
+        _mockFileReader.Setup(fr => fr.Exists(path)).Returns(true);
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync(path, CancellationToken.None))
+            .Returns(Task.FromResult(
+                """
+                <?xml version="1.0" encoding="utf-8"?>
+                <results>
+                  <modules>
+                    <module name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" blocks_covered="9223372036854775807" blocks_not_covered="9223372036854775807">
+                    </module>
+                  </modules>
+                </results>
+                """));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsExactlyAsync<CoverageInputException>(() => _coverageReportReader.ReadAsync(path, CancellationToken.None));
+        exception.Message.Should().Contain("invalid block counter");
+        exception.Message.Should().Contain("WeatherParser.Parsing.dll");
+    }
 }

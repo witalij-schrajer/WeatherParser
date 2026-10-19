@@ -176,4 +176,72 @@ public sealed class ProvenanceAggregatorTests
         // Act & Assert
         Assert.ThrowsExactly<ArgumentNullException>(() => _provenanceAggregator.Aggregate(new CoverageReport(new List<ModuleCoverage>(), "native-xml"), null!));
     }
+
+    [TestMethod]
+    [TestCategory("T-P1-17")]
+    [TestCategory("T-P1-24")]
+    public void Aggregate_ExclusionPatternIsAnchoredAtStart_DoesNotExcludeLongerName()
+    {
+        // Arrange
+        var report = new CoverageReport(
+            new List<ModuleCoverage>
+            {
+                new ModuleCoverage("WeatherParser.Parsing.dll", "ID1", "path1", new BlockCounters(10, 0)),
+                new ModuleCoverage("OtherWeatherParser.CoverageDomain.dll", "ID2", "path2", new BlockCounters(0, 10)),
+            },
+            "native-xml");
+
+        var exclusions = new List<string> { "WeatherParser.Coverage*.dll" };
+
+        // Act
+        var result = _provenanceAggregator.Aggregate(report, exclusions);
+
+        // Assert
+        Assert.AreEqual(10L, result.Covered);
+        Assert.AreEqual(10L, result.NotCovered);
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-17")]
+    [TestCategory("T-P1-24")]
+    public void Aggregate_TestsSuffixPattern_StillExcludesTestAssembly()
+    {
+        // Arrange
+        var report = new CoverageReport(
+            new List<ModuleCoverage>
+            {
+                new ModuleCoverage("WeatherParser.Parsing.Tests.dll", "ID1", "path1", new BlockCounters(57, 33)),
+                new ModuleCoverage("WeatherParser.Parsing.dll", "ID2", "path2", new BlockCounters(10, 0)),
+            },
+            "native-xml");
+
+        var exclusions = new List<string> { "*.Tests.dll" };
+
+        // Act
+        var result = _provenanceAggregator.Aggregate(report, exclusions);
+
+        // Assert
+        Assert.AreEqual(10L, result.Covered);
+        Assert.AreEqual(0L, result.NotCovered);
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-17")]
+    [TestCategory("T-P1-13")]
+    public void Aggregate_CountersSumExceedsInt64_ThrowsCoverageInputException()
+    {
+        // Arrange
+        var report = new CoverageReport(
+            new List<ModuleCoverage>
+            {
+                new ModuleCoverage("A.dll", "ID1", "path1", new BlockCounters(long.MaxValue, 0)),
+                new ModuleCoverage("B.dll", "ID2", "path2", new BlockCounters(1, 0)),
+            },
+            "native-xml");
+
+        var exclusions = new List<string>();
+
+        // Act & Assert
+        Assert.ThrowsExactly<CoverageInputException>(() => _provenanceAggregator.Aggregate(report, exclusions));
+    }
 }

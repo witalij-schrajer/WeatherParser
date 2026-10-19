@@ -101,6 +101,11 @@ public sealed class CoverageReportReader : ICoverageReportReader
                     throw new CoverageInputException($"Module '{name}' has negative block counters.");
                 }
 
+                if (covered > long.MaxValue - notCovered)
+                {
+                    throw new CoverageInputException($"Module '{name}' has invalid block counter values: their total exceeds the supported range.");
+                }
+
                 modules.Add(new ModuleCoverage(name, id, pathAttr, new BlockCounters(covered, notCovered)));
             }
 

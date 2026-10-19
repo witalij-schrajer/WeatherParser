@@ -88,6 +88,11 @@ public sealed class BaselineMetadataReader : IBaselineMetadataReader
                 throw new CoverageInputException($"Baseline metadata '{path}' has negative block counters.");
             }
 
+            if (document.BlocksCovered.Value > long.MaxValue - document.BlocksNotCovered.Value)
+            {
+                throw new CoverageInputException($"Baseline metadata '{path}' has block counters whose total exceeds the supported range.");
+            }
+
             return new BaselineMetadata(
                 document.CommitId,
                 document.ToolName,

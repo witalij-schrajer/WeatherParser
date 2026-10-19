@@ -10,5 +10,7 @@ public sealed record BlockCounters(long Covered, long NotCovered)
     /// <summary>
     /// Total number of blocks (covered + not covered).
     /// </summary>
-    public long Total => Covered + NotCovered;
+    /// <returns>Total number of blocks.</returns>
+    /// <exception cref="System.OverflowException">Thrown when the sum exceeds <see cref="long.MaxValue"/>.</exception>
+    public long Total => checked(Covered + NotCovered);
 }

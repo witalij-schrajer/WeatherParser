@@ -19,9 +19,9 @@ public sealed class RuleEvaluator : IRuleEvaluator
         var results = new List<RuleResult>();
 
         // 1. "Measurement": current.Total == 0 or negative counters -> fail
-        if (current.Covered < 0 || current.NotCovered < 0 || current.Total == 0)
+        if (current.Covered < 0 || current.NotCovered < 0 || (Int128)current.Covered + current.NotCovered > long.MaxValue || current.Total == 0)
         {
-            results.Add(new RuleResult("Measurement", false, $"Block counters {current.Covered}/{current.Total} are invalid (zero denominator or negative counter) and cannot pass."));
+            results.Add(new RuleResult("Measurement", false, $"Block counters {current.Covered} covered and {current.NotCovered} not covered are invalid (zero denominator, negative counter or total out of range) and cannot pass."));
             return results;
         }
 
@@ -49,9 +49,9 @@ public sealed class RuleEvaluator : IRuleEvaluator
         }
 
         // Baseline with negative counters or Total == 0 -> failed "Baseline" rule (no Comparison)
-        if (baseline.Covered < 0 || baseline.NotCovered < 0 || baseline.Total == 0)
+        if (baseline.Covered < 0 || baseline.NotCovered < 0 || (Int128)baseline.Covered + baseline.NotCovered > long.MaxValue || baseline.Total == 0)
         {
-            results.Add(new RuleResult("Baseline", false, $"Baseline block counters {baseline.Covered}/{baseline.Total} are invalid (zero denominator or negative counter) and cannot pass."));
+            results.Add(new RuleResult("Baseline", false, $"Baseline block counters {baseline.Covered} covered and {baseline.NotCovered} not covered are invalid (zero denominator, negative counter or total out of range) and cannot pass."));
             return results;
         }
 

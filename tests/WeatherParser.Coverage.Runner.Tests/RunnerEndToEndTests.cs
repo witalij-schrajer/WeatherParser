@@ -338,4 +338,34 @@ public sealed class RunnerEndToEndTests
             }
         }
     }
+
+    [TestMethod]
+    [TestCategory("T-P1-13")]
+    [TestCategory("T-P1-17")]
+    public async Task OverflowingCounters_IsInputError()
+    {
+        var (exitCode, stdout, stderr) = await RunAsync(Evaluate("report-overflow.xml", extra: ["--bootstrap"]));
+
+        exitCode.Should().Be(2);
+        Rule(stdout, "Input").GetProperty("verdict").GetBoolean().Should().BeFalse();
+        stderr.Should().NotBeEmpty();
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-17")]
+    [TestCategory("T-P1-24")]
+    public async Task ExclusionPattern_DoesNotExcludeLongerAssemblyName_FailsMinimum()
+    {
+        var (exitCode, stdout, stderr) = await RunAsync(Evaluate("report-unanchored-exclusion.xml", extra: ["--bootstrap"]));
+
+        exitCode.Should().Be(1);
+        stderr.Should().NotBeEmpty();
+
+        using var doc = JsonDocument.Parse(stdout);
+        doc.RootElement.GetProperty("current").GetProperty("covered").GetInt64().Should().Be(10);
+        doc.RootElement.GetProperty("current").GetProperty("notCovered").GetInt64().Should().Be(10);
+
+        var minimumRule = Rule(stdout, "Minimum");
+        minimumRule.GetProperty("verdict").GetBoolean().Should().BeFalse();
+    }
 }

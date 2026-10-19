@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace WeatherParser.Coverage;
 
@@ -52,10 +53,18 @@ public sealed class ProvenanceAggregator : IProvenanceAggregator
         var covered = 0L;
         var notCovered = 0L;
 
-        foreach (var module in productionModules)
+        try
         {
-            covered += module.Blocks.Covered;
-            notCovered += module.Blocks.NotCovered;
+            foreach (var module in productionModules)
+            {
+                covered = checked(covered + module.Blocks.Covered);
+                notCovered = checked(notCovered + module.Blocks.NotCovered);
+                _ = checked(covered + notCovered);
+            }
+        }
+        catch (OverflowException ex)
+        {
+            throw new CoverageInputException("Aggregated block counters exceed the supported range.", ex);
         }
 
         return new BlockCounters(covered, notCovered);
@@ -73,35 +82,7 @@ public sealed class ProvenanceAggregator : IProvenanceAggregator
 
     private static bool IsWildcardMatch(string name, string pattern)
     {
-        // Simple wildcard matching with * support
-        var patternParts = pattern.Split('*');
-        var index = 0;
-
-        for (var i = 0; i < patternParts.Length; i++)
-        {
-            var part = patternParts[i];
-            if (string.IsNullOrEmpty(part))
-            {
-                continue;
-            }
-
-            var foundIndex = name.IndexOf(part, index, StringComparison.OrdinalIgnoreCase);
-            if (foundIndex < 0)
-            {
-                return false;
-            }
-
-            index = foundIndex + part.Length;
-        }
-
-        // Ensure the pattern matches the entire string
-        if (pattern.EndsWith("*") || patternParts[patternParts.Length - 1] == "")
-        {
-            // Pattern ends with *, so it's okay if we don't match the full string
-            return true;
-        }
-
-        // Check that we matched to the end of the name
-        return index >= name.Length;
+        var regex = "^" + Regex.Escape(pattern).Replace(@"\*", ".*") + "$";
+        return Regex.IsMatch(name, regex, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     }
 }

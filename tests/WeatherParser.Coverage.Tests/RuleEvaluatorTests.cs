@@ -353,4 +353,25 @@ public sealed class RuleEvaluatorTests
         result[2].Verdict.Should().BeFalse();
         result[2].Diagnostic.Should().Contain("invalid");
     }
+
+    [TestMethod]
+    [TestCategory("T-P1-13")]
+    [TestCategory("T-P1-17")]
+    public void Evaluate_MaxValue_MaxValue_Null_Code_True_MeasurementFailsWithoutException()
+    {
+        // Arrange
+        var current = new BlockCounters(long.MaxValue, long.MaxValue);
+        BlockCounters? baseline = null;
+        var category = PullRequestCategory.Code;
+        var isInitialBootstrap = true;
+
+        // Act
+        var result = _evaluator.Evaluate(current, baseline, category, isInitialBootstrap);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result[0].RuleId.Should().Be("Measurement");
+        result[0].Verdict.Should().BeFalse();
+        result[0].Diagnostic.Should().Contain("total out of range");
+    }
 }

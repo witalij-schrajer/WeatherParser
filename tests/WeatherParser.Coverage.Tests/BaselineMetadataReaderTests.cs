@@ -337,4 +337,27 @@ public sealed class BaselineMetadataReaderTests
         Assert.AreEqual(57, result.Blocks.Covered);
         Assert.AreEqual(33, result.Blocks.NotCovered);
     }
+
+    [TestMethod]
+    [TestCategory("T-P1-13")]
+    [TestCategory("T-P1-14")]
+    public async Task ReadAsync_ExistingFile_CountersSumExceedsInt64_ThrowsCoverageInputException()
+    {
+        const string json = """
+            {
+                "commitId": "6a68906592d1b5a5f85f3751659f509d22bd8463",
+                "toolName": "Microsoft.CodeCoverage",
+                "toolVersion": "18.11.0",
+                "format": "native-xml",
+                "exclusions": ["*.Tests.dll"],
+                "blocksCovered": 9223372036854775807,
+                "blocksNotCovered": 9223372036854775807
+            }
+            """;
+
+        _mockFileReader.Setup(fr => fr.Exists("baseline.json")).Returns(true);
+        _mockFileReader.Setup(fr => fr.ReadAllTextAsync("baseline.json", default)).Returns(Task.FromResult(json));
+
+        await Assert.ThrowsExactlyAsync<CoverageInputException>(() => _reader.ReadAsync("baseline.json", default));
+    }
 }
