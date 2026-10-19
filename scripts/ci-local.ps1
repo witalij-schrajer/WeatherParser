@@ -282,14 +282,18 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
 
     # Move TRX files from raw to trx directory and log test counts
     $rawTrxFiles = Get-ChildItem -Path $coverageRawDir -Filter "*.trx"
-    $testCounts = @{}
     foreach ($rawTrx in $rawTrxFiles) {
-        Copy-Item $rawTrx.FullName (Join-Path $trxDir $rawTrx.Name)
+        Move-Item $rawTrx.FullName (Join-Path $trxDir $rawTrx.Name) -Force
+    }
+    
+    $testCounts = @{}
+    $allTrxFiles = Get-ChildItem -Path $trxDir -Filter "*.trx"
+    foreach ($trxFile in $allTrxFiles) {
         try {
-            $xml = [xml](Get-Content $rawTrx.FullName)
+            $xml = [xml](Get-Content $trxFile.FullName)
             $counters = $xml.TestRun.ResultSummary.Counters
             if ($counters) {
-                $projectName = $rawTrx.BaseName -replace '\.Tests$', ''
+                $projectName = $trxFile.BaseName
                 $testCounts[$projectName] = @{
                     total = [int]$counters.total
                     passed = [int]$counters.passed
@@ -298,7 +302,7 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
                 Write-CiLog "${projectName}: total=$($testCounts[$projectName].total) passed=$($testCounts[$projectName].passed) failed=$($testCounts[$projectName].failed)"
             }
         } catch {
-            Write-CiLog "Warning: Failed to parse TRX file $($rawTrx.FullName): $_"
+            Write-CiLog "Warning: Failed to parse TRX file $($trxFile.FullName): $_"
         }
     }
 
@@ -337,7 +341,7 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
             '[Content_Types].xml',
             '_rels/.rels'
         )
-        $psmdcpPattern = '^package/services/metadata/core-properties/[0-9a-f]+\.psmdcp$'
+        $psmdcpPattern = '^package/services/metadata/core-properties/[^/]+\.psmdcp$'
 
         $actualEntries = @()
         foreach ($entry in $zip.Entries) {
@@ -346,6 +350,7 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
 
         $missingEntries = @()
         $unexpectedEntries = @()
+        $psmdcpEntries = @()
 
         foreach ($expectedEntry in $expectedEntries) {
             if ($actualEntries -notcontains $expectedEntry) {
@@ -354,7 +359,9 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
         }
 
         foreach ($actualEntry in $actualEntries) {
-            if ($actualEntry -notmatch $psmdcpPattern -and $expectedEntries -notcontains $actualEntry) {
+            if ($actualEntry -match $psmdcpPattern) {
+                $psmdcpEntries += $actualEntry
+            } elseif ($expectedEntries -notcontains $actualEntry) {
                 $unexpectedEntries += $actualEntry
             }
         }
@@ -365,6 +372,10 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
 
         if ($unexpectedEntries.Count -gt 0) {
             Fail 60 "Unexpected entries in .nupkg: $($unexpectedEntries -join ', ')"
+        }
+
+        if ($psmdcpEntries.Count -ne 1) {
+            Fail 60 "Expected exactly one psmdcp entry, found $($psmdcpEntries.Count): $($psmdcpEntries -join ', ')"
         }
 
         $hash = [Convert]::ToBase64String([System.Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes($nupkgPath)))
@@ -474,6 +485,27 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
     Invoke-Native 70 'dotnet' @('build', 'tests/WeatherParser.Package.Tests', '-c', 'Release', '--no-restore') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
     
     Invoke-Native 70 'dotnet' @('test', 'tests/WeatherParser.Package.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Package.Tests.trx', '--results-directory', $trxDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    
+    # Read consumer test results and add to test-counts.json
+    $consumerTrxPath = Join-Path $trxDir 'WeatherParser.Package.Tests.trx'
+    if (Test-Path $consumerTrxPath) {
+        try {
+            $xml = [xml](Get-Content $consumerTrxPath)
+            $counters = $xml.TestRun.ResultSummary.Counters
+            if ($counters) {
+                $testCounts = Get-Content (Join-Path $PassDir 'test-counts.json') | ConvertFrom-Json -AsHashtable
+                $testCounts['WeatherParser.Package.Tests'] = @{
+                    total = [int]$counters.total
+                    passed = [int]$counters.passed
+                    failed = [int]$counters.failed
+                }
+                $testCounts | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $PassDir 'test-counts.json')
+                Write-CiLog "WeatherParser.Package.Tests: total=$($testCounts['WeatherParser.Package.Tests'].total) passed=$($testCounts['WeatherParser.Package.Tests'].passed) failed=$($testCounts['WeatherParser.Package.Tests'].failed)"
+            }
+        } catch {
+            Write-CiLog "Warning: Failed to parse consumer TRX file $($consumerTrxPath): $_"
+        }
+    }
 
     Write-CiLog "Consumer complete"
 }
