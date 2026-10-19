@@ -1,23 +1,20 @@
 <#
-    Updates docs/p1/P1_03_BUILD_SETUP.en.md first, then the German counterpart
-    docs/p1/P1_03_BUILD_SETUP.md, to reflect that the Visual Studio / MSBuild
-    NETSDK1141 issue has been resolved (verified via dotnet build-server shutdown
-    + full Visual Studio restart + successful solution build).
-
-    The Git clean-checkout reproducibility finding remains OPEN and must not be
-    marked as resolved by this script.
+    Updates the canonical English docs/p1/P1_03_BUILD_SETUP.md record after the
+    Visual Studio / MSBuild NETSDK1141 issue has been resolved and verified.
+    Clean-checkout reproducibility remains open. No translation files are written.
+    This is a historical maintenance helper; its guarded anchors deliberately
+    reject an unexpected input document rather than rewriting unrelated content.
 #>
 
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$enPath = Join-Path $repoRoot 'docs/p1/P1_03_BUILD_SETUP.en.md'
-$dePath = Join-Path $repoRoot 'docs/p1/P1_03_BUILD_SETUP.md'
+$enPath = Join-Path $repoRoot 'docs/p1/P1_03_BUILD_SETUP.md'
 
 $changedFiles = @()
 
 # ---------------------------------------------------------------------------
-# 1. English file (source of truth, updated first)
+# 1. Canonical English file
 # ---------------------------------------------------------------------------
 $enContent = Get-Content -Path $enPath -Raw
 
@@ -62,52 +59,5 @@ if ($enContent.Contains($enHandoffOld)) {
 Set-Content -Path $enPath -Value $enContent -NoNewline
 $changedFiles += $enPath
 
-# ---------------------------------------------------------------------------
-# 2. German file (synchronized manually from the English changes above)
-# ---------------------------------------------------------------------------
-$deContent = Get-Content -Path $dePath -Raw
-
-$deStatusOld = '**Status: abgeschlossen am 15.10.2026, mit einer offenen Einschränkung (siehe unten).**'
-$deStatusNew = '**Status: abgeschlossen am 15.10.2026. Die Einschränkung des Visual-Studio-Builds wurde behoben; die Reproduzierbarkeit auf sauberem Checkout steht weiterhin aus (siehe unten).**'
-if ($deContent.Contains($deStatusOld)) {
-    $deContent = $deContent.Replace($deStatusOld, $deStatusNew)
-} else {
-    throw "Anchor not found in $dePath (status sentence). Aborting to avoid corrupting the file."
-}
-
-$deLimitationOld = @'
-## Offene Einschränkung: Visual-Studio-Build
-
-Der Build über das in Visual Studio Community 2026 (18.11.0) eingebettete MSBuild schlägt mit `NETSDK1141` (`GlobalJsonSDKResolutionFailed`) fehl, obwohl `dotnet build` über die CLI mit identischer `global.json` erfolgreich ist. Ursache ist vermutlich ein veralteter SDK-Resolver-Cache der laufenden IDE-Instanz, die das neu referenzierte SDK-Band noch nicht neu aufgelöst hat. Ein Neustart von Visual Studio wurde in dieser nicht-interaktiven Prüfung nicht ausgeführt und ist daher nicht nachgewiesen.
-
-**Nächster Schritt vor vollständiger P1.03-Abnahme:** Visual Studio neu starten (oder MSBuild-/VS-Prozesse vollständig beenden) und den Solution-Build erneut über die IDE ausführen. Ergebnis in diesem Dokument nachtragen, sobald bestätigt.
-'@
-
-$deLimitationNew = @'
-## Behoben: Visual-Studio-Build
-
-Der Build über das in Visual Studio Community 2026 (18.11.0) eingebettete MSBuild schlug zuvor mit `NETSDK1141` (`GlobalJsonSDKResolutionFailed`) fehl, obwohl `dotnet build` über die CLI mit identischer `global.json` erfolgreich war. Ursache war ein veralteter SDK-Resolver-/Build-Server-Zustand der laufenden IDE-Instanz.
-
-**Behebung:** Durch Ausführen von `dotnet build-server shutdown` (Beenden gecachter MSBuild-/VBCSCompiler-Serverprozesse) und einen vollständigen Neustart von Visual Studio (alle `devenv.exe`-Prozesse beendet, IDE neu gestartet) wurde das Problem behoben. Ein anschließender Solution-Build über Visual Studio/MSBuild war erfolgreich, ohne `NETSDK1141`-Fehler. Dieser Befund gilt als geschlossen.
-'@
-
-if ($deContent.Contains($deLimitationOld)) {
-    $deContent = $deContent.Replace($deLimitationOld, $deLimitationNew)
-} else {
-    throw "Anchor not found in $dePath (Offene Einschränkung section). Aborting to avoid corrupting the file."
-}
-
-$deHandoffOld = '**P1.03 im CLI-Build abgeschlossen; IDE-Build-Nachweis und Reproduzierbarkeit auf sauberem Checkout stehen noch aus.** Nächste Voraussetzung für P1.04 (isolierter Paketkonsument) ist unverändert erfüllbar, da die Bibliothek baut. Der ausstehende IDE-Nachweis blockiert P1.04 nicht, sollte aber vor der P1-Gesamtabnahme (P1.12) nachgeholt werden.'
-$deHandoffNew = '**P1.03 im CLI-Build und im IDE-Build abgeschlossen; Reproduzierbarkeit auf sauberem Checkout steht noch aus.** Nächste Voraussetzung für P1.04 (isolierter Paketkonsument) ist unverändert erfüllbar, da die Bibliothek baut. Der ausstehende Clean-Checkout-Nachweis blockiert P1.04 nicht, sollte aber vor der P1-Gesamtabnahme (P1.12) nachgeholt werden.'
-if ($deContent.Contains($deHandoffOld)) {
-    $deContent = $deContent.Replace($deHandoffOld, $deHandoffNew)
-} else {
-    throw "Anchor not found in $dePath (handoff paragraph). Aborting to avoid corrupting the file."
-}
-
-Set-Content -Path $dePath -Value $deContent -NoNewline
-$changedFiles += $dePath
-
-Write-Output "Updated files:"
-$changedFiles | ForEach-Object { Write-Output " - $_" }
-Write-Output "Note: the clean-checkout / missing Git commit finding was intentionally left OPEN and was not modified."
+Write-Output 'Updated the canonical English P1.03 record.'
+Write-Output 'Clean-checkout reproducibility remains open.'

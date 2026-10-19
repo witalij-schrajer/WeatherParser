@@ -1,158 +1,158 @@
-# WeatherParser – Detailplan P1
+# WeatherParser – P1 detailed plan
 
-[Deutsch](PHASE_P1_PLAN.md) | [English](PHASE_P1_PLAN.en.md)
+As of 2026-10-16. **P0 is complete. P1.01-P1.07 are complete; the Visual Studio build limitation is resolved, clean-checkout reproducibility remains pending.** The current task proved the Microsoft.CodeCoverage raw report and code block breakdown in P1.07; coverage evaluation/exceptions (P1.08), further domain tests, XSDs and CI workflows remain pending.
 
-Stand: 16.10.2026. **P0 ist abgeschlossen. P1.01-P1.06 abgeschlossen; die Visual-Studio-Build-Einschränkung ist behoben, die Reproduzierbarkeit auf sauberem Checkout steht noch aus.** Der aktuelle Auftrag hat in P1.06 den vollständigen DI-Einstiegspunkt (`AddWeatherParsing`) testgetrieben abgesichert; Coverage-Report-Vertrag (P1.07), weitere fachliche Tests, XSDs und CI-Workflows stehen aus.
+Basis: [requirements](REQUIREMENTS.md), [development plan](DEVELOPMENT_PLAN.md) and [repository rules](AGENTS.md).
 
-Grundlage: [Anforderungen](REQUIREMENTS.md), [Entwicklungsplan](DEVELOPMENT_PLAN.md) und [Repository-Regeln](AGENTS.md).
+## 1. Goal and scope
 
-## 1. Ziel und Umfang
+P1 establishes reproducible build, package, test and CI foundations for the independently usable NuGet library. The product contains parsers, output entities, a generic MQTT serializer and DI integration; implement these domain components in subsequent phases. An isolated package consumer proves actual NuGet consumption in P1.
 
-P1 schafft die reproduzierbare Build-, Paket-, Test- und CI-Grundlage für die eigenständig nutzbare NuGet-Bibliothek. Sie umfasst Parser, Ausgabeentitäten, generischen MQTT-Serializer und DI-Integration; diese fachlichen Komponenten werden in den nachfolgenden Phasen implementiert. Ein isolierter Paketkonsument belegt bereits in P1 die tatsächliche NuGet-Nutzung.
+Develop the final example CLI, including arguments, configuration, exit codes, deployment model and execution flow, in P3. P1 implements no CLI dispatcher, weather adapters, export entities, XSD generation or MQTT transport. Installation or configuration changes on R76S are outside this phase.
 
-Die endgültige Beispiel-CLI einschließlich Argumenten, Konfiguration, Exitcodes, Bereitstellungsmodell und Ablauf wird erst in P3 entwickelt. P1 implementiert keinen CLI-Dispatcher, keine Wetteradapter, Exportentitäten, XSD-Generierung oder MQTT-Brokeranbindung. Keine Installation oder Konfigurationsänderung auf R76S ist Teil dieser Phase.
+## 2. Approved foundations and remaining tasks
 
-## 2. Beschlossene Grundlagen und verbleibende Aufgaben
-
-| Thema | Verbindlicher Stand | Aufgabe in P1 |
+| Topic | Binding decision | P1 task |
 |---|---|---|
-| Plattform | .NET ≥10, `net10.0`, Debian ≥13, mindestens ARM64 | Kompatibilitätsmatrix und Paketkonsum prüfen |
-| Entwicklungsumgebung | Visual Studio 2026; lokal nachgewiesen 18.8.3 mit SDK 10.0.303 | Wartungsstand prüfen; Ausgangsversion reproduzierbar fixieren, notwendige Änderung dokumentieren |
-| Abhängigkeiten | Neueste stabile Versionen bei Aufnahme, kompatible Lizenzen | Offizielle Quellen prüfen, Versionen auflösen und fixieren; Konflikte offen ausweisen |
-| Tests | MSTest, Moq, FluentAssertions, TDD | `[TestInitialize]`, `[TestCleanup]` und `VerifyAll()` verbindlich einrichten |
-| Coverage | Microsoft.CodeCoverage-Report einschließlich Codeblöcken | Echtes Reportformat, Zähler und automatisierte Auswertung nachweisen |
-| Sprache | Programmausgaben und Kommentare Englisch; Dokumentation Deutsch/Englisch | Beide Dokumentfassungen und Entwicklerabläufe synchron halten |
-| Architektur | Konstruktor-DI, Interface je Doing-Klasse, konfigurierbare Endpunkte/Topics | Minimal benötigte öffentliche Paketverträge und DI-Grenzen prüfen |
-| Veröffentlichung | NuGet-Hauptprodukt, CLI nur Beispiel | Lokale Paket-ID/-Version für Tests dokumentieren; öffentliche ID/Releaseverfahren bleiben Release-Aufgaben |
+| Platform | .NET ≥10, `net10.0`, Debian ≥13, at least ARM64 | Verify compatibility matrix and package consumption |
+| Development environment | Visual Studio 2026; locally verified 18.8.3 with SDK 10.0.303 | Check servicing; pin the starting revision reproducibly and document any necessary change |
+| Dependencies | Latest stable versions on adoption, compatible licenses | Check official sources, resolve and pin versions; disclose conflicts |
+| Tests | MSTest, Moq, FluentAssertions, TDD | Enforce `[TestInitialize]`, `[TestCleanup]` and `VerifyAll()` |
+| Coverage | Microsoft.CodeCoverage report including code blocks | Prove actual report format, counters and automated evaluation |
+| Language | English program output, comments and documentation | Keep the canonical English documents and developer procedures aligned |
+| Architecture | Constructor DI, interface per Doing class, configurable endpoints/topics | Verify minimally required public package contracts and DI boundaries |
+| Publication | NuGet primary product; CLI usage example | Document local test package ID/version; public identity/release procedures remain release tasks |
 
-P0 ist kein offenes Gate mehr. Versionsauflösung und Coverage-Reportprüfung sind P1-Arbeit, keine neuen fachlichen P0-Fragen. GitHub-Aktivierung und Veröffentlichung werden gesondert beauftragt; lokale Prüfung bleibt davon unabhängig. Die Umsetzung von P1 benötigt weiterhin einen ausdrücklichen Implementierungsauftrag.
+P0 is no longer an open gate. Resolving versions and verifying coverage reports are P1 work, not new P0 domain questions. GitHub activation/publication requires a separate instruction; local verification is independent. Implementing P1 still requires an explicit implementation instruction.
 
-## 3. Vorgesehene Struktur
+## 3. Proposed structure
 
-| Ablage | Aufgabe |
+| Location | Responsibility |
 |---|---|
-| `src/WeatherParser.Parsing/` | Packbare Bibliothek mit `net10.0`; keine CLI- oder Brokertransport-Abhängigkeit |
-| `tests/WeatherParser.Parsing.Tests/` | Verhaltenstests mit Quellprojektbezug |
-| `tests/WeatherParser.Package.Tests/` | Isolierter Konsument der tatsächlich gebauten `.nupkg` über `PackageReference` |
-| `examples/WeatherParser.Cli/` | Für P3 vorgemerkt; in P1 kein CLI-Gerüst erforderlich |
-| Repository-Wurzel | Solution, `global.json`, Build-/Paketkonfiguration, Lockdaten, `.editorconfig`, `.gitignore` |
-| spätere CI-Ablage | Restore-, Build-, Pack-, Test- und Coverage-Prüfung samt Artefakten |
+| `src/WeatherParser.Parsing/` | Packable `net10.0` library without CLI or broker-transport dependencies |
+| `tests/WeatherParser.Parsing.Tests/` | Behavior tests with source-project references |
+| `tests/WeatherParser.Package.Tests/` | Isolated consumer of the actual `.nupkg` through `PackageReference` |
+| `examples/WeatherParser.Cli/` | Reserved for P3; no CLI scaffold required in P1 |
+| Repository root | Solution, `global.json`, build/package configuration, locks, `.editorconfig`, `.gitignore` |
+| Future CI location | Restore/build/pack/test/coverage checks and artifacts |
 
-Die Namen sind Arbeitsnamen. Projekte entstehen nur mit konkretem Bedarf. Kein leeres Infrastrukturprojekt und keine Klassen allein zum Erreichen einer Coverage-Zahl. Öffentliche Paket-ID ist durch diese Pfadnamen nicht zugesichert. Beispiel- und Paketkonsumenten nutzen das echte Paket; Quellreferenzen sind nur in Bibliotheks-Unit-Tests zulässig.
+Names are provisional. Create projects only when needed. No empty infrastructure project or classes merely to achieve coverage figures. Paths do not guarantee public package-name availability. Example/package consumers use the actual package; source references are allowed only in library unit tests.
 
-## 4. Arbeitspakete
+## 4. Work packages
 
-| Paket | Arbeit | Ergebnis / Abhängigkeit |
+| Package | Work | Result / dependency |
 |---|---|---|
-| P1.01 | Arbeitsstand und P0-Abschluss prüfen; P1-Umfang bestätigen | Abgeschlossen am 15.10.2026; [Ausgangsprotokoll](docs/p1/P1_01_BASELINE.md) |
-| P1.02 | SDK-/Paketstand, Lizenzen und Kompatibilität prüfen | Prüfung abgeschlossen; SDK-Update offen; [Prüfbericht](docs/p1/P1_02_TOOLING_REVIEW.md) |
-| P1.03 | Minimale Solution, Bibliothek und Testprojekte vorbereiten | Abgeschlossen (SDK 10.0.402, Locked Restore, CLI-Build, IDE-Build); [Protokoll](docs/p1/P1_03_BUILD_SETUP.md); Reproduzierbarkeit auf sauberem Checkout offen |
-| P1.04 | Lokales NuGet-Pack und isolierten Paketkonsumenten aufbauen | Abgeschlossen; [Protokoll](docs/p1/P1_04_PACKAGE_CONSUMER.md) |
-| P1.05 | MSTest/Moq/FluentAssertions-Testbasis und TDD-Nachweis | Abgeschlossen (Parser-Endpunktvalidierung, 6 Tests grün); [Protokoll](docs/p1/P1_05_TDD_BASELINE.md) |
-| P1.06 | Minimal benötigte Paket-/DI-Verträge testgetrieben absichern | Abgeschlossen (`AddWeatherParsing`-Einstiegspunkt, echte DI-Auflösung, fehlende Registrierung erkannt, 8 Tests grün); [Protokoll](docs/p1/P1_06_DI_CONTRACTS.md) |
-| P1.07 | Microsoft.CodeCoverage erfassen und Reportvertrag prüfen | Rohreport, Codeblock-Aufschlüsselung, belegte Zählerzuordnung; nach P1.05/P1.06 |
-| P1.08 | Coverage-Auswertung und Ausnahmen testgetrieben umsetzen | Grenz-/Fehlerfälle nach Abschnitt 5; nach P1.07 |
-| P1.09 | Lokale CI-Jobfolge und Artefakte vorbereiten | Ausführbare Prüfung ohne produktive Secrets; nach P1.04–P1.08 |
-| P1.10 | Debian-/ARM64-Kompatibilität der Paketgrundlage prüfen | Paket-/Restore-Nachweis, Laufzeiterfolg nur bei tatsächlicher Ausführung; nach P1.09 |
-| P1.11 | Entwickleranleitung und Nachweise zweisprachig fertigstellen | Restore/Build/Pack/Test/Coverage-Abläufe und Grenzen; laufend |
-| P1.12 | Abnahme durchführen und P2-Übergabe dokumentieren | Prüfergebnisse, Artefakte und verbleibende Einschränkungen; nach allen Paketen |
+| P1.01 | Check working state/P0 completion and confirm P1 scope | Completed on 2026-10-15; [entry audit](docs/p1/P1_01_BASELINE.md) |
+| P1.02 | Verify SDK/packages, licenses and compatibility | Review complete; SDK update open; [report](docs/p1/P1_02_TOOLING_REVIEW.md) |
+| P1.03 | Prepare minimal solution, library and test projects | Complete (SDK 10.0.402, locked restore, CLI build, IDE build); [record](docs/p1/P1_03_BUILD_SETUP.md); clean-checkout reproducibility pending |
+| P1.04 | Establish local NuGet pack and isolated consumer | Complete; [record](docs/p1/P1_04_PACKAGE_CONSUMER.md) |
+| P1.05 | Establish MSTest/Moq/FluentAssertions and TDD evidence | Complete (parser-endpoint validation, 6 passing tests); [record](docs/p1/P1_05_TDD_BASELINE.md) |
+| P1.06 | Test-drive minimally needed package/DI contracts | Complete (`AddWeatherParsing` entry point, real DI resolution, missing registration detected, 8 passing tests); [record](docs/p1/P1_06_DI_CONTRACTS.md) |
+| P1.07 | Collect Microsoft.CodeCoverage and verify report contract | Complete (raw report, block breakdown and proven per-assembly counter mapping); [record](docs/p1/P1_07_COVERAGE_CONTRACT.md) |
+| P1.08 | Test-drive coverage evaluation/exceptions | Boundary/error cases from section 5; after P1.07 |
+| P1.09 | Prepare local CI job sequence/artifacts | Executable checks without production secrets; after P1.04–P1.08 |
+| P1.10 | Verify Debian/ARM64 package foundations | Package/restore evidence; runtime success only after actual execution; after P1.09 |
+| P1.11 | Complete English developer instructions/evidence | Restore/build/pack/test/coverage procedures and limits; ongoing |
+| P1.12 | Accept phase and document P2 handoff | Results, artifacts and remaining limitations; after all packages |
 
-### Testgetriebener Einstieg
+### Test-driven starting point
 
-Zuerst ein konkret benötigtes Bibliotheksverhalten auswählen, etwa die Validierung und eindeutige Zuordnung vom Konsumenten gelieferter Parser-Endpunkte in der DI-Integration. Erwarteten Vertragsfehler nachweisen, minimal implementieren, unter grünen Tests refaktorieren. Nur tatsächlich benötigte Services mit Interfaces anlegen. Nicht implementierte Parser nicht als funktionsfähig registrieren oder erfolgreich simulieren. Ein Restorefehler und reine Existenztests sind kein TDD-Nachweis.
+Select genuinely needed library behavior first, such as validating and unambiguously mapping consumer-supplied parser endpoints in DI integration. Demonstrate the expected contract failure, implement minimally and refactor under green tests. Create only necessary services/interfaces. Never register unimplemented parsers as functional or simulate successful parsing. Restore failures and existence-only checks do not prove TDD.
 
-Testobjekte und gemeinsame Mocks entstehen in `[TestInitialize]`; `[TestCleanup]` prüft alle Mocks mit `VerifyAll()`. Echte DI-Auflösung und echter Paketkonsum ergänzen die Mock-Tests. Tests bleiben offline. Serializer-, Zeit-/Rundungs- und XSD-Vertragstests folgen P2, Quellenadaptertests P4–P7.
+Construct subjects/shared mocks in `[TestInitialize]`; verify all mocks through `VerifyAll()` in `[TestCleanup]`. Real DI resolution and actual package consumption complement mocks. Keep tests offline. Serializer/time/rounding/XSD contracts follow in P2 and source adapters in P4–P7.
 
-## 5. Coverage-Vertrag
+## 5. Coverage contract
 
-Microsoft.CodeCoverage liefert die Rohreports und die Codeblock-Aufschlüsselung. Das tatsächlich unterstützte Format und die Integration mit MSTest werden anhand der gewählten stabilen Toolversion geprüft. Codeblöcke sind keine Branches: Ein Reportwert darf nicht ohne Nachweis als andere Kennzahl ausgegeben werden. Die bisherigen Zeilen-/Branch-Anforderungen bleiben erhalten. Falls eine geforderte Kennzahl nicht nachweisbar ist, wird diese konkrete Einschränkung dokumentiert und vor einer bestandenen Coverage-Abnahme entschieden; weder Werte erfinden noch stillschweigend auf Block-Coverage umstellen.
+Microsoft.CodeCoverage provides raw reports and the block breakdown. Verify the supported format and MSTest integration for the selected stable tool revision. Blocks are not branches: do not relabel a report value as another metric without evidence. Existing line/branch requirements remain. If a required metric cannot be demonstrated, document that specific limitation and resolve it before passing coverage acceptance; never fabricate values or silently replace the metric with block coverage.
 
-| Fall | Prüfung je Kennzahl |
+| Case | Per-metric check |
 |---|---|
-| Erster Implementierungsstand ohne messbare Zielbranch-Baseline | Mindestens 80 %; kein Zielbranch-Vergleich |
-| Normaler Code-PR, Baseline unter 100 % | Mindestens 80 % und strikt höher als die Baseline |
-| Baseline exakt 100 % | PR muss exakt 100 % erreichen; Gleichstand zulässig |
-| Reiner Dokumentations-PR | Mindestens 80 %; Gleichstand zulässig, Rückgang nicht |
-| Unerwartet fehlende/spätere defekte Baseline | Fehler; keine automatische Startausnahme |
-| Fehlender/defekter PR-Report oder Null-Nenner | Fehler; keine erfundene Coverage |
+| Initial implementation without measurable target-branch baseline | At least 80%; no target comparison |
+| Regular code PR, baseline below 100% | At least 80% and strictly above baseline |
+| Exact 100% baseline | PR must reach exact 100%; equality allowed |
+| Documentation-only PR | At least 80%; equality allowed, decreases forbidden |
+| Unexpectedly missing/later broken baseline | Fail; no automatic bootstrap exemption |
+| Missing/broken PR report or zero denominator | Fail; no fabricated coverage |
 
-Ungerundete Zählerverhältnisse statt Anzeigeprozente vergleichen. Dokumentations-PRs anhand des gesamten Diffs identifizieren: Änderungen an Quellcode, Projekten, Paketen, Build-/Test-/Coverage-/CI-Konfiguration oder Ausschlüssen sind keine reinen Dokumentationsänderungen. Ein Dateiname allein begründet keinen Bypass.
+Compare unrounded counter ratios, not display percentages. Identify documentation-only PRs from the entire diff: changes to source, projects, packages, build/test/coverage/CI configuration or exclusions are not documentation-only changes. A filename alone does not grant a bypass.
 
-Produktionsumfang, Ausschlüsse, Toolversionen, Reportformat sowie PR- und Zielbranch-Commit dokumentieren. Testcode nicht als Produktionscode zählen. Dieselbe Bibliotheksassembly aus Quell- und Pakettests nicht doppelt zählen; Version/PDB/Quellprovenienz prüfen. Gesamtzähler aggregieren, keine Projektprozente mitteln. Der Coverage-Prüfer selbst erhält Verhaltens- und Regressionstests; keine Fachlogik für Kennzahlen ausblenden.
+Record production scope, exclusions, tool versions, report format and PR/target commit IDs. Do not count test code as production. Do not double-count the same library assembly from source/package tests; verify version/PDB/source provenance. Aggregate counters rather than averaging project percentages. Behavior/regression-test the checker itself; never exclude domain logic for metrics.
 
-## 6. Geplante Testfälle
+## 6. Planned tests
 
-Diese IDs sind Planungskennungen, noch keine existierenden Tests.
+These IDs are planning references, not existing tests.
 
-| Test-ID | Gegenstand | Erwartung |
+| Test ID | Subject | Expected result |
 |---|---|---|
-| T-P1-01 | Benötigtes erstes Bibliotheksverhalten | Dokumentierter Red→Green→Refactor-Zyklus |
-| T-P1-02 | Ungültiger Endpunkt | Definierter englischer Fehler, kein Abruf |
-| T-P1-03 | Unterschiedliche Parser-Endpunkte | Keine Verwechslung oder globale URI-Ersetzung |
-| T-P1-04 | Interfaces/Konstruktor-DI | Keine versteckten Service-Abhängigkeiten |
-| T-P1-05 | Echte DI-Auflösung | Benötigte Registrierung funktioniert; fehlende wird erkannt |
-| T-P1-06 | Setup/Cleanup | Testaufbau und VerifyAll-Vorgabe eingehalten |
-| T-P1-07 | Offline-Ausführung | Kein produktiver HTTP-/MQTT-/Gerätezugriff |
-| T-P1-08 | Restore/Versionen | Sauberer Checkout reproduzierbar; unkontrollierte Änderungen erkannt |
-| T-P1-09 | Mindestgrenze | 80 % besteht, darunter scheitert jede Kennzahl |
-| T-P1-10 | Normaler Code-PR | Gleichstand unter 100 % scheitert, echter Anstieg besteht |
-| T-P1-11 | Gemischte Kennzahlen | Eine Verbesserung kompensiert keinen Verstoß der anderen |
-| T-P1-12 | Präzision | Gerundete 100 % werden nicht als exakte 100 % behandelt |
-| T-P1-13 | Defekter/fehlender Report | Fehler statt grünem Ergebnis |
-| T-P1-14 | Coverage-Start | Baseline initial nicht vorhanden: ≥80 %, kein Vergleich; später fehlende Baseline scheitert |
-| T-P1-15 | Commit-Zuordnung | Veraltete/falsche Baseline erkannt |
-| T-P1-16 | Vergleichbarkeit | Andere Tools/Ausschlüsse/Zählersemantik erkannt |
-| T-P1-17 | Aggregation | Gesamtzähler und keine doppelte Paketassembly |
-| T-P1-18 | Ausnahmen | Exakt 100 %→100 % und Dokumentations-Gleichstand bestehen; Rückgänge scheitern |
-| T-P1-19 | CI-Fehlerweitergabe | Tests/Coverage schlagen Job fehl; Diagnose bleibt verfügbar |
-| T-P1-20 | ARM64-Grundlage | Restore/Build-Nachweis getrennt von echtem Laufzeittest |
-| T-P1-21 | Echtes NuGet-Artefakt | Isolierter Konsument verwendet gebaute Paketversion |
-| T-P1-22 | Paketgrenze | Kein CLI-/Brokertransport im Paket; keine Quellreferenz im Pakettest |
-| T-P1-23 | Dokumentationsklassifikation | Code-/Build-/Paket-/CI-/Coverage-Änderungen erhalten keinen Dokumentations-Bypass |
-| T-P1-24 | Report-/Paket-Provenienz | Zähler, Codeblöcke, PDB und Paketversion nachvollziehbar; Block nicht als Branch umetikettiert |
+| T-P1-01 | Needed first library behavior | Recorded Red→Green→Refactor cycle |
+| T-P1-02 | Invalid endpoint | Defined English error, no retrieval |
+| T-P1-03 | Distinct parser endpoints | No cross-assignment/global URI replacement |
+| T-P1-04 | Interfaces/constructor DI | No hidden service dependencies |
+| T-P1-05 | Real DI resolution | Needed registration works; missing registration detected |
+| T-P1-06 | Setup/cleanup | Subject setup and VerifyAll policy enforced |
+| T-P1-07 | Offline execution | No production HTTP/MQTT/device access |
+| T-P1-08 | Restore/versions | Reproducible clean checkout; uncontrolled changes detected |
+| T-P1-09 | Minimum | 80% passes; lower values fail each metric |
+| T-P1-10 | Regular code PR | Equality below 100% fails; actual improvement passes |
+| T-P1-11 | Mixed metrics | One improvement cannot offset another metric's failure |
+| T-P1-12 | Precision | Rounded 100% is not treated as exact 100% |
+| T-P1-13 | Broken/missing report | Failure rather than green result |
+| T-P1-14 | Bootstrap | Initially absent baseline: ≥80%, no comparison; later missing baseline fails |
+| T-P1-15 | Commit identity | Stale/wrong baseline detected |
+| T-P1-16 | Comparability | Different tools/exclusions/counter semantics detected |
+| T-P1-17 | Aggregation | Aggregate counts, no duplicate package assembly |
+| T-P1-18 | Exceptions | Exact 100%→100% and documentation equality pass; decreases fail |
+| T-P1-19 | CI failure propagation | Test/coverage failures fail job; diagnostics preserved |
+| T-P1-20 | ARM64 foundation | Restore/build evidence separate from actual runtime test |
+| T-P1-21 | Actual NuGet artifact | Isolated consumer uses built package revision |
+| T-P1-22 | Package boundary | No CLI/transport in package; no source reference in package test |
+| T-P1-23 | Documentation classification | Code/build/package/CI/coverage changes receive no docs bypass |
+| T-P1-24 | Report/package provenance | Counters, blocks, PDB and version traceable; blocks not relabeled as branches |
 
-## 7. CI-Ablauf und Liefergegenstände
+## 7. CI sequence and deliverables
 
-1. SDK-/Paketprüfung, Restore und Build.
-2. Lokales Pack, isolierter Konsumenten-Restore und Build.
-3. Offline-Unit-/DI-/Pakettests mit maschinenlesbaren Testergebnissen.
-4. Microsoft.CodeCoverage erfassen; Rohreport und lesbare Block-/Codezuordnung bereitstellen.
-5. PR-Typ und vorhandene Baseline prüfen; passende Coverage-Regel anwenden.
-6. `.nupkg`, Tool-/Lizenzliste, Test-/Coverage-Berichte, Commit-Zuordnung und Diagnosen als Artefakte bereitstellen.
+1. Verify SDK/packages, restore and build.
+2. Pack locally, restore/build isolated consumer.
+3. Run offline unit/DI/package tests with machine-readable results.
+4. Collect Microsoft.CodeCoverage; provide raw report and readable block/code mapping.
+5. Check PR category/baseline availability and apply the appropriate coverage rule.
+6. Provide `.nupkg`, tool/license inventory, test/coverage reports, commit mapping and diagnostics as artifacts.
 
-Öffentliche PR-Ausführung ohne produktive Secrets oder privilegierte Veröffentlichungsrechte. Kein automatischer NuGet-/GitHub-Push. Eine lokal geprüfte Pipeline ist kein bestandener GitHub-Lauf; tatsächliche Aktivierung bleibt separat beauftragt. Bei fehlendem ARM64-Ziel nur die vorhandenen Build-/Konsumentennachweise ausweisen; vollständige Hardwareabnahme bleibt P9.
+Public PR execution receives no production secrets or privileged publishing rights. No automatic NuGet/GitHub push. A locally verified pipeline is not a passed GitHub run; actual activation requires a separate instruction. Without an ARM64 target, report only available build/consumer evidence; full hardware acceptance remains P9.
 
-## 8. Abnahme und Übergabe
+## 8. Acceptance and handoff
 
-- [ ] P0-Abschluss und P1-Implementierungsauftrag dokumentiert.
-- [ ] Minimaler Build, reproduzierbarer Restore und fixierte kompatible Abhängigkeiten mit Lizenznachweisen.
-- [ ] Tatsächliches `.nupkg` und isolierter Paketkonsum geprüft.
-- [ ] Sinnvoller TDD-Zyklus, Interfaces, Konstruktor-DI, MSTest/Moq/FluentAssertions und Setup/Cleanup nachgewiesen.
-- [ ] Microsoft-CodeCoverage-Report mit nachvollziehbarer Codeblock-/Kennzahlzuordnung vorhanden.
-- [ ] Mindestens 80 % je geforderter Kennzahl und korrekte Start-/Dokumentations-/100-%-Regeln nachgewiesen.
-- [ ] Testfälle für Fehler, Vergleichbarkeit, Provenienz und PR-Klassifikation bestanden.
-- [ ] Lokale CI-Abläufe und Artefakte geprüft; GitHub-/ARM-Laufzeitstatus wahrheitsgemäß dokumentiert.
-- [ ] Englische Kommentare/Ausgaben und gleichwertige deutsche/englische Dokumentation.
-- [ ] P1-Abnahmeprotokoll mit Versionen, Arbeitsstand, Nachweisen und Einschränkungen erstellt.
+- [ ] P0 completion and P1 implementation instruction documented.
+- [ ] Minimal build, reproducible restore and pinned compatible dependencies with license evidence.
+- [ ] Actual `.nupkg` and isolated package consumption verified.
+- [ ] Meaningful TDD cycle, interfaces, constructor DI, MSTest/Moq/FluentAssertions and setup/cleanup demonstrated.
+- [ ] Microsoft.CodeCoverage report with traceable block/metric mapping available.
+- [ ] At least 80% for every required metric; bootstrap/documentation/100% rules demonstrated.
+- [ ] Error/comparability/provenance/PR-classification tests pass.
+- [ ] Local CI procedures/artifacts verified; truthful GitHub/ARM runtime status recorded.
+- [ ] English output/comments and complete English documentation.
+- [ ] P1 acceptance record with versions, working revision, evidence and limitations created.
 
-P1 ist erst nach diesen Nachweisen abgeschlossen. P2 übernimmt die Test-/Paketbasis und entwickelt die Exportentitäten, UTC-/Einheiten-/Rundungslogik, echten JSON-/XML-Serializer und generierten Ausgabeschemas. CLI-Fragen bleiben P3; Quellenformate den jeweiligen Parserphasen und öffentliche Paketveröffentlichung P9 zugeordnet.
-
-
-## Verbindlicher Phasenstatus und Ablauf
-
-**15.10.2026: P0 abgeschlossen; P1-Solution-/Projektstruktur erstellt. P1 ist noch nicht abgenommen.**
-
-Reihenfolge bei unveränderten Phasen-IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Erst die vollständige Bibliothek einschließlich Stationsauswahl, DWD-/OsthessenWetter-/MOSMIX_S-/MOSMIX_L-Parsern, Ausgabeentitäten, JSON/XML, XSDs, MQTT-Serializer und DI fertigstellen und abnehmen. Danach P3 mit CLI-Nutzungsbeispiel, Konfiguration und Beispiel-Brokertransport beginnen. Öffentliches Release bleibt P9.
-
-P1 enthält nur einen technischen Paketkonsumenten als Integrationstest, kein CLI-/Anwendungsbeispiel. Vor P3 Quellenfunktionen direkt über die Bibliothek und ihre Tests abnehmen; kein CLI-Aufruf ist Voraussetzung für die Bibliotheksphasen. Die Phasenreihenfolge ersetzt frühere numerische Reihenfolge oder Abhängigkeiten auf P3. [Detailplan P1](PHASE_P1_PLAN.md). Der aktuelle Auftrag prüft die vorhandenen Werkzeuge und Abhängigkeiten in P1.02; Fachimplementierung bleibt vertagt.
+P1 completes only after this evidence. P2 builds on the package/test foundation for export entities, UTC/unit/rounding logic, real JSON/XML serializers and generated output schemas. CLI decisions remain P3, source formats their parser phases and public package publication P9.
 
 
-## Aktueller Umsetzungsstand (15.10.2026)
+## Binding phase status and sequence
 
-Der Strukturanteil von P1.03 ist angelegt: Solution mit zwei Projekten, fixiertes SDK, gemeinsame Build-/Paketkonfiguration und reservierter Pakettestbereich. Restore-/Buildprüfung wird im README festgehalten. P1.02 besitzt mit DEPENDENCIES.md erste Nachweise zur Paketauswahl; vollständige transitive Lizenz-/Kompatibilitätsabnahme steht aus. P1.04–P1.12, TDD-Tests, Coverage-/Reportprüfung und Phasenabnahme sind nicht abgeschlossen. Paketkonsument und CLI bleiben wie geplant vertagt.
+**2026-10-15: P0 complete; P1 solution/project scaffolding created. P1 is not yet accepted.**
+
+Sequence with unchanged phase IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Complete and accept the entire library first, including station selection, DWD/OsthessenWetter/MOSMIX_S/MOSMIX_L parsers, output entities, JSON/XML, XSDs, MQTT serializer and DI. Then begin P3 with the CLI usage example, configuration and example broker transport. Public release remains P9.
+
+P1 contains only a technical package consumer as an integration test, not a CLI/application example. Before P3, accept source functionality directly through the library and its tests; CLI commands do not gate library phases. This sequence supersedes earlier numeric ordering or dependencies on P3. [P1 detailed plan](PHASE_P1_PLAN.md). The current task reviews existing tools and dependencies in P1.02; domain implementation remains deferred.
 
 
-P1.01-Eingangsprüfung am 15.10.2026 abgeschlossen: [Protokoll und Ausgangsinventur](docs/p1/P1_01_BASELINE.md). Vorhandene Projektstruktur erhalten; kein neuer Fachcode und kein Test-/Coverage-Ergebnis behauptet. P1.02-Prüfung inzwischen abgeschlossen; aktueller Folgeschritt unten dokumentiert.
+## Current implementation status (2026-10-15)
+
+The structure portion of P1.03 is created: two-project solution, pinned SDK, shared build/package configuration and reserved package-test area. Restore/build verification is recorded in README. P1.02 dependency selection has initial evidence in DEPENDENCIES.md; complete transitive licensing and compatibility acceptance remain pending. P1.04–P1.12, TDD tests, coverage/report verification and full phase acceptance are not complete. Package consumers and CLI remain deferred as planned.
 
 
-**P1.02-Prüfung (15.10.2026) abgeschlossen:** [Werkzeug-/Lizenz-/Kompatibilitätsbericht](docs/p1/P1_02_TOOLING_REVIEW.md). Alle 16 Testpakete geprüft; sechs direkte Versionen aktuell, keine gemeldeten NuGet-Schwachstellen/Abkündigungen. SDK 10.0.303 nicht mehr gewartet; vor P1.03-Abnahme auf ausgewähltes 10.0.402 aktualisieren und prüfen. Kein SDK-/Paketwechsel und keine neuen Tests in dieser Prüfung.
+P1.01 entry audit completed on 2026-10-15: [record and starting inventory](docs/p1/P1_01_BASELINE.md). Existing scaffolding is preserved; no new domain code or test/coverage result is claimed. P1.02 review has since completed; current follow-up is recorded below.
+
+
+**P1.02 review (2026-10-15) complete:** [tooling/license/compatibility report](docs/p1/P1_02_TOOLING_REVIEW.md). All 16 test packages reviewed; six direct versions current, no reported NuGet vulnerability/deprecation findings. At that review, SDK 10.0.303 was outside servicing; update to selected 10.0.402 and verify before P1.03 acceptance. No SDK/package changes or new tests were made in P1.02. The later P1.03 record below closes the SDK finding.
+
+**P1.03 (2026-10-15) complete; Visual Studio build limitation resolved:** [build setup record](docs/p1/P1_03_BUILD_SETUP.md). global.json pinned to SDK 10.0.402, locked restore and CLI Release build succeeded. The previously reported Visual Studio/MSBuild NETSDK1141 failure was resolved via `dotnet build-server shutdown` and a full Visual Studio restart; a subsequent IDE solution build succeeded. Clean-checkout reproducibility after the first Git commit remains outstanding.

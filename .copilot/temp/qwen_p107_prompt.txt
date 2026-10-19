@@ -1,29 +1,29 @@
-Du bist ein erfahrener .NET-Softwarearchitekt. Erstelle einen detaillierten Umsetzungsplan (auf Deutsch) fuer das Arbeitspaket P1.07 des Projekts "WeatherParser".
+You are an experienced .NET software architect. Create a detailed implementation plan in English for work package P1.07 of the WeatherParser project.
 
-KONTEXT:
+CONTEXT:
 - Solution: WeatherParser.slnx, .NET 10 (net10.0), Visual Studio 2026.
-- Projektstruktur: src/WeatherParser.Parsing/ (packbare Bibliothek), tests/WeatherParser.Parsing.Tests/ (Quellreferenz-Tests), tests/WeatherParser.Package.Tests/ (isolierter NuGet-Paketkonsument).
-- Tests: MSTest, Moq, FluentAssertions. Verbindlich: [TestInitialize], [TestCleanup], VerifyAll() fuer alle Mocks.
-- In P1.05/P1.06 wurde bereits testgetrieben umgesetzt (liegt unter src/WeatherParser.Parsing/Parsing/):
-  - ParserEndpointDefinition, IEndpointUriValidator/EndpointUriValidator, IParserEndpointValidator/ParserEndpointValidator, ParserEndpointValidationException
-  - ServiceCollectionExtensions.AddWeatherParsing(IServiceCollection) als einziger DI-Registrierungs-Einstiegspunkt, getestet mit echter ServiceProvider-Aufloesung inkl. Nachweis fehlender Registrierung.
-  - Aktuell 8 gruene Unit-Tests in tests/WeatherParser.Parsing.Tests/.
+- Project structure: src/WeatherParser.Parsing/ (packable library), tests/WeatherParser.Parsing.Tests/ (source-reference tests), tests/WeatherParser.Package.Tests/ (isolated NuGet package consumer).
+- Tests: MSTest, Moq, FluentAssertions. Mandatory: [TestInitialize], [TestCleanup] and VerifyAll() for all mocks.
+- P1.05/P1.06 already implemented the following through TDD under src/WeatherParser.Parsing/Parsing/:
+  - ParserEndpointDefinition, IEndpointUriValidator/EndpointUriValidator, IParserEndpointValidator/ParserEndpointValidator, ParserEndpointValidationException.
+  - ServiceCollectionExtensions.AddWeatherParsing(IServiceCollection) as the single DI-registration entry point, tested using real ServiceProvider resolution, including evidence that missing registration is detected.
+  - Currently 8 passing unit tests in tests/WeatherParser.Parsing.Tests/.
 
-AUFGABE P1.07 laut Projektplan: "Microsoft.CodeCoverage erfassen und Reportvertrag pruefen" - Ergebnis soll sein: Rohreport (Microsoft.CodeCoverage), Codeblock-Aufschluesselung, belegte Zaehlerzuordnung. Abhaengigkeit: nach P1.05/P1.06.
+P1.07 TASK FROM THE PROJECT PLAN: collect Microsoft.CodeCoverage and verify the report contract. Required results: raw report (Microsoft.CodeCoverage), code-block breakdown and proven counter attribution. Dependency: after P1.05/P1.06.
 
-Wichtige Rahmenbedingungen aus dem Projektplan, die beachtet werden muessen:
-- Microsoft.CodeCoverage liefert Rohreports und Codeblock-Aufschluesselung. Codebloecke sind KEINE Branches: ein Reportwert darf nicht ohne Nachweis als andere Kennzahl (z.B. Branch Coverage) ausgegeben werden.
-- Testcode zaehlt nicht als Produktionscode fuer die Kennzahl.
-- Dieselbe Bibliotheksassembly darf nicht doppelt gezaehlt werden, wenn sie sowohl aus Quelltests (tests/WeatherParser.Parsing.Tests) als auch aus dem Pakettest (tests/WeatherParser.Package.Tests) adressiert wird; Version/PDB/Quellprovenienz muss geprueft werden.
-- Gesamtzaehler muessen aggregiert werden, keine Mittelung von Projektprozenten.
-- Der Coverage-Pruefer selbst braucht eigene Verhaltens- und Regressionstests; keine Fachlogik darf fuer bessere Kennzahlen ausgeblendet werden.
-- Es ist noch KEINE Mindestgrenzenauswertung (80%) gefordert - das ist P1.08. P1.07 ist nur Erfassung + Reportvertrag/Provenienz-Nachweis.
+Constraints from the project plan:
+- Microsoft.CodeCoverage supplies raw reports and a code-block breakdown. Code blocks are NOT branches; do not present a report value as a different metric, such as branch coverage, without evidence.
+- Test code does not count as production code for the metric.
+- Do not double-count the same library assembly when used by both source tests (tests/WeatherParser.Parsing.Tests) and package tests (tests/WeatherParser.Package.Tests). Verify version/PDB/source provenance.
+- Aggregate total counters; do not average project percentages.
+- The coverage checker itself needs behavior and regression tests. Do not exclude domain logic to improve metrics.
+- Minimum-threshold evaluation (80%) is NOT required yet; that belongs to P1.08. P1.07 covers collection and report-contract/provenance evidence only.
 
-Erstelle einen konkreten Plan mit:
-1. Kurzer Zielbeschreibung
-2. Liste der konkret zu erstellenden/aendernden Artefakte (Tooling-Konfiguration, .runsettings, Skripte, ggf. kleine Hilfsklassen) je mit genauer Verantwortung (keine Platzhalter, keine Klassen nur fuer Coverage)
-3. Der TDD-Reihenfolge (Red/Green/Refactor) fuer jedes neue pruefbare Verhalten (z.B. Report-Parser/Provenienz-Pruefer, falls noetig)
-4. Den konkreten Testfaellen (inkl. Negativfaellen: defekter/fehlender Report, doppelt gezaehlte Assembly, Codeblock faelschlich als Branch ausgegeben)
-5. Den Akzeptanzkriterien
+Provide a concrete plan containing:
+1. A short goal statement.
+2. The exact artifacts to create/change (tooling configuration, .runsettings, scripts, and small helper classes if needed), with each artifact's precise responsibility. No placeholders or classes created solely for coverage.
+3. The TDD sequence (Red/Green/Refactor) for each new testable behavior, such as a report parser or provenance checker if needed.
+4. Concrete tests, including negative cases: missing/broken report, double-counted assembly, code-block coverage incorrectly reported as branch coverage.
+5. Acceptance criteria.
 
-Antworte NUR mit dem Plan in Markdown, ohne Code.
+Respond ONLY with the plan in Markdown, without code.

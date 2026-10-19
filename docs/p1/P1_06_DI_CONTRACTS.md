@@ -1,69 +1,65 @@
-# P1.06 – Minimal benötigte Paket-/DI-Verträge
+# P1.06 – Minimal Required Package/DI Contracts
 
-## Ziel
+## Goal
 
-Testgetriebene Absicherung der minimal benötigten Dependency-Injection-Oberfläche der
-Bibliothek: ein einzelner, öffentlicher Registrierungs-Einstiegspunkt für
-`Microsoft.Extensions.DependencyInjection`-Konsumenten, belegt durch echte
-`ServiceProvider`-Auflösung, die nachweist, dass fehlende Registrierungen erkannt und nicht
-stillschweigend toleriert werden (`T-P1-04`, `T-P1-05`).
+Secure the minimal dependency injection surface of the library through TDD: provide a single,
+public registration entry point for `Microsoft.Extensions.DependencyInjection` consumers, and
+prove with real `ServiceProvider` resolution that missing registrations are detected rather than
+silently tolerated (`T-P1-04`, `T-P1-05`).
 
-## Entwurf
+## Design
 
-- Die Bibliothek (`src/WeatherParser.Parsing`) referenziert jetzt nur noch
-  `Microsoft.Extensions.DependencyInjection.Abstractions` (nicht das volle DI-Container-Paket),
-  da produktiver Code lediglich `IServiceCollection` benötigt. Der konkrete Container
-  (`Microsoft.Extensions.DependencyInjection`) bleibt eine reine Testabhängigkeit, um in Tests
-  einen echten `ServiceProvider` aufzubauen.
-- `ServiceCollectionExtensions.AddWeatherParsing(this IServiceCollection services)` ist der
-  einzige öffentliche Registrierungs-Einstiegspunkt. Er registriert:
-  - `IEndpointUriValidator` → `EndpointUriValidator` (Singleton)
-  - `IParserEndpointValidator` → `ParserEndpointValidator` (Singleton)
+- The library (`src/WeatherParser.Parsing`) now references only
+  `Microsoft.Extensions.DependencyInjection.Abstractions` (not the full DI container package),
+  since production code only needs `IServiceCollection`. The concrete container
+  (`Microsoft.Extensions.DependencyInjection`) remains a test-only dependency used to build a
+  real `ServiceProvider` in tests.
+- `ServiceCollectionExtensions.AddWeatherParsing(this IServiceCollection services)` is the single
+  public registration entry point. It registers:
+  - `IEndpointUriValidator` → `EndpointUriValidator` (singleton)
+  - `IParserEndpointValidator` → `ParserEndpointValidator` (singleton)
 
-Es existieren noch keine weiteren Services, daher wurden keine weiteren Registrierungen
-ergänzt; die Erweiterungsmethode wächst mit zukünftigem Verhalten (Parser, Serializer) in
-späteren Phasen mit.
+No other services exist yet, so no other registrations were added; the extension method will
+grow alongside future behavior (parsers, serializers) in later phases.
 
 ## Red → Green → Refactor
 
-1. **Red**: `ServiceCollectionExtensionsTests` wurde zuerst geschrieben und prüft, dass die
-   Auflösung von `IParserEndpointValidator` aus einer leeren `ServiceCollection` sowie aus einer
-   `ServiceCollection` mit nur `IParserEndpointValidator` (ohne dessen Abhängigkeit
-   `IEndpointUriValidator`) jeweils eine `InvalidOperationException` wirft. Die Testdatei ließ
-   sich erst nicht kompilieren, da `AddWeatherParsing` noch nicht existierte.
-2. **Green**: `ServiceCollectionExtensions.AddWeatherParsing` wurde mit den minimal notwendigen
-   Registrierungen implementiert. Zwei weitere Tests wurden ergänzt und bestanden: Die Auflösung
-   von `IParserEndpointValidator` gelingt nach Aufruf von `AddWeatherParsing`, und die aufgelöste
-   Instanz führt eine echte, korrekte Endpunktvalidierung (`ValidateAndMap`) durch.
-3. **Refactor**: Die frühere `ParserEndpointValidatorDiTests` (aus P1.05) duplizierte Abdeckung,
-   die nun vollständiger durch `ServiceCollectionExtensionsTests` bereitgestellt wird, und wurde
-   entfernt, um redundante Tests zu vermeiden.
+1. **Red**: `ServiceCollectionExtensionsTests` was written first, asserting that resolving
+   `IParserEndpointValidator` from an empty `ServiceCollection`, and from a `ServiceCollection`
+   with only `IParserEndpointValidator` registered (missing its `IEndpointUriValidator`
+   dependency), both throw `InvalidOperationException`. The test file failed to compile because
+   `AddWeatherParsing` did not exist yet.
+2. **Green**: `ServiceCollectionExtensions.AddWeatherParsing` was implemented with the minimal
+   registrations needed. Two further tests were added and passed: resolving
+   `IParserEndpointValidator` succeeds after calling `AddWeatherParsing`, and the resolved
+   instance performs real, correct endpoint validation (`ValidateAndMap`).
+3. **Refactor**: The former `ParserEndpointValidatorDiTests` (from P1.05) duplicated coverage now
+   provided more completely by `ServiceCollectionExtensionsTests` and was removed to avoid
+   redundant tests.
 
-## Testfälle
+## Test cases
 
-| Test | Verhalten |
+| Test | Behavior |
 |---|---|
-| `GetRequiredService_WithoutAnyRegistration_ThrowsInvalidOperationException` | Keine Registrierung → fehlende Registrierung erkannt |
-| `GetRequiredService_WithOnlyParserEndpointValidatorRegistered_ThrowsInvalidOperationException` | Teilweise Registrierung (fehlender `IEndpointUriValidator`) → fehlende Registrierung erkannt |
-| `AddWeatherParsing_WithoutFurtherRegistration_ResolvesParserEndpointValidator` | Vollständige Registrierung über den öffentlichen Einstiegspunkt löst erfolgreich auf |
-| `AddWeatherParsing_ResolvedValidator_PerformsRealValidation` | Die aufgelöste Instanz ist nicht nur auflösbar, sondern funktional korrekt |
+| `GetRequiredService_WithoutAnyRegistration_ThrowsInvalidOperationException` | No registration at all → missing registration detected |
+| `GetRequiredService_WithOnlyParserEndpointValidatorRegistered_ThrowsInvalidOperationException` | Partial registration (missing `IEndpointUriValidator`) → missing registration detected |
+| `AddWeatherParsing_WithoutFurtherRegistration_ResolvesParserEndpointValidator` | Full registration via the public entry point resolves successfully |
+| `AddWeatherParsing_ResolvedValidator_PerformsRealValidation` | The resolved instance is not just resolvable, but functionally correct |
 
-Alle Tests laufen gegen einen In-Memory-`ServiceProvider`; es findet kein Netzwerk-, Datei- oder
-Gerätezugriff statt.
+All tests run against an in-memory `ServiceProvider`; no network, file, or device access occurs.
 
-## Akzeptanzkriterien
+## Acceptance criteria
 
-- Die Bibliothek referenziert in produktivem Code nur DI-Abstraktionen, nicht den konkreten
-  DI-Container.
-- `AddWeatherParsing` ist der einzige öffentliche Registrierungs-Einstiegspunkt für die bisher
-  eingeführten Services.
-- Fehlende Registrierungen werden nachweislich über `InvalidOperationException` erkannt (keine
-  stille `null`-Auflösung).
-- Vollständige Registrierung löst einen funktional korrekten `IParserEndpointValidator` auf.
-- Bibliotheks-, Unit-Test- und Paketkonsument-Projekte bauen erfolgreich; alle 8 Unit-Tests
-  bestehen.
+- The library references only DI abstractions, not the concrete DI container, in production code.
+- `AddWeatherParsing` is the single public registration entry point for the services introduced
+  so far.
+- Missing registrations are provably detected via `InvalidOperationException` (no silent `null`
+  resolution).
+- Full registration resolves a functionally correct `IParserEndpointValidator`.
+- All library, unit test, and package-consumer test projects build successfully; all 8 unit
+  tests pass.
 
-## Verifikation
+## Verification
 
 ```powershell
 dotnet build src/WeatherParser.Parsing/WeatherParser.Parsing.csproj
@@ -72,4 +68,4 @@ dotnet build tests/WeatherParser.Package.Tests/WeatherParser.Package.Tests.cspro
 dotnet test tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj
 ```
 
-Ergebnis: alle Projekte bauen; 8 Tests ausgeführt, 8 bestanden, 0 fehlgeschlagen.
+Result: all projects build; 8 tests executed, 8 passed, 0 failed.

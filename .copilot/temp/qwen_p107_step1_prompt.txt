@@ -1,9 +1,9 @@
-Du bist ein .NET-Build-Experte. Erzeuge NUR den vollstaendigen Inhalt einer .csproj-Datei fuer ein neues Projekt "tools/WeatherParser.Coverage/WeatherParser.Coverage.csproj".
+You are a .NET build expert. Generate ONLY the complete contents of a .csproj file for a new project at tools/WeatherParser.Coverage/WeatherParser.Coverage.csproj.
 
-Anforderungen:
-- SDK-Projekt (Microsoft.NET.Sdk), TargetFramework net10.0.
-- Es ist eine reine Klassenbibliothek fuer Coverage-Report-Tooling (kein Test-, kein CLI-Projekt).
-- IsPackable auf false setzen (wird nicht als NuGet-Paket veroeffentlicht).
-- Nullable aktivieren, ImplicitUsings aktivieren.
-- Das Projekt liegt in einer Solution, in der Directory.Packages.props mit ManagePackageVersionsCentrally=true existiert. Es werden KEINE zusaetzlichen PackageReference-Eintraege benoetigt (reines XML-Parsing mit System.Xml.Linq aus dem SDK).
-- Gib die Antwort NUR als einen einzigen XML-Codeblock mit dem vollstaendigen csproj-Inhalt aus, ohne weitere Erklaerungen davor oder danach.
+Requirements:
+- SDK project (Microsoft.NET.Sdk), TargetFramework net10.0.
+- A class library exclusively for coverage-report tooling, not a test or CLI project.
+- Set IsPackable to false; it is not published as a NuGet package.
+- Enable Nullable and ImplicitUsings.
+- The solution has Directory.Packages.props with ManagePackageVersionsCentrally=true. No additional PackageReference entries are needed; XML parsing uses System.Xml.Linq from the SDK.
+- Return ONLY one XML code block containing the complete csproj, without explanation before or after it.
