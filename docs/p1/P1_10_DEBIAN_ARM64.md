@@ -138,3 +138,7 @@ Serializers, timezones, DI under load, CLI, MQTT and network sources (later phas
 The user accepted the P1.10 results on 2026-10-19, on the evidence of this record: the full two-pass run on the NanoPi R76S (Debian 13 ARM64) with conversion and gate on the target, gate PASSED with 54/56 against 52/56; the fault injections and the `-CollectOnly`/`-ResumeFrom` path on the target and on Windows; the Class A evidence with the decision to keep the projects RID-neutral (NU1004); and `docs/COMPATIBILITY.md`.
 
 Remaining outside P1.10: developer instructions (P1.11), overall P1 acceptance (P1.12) and hosted CI. The target working directory and the user-directory installs remain on the R76S until their cleanup is authorized.
+
+### Target cleanup (2026-10-19)
+
+Authorized by the user after acceptance. On the R76S, `dotnet build-server shutdown` stopped the compiler and MSBuild servers, and five MSBuild node processes still running from the runs were terminated. Then only items created by P1.10 were removed: `~/weatherparser-p110`, `~/.dotnet`, `~/.local/share/powershell`, `~/.local/share/NuGet`, `~/.local/bin`, `~/.cache`, `~/.nuget`, and the .NET diagnostic sockets and debug pipes of those processes in `/tmp`. `~/.local` and `~/.local/share` existed before P1.10 and were kept. Afterwards no `dotnet` process remained, `dotnet` and `pwsh` were no longer on the path, and the home file system was back at 1.1 GB used, as before P1.10. The copied run directories on the developer machine are unaffected.
