@@ -940,7 +940,8 @@ function Invoke-ResumeFrom() {
         Fail 20 "Resume directory does not exist: $ResumeFrom"
     }
     
-    $resumeDir = Join-Path $ResumeFrom 'resume'
+    $runDirectory = (Resolve-Path -LiteralPath $ResumeFrom).Path
+    $resumeDir = Join-Path $runDirectory 'resume'
     if (!(Test-Path -LiteralPath $resumeDir)) {
         Fail 20 "Resume directory missing resume subdirectory: $resumeDir"
     }
@@ -950,7 +951,7 @@ function Invoke-ResumeFrom() {
         Fail 20 "Resume directory missing resume.json: $resumeJsonPath"
     }
     
-    $script:RunDir = (Resolve-Path -LiteralPath $ResumeFrom).Path
+    $script:RunDir = $runDirectory
     Write-CiLog "Resuming from run directory: $script:RunDir"
 
     # Read resume.json
