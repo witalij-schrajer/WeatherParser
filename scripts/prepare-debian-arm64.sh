@@ -57,7 +57,7 @@ else
   echo "prepare-debian-arm64: Installing .NET SDK $DOTNET_SDK_VERSION..." >&2
   curl -fsSL --retry 3 -o "$TEMP_DIR/dotnet-install.sh" https://dot.net/v1/dotnet-install.sh
   chmod +x "$TEMP_DIR/dotnet-install.sh"
-  "$TEMP_DIR/dotnet-install.sh" --version "$DOTNET_SDK_VERSION" --install-dir "$DOTNET_DIR" --no-path
+  "$TEMP_DIR/dotnet-install.sh" --version "$DOTNET_SDK_VERSION" --install-dir "$DOTNET_DIR" --no-path >&2
 
   if ! sdk_installed; then
     echo "prepare-debian-arm64: Error: Failed to install .NET SDK $DOTNET_SDK_VERSION." >&2
