@@ -1,6 +1,6 @@
 # P1.09 – Local CI Job Sequence: Result Record
 
-**Status (2026-10-19): implemented and verified on Windows x64; the genuine initial bootstrap seed is established on commit `0a2dabe`; P1.09 acceptance is pending review.** Implements the [P1.09 plan](P1_09_LOCAL_CI_PLAN.md). The script was generated and repaired by the local qwen3-coder:30b model; Claude reviewed each version, ran every build and verification run, and described each defect to qwen, which wrote all script fixes.
+**Status (2026-10-19): implemented, verified on Windows x64 and accepted by the user ([acceptance](#p109-acceptance-2026-10-19)); the genuine initial bootstrap seed is established on commit `0a2dabe`.** Implements the [P1.09 plan](P1_09_LOCAL_CI_PLAN.md). The script was generated and repaired by the local qwen3-coder:30b model; Claude reviewed each version, ran every build and verification run, and described each defect to qwen, which wrote all script fixes.
 
 ## Decisions (user, 2026-10-19)
 
@@ -149,3 +149,13 @@ In every fault run the run directory and `ci.log` were kept. Correction: with sc
 - [x] The `.nupkg` contains only the allowed entries.
 - [x] No step uses the global `dotnet-coverage`, a secret or the developer working tree.
 - [x] This record and the documents named in section 7 are updated.
+
+### P1.09 acceptance (2026-10-19)
+
+The user accepted the P1.09 results on 2026-10-19, after the third external review reported no new actionable defects. That review verified on script revision `532bd71`:
+- matching consumer locks and permitted hash rewrites pass, and unrelated dependency changes fail;
+- the settings comparison covers the manifest version, missing and extra fields, and exclusions;
+- the latest retained pipeline run has 155 passing tests, zero build warnings, matching package hashes and the expected package contents;
+- its exit 90 is correct, because coverage stays at 52/56 (92.86%) while this code change requires a strict improvement.
+
+Remaining outside P1.09: a passing coverage comparison for a code change (a strict block-coverage improvement through meaningful tests) is still required for overall P1 acceptance; Debian/ARM64 (P1.10), developer instructions (P1.11, including the commit-dependent package hash of finding 5) and hosted CI remain open.

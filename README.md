@@ -227,7 +227,7 @@ dotnet run --project tools/WeatherParser.Coverage.Runner -- evaluate --report Te
 
 The runner writes the gate result as JSON to stdout and exits 0 (all rules passed), 1 (a coverage rule failed) or 2 (usage or input error). Use `--baseline <file> --expected-baseline-commit <sha>` instead of `--bootstrap` once a baseline exists; `--bootstrap` is only for the genuine first measurement. `write-baseline` creates a baseline file from a native report.
 
-Local CI sequence (P1.09; verified on Windows x64, acceptance pending). It needs PowerShell 7 and tests only the committed state, from a fresh clone in a temporary directory:
+Local CI sequence (P1.09; verified on Windows x64 and accepted). It needs PowerShell 7 and tests only the committed state, from a fresh clone in a temporary directory:
 
 ```powershell
 pwsh ./scripts/ci-local.ps1 -TargetRef <comparison commit or branch>

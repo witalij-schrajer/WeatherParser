@@ -1,6 +1,6 @@
 # WeatherParser – P1 detailed plan
 
-As of 2026-10-19. **P0 is complete. P1.01-P1.08 are complete; the Visual Studio build limitation is resolved, clean-checkout reproducibility remains pending.** P1.08's evaluator, runner and pinned tooling are accepted; the user explicitly accepted its missing original Red-step evidence. Local CI (P1.09), platform foundations, developer instructions and overall P1 acceptance remain pending.
+As of 2026-10-19. **P0 is complete. P1.01-P1.09 are complete; the Visual Studio build limitation is resolved; clean-checkout reproducibility is verified on Windows x64 (P1.09), Debian/ARM64 remains pending (P1.10).** P1.08's evaluator, runner and pinned tooling are accepted; the user explicitly accepted its missing original Red-step evidence. Local CI (P1.09) is accepted. Platform foundations, developer instructions and overall P1 acceptance remain pending.
 
 Basis: [requirements](REQUIREMENTS.md), [development plan](DEVELOPMENT_PLAN.md) and [repository rules](AGENTS.md).
 
@@ -50,7 +50,7 @@ Names are provisional. Create projects only when needed. No empty infrastructure
 | P1.06 | Test-drive minimally needed package/DI contracts | Complete (`AddWeatherParsing` entry point, real DI resolution, missing registration detected, 8 passing tests); [record](docs/p1/P1_06_DI_CONTRACTS.md) |
 | P1.07 | Collect Microsoft.CodeCoverage and verify report contract | Complete (raw report, block breakdown and proven per-assembly counter mapping); [record](docs/p1/P1_07_COVERAGE_CONTRACT.md) |
 | P1.08 | Test-drive coverage evaluation/exceptions | Complete and accepted by the user (2026-10-19), including the documented original Red-step deviation; [acceptance record](docs/p1/P1_08_COVERAGE_EVALUATION.md#p108-acceptance-2026-10-19); [closure plan](docs/p1/P1_08B_COVERAGE_GATE_COMPLETION_PLAN.md) |
-| P1.09 | Prepare local CI job sequence/artifacts | Implemented and verified on Windows x64 (2026-10-19): fresh-clone pipeline, seven fault injections, genuine bootstrap seed on `0a2dabe` (52/56 blocks, Release); passing two-pass run (documentation-only `ef9b9ac` against `0a2dabe`); `-BaselinePath` settings validation after review; acceptance pending; [plan](docs/p1/P1_09_LOCAL_CI_PLAN.md); [record](docs/p1/P1_09_LOCAL_CI.md) |
+| P1.09 | Prepare local CI job sequence/artifacts | Implemented and verified on Windows x64 (2026-10-19): fresh-clone pipeline, seven fault injections, genuine bootstrap seed on `0a2dabe` (52/56 blocks, Release); passing two-pass run (documentation-only `ef9b9ac` against `0a2dabe`); `-BaselinePath` settings validation after review; **accepted by the user 2026-10-19** ([acceptance](docs/p1/P1_09_LOCAL_CI.md#p109-acceptance-2026-10-19)); [plan](docs/p1/P1_09_LOCAL_CI_PLAN.md); [record](docs/p1/P1_09_LOCAL_CI.md) |
 | P1.10 | Verify Debian/ARM64 package foundations | Package/restore evidence; runtime success only after actual execution; after P1.09; [plan](docs/p1/P1_10_DEBIAN_ARM64_PLAN.md) |
 | P1.11 | Complete English developer instructions/evidence | Restore/build/pack/test/coverage procedures and limits; ongoing; [plan](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md) |
 | P1.12 | Accept phase and document P2 handoff | Results, artifacts and remaining limitations; after all packages; [plan](docs/p1/P1_12_ACCEPTANCE_HANDOFF_PLAN.md) |
