@@ -15,13 +15,13 @@ All five decisions of the plan's section 3 were taken as recommended:
 
 | Path | Content |
 |---|---|
-| `scripts/ci-local.ps1` | 878-line PowerShell 7 script: every stage of the plan's section 5, the parameter and exit-code tables, the `current/` and `target/` pass directories, `collection-settings.json`, seven fault injections, two-pass baseline, `-BaselinePath`, `-Bootstrap` with seed output, and the finish stage |
+| `scripts/ci-local.ps1` | 923-line PowerShell 7 script: every stage of the plan's section 5, the parameter and exit-code tables, the `current/` and `target/` pass directories, `collection-settings.json`, seven fault injections, two-pass baseline, `-BaselinePath` (with its sibling `collection-settings.json`), `-Bootstrap` with seed output, and the finish stage |
 | `WeatherParser.Ci.slnf` | Solution filter with the six projects other than the package consumer |
 | `tests/WeatherParser.Coverage.Tests/PullRequestClassifierTests.cs` | Line-ending fix found by the clean-clone run (see findings) |
 
 ## Verification runs (Windows x64, PowerShell 7.6.7, Git 2.55, .NET SDK 10.0.402)
 
-Final script revision: `1b6e6d0`. Run directories are under `artifacts/ci/` (gitignored, kept locally).
+Script revision of these runs: `1b6e6d0`; the review fixes (`7333ba4`) were verified separately (section "Review fixes"). Run directories are under `artifacts/ci/` (gitignored, kept locally).
 
 | Run | Command | Exit | Result |
 |---|---|---|---|
@@ -63,6 +63,26 @@ pwsh ./scripts/ci-local.ps1 -Commit 0a2dabe -TargetRef 0a2dabe -Bootstrap
   - `commits.json`: `cc70431da647a9e7083ed1ec1c6fc228d92dd22c91514f81b2e9c6492f6daea5`
 - **Consequence:** the bootstrap exception is used up for this branch. Every later candidate is compared normally with a comparable baseline, for example `0a2dabe` remeasured by the two-pass procedure (`-TargetRef 0a2dabe`). Below 100%, a code change must strictly increase block coverage; documentation-only changes may keep it equal. Losing these local artifacts, changing platform or lacking older tooling never justifies another bootstrap. Because the run directory is local, the baseline values above are the durable record; the two-pass procedure remeasures the target anyway.
 
+## Review fixes (2026-10-19)
+
+An external review of the seed evidence confirmed the five artifact hashes, the package hash and the 155 passing tests, and found three script defects. qwen fixed them from Claude's descriptions (script revision `7333ba4`); Claude reviewed the diffs and returned wrong or unapplied edits to qwen before verification.
+
+1. **[P1] External baselines bypassed the settings comparison.** `-BaselinePath` passed the baseline straight to the runner, so a Release report 52/56 "improved" on a synthetic Debug baseline 57/63. An external baseline now requires a sibling `collection-settings.json`, as written next to `target/baseline.json` and `current/bootstrap-baseline.json`. Before any clone the script checks that this file exists and that the baseline `commitId`, the settings `commit` and the `-TargetRef` SHA are equal (exit 20). The gate stage copies both files to `baseline-input/`, logs their SHA-256 and compares the settings with the current pass through the same `Assert-ComparableSettings` function as the two-pass mode (exit 85).
+2. **[P2] SDK failures lacked `commits.json`.** The initial `commits.json` is now written right after the run directory is created, before the clone and SDK check; the `finally` block adds `finishedUtc` and the final `exitCode`. Validation errors before the run directory still create no run directory.
+3. **[P2] Relative `-BaselinePath` values.** The path is resolved to an absolute path right after the existence check, so the runner inside the temporary clone receives the file that was validated.
+
+Verification with candidate `ef9b9ac`, a documentation-only change against `0a2dabe` (`DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `docs/p1/P1_09_LOCAL_CI.md`):
+
+| Run | Exit | Result |
+|---|---|---|
+| `-TargetRef 0a2dabe -FaultInjection SdkMismatch` | 10 | `commits.json` present with `faultInjection` `SdkMismatch` and `exitCode` 10 |
+| `-BaselinePath` without sibling settings | 20 | "External baseline requires a sibling collection-settings.json: …", before any clone |
+| `-TargetRef b6100e2 -BaselinePath` (seed of `0a2dabe`) | 20 | "External baseline commit '0a2dabe…' does not match TargetRef commit 'b6100e2…'" |
+| `-TargetRef 0a2dabe -BaselinePath` synthetic Debug baseline 57/63 with Debug settings | 85 | "field 'configuration' differs (current: 'Release', baseline: 'Debug')": the reviewer's false improvement is rejected |
+| `-TargetRef 0a2dabe -BaselinePath artifacts/ci/0a2dabe-20261019T171822Z/current/bootstrap-baseline.json` (relative path to the genuine seed) | 0 | All five rules passed; 52/56 equals the baseline 52/56, which is allowed for a documentation-only change. The logged SHA-256 of the copied baseline (`06c6ade3…`) and settings (`865f19a0…`) equal the seed provenance |
+| `-TargetRef 0a2dabe` (two-pass) | 0 | First passing two-pass run: all five rules passed, 52/56 against the remeasured target 52/56, documentation-only change |
+| `-TargetRef 0a2dabe -FaultInjection IncomparableTarget` | 85 | Two-pass comparison unchanged after the refactoring |
+
 ## Fault injections (T-P1-08, T-P1-19)
 
 | Fault | Expected | Actual | Diagnostic |
@@ -75,7 +95,7 @@ pwsh ./scripts/ci-local.ps1 -Commit 0a2dabe -TargetRef 0a2dabe -Bootstrap
 | `GateFailure` (with `-Bootstrap`) | 90 | 90 | `gate-result.json` shows `current` 57/33 and a failed Minimum rule; no seed file written |
 | `IncomparableTarget` (two-pass) | 85 | 85 | Names the `dotnetCoverageToolVersion` field and both values |
 
-In every fault run the run directory, `ci.log`, `commits.json` (with `faultInjection` and `exitCode`) were kept.
+In every fault run the run directory and `ci.log` were kept. Correction: with script revision `1b6e6d0` the `SdkMismatch` runs had no `commits.json`, because the file was written only after the SDK check. The review fix writes it before the clone, so every fault run now keeps `commits.json` with `faultInjection` and `exitCode`.
 
 ## Findings
 
@@ -92,7 +112,7 @@ In every fault run the run directory, `ci.log`, `commits.json` (with `faultInjec
 
 ## Open items
 
-- **Verification run 1 of the plan ("a two-pass run which passes") cannot pass today.** Every target with the runner (`b6100e2` or later) has the same library coverage, and the script itself is a code change, so the gate correctly reports equal coverage below 100% (exit 90). This is the situation described in the P1.10 plan (decision h) and the P1.12 plan: a passing two-pass run requires a strict coverage improvement through meaningful tests.
+- **Passing two-pass runs for code changes:** a code change with unchanged coverage correctly exits 90 (for example the script against `b6100e2`). The first passing two-pass run is the documentation-only candidate `ef9b9ac` against `0a2dabe` (section "Review fixes"). A passing two-pass run for a code change requires a strict coverage improvement through meaningful tests (P1.10 plan decision h, P1.12 plan).
 - **Stale committed consumer lock file:** `README.md` is the packed package readme. The README edits since `2f8c670` (including this package's procedure section) change the package hash, so the committed `tests/WeatherParser.Package.Tests/packages.lock.json` no longer matches a freshly packed package. The CI script is unaffected because it rewrites the `contentHash` in its clone, but a manual locked consumer restore in the working tree fails until the lock is refreshed as described in step 3 of the [P1.11 plan](P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md).
 - **No hosted CI:** a local run is not a GitHub Actions run; creating a workflow needs separate authorization.
 - **Platform:** Windows x64 only; Debian/ARM64 is P1.10.
@@ -100,10 +120,10 @@ In every fault run the run directory, `ci.log`, `commits.json` (with `faultInjec
 ## Acceptance criteria (plan section 9)
 
 - [x] Decisions a–e recorded with the user's choice.
-- [ ] A run of the verified commit from a fresh clone exits 0 with every listed file: met by the bootstrap runs (mechanics check and seed); the two-pass run correctly exits 90 (see open items).
+- [x] A run of the verified commit from a fresh clone exits 0 with every listed file: the bootstrap runs (mechanics check and seed) and the two-pass run of `ef9b9ac` against `0a2dabe` (section "Review fixes").
 - [x] Each `-FaultInjection` value and the TargetRef=Commit case exit with the documented code; run directory and `ci.log` kept.
 - [x] `-Bootstrap -FaultInjection GateFailure` exits 90 and keeps `ci.log` and `gate-result.json`.
-- [x] Two-pass runs write `collection-settings.json` for both passes; `IncomparableTarget` exits 85.
+- [x] Two-pass runs write `collection-settings.json` for both passes; `IncomparableTarget` exits 85; an external `-BaselinePath` is compared with its sibling settings (exit 85 on a Debug/Release mismatch).
 - [x] Separate `current/` and `target/` directories; the gate evaluates the current pass's report.
 - [x] Locked consumer restore; only the `contentHash` changes; restored hash equals the packed hash.
 - [x] Genuine initial bootstrap seed identified once on `0a2dabe`, with a passing full pipeline, justification, `current/bootstrap-baseline.json` and settings/provenance (section "Genuine initial bootstrap seed").
