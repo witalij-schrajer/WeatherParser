@@ -117,9 +117,10 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zip = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $package).Path)
 $zip.Entries.FullName   # only lib/net10.0/WeatherParser.Parsing.dll, README.md, LICENSE and NuGet metadata
 foreach ($name in 'README.md', 'LICENSE') {
-    $reader = [IO.StreamReader]::new($zip.GetEntry($name).Open())
-    $packed = $reader.ReadToEnd(); $reader.Dispose()
-    if ($packed -ne [IO.File]::ReadAllText((Resolve-Path $name).Path)) { throw "$name in the package differs from the working tree" }
+    $entry = $zip.GetEntry($name).Open(); $buffer = [IO.MemoryStream]::new(); $entry.CopyTo($buffer); $entry.Dispose()
+    $packedSha = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($buffer.ToArray()))
+    $sourceSha = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([IO.File]::ReadAllBytes((Resolve-Path $name).Path)))
+    if ($packedSha -cne $sourceSha) { throw "$name in the package is not byte-identical to the working tree ($packedSha, $sourceSha)" }
 }
 $zip.Dispose()
 $packedHash = [Convert]::ToBase64String([Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes((Resolve-Path $package).Path)))

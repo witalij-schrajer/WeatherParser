@@ -144,3 +144,19 @@ An external review of `1276cd7` confirmed the Release build, 162 tests, package 
 - [x] The README commit contains only Markdown, has a recorded P1.09 run and gate result (documentation-only; latest `8a96f58`), and the consumer lock is not committed with it.
 - [x] Interim delivery (part a): the checks pass for the current revision.
 - [x] Completion (part b): done for P1.08 closure, P1.09 and P1.10; no item is Planned; no item is OPEN.
+
+## Second review fix (2026-10-19)
+
+A second review of `d29ffb6` confirmed the coverage-selection fix, the removed SDK setup text, all 74 relative links in the changed documents and the recorded CI hashes with 162 passing tests. It found one remaining defect: the section 4 content check compared decoded text with PowerShell's case-insensitive `-ne`, so a package copy whose LICENSE read `mit License` was accepted.
+
+qwen replaced the comparison with SHA-256 hashes of the raw bytes and the case-sensitive `-cne`. The packed entry is read through a byte stream, the working-tree file with `ReadAllBytes`.
+
+Verification: the content-check lines were extracted verbatim from the corrected CONTRIBUTING.md and run in the fresh clone of `8a96f58` against three packages:
+
+| Package | Result |
+|---|---|
+| Unchanged package | Accepted |
+| Copy with LICENSE `MIT License` changed to `mit License` | Rejected: "LICENSE in the package is not byte-identical to the working tree" |
+| Copy with README.md line endings changed from CRLF to LF only | Rejected: "README.md in the package is not byte-identical to the working tree" |
+
+The complete section 4 block was then executed again: the packed and restored hashes are equal, the 2 consumer tests passed, and the tree was clean. Only CONTRIBUTING.md changed. README.md is unchanged since `8a96f58`, so the package-readme check and the documentation-only gate result recorded above still apply.
