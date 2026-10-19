@@ -233,17 +233,51 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
         Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
     }
 
+    # Handle TRX attachment copies
+    $guidPattern = '^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$'
+    $allCoverage = @(Get-ChildItem -Path $coverageRawDir -Filter '*.coverage' -Recurse -File)
+    $collectorReports = @($allCoverage | Where-Object { $_.Directory.Name -match $guidPattern -and $_.Directory.Parent.FullName -eq (Get-Item $coverageRawDir).FullName })
+    $copies = @($allCoverage | Where-Object { $collectorReports.FullName -notcontains $_.FullName })
+
+    foreach ($copy in $copies) {
+        $copySha256 = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData([IO.File]::ReadAllBytes($copy.FullName)))
+        $isIdentical = $false
+        foreach ($report in $collectorReports) {
+            $reportSha256 = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData([IO.File]::ReadAllBytes($report.FullName)))
+            if ($copySha256 -eq $reportSha256) {
+                $isIdentical = $true
+                break
+            }
+        }
+        if (!$isIdentical) {
+            Fail 80 "Unexpected .coverage file $($copy.FullName) differs from every collector report"
+        }
+        
+        # Find TRX attachment directory (direct child of coverageRawDir)
+        $attachmentDir = $copy.Directory
+        while ($attachmentDir.Parent.FullName -ne (Get-Item $coverageRawDir).FullName) {
+            $attachmentDir = $attachmentDir.Parent
+        }
+        Remove-Item -Recurse -Force $attachmentDir.FullName
+        Write-CiLog "Removed TRX attachment copy $($copy.FullName) (identical to collector report)"
+    }
+
     if ($FaultInjection -eq 'MissingCoverage' -and $PassDir -eq (Join-Path $script:RunDir 'current')) {
         Write-CiLog "FAULT INJECTION: MissingCoverage"
-        $coverageFiles = Get-ChildItem -Path $coverageRawDir -Filter "*.coverage" -Recurse
-        if ($coverageFiles.Count -gt 0) {
-            Remove-Item $coverageFiles[0].FullName
+        # Re-read collector reports after cleanup
+        $allCoverage = @(Get-ChildItem -Path $coverageRawDir -Filter '*.coverage' -Recurse -File)
+        $collectorReports = @($allCoverage | Where-Object { $_.Directory.Name -match $guidPattern -and $_.Directory.Parent.FullName -eq (Get-Item $coverageRawDir).FullName })
+        if ($collectorReports.Count -gt 0) {
+            Remove-Item $collectorReports[0].FullName
         }
     }
 
-    $coverageFiles = Get-ChildItem -Path $coverageRawDir -Filter "*.coverage" -Recurse
-    if ($coverageFiles.Count -ne 1) {
-        Fail 80 "Expected exactly one .coverage file, found $($coverageFiles.Count)"
+    # Re-read after potential deletion
+    $allCoverage = @(Get-ChildItem -Path $coverageRawDir -Filter '*.coverage' -Recurse -File)
+    $collectorReports = @($allCoverage | Where-Object { $_.Directory.Name -match $guidPattern -and $_.Directory.Parent.FullName -eq (Get-Item $coverageRawDir).FullName })
+    
+    if ($collectorReports.Count -ne 1) {
+        Fail 80 "Expected exactly one collector .coverage file, found $($collectorReports.Count)"
     }
 
     # Move TRX files from raw to trx directory and log test counts
