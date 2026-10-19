@@ -38,6 +38,14 @@ These rules apply throughout the repository. Current explicit user instructions 
 - Set up GitHub repositories, remotes, pushes, releases and publication only within explicit authorization. The general open-source objective does not authorize automatic publication.
 - Check the working tree before editing; preserve others' changes and avoid destructive resets/cleanup. Use meaningful small commits when requested, and do not claim a commit when only files were created.
 
+## AI-assisted development (user decision dated 2026-10-19)
+
+- Where applicable, use the local `qwen3-coder:30b` model (through Ollama) to generate, change and fix code, scripts, tests, plans and documentation in this repository. This includes fixes for defects found in qwen's own output or by reviews: describe the defect to qwen and let it produce the fix.
+- The orchestrating LLM (the agent driving the task) plans the work, writes precise briefs for qwen (requirements, affected files, current text to change, expected behaviour and test-first expectations), applies qwen's output, and acts as reviewer and supervisor. It does not silently replace qwen's work with its own.
+- The orchestrating LLM must verify every qwen result before it is accepted: review the diff against `AGENTS.md`, `REQUIREMENTS.md` and the active plan, run the relevant builds and tests itself, and review the result of each step. Defects found are described to qwen for correction, and the fix is verified again.
+- qwen is not applicable when the model is unavailable, when a change needs information or decisions qwen cannot have (for example user decisions, recorded evidence, run results, commits, pushes and other repository operations), or when repeated precise briefs still fail. In those cases the orchestrating LLM may do the work itself and states the reason in its report.
+- Result records name which parts qwen generated and which the orchestrating LLM wrote or corrected. Model output is never evidence: only builds, tests and runs executed and checked by the orchestrating LLM count.
+
 ## NuGet primary product and example CLI
 
 The intended published product is a reusable NuGet library. It contains DWD/OsthessenWetter/MOSMIX parsers with required retrieval/normalization, public output entities, a generic MQTT serializer and dependency-injection integration. The CLI is only a usage example and consumes a versioned package reference; other applications can use the package without the CLI.
