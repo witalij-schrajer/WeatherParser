@@ -54,6 +54,8 @@ Under option B, the single-source mapping is:
 
 The "Coverage gate" block added to `README.md` in `b6100e2` moves to the guide; the README keeps a link.
 
+**Consumer lock for README changes (user decision, 2026-10-19).** The package embeds the commit ID ([P1_09_LOCAL_CI.md](P1_09_LOCAL_CI.md) finding 5), so a committed consumer lock can never match the package built from its own commit. README changes are therefore committed without the consumer lock; a local lock refresh is discarded after local verification, and the P1.09 script verifies the package and consumer of the committed revision. This replaces the earlier README-plus-lock commit.
+
 ## 4. Artifacts
 
 | Path | New/Changed | Responsibility |
@@ -119,17 +121,14 @@ Part (a) produces an **interim delivery**: the guide, the README reduction and t
    - **A procedure** moves to the guide.
    - **A dated status paragraph** is either replaced by a link to the record that already contains it, or moved to `DEVELOPMENT_PLAN.md` if no record contains it.
    - **Nothing is lost:** list every removed paragraph and its destination in the result record.
-3. **Repack and verify the package after the README change.** `README.md` is packed into `WeatherParser.Parsing.0.1.0-initial.nupkg`, so the reduced README changes the package content and hash. Until P1.09 automates this, do it manually, in this order:
+3. **Verify the package after the README change.** `README.md` is packed into `WeatherParser.Parsing.0.1.0-initial.nupkg`, so the reduced README changes the package content and hash. Check it locally before the commit, then with the P1.09 script on the committed revision, in this order:
    1. Review the reduced README as a standalone NuGet package description: library purpose, current implemented/planned scope, usage entry point and limitations. Keep detailed developer procedures in the guide. Use verified public repository documentation links where available, without inventing a published URL or relying on unpackaged local files.
-   2. `dotnet pack src/WeatherParser.Parsing -c Release -o artifacts/local-nuget`. List the `.nupkg` entries: only `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE` and the NuGet metadata. Check the nuspec's canonical `README.md` reference and confirm the packed README/LICENSE are byte-identical to the source at the recorded revision. Record the package's base64 SHA-512.
+   2. `dotnet pack src/WeatherParser.Parsing -c Release -o artifacts/local-nuget`. List the `.nupkg` entries: only `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE` and the NuGet metadata. Check the nuspec's canonical `README.md` reference and confirm the packed README/LICENSE are byte-identical to the source at the recorded revision. Record the package's base64 SHA-512; it identifies only this local pre-commit package, because the package embeds the commit ID.
    3. Remove only the stale cache entry `<global packages folder>/weatherparser.parsing/0.1.0-initial` (`dotnet nuget locals global-packages --list` shows the folder). The constant version would otherwise restore the old package.
-   4. `dotnet restore tests/WeatherParser.Package.Tests --force-evaluate` rewrites the consumer lock file. Its diff must change only the `contentHash` of `WeatherParser.Parsing`; any other change stops the step and is reported.
-   5. `dotnet restore tests/WeatherParser.Package.Tests --locked-mode` must succeed. The restored `.nupkg.sha512` must equal the recorded hash, and `dotnet test tests/WeatherParser.Package.Tests` must pass.
-   6. Commit the README change and the updated consumer lock file together. The committed lock file then matches exactly the package artifact built and verified in this recorded run, identified by the SHA-512 recorded in item 2. Packing is not proven deterministic, so a later pack of the same commit may produce a different hash. Every later pack and consumer restore is therefore verified again: manually as in this step, or by P1.09's `contentHash` rewrite and hash check once it exists. No guarantee is made for future packages.
-   7. **Gate classification:** this commit is **not** documentation-only for the coverage gate. Under the binding rule (PHASE_P1_PLAN.md section 5, T-P1-23), only Markdown documentation qualifies, and any package or lock-file change makes the whole commit a code change. `packages.lock.json` changes the package, so the gate must classify the commit as code. (The P1.08 `PullRequestClassifier` at `b6100e2` was broader than this rule; the defect was corrected test-first afterwards and is described in the correction note of `P1_08_COVERAGE_EVALUATION.md`. This step relies on the binding rule either way.) Below a 100% baseline it must therefore strictly improve block coverage, or the `Comparison` rule fails (exit 1 from the runner, 90 from the P1.09 script).
-      - Either combine the README change with meaningful coverage improvements (for example the tests of P1.10 decision h), or obtain a separately authorized, narrowly scoped rule change.
-      - Never relabel the commit as documentation-only, and never split the lock-file update into a later commit. The committed lock file would then point to an outdated package.
-      - Record the gate result of this commit in the result record.
+   4. Local check: `dotnet restore tests/WeatherParser.Package.Tests --force-evaluate` rewrites the consumer lock; its diff must change only the `WeatherParser.Parsing` `contentHash`; then `--locked-mode` restore, restored `.nupkg.sha512` equals the recorded hash, `dotnet test tests/WeatherParser.Package.Tests` passes.
+   5. Discard the local lock refresh with `git restore tests/WeatherParser.Package.Tests/packages.lock.json`, then commit only the Markdown changes. The committed lock is stale by design and is not refreshed: every build of a new commit embeds that commit ID and gets a different package hash, so a committed refresh would never match its own commit.
+   6. Run `pwsh ./scripts/ci-local.ps1 -Commit <README commit> -TargetRef <target branch commit>` (two-pass) on the committed revision. It performs the authoritative pack-content check, consumer `contentHash` rewrite, locked restore, hash check and consumer tests. Record the run directory, package SHA-512 and result.
+   7. **Gate classification:** the commit contains only `.md` files, so the gate classifies it as documentation-only: equal block coverage passes, a decrease fails (P1.09 verified this with the documentation-only candidate `ef9b9ac` against `0a2dabe`, exit 0). If the commit contains any non-Markdown file it is a code change and needs a strict improvement below a 100% baseline. Never add the consumer lock to make the package check pass. Record the gate result.
 4. **Point `tests/WeatherParser.Package.Tests/README.md`** to the guide's package section.
 5. **Add the consistency table to `AGENTS.md`** under "Documentation". It is enforced by the documentation-consistency review that AGENTS.md already requires, with no new tooling:
 
@@ -143,7 +142,7 @@ Part (a) produces an **interim delivery**: the guide, the README reduction and t
    | `coverage.runsettings` | Guide §5 and §7, `docs/COMPATIBILITY.md` |
    | Project added to or removed from `WeatherParser.slnx` or `WeatherParser.Ci.slnf` | Guide §2 and §3 |
    | Phase status | README status summary, `PHASE_P1_PLAN.md`, `DEVELOPMENT_PLAN.md` |
-   | `README.md` (packed package readme) | Repack, consumer lock `contentHash` and consumer tests as in part (a) step 3, in the same commit (until P1.09 automates it) |
+   | `README.md` (packed package readme) | Local package check as in part (a) step 3, then the P1.09 script run on the committed revision; the consumer lock is not committed |
    | `Directory.Packages.props` version used in a guide command | The guide's "Version literals" table and the commands listing it |
 
 6. **Update `PHASE_P1_PLAN.md`:** the P1.11 row gets the plan link and the status "ongoing". The existing section 8 checkbox "English output/comments and complete English documentation" is mapped to this package; no new checkbox is added.
@@ -170,7 +169,7 @@ PHASE_P1_PLAN.md defines no test ID for P1.11, so none is invented.
 | P1.11 check: links | Every relative Markdown link and anchor in the changed documents | All resolve |
 | P1.11 check: language/privacy | Changed documents searched for non-English prose, absolute user paths (`C:\Users\`, `/home/`), host names, IP addresses, user names and tokens | None found; historical content of `docs/p1` records unchanged, additions dated |
 | P1.11 check: status | Every guide item compared with the records | Exactly one status per item, consistent with its record; section 9 has none |
-| P1.11 check: package readme | Part (a) step 3 | Allowed entries only; packed README byte-identical to the committed one; consumer lock diff limited to the `WeatherParser.Parsing` `contentHash`; locked restore and consumer tests pass; restored hash equals the packed hash |
+| P1.11 check: package readme | Part (a) step 3 | Allowed entries only; packed README byte-identical to the committed one; local lock diff limited to the `WeatherParser.Parsing` `contentHash` and discarded before the commit; the committed README commit contains only Markdown; the P1.09 run on that commit passes its package, consumer and hash checks |
 | P1.11 check: requirement IDs | The sequence of `**REQ-nnn**` identifiers in `REQUIREMENTS.md` at the walked-through revision, compared with reference commit `b6100e2` | Exactly 84 unique IDs (range REQ-001 to REQ-112, with gaps), in the identical established document order. That order is deliberate and not numeric, for example REQ-050 and REQ-057 are not in ascending position, so it is never "corrected" by sorting. Any added, removed, renumbered or moved ID is a finding unless a recorded requirement decision explains it |
 | P1.11 check: comment language | All inline and block comments and XML documentation comments in `src/`, `tests/` and `tools/` C# files, and comments in scripts and configuration examples (`scripts/`, `*.ps1`, `*.sh`, `*.props`, `*.csproj`, `*.json` examples, `*.runsettings`, `*.slnf`), at the walked-through revision | English only (AGENTS.md, REQ-009). Every non-English comment is listed with file and line, and fixed in its owning package. Technical identifiers, CLI options, data fields, source names and URLs are exempt |
 | P1.11 check: preservation | Reference revision `b6100e2` compared with the walked-through revision; both must be commits. Hash the **committed content** of each file at each revision (`git rev-parse <rev>:<path>` for the blob ID, or `git show <rev>:<path>` piped to SHA-256), never working-tree bytes: with `core.autocrlf=true` the checked-out files carry CRLF line endings and hash differently although unchanged. **Byte-identical set:** `LICENSE`, `docs/p1/P1_01_BASELINE.json`, `docs/p1/P1_02_DEPENDENCY_INVENTORY.json`. **Append-only set:** the evidence records `docs/p1/P1_01_BASELINE.md` to `P1_07_COVERAGE_CONTRACT.md` and `P1_08_COVERAGE_EVALUATION.md`. Living plan files (`*_PLAN.md`) are excluded, because they change through review | Byte-identical set: equal blob IDs (or SHA-256) at both revisions. Append-only set: the reference blob is an unchanged byte prefix of the current blob, so the change consists only of additions at the end, under a dated heading. Any other change is a finding. The packed-LICENSE comparison in step 3 does not replace this check, because it only compares the package with the current source |
@@ -180,11 +179,11 @@ PHASE_P1_PLAN.md defines no test ID for P1.11, so none is invented.
 
 `docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md` records:
 - The revision walked through, and the SDK and PowerShell versions used.
-- The package SHA-512 after the README change, and the consumer lock diff.
+- The local pre-commit package SHA-512 and lock diff (discarded before the commit), and the P1.09 run of the committed README commit: run directory, package SHA-512 and consumer result.
 - The package entry list, canonical nuspec README reference, README/LICENSE byte comparisons, packed/restored hash equality, locked-consumer test result and standalone NuGet-description review.
 - The walkthrough log per section: commands, date, result.
 - The link, language/privacy, status, single-source, requirement-ID and comment-language check results. For the requirement IDs, record the count and a checksum of the ID sequence for both revisions. For comments, record the scanned file set and every finding.
-- The coverage-gate result of the README and lock commit (part (a) step 3).
+- The coverage-gate result of the README commit (part (a) step 3), classified as documentation-only.
 - The preservation check: reference and walked-through revisions, the file sets, the blob IDs (or SHA-256 of committed content) of the byte-identical set at both revisions, and for each append-only record the prefix result with the size of its dated additions.
 - The status table of all guide items.
 - The list of paragraphs removed from `README.md` with their destination.
@@ -195,7 +194,7 @@ Part (b) appends one entry per package report.
 
 - `README.md` mixes dated status paragraphs with procedures; the move must not lose information (step 2 lists every paragraph and its destination).
 - `README.md` is the packed package readme: every README edit changes the package and its hash, so it needs the repack and consumer check of step 3. P1.12 likewise requires a new pack/content check for the final candidate after any README change.
-- Because of the lock-file update, every README commit counts as a code change for the coverage gate (step 3, item 7). It cannot pass at equal coverage below 100%, so README work has to be scheduled together with real coverage improvements, or the gate result must be expected and recorded. An exact 100% baseline is the exception: an exact 100% result then passes at equality.
+- The committed consumer lock stays stale by design, because the package embeds the commit ID; a manual locked consumer restore in a working tree needs a local, uncommitted lock refresh (guide section 4). A README commit that also contains a non-Markdown file is a code change and cannot pass at equal coverage below 100%.
 - The comment-language check scans files that other packages own; P1.11 reports findings but does not fix code outside documentation.
 - Planned items describe intended commands from plans that may still change; they are re-checked in part (b).
 - The guide reflects the record state at its commit; the consistency table relies on reviews and is not enforced automatically.
@@ -210,6 +209,6 @@ Part (b) appends one entry per package report.
 - [ ] `README.md` follows the mapping, and every removed paragraph has a recorded destination.
 - [ ] The consistency table is in `AGENTS.md` under "Documentation".
 - [ ] All documentation checks in section 6 pass and are recorded, including the package-readme repack, requirement-ID, comment-language and preservation checks.
-- [ ] The README and lock commit has a recorded gate result. It is classified as a code change, never relabelled as documentation-only.
+- [ ] The README commit contains only Markdown, has a recorded P1.09 run and gate result (documentation-only), and the consumer lock is not committed with it.
 - [ ] Interim delivery (part a): the checks above pass for the current revision.
 - [ ] Completion (part b): done for P1.08 closure, P1.09 and P1.10; no item is Planned; only P1.10 Class B platform items may be OPEN, with the P1.10 reason. Until then P1.11 stays ongoing.
