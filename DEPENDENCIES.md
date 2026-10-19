@@ -29,6 +29,18 @@ Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The lib
 - Run settings: `coverage.runsettings` enables static and disables dynamic managed instrumentation of Microsoft.CodeCoverage (the dynamic profiler is unsupported on Linux ARM64); `scripts/ci-local.ps1 -RunSettings coverage.runsettings` copies it once per run and records its SHA-256 for both passes. No new package is involved.
 - Each CI run isolates the NuGet package folder and the .NET CLI home (`DOTNET_CLI_HOME`, which holds the tool resolver cache), so the pinned `dotnet-coverage` is always restored into and run from the run's own folders.
 
+## GitHub Actions
+
+The repository uses a GitHub Actions workflow `.github/workflows/ci.yml` which runs the local CI script with pinned actions by full commit SHA and has no secrets or write permissions.
+
+| Action | Version | Commit | License |
+|---|---|---|---|
+| actions/checkout | v7.0.1 | 3d3c42e5aac5ba805825da76410c181273ba90b1 | MIT |
+| actions/setup-dotnet | v6.0.0 | a98b56852c35b8e3190ac28c8c2271da59106c68 | MIT |
+| actions/upload-artifact | v7.0.2 | cf430e030ddbb5b0abf93d22962f4752f3646cd9 | MIT |
+
+Versions and commits checked on 2026-10-20 against the GitHub releases.
+
 ## Local .NET tools
 
 Pinned in `.config/dotnet-tools.json` (restore with `dotnet tool restore`); the global `dotnet-coverage` installation is not used.
