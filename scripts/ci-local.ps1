@@ -28,9 +28,10 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$TargetRef,
     [string]$BaselinePath,
+    [string]$RunSettings,
     [switch]$Bootstrap,
     [switch]$KeepWorkDir,
-    [ValidateSet('SdkMismatch','LockDrift','FailingTest','MissingCoverage','ConsumerLockDrift','IncomparableTarget','GateFailure')]
+    [ValidateSet('SdkMismatch','LockDrift','FailingTest','MissingCoverage','ConsumerLockDrift','IncomparableTarget','GateFailure','RunSettingsTamper')]
     [string]$FaultInjection
 )
 
@@ -226,6 +227,8 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
     
     New-CiDirectory $PassDir
     
+    Assert-RunSettingsUnchanged
+    
     $coverageRawDir = Join-Path $PassDir 'coverage/raw'
     New-CiDirectory $coverageRawDir
 
@@ -235,7 +238,11 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
     if ($ProjectScope -eq 'Full') {
         # Run product tests with coverage
         try {
-            Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+            $testArgs = @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage')
+            if ($script:RunSettingsCopy) {
+                $testArgs += @('--settings', $script:RunSettingsCopy)
+            }
+            Invoke-Native 50 'dotnet' $testArgs -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
         } finally {
             # Move TRX files from raw to trx directory
             $rawTrxFiles = @(Get-ChildItem -Path $coverageRawDir -Filter "*.trx" -File)
@@ -252,7 +259,11 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
     } else {
         # Product scope
         try {
-            Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+            $testArgs = @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage')
+            if ($script:RunSettingsCopy) {
+                $testArgs += @('--settings', $script:RunSettingsCopy)
+            }
+            Invoke-Native 50 'dotnet' $testArgs -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
         } finally {
             # Move TRX files from raw to trx directory
             $rawTrxFiles = @(Get-ChildItem -Path $coverageRawDir -Filter "*.trx" -File)
@@ -599,7 +610,7 @@ function Invoke-ConversionStage([string]$CloneDir, [string]$PassDir) {
         dotnetCoverageManifestVersion = $dotnetCoverageManifestVersion
         dotnetCoverageToolVersion = $dotnetCoverageVersion
         collector = "Code Coverage"
-        runSettingsSha256 = "none"
+        runSettingsSha256 = $script:RunSettingsSha256
         exclusions = @("*.Tests.dll", "WeatherParser.Coverage*.dll")
         rid = $rid
         configuration = 'Release'
@@ -608,6 +619,17 @@ function Invoke-ConversionStage([string]$CloneDir, [string]$PassDir) {
     $collectionSettings | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $PassDir 'collection-settings.json')
 
     Write-CiLog "Conversion complete"
+}
+
+function Assert-RunSettingsUnchanged() {
+    if ($script:RunSettingsCopy) {
+        $runSettingsBytes = [IO.File]::ReadAllBytes($script:RunSettingsCopy)
+        $runSettingsSha256 = [System.Security.Cryptography.SHA256]::HashData($runSettingsBytes)
+        $actualSha256 = [BitConverter]::ToString($runSettingsSha256).Replace('-', '').ToLowerInvariant()
+        if ($actualSha256 -ne $script:RunSettingsSha256) {
+            Fail 85 "Run settings copy changed: expected SHA-256 $($script:RunSettingsSha256), found $actualSha256"
+        }
+    }
 }
 
 function Assert-ComparableSettings([string]$CurrentSettingsPath, [string]$BaselineSettingsPath) {
@@ -651,6 +673,11 @@ function Invoke-BaselinePass() {
     # Check if target commit has the required tool manifest
     if (!(Test-Path (Join-Path $targetDir ".config/dotnet-tools.json"))) {
         Fail 91 "Target commit $($script:TargetSha) lacks the pinned dotnet-coverage tool manifest; it cannot produce a comparable baseline."
+    }
+
+    if ($FaultInjection -eq 'RunSettingsTamper') {
+        Write-CiLog "FAULT INJECTION: RunSettingsTamper"
+        Add-Content -LiteralPath $script:RunSettingsCopy -Value "<!-- RunSettingsTamper fault injection -->"
     }
 
     # Reuse the pass functions for target
@@ -852,8 +879,19 @@ try {
         }
     }
 
+    if ($RunSettings) {
+        if (!(Test-Path -LiteralPath $RunSettings)) {
+            Fail 20 "RunSettings file does not exist: $RunSettings"
+        }
+        $RunSettings = (Resolve-Path -LiteralPath $RunSettings).Path
+    }
+
     if ($FaultInjection -eq 'IncomparableTarget' -and ($Bootstrap -or $BaselinePath)) {
         Fail 20 "IncomparableTarget requires two-pass mode (no BaselinePath and no Bootstrap)"
+    }
+    
+    if ($FaultInjection -eq 'RunSettingsTamper' -and ($Bootstrap -or $BaselinePath -or !$RunSettings)) {
+        Fail 20 "RunSettingsTamper requires two-pass mode and -RunSettings"
     }
     
     # Create run directory
@@ -861,6 +899,19 @@ try {
     $script:RunDir = Join-Path $script:RepoRoot "artifacts/ci/$commitShort-$([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ'))"
     New-CiDirectory $script:RunDir
     Write-CiLog "Run directory: $script:RunDir"
+    
+    # Setup run settings
+    if ($RunSettings) {
+        $script:RunSettingsCopy = Join-Path $script:RunDir 'coverage.runsettings'
+        Copy-Item -LiteralPath $RunSettings -Destination $script:RunSettingsCopy
+        $runSettingsBytes = [IO.File]::ReadAllBytes($script:RunSettingsCopy)
+        $runSettingsSha256 = [System.Security.Cryptography.SHA256]::HashData($runSettingsBytes)
+        $script:RunSettingsSha256 = [BitConverter]::ToString($runSettingsSha256).Replace('-', '').ToLowerInvariant()
+        Write-CiLog "Run settings: $RunSettings copied to $script:RunSettingsCopy, SHA-256 $($script:RunSettingsSha256)"
+    } else {
+        $script:RunSettingsCopy = $null
+        $script:RunSettingsSha256 = 'none'
+    }
     
     $commitsJson = @{
         commit = $commitSha
