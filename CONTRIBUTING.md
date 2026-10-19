@@ -111,13 +111,28 @@ dotnet test tests/WeatherParser.Package.Tests/WeatherParser.Package.Tests.csproj
 The exact local, uncommitted refresh procedure:
 
 ```powershell
+# Package check: entries, README/LICENSE content and the packed hash
+$package = 'artifacts/local-nuget/WeatherParser.Parsing.0.1.0-initial.nupkg'
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$zip = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $package).Path)
+$zip.Entries.FullName   # only lib/net10.0/WeatherParser.Parsing.dll, README.md, LICENSE and NuGet metadata
+foreach ($name in 'README.md', 'LICENSE') {
+    $reader = [IO.StreamReader]::new($zip.GetEntry($name).Open())
+    $packed = $reader.ReadToEnd(); $reader.Dispose()
+    if ($packed -ne [IO.File]::ReadAllText((Resolve-Path $name).Path)) { throw "$name in the package differs from the working tree" }
+}
+$zip.Dispose()
+$packedHash = [Convert]::ToBase64String([Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes((Resolve-Path $package).Path)))
 # Remove the stale cache entry
 $globalPackages = (dotnet nuget locals global-packages --list) -replace '^global-packages:\s*', ''
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $globalPackages 'weatherparser.parsing/0.1.0-initial')
-# Force-evaluate the consumer lock
+# Refresh the consumer lock; the diff may change only the WeatherParser.Parsing contentHash
 dotnet restore tests/WeatherParser.Package.Tests --force-evaluate
-# Check that the diff changes only WeatherParser.Parsing contentHash
 git diff tests/WeatherParser.Package.Tests/packages.lock.json
+# Locked restore and hash comparison
+dotnet restore tests/WeatherParser.Package.Tests --locked-mode
+$restoredHash = Get-Content (Join-Path $globalPackages 'weatherparser.parsing/0.1.0-initial/weatherparser.parsing.0.1.0-initial.nupkg.sha512')
+if ($restoredHash -ne $packedHash) { throw 'The restored package hash differs from the packed package' }
 # Run the consumer tests
 dotnet test tests/WeatherParser.Package.Tests --configuration Release --no-restore
 # Discard the refresh with git restore
@@ -145,15 +160,17 @@ The CI script's isolated `NUGET_PACKAGES`/`DOTNET_CLI_HOME` and contentHash rewr
 *Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md); historical: [P1.07](docs/p1/P1_07_COVERAGE_CONTRACT.md), [P1.08](docs/p1/P1_08_COVERAGE_EVALUATION.md)*
 
 ```powershell
-dotnet test tests/WeatherParser.Parsing.Tests --configuration Release --no-build --collect "Code Coverage" --settings coverage.runsettings --results-directory TestResults/product
-$raw = (Get-ChildItem TestResults/product -Recurse -Filter *.coverage | Select-Object -First 1).FullName
-dotnet tool run dotnet-coverage merge $raw -f xml -o TestResults/product/coverage.xml
-git diff --name-only <target commit sha>...HEAD > TestResults/product/changed-files.txt
-dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- write-baseline --report <target coverage.xml> --commit <target commit sha> --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --output TestResults/product/baseline.json
-dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- evaluate --report TestResults/product/coverage.xml --changed-files TestResults/product/changed-files.txt --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --baseline TestResults/product/baseline.json --expected-baseline-commit <target commit sha>
+$results = Join-Path TestResults "product-$([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ'))"
+dotnet test tests/WeatherParser.Parsing.Tests --configuration Release --no-build --collect "Code Coverage" --settings coverage.runsettings --results-directory $results
+$raw = @(Get-ChildItem $results -Recurse -Filter *.coverage)
+if ($raw.Count -ne 1) { throw "Expected exactly one .coverage file in $results, found $($raw.Count)" }
+dotnet tool run dotnet-coverage merge $raw[0].FullName -f xml -o "$results/coverage.xml"
+git diff --name-only <target commit sha>...HEAD > "$results/changed-files.txt"
+dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- write-baseline --report <target coverage.xml> --commit <target commit sha> --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --output "$results/baseline.json"
+dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- evaluate --report "$results/coverage.xml" --changed-files "$results/changed-files.txt" --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --baseline "$results/baseline.json" --expected-baseline-commit <target commit sha>
 ```
 
-JSON result on stdout; runner exit codes: 0 (all rules passed), 1 (a coverage rule failed), 2 (usage or input error). Gate rules:
+Each run writes to a new, timestamped results directory under the gitignored `TestResults/`, so an older report is never evaluated. JSON result on stdout; runner exit codes: 0 (all rules passed), 1 (a coverage rule failed), 2 (usage or input error). Gate rules:
 - Minimum 80% block coverage.
 - Below a 100% baseline, a code change must strictly improve.
 - A Markdown-only change may stay equal.
@@ -303,4 +320,4 @@ Older script revisions shared the per-user tool resolver cache, so a deleted run
 | Literal | Used in | Source of truth |
 |---|---|---|
 | `18.11.0` | `--tool-version` of the runner commands (section 5) | `Microsoft.CodeCoverage` in `Directory.Packages.props` |
-| `0.1.0-initial` | Stale cache entry path in section 4 | `Version` in `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj` and the `WeatherParser.Parsing` entry in `Directory.Packages.props` |
+| `0.1.0-initial` | Package file name and stale cache entry path in section 4 | `Version` in `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj` and the `WeatherParser.Parsing` entry in `Directory.Packages.props` |
