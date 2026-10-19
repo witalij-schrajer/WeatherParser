@@ -281,13 +281,13 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
     }
 
     # Move TRX files from raw to trx directory and log test counts
-    $rawTrxFiles = Get-ChildItem -Path $coverageRawDir -Filter "*.trx"
+    $rawTrxFiles = @(Get-ChildItem -Path $coverageRawDir -Filter "*.trx" -File)
     foreach ($rawTrx in $rawTrxFiles) {
         Move-Item $rawTrx.FullName (Join-Path $trxDir $rawTrx.Name) -Force
     }
     
     $testCounts = @{}
-    $allTrxFiles = Get-ChildItem -Path $trxDir -Filter "*.trx"
+    $allTrxFiles = @(Get-ChildItem -Path $trxDir -Filter "*.trx" -File)
     foreach ($trxFile in $allTrxFiles) {
         try {
             $xml = [xml](Get-Content $trxFile.FullName)
@@ -526,7 +526,7 @@ function Invoke-ConversionStage([string]$CloneDir, [string]$PassDir) {
     $dotnetCoverageVersion = Invoke-Native 80 'dotnet' @('tool', 'run', 'dotnet-coverage', '--version') -WorkingDirectory $CloneDir -AllowedExitCodes @(0) -CaptureStdOut (Join-Path $PassDir 'dotnet-coverage-version.txt')
     $dotnetCoverageVersion = $dotnetCoverageVersion.Output[0] -split '\+' | Select-Object -First 1
 
-    $coverageFiles = Get-ChildItem -Path $coverageRawDir -Filter "*.coverage" -Recurse
+    $coverageFiles = @(Get-ChildItem -Path $coverageRawDir -Filter "*.coverage" -Recurse -File)
     if ($coverageFiles.Count -ne 1) {
         Fail 80 "Expected exactly one .coverage file, found $($coverageFiles.Count)"
     }
