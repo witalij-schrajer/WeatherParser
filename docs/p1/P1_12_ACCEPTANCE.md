@@ -10,12 +10,12 @@ This is acceptance of the P1 foundation only, not release readiness (P9), not fu
 |---|---|
 | Review date | 2026-10-19 |
 | Reviewer | Claude (orchestrating LLM) on the user's instruction; documentation drafts by the local qwen3-coder:30b model, reviewed by Claude; formal acceptance: the user |
-| Candidate | `654bf56ce67095ed686c7a966c6e9ed69b2aa5d6` (`features/develop/initial`, identical to `origin/features/develop/initial` at the review; P1.11 accepted state) |
-| Target | `0a2dabeaa4b4baa836b87d7a4aa1a456e3dcb552`, the genuine initial bootstrap seed `C` (P1.09), an ancestor of the candidate (30 commits) |
+| Candidate | `463eae584a8c4f22d0dbbd1702ccba314420d0a7` (`features/develop/initial`, local): the P1.11 accepted state `654bf56`, the P1.12 documents and the T-P1-06 test correction (section 12). The first audit run used `654bf56` (`artifacts/ci/654bf56-20261019T205341Z`, exit 0, same gate result); this run supersedes it |
+| Target | `0a2dabeaa4b4baa836b87d7a4aa1a456e3dcb552`, the genuine initial bootstrap seed `C` (P1.09), an ancestor of the candidate |
 | Script revision | `scripts/ci-local.ps1` at the candidate (last changed in `660dc7e`, P1.10) |
 | Working-tree exclusions | None: the working tree was clean, and the run tests only the committed candidate from a fresh clone |
-| Command | `pwsh ./scripts/ci-local.ps1 -Commit 654bf56 -TargetRef 0a2dabe -RunSettings coverage.runsettings` (two-pass, no `-Bootstrap`) |
-| Run ID | `artifacts/ci/654bf56-20261019T205341Z/` (local, gitignored, retained) |
+| Command | `pwsh ./scripts/ci-local.ps1 -Commit 463eae5 -TargetRef 0a2dabe -RunSettings coverage.runsettings` (two-pass, no `-Bootstrap`) |
+| Run ID | `artifacts/ci/463eae5-20261019T211011Z/` (local, gitignored, retained) |
 
 **Initial bootstrap (plan section 4).** No accepted integrated baseline existed before P1.09, so the first fault-free full pipeline run on the committed seed `0a2dabe` is the genuine bootstrap: `-Commit 0a2dabe -TargetRef 0a2dabe -Bootstrap`, exit 0, 52/56 blocks. Its seed artifacts (`current/bootstrap-baseline.json`, collection settings, SHA-256 provenance) are recorded in the [P1.09 record](P1_09_LOCAL_CI.md#genuine-initial-bootstrap-seed-2026-10-19). The candidate is a later commit, so it is evaluated by the normal two-pass comparison against `0a2dabe`, which is remeasured in the same run with identical settings. Bootstrap was not used again.
 
@@ -25,16 +25,16 @@ This is acceptance of the P1 foundation only, not release readiness (P9), not fu
 - **Toolchain:** .NET SDK 10.0.402 and .NET runtime 10.0.13 (host, `win-x64`), recorded separately. `Microsoft.CodeCoverage` 18.11.0; `dotnet-coverage` 18.11.0 (manifest and tool); collector "Code Coverage"; configuration Release; RID and converter RID `win-x64`.
 - **Collection settings:** run-settings SHA-256 `dc6f662e4f6faaa853c33ed5497f182a31527fd126961411a604b683ffcf05d2` (`coverage.runsettings`, static managed instrumentation), exclusions `*.Tests.dll`, `WeatherParser.Coverage*.dll`. Both passes are identical except `commit`.
 - **Tests (current pass):** WeatherParser.Parsing.Tests 15, WeatherParser.Coverage.Tests 91, WeatherParser.Coverage.Runner.Tests 54, WeatherParser.Package.Tests 2; all passed, none skipped. The target pass ran WeatherParser.Parsing.Tests: 8 passed. Build warnings: 0 in both passes.
-- **Package:** `WeatherParser.Parsing.0.1.0-initial.nupkg`, SHA-512 `+21dY5USLmQ0i6FFlV8ip5Sp/w+Gyk7ZqWK1WsaEXEtU5lC9tNmgqEHuqEw592fWkorxSGTn+Wmv7A9DP4TKzg==`. Entries: `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, the nuspec, `[Content_Types].xml`, `_rels/.rels` and `nuget.psmdcp` only.
+- **Package:** `WeatherParser.Parsing.0.1.0-initial.nupkg`, SHA-512 `4/na9/gV6VcI5XsJIQroSfA+AaYVpEObwjWVLcHxZTLuROYEWvDQK1mzZpHBZsn45nlciU+aLVFw4rpUuae9IA==`. Entries: `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, the nuspec, `[Content_Types].xml`, `_rels/.rels` and `nuget.psmdcp` only.
 - **Consumer:** the only lock change in the disposable clone was the documented one-line `contentHash` rewrite. The locked restore passed, the restored hash was checked against the packed hash (a mismatch would exit 70), and the consumer tests passed.
 - **Native block counters:** current `WeatherParser.Parsing.dll` 54/56 (96.43%), target 52/56 (92.86%). One raw `.coverage` report per pass.
-- **Change scope:** 18 files since the target, including `coverage.runsettings`, `scripts/ci-local.ps1`, `scripts/prepare-debian-arm64.sh` and `tests/WeatherParser.Parsing.Tests/EndpointUriValidatorTests.cs`. Classified as a **code** change, with no documentation bypass.
+- **Change scope:** 23 files since the target, including `coverage.runsettings`, `scripts/ci-local.ps1`, `scripts/prepare-debian-arm64.sh`, `tests/WeatherParser.Parsing.Tests/EndpointUriValidatorTests.cs` and the three test classes corrected in section 12. Classified as a **code** change, with no documentation bypass.
 - **Gate verdicts:** Comparability passed ("Baseline is comparable."); Measurement passed ("Block counters 54/56 are valid."); Minimum passed (54/56 ≥ 80%); Baseline passed ("Baseline block counters 52/56 are valid."); **Comparison passed** ("Block coverage 54/56 (96.43%) exceeds baseline 52/56 (92.86%).").
-- **SHA-256 of the run artifacts:** `.nupkg` `41fa100c487e125bd060eacbcfe187e49e51f6a9bae333b528ba166144220c4c`; `gate-result.json` `8c76191964f208952bc97603b185a2b790783864408467310a3217cf08fae269`; `commits.json` `22d000b282c40cb26134509eb2d708552749b53457dc8980a53a5c6f7681f01b`; `current/collection-settings.json` `87fe8528d55db9ad675cdc504d49929cd4214aabe1732e636994fc029b1dce1f`; `target/collection-settings.json` `dd7d1c1fa807248f222b4ddeb4682371d98fb29aca2d7d0545df66ef3f23b9ac`; `current/coverage/coverage.xml` `bee3214d79a4ea779675f695a3c2b0802404ca68f234beba0cc1f09f40a5e4c5`.
+- **SHA-256 of the run artifacts:** `.nupkg` `14a374258620d9507a377087be40a8ffeae349a499beecf367e767f68e96a80f`; `gate-result.json` `8c76191964f208952bc97603b185a2b790783864408467310a3217cf08fae269` (identical to the `654bf56` run, because the gate content is the same); `commits.json` `df5a0570bd090b627bc5a6610e879ec842e060baba458dacc2cf420ce6592ccc`; `current/collection-settings.json` `a48873e9b5a679b82b665e72fe0ff4c65b7633536a1b0024282db1f8afd7a3c5`; `target/collection-settings.json` `4870f1053b6607be8508173ddfdfae4ff7dcf06c2b9e7f454de6df222b45ed0f`; `current/coverage/coverage.xml` `daa57d1fecef845874627430b63692fba723fa057a7a9f5115bc42e2065c552a`.
 
 ## 3. Coverage provenance (T-P1-24)
 
-- **Module:** the current report contains one `WeatherParser.Parsing.dll` module (id `93E3120F6D9BDF49BB5B0DC5623A4D2CF2AE55D1`), counted once, and the test module `WeatherParser.Parsing.Tests.dll`, which the exclusions remove. The library is measured from source-reference tests only. The package consumer is not instrumented, so the package assembly is not double-counted.
+- **Module:** the current report contains one `WeatherParser.Parsing.dll` module (id `35B2D75C4E8E4F46B58ACA94C0A01428E33F5BAA`), counted once, and the test module `WeatherParser.Parsing.Tests.dll`, which the exclusions remove. The library is measured from source-reference tests only. The package consumer is not instrumented, so the package assembly is not double-counted.
 - **Source identity:** the report lists the 5 library source files that contain executable code, each with a SHA-256 checksum. All 5 match the candidate's committed blobs as checked out with CRLF line endings (`core.autocrlf=true`): `EndpointUriValidator.cs`, `ParserEndpointDefinition.cs`, `ParserEndpointValidationException.cs`, `ParserEndpointValidator.cs`, `ServiceCollectionExtensions.cs`. The two interface files contain no executable code and are absent, as expected.
 - **Limitations:** the native report carries no assembly version, PDB GUID or package identity. The module `id` is not claimed to be a PDB identity. Build and package identity are established independently: the run builds, packs and consumes the package from the same clone and commit, and records the package hash. The package also embeds the commit ID (nuspec `repository commit`, informational version `+<SHA>`; P1.09 finding 5).
 - **Separate gates:** checker and runner self-coverage are not part of the product gate (`WeatherParser.Coverage*.dll` is excluded). Their behaviour is covered by the 91 + 54 meta-tests.
@@ -70,7 +70,7 @@ Windows and ARM64 counters are equal for the same commits; that comparison is de
 - **Result revision and part (b):** P1.11's record covers part (b) for P1.08 closure, P1.09 and P1.10. No item is Planned or OPEN; NETSDK1141 stays a historical remedy.
 - **Checks recorded:** English-only rules and the comment scan (inline/block, XML docs, scripts and configuration: 83 files, no finding); current status and commands (walkthrough of `ba93447`, re-verification of `8a96f58` and `d721940`); versions and package sources (single-source check); links; the 84 requirement IDs in identical order; license and inventory preservation; the byte-identical package-readme check.
 - **Named handover items:** none. P1.11 handed over no OPEN platform item.
-- **Changes after the P1.11 revision:** only the acceptance commit `654bf56`, which is the candidate itself. Its README status-line change was re-checked by a CI run (documentation-only, exit 0) before this audit.
+- **Changes after the P1.11 revision `654bf56`:** the P1.12 documents (`bd3f257`, `084b5fd`) and the T-P1-06 test correction (`463eae5`, section 12), all inside the candidate. Its README status-line change was re-checked by a CI run (documentation-only, exit 0) before this audit.
 - **Acceptance impact:** none.
 
 ## 7. Test-ID matrix (T-P1-01 – T-P1-24)
@@ -84,7 +84,7 @@ All tests named below ran and passed in the candidate run unless a row says othe
 | T-P1-03 | Pass | `ValidateAndMap_WithTwoDistinctValidEndpoints_MapsEachWithoutConfusion`, `ValidateAndMap_WithDuplicateEndpointName_ThrowsParserEndpointValidationException` | Foundation, met |
 | T-P1-04 | Pass | Interfaces `IEndpointUriValidator`, `IParserEndpointValidator`; constructor injection (P1.05, P1.06 records); no service locator in the library | Foundation, met |
 | T-P1-05 | Pass | `AddWeatherParsing_WithoutFurtherRegistration_ResolvesParserEndpointValidator`, `AddWeatherParsing_ResolvedValidator_PerformsRealValidation`, `GetRequiredService_WithoutAnyRegistration_ThrowsInvalidOperationException`, `GetRequiredService_WithOnlyParserEndpointValidatorRegistered_ThrowsInvalidOperationException` | Foundation, met |
-| T-P1-06 | Pass | Subjects built in `[TestInitialize]`; strict mocks verified with `VerifyAll()` in `[TestCleanup]` (`ParserEndpointValidatorTests` and the coverage test classes); tests without mocks need no cleanup | Foundation, met |
+| T-P1-06 | Pass after correction | Failed in the first audit: `CoverageGateRealReportTests` (P1.08) and `ServiceCollectionExtensionsTests` (P1.06) built their subjects inside the tests, and `RunnerEndToEndTests` (P1.08) built the runner per call. Returned to the owners and corrected in `463eae5` (section 12). Now every class with a subject or shared dependency builds it in `[TestInitialize]`; `PackageConsumptionTests` has no subject; strict mocks verified with `VerifyAll()` in `[TestCleanup]` (`ParserEndpointValidatorTests` and the coverage test classes); tests without mocks need no cleanup | Foundation, met |
 | T-P1-07 | Pass | No HTTP, MQTT, socket or device access in `src`, `tests` or `tools` (source search); URIs are `example.org` test data only; the CI clone restores only from nuget.org and the local feed | Foundation, met |
 | T-P1-08 | Pass | Fresh-clone locked restore in this run; the only lock change is the reviewed consumer `contentHash` rewrite; drift detection: P1.09 `LockDrift` exit 30, `ConsumerLockDrift` exit 70 | Foundation, met |
 | T-P1-09 | Pass | `Evaluate_80_20_Null_Code_True_AllRulesPass`, `Evaluate_79_21_Null_Code_True_MinimumFailsWhileBaselinePasses`; candidate 54/56 ≥ 80% | Foundation, met |
@@ -131,11 +131,11 @@ All tests named below ran and passed in the candidate run unless a row says othe
 
 ## 10. Decision
 
-**ACCEPTED** (audit decision; formal acceptance by the user pending). Every mandatory P1 foundation criterion has current, traceable passing evidence from the committed candidate `654bf56` and its fresh-clone run against the genuine bootstrap seed `0a2dabe`, and every test ID T-P1-01 to T-P1-24 has a passing outcome. The platform-runtime status is PROVEN for the P1-scope checks executed on the Debian 13 ARM64 target, so no runtime deferral is needed. P2 may start on a separate instruction; see the [P2 handoff](P2_HANDOFF.md).
+**ACCEPTED** (audit decision; formal acceptance by the user pending). Every mandatory P1 foundation criterion has current, traceable passing evidence from the committed candidate `463eae5` and its fresh-clone run against the genuine bootstrap seed `0a2dabe`, and every test ID T-P1-01 to T-P1-24 has a passing outcome. The platform-runtime status is PROVEN for the P1-scope checks executed on the Debian 13 ARM64 target, so no runtime deferral is needed. P2 may start on a separate instruction; see the [P2 handoff](P2_HANDOFF.md).
 
 ## 11. Documentation revision (plan step 8)
 
-This record, the P2 handoff and the status updates were committed after the audit, as `bd3f257`. The tested implementation candidate stays `654bf56`; the documentation revision `bd3f257` changes only Markdown files (`DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `README.md` and the two new records).
+This record, the P2 handoff and the status updates were committed after the audit, as `bd3f257`. At that time the tested candidate was `654bf56` (now superseded by `463eae5`, section 12); the documentation revision `bd3f257` changes only Markdown files (`DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `README.md` and the two new records).
 
 `README.md` is the packed package readme, so the documentation revision got its own package check, using `pwsh ./scripts/ci-local.ps1 -Commit bd3f257 -TargetRef 654bf56 -RunSettings coverage.runsettings`, exit 0, run `artifacts/ci/bd3f257-20261019T210213Z`:
 - **Tests:** WeatherParser.Parsing.Tests 15, WeatherParser.Coverage.Tests 91, WeatherParser.Coverage.Runner.Tests 54 and WeatherParser.Package.Tests 2, all passed. The consumer lock rewrite in the clone was exactly one line.
@@ -143,3 +143,17 @@ This record, the P2 handoff and the status updates were committed after the audi
 - **Gate:** documentation-only, "Block coverage 54/56 (96.43%) is at or above baseline 54/56 (96.43%)". SHA-256 of `gate-result.json`: `36aa8f6f6aa5bd9f82b58caad8e2e31368b80b270f25f917b07e11fd944e2916`.
 
 This section was added in a later commit that does not change `README.md`.
+
+## 12. Review finding T-P1-06 and correction (2026-10-19)
+
+An external review of `084b5fd` confirmed the run evidence: 162 passing tests in both Windows runs, all recorded artifact hashes, the five source checksums, a re-executed gate at 54/56 against 52/56, all 24 test-ID rows, 114 relative links, and the final package contents, README reference and embedded commit. It found one defect: T-P1-06 was marked passed although two test classes did not build their subjects in `[TestInitialize]`, contrary to REQ-081 and AGENTS.md "Tests". The P1.08 exception covers only the missing Red-step evidence, not this rule.
+
+**Disposition (user decision, 2026-10-19):** fix the defects and gate the corrected candidate against the same deliberate target as the audit, the seed `0a2dabe`.
+
+- **Correction (`463eae5`, generated by qwen, reviewed by Claude), a pure refactor.** Test names, attributes, arrange values and assertions are unchanged:
+  - `ServiceCollectionExtensionsTests` (P1.06) creates its `ServiceCollection` in `[TestInitialize]`.
+  - `CoverageGateRealReportTests` (P1.08) builds the gate with its real dependencies there.
+  - `RunnerEndToEndTests` (P1.08) creates the output writers and the composed runner there.
+- **Verification:** Release build with 0 warnings; WeatherParser.Parsing.Tests 15, WeatherParser.Coverage.Tests 91 and WeatherParser.Coverage.Runner.Tests 54, all passed, with the same counts as before.
+- **Candidate run:** `463eae5` against `0a2dabe` (section 2), exit 0, gate passed at 54/56 against 52/56.
+- **Gate statement:** the test refactor changes no product code. Measured against its parent `654bf56` on its own, it would be a code change with equal coverage (54/56 both), which the gate rejects below 100% (Comparison). It was not evaluated that way. The candidate's complete change scope since the accepted bootstrap baseline was evaluated instead, and the refactor is part of that scope.

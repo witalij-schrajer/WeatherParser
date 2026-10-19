@@ -5,7 +5,7 @@
 
 | Item | Value |
 |---|---|
-| Foundation SHA | `654bf56ce67095ed686c7a966c6e9ed69b2aa5d6` |
+| Foundation SHA | `463eae584a8c4f22d0dbbd1702ccba314420d0a7` |
 | Package ID | `WeatherParser.Parsing` |
 | Package version | 0.1.0-initial |
 | Baseline | native block counters 54/56 of `WeatherParser.Parsing.dll` |
