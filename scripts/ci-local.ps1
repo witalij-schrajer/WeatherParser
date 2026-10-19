@@ -84,7 +84,8 @@ function Invoke-Native(
     [string[]]$Arguments,
     [string]$WorkingDirectory = $script:WorkDir,
     [int[]]$AllowedExitCodes = @(0),
-    [string]$CaptureStdOut = $null
+    [string]$CaptureStdOut = $null,
+    [switch]$AllowAnyExitCode
 ) {
     $script:CurrentStageCode = $Stage
     $cmdLine = "$FilePath $($Arguments -join ' ')"
@@ -108,8 +109,20 @@ function Invoke-Native(
             $stderrLines | ForEach-Object { Add-Content -Path $logPath -Value "$_" }
             $stderrLines | ForEach-Object { [Console]::Error.WriteLine($_) }
             
-            if ($AllowedExitCodes -notcontains $exitCode) {
-                Fail $Stage "$cmdLine failed with exit code $exitCode"
+            if (!$AllowAnyExitCode -and $AllowedExitCodes -notcontains $exitCode) {
+                # Find error lines for actionable message
+                $errorLines = @()
+                $allOutput = $stdoutLines + $stderrLines
+                foreach ($line in $allOutput) {
+                    if ($line -match 'error' -and $errorLines.Count -lt 3) {
+                        $errorLines += $line.Trim()
+                    }
+                }
+                $errorMsg = "failed with exit code $exitCode"
+                if ($errorLines.Count -gt 0) {
+                    $errorMsg += ": $((($errorLines | ForEach-Object { $_ }) -join ' | '))"
+                }
+                Fail $Stage "$cmdLine $errorMsg"
             }
             
             return [pscustomobject]@{
@@ -221,7 +234,15 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
 
     if ($ProjectScope -eq 'Full') {
         # Run product tests with coverage
-        Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+        try {
+            Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+        } finally {
+            # Move TRX files from raw to trx directory
+            $rawTrxFiles = @(Get-ChildItem -Path $coverageRawDir -Filter "*.trx" -File)
+            foreach ($rawTrx in $rawTrxFiles) {
+                Move-Item $rawTrx.FullName (Join-Path $trxDir $rawTrx.Name) -Force
+            }
+        }
         
         # Run coverage tests without coverage
         Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Coverage.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Coverage.Tests.trx', '--results-directory', $trxDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
@@ -230,7 +251,15 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
         Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Coverage.Runner.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Coverage.Runner.Tests.trx', '--results-directory', $trxDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
     } else {
         # Product scope
-        Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+        try {
+            Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+        } finally {
+            # Move TRX files from raw to trx directory
+            $rawTrxFiles = @(Get-ChildItem -Path $coverageRawDir -Filter "*.trx" -File)
+            foreach ($rawTrx in $rawTrxFiles) {
+                Move-Item $rawTrx.FullName (Join-Path $trxDir $rawTrx.Name) -Force
+            }
+        }
     }
 
     # Handle TRX attachment copies
@@ -543,7 +572,7 @@ function Invoke-ConversionStage([string]$CloneDir, [string]$PassDir) {
     $commit = git -C $CloneDir rev-parse HEAD
     
     $sdkVersion = Invoke-Native 80 'dotnet' @('--version') -WorkingDirectory $CloneDir -AllowedExitCodes @(0,1,145,150,155)
-    $sdkVersion = $sdkVersion.Output[0].Trim()
+    $sdkVersion = if ($sdkVersion.Output.Count -gt 0) { $sdkVersion.Output[0].Trim() } else { '' }
     
     # Get Microsoft.CodeCoverage version from Directory.Packages.props
     $microsoftCodeCoverageVersion = ([xml](Get-Content (Join-Path $CloneDir "Directory.Packages.props"))).Project.ItemGroup.PackageVersion | Where-Object Include -eq 'Microsoft.CodeCoverage' | Select-Object -ExpandProperty Version
@@ -711,9 +740,9 @@ function Invoke-FinishStage() {
     Write-CiLog "=== FINISH ==="
     try {
         if (Test-Path "$script:WorkDir/src") {
-            $packagesOutput = Invoke-Native 0 'dotnet' @('list', 'WeatherParser.Ci.slnf', 'package', '--include-transitive') -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1) -CaptureStdOut (Join-Path $script:RunDir 'packages.txt')
-            if ($packagesOutput.ExitCode -eq 1) {
-                Write-CiLog "Warning: dotnet list package failed"
+            $packagesOutput = Invoke-Native 0 'dotnet' @('list', 'WeatherParser.Ci.slnf', 'package', '--include-transitive') -WorkingDirectory "$script:WorkDir/src" -AllowAnyExitCode -CaptureStdOut (Join-Path $script:RunDir 'packages.txt')
+            if ($packagesOutput.ExitCode -ne 0) {
+                Write-CiLog "Warning: packages.txt not written: dotnet list package exit code $($packagesOutput.ExitCode)"
             }
         }
 
@@ -790,11 +819,12 @@ try {
     }
 
     # SDK check
-    $dotnetVersion = Invoke-Native 10 'dotnet' @('--version') -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0,1,145,150,155)
+    $dotnetVersion = Invoke-Native 10 'dotnet' @('--version') -WorkingDirectory "$script:WorkDir/src" -AllowAnyExitCode
     $globalJson = Get-Content (Join-Path "$script:WorkDir/src" "global.json") | ConvertFrom-Json
-    if ($dotnetVersion.Output[0].Trim() -ne $globalJson.sdk.version) {
+    $reportedVersion = if ($dotnetVersion.Output.Count -gt 0) { "$($dotnetVersion.Output[0])".Trim() } else { '' }
+    if ($dotnetVersion.ExitCode -ne 0 -or $reportedVersion -ne $globalJson.sdk.version) {
         $sdks = Invoke-Native 10 'dotnet' @('--list-sdks') -WorkingDirectory ([IO.Path]::GetTempPath()) -AllowedExitCodes @(0)
-        Fail 10 "DotNet SDK version mismatch: expected $($globalJson.sdk.version), got $($dotnetVersion.Output[0]). Available SDKs:`n$($sdks.Output -join "`n")"
+        Fail 10 "DotNet SDK version mismatch: global.json requires $($globalJson.sdk.version); 'dotnet --version' returned exit code $($dotnetVersion.ExitCode) and output '$reportedVersion'. Installed SDKs: $($sdks.Output -join '; ')"
     }
 
     $commitShort = git -C "$script:WorkDir/src" rev-parse --short HEAD
