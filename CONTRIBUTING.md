@@ -148,9 +148,9 @@ The CI script's isolated `NUGET_PACKAGES`/`DOTNET_CLI_HOME` and contentHash rewr
 dotnet test tests/WeatherParser.Parsing.Tests --configuration Release --no-build --collect "Code Coverage" --settings coverage.runsettings --results-directory TestResults/product
 $raw = (Get-ChildItem TestResults/product -Recurse -Filter *.coverage | Select-Object -First 1).FullName
 dotnet tool run dotnet-coverage merge $raw -f xml -o TestResults/product/coverage.xml
-git diff --name-only <target commit sha>...HEAD > changed-files.txt
-dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- write-baseline --report <target coverage.xml> --commit <target commit sha> --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --output baseline.json
-dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- evaluate --report TestResults/product/coverage.xml --changed-files changed-files.txt --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --baseline baseline.json --expected-baseline-commit <target commit sha>
+git diff --name-only <target commit sha>...HEAD > TestResults/product/changed-files.txt
+dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- write-baseline --report <target coverage.xml> --commit <target commit sha> --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --output TestResults/product/baseline.json
+dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- evaluate --report TestResults/product/coverage.xml --changed-files TestResults/product/changed-files.txt --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --baseline TestResults/product/baseline.json --expected-baseline-commit <target commit sha>
 ```
 
 JSON result on stdout; runner exit codes: 0 (all rules passed), 1 (a coverage rule failed), 2 (usage or input error). Gate rules:
