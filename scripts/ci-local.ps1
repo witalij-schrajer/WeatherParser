@@ -39,6 +39,12 @@ class CiFailure : System.Exception {
     CiFailure([int]$code,[string]$msg) : base($msg) { $this.ExitCode = $code }
 }
 
+function New-CiDirectory([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) {
+        New-Item -ItemType Directory -Path $Path -Force | Out-Null
+    }
+}
+
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 Set-StrictMode -Version Latest
@@ -124,14 +130,14 @@ function Invoke-RestoreStage([string]$CloneDir, [string]$PassDir, [string]$Proje
     Write-CiLog "=== RESTORE ==="
     $script:CurrentStageCode = 30
     
+    New-CiDirectory $PassDir
+    
     $env:NUGET_PACKAGES = Join-Path $script:WorkDir 'nuget-packages'
     
     # Create local package source directory if it doesn't exist
     $localNuGetPath = Join-Path $CloneDir "artifacts/local-nuget"
-    if (!(Test-Path $localNuGetPath)) {
-        New-Item -ItemType Directory -Path $localNuGetPath | Out-Null
-        Write-CiLog "Created empty local package source $localNuGetPath (gitignored, absent in fresh clones)"
-    }
+    New-CiDirectory $localNuGetPath
+    Write-CiLog "Created empty local package source $localNuGetPath (gitignored, absent in fresh clones)"
     
     if ($FaultInjection -eq 'LockDrift' -and $PassDir -eq (Join-Path $script:RunDir 'current')) {
         Write-CiLog "FAULT INJECTION: LockDrift"
@@ -158,6 +164,8 @@ function Invoke-RestoreStage([string]$CloneDir, [string]$PassDir, [string]$Proje
 function Invoke-BuildStage([string]$CloneDir, [string]$PassDir, [string]$ProjectScope = 'Full') {
     Write-CiLog "=== BUILD ==="
     $script:CurrentStageCode = 40
+    
+    New-CiDirectory $PassDir
     
     if ($FaultInjection -eq 'FailingTest' -and $PassDir -eq (Join-Path $script:RunDir 'current')) {
         Write-CiLog "FAULT INJECTION: FailingTest"
@@ -201,15 +209,13 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
     Write-CiLog "=== TESTS ==="
     $script:CurrentStageCode = 50
     
+    New-CiDirectory $PassDir
+    
     $coverageRawDir = Join-Path $PassDir 'coverage/raw'
-    if (!(Test-Path $coverageRawDir)) {
-        New-Item -ItemType Directory -Path $coverageRawDir | Out-Null
-    }
+    New-CiDirectory $coverageRawDir
 
     $trxDir = Join-Path $PassDir 'trx'
-    if (!(Test-Path $trxDir)) {
-        New-Item -ItemType Directory -Path $trxDir | Out-Null
-    }
+    New-CiDirectory $trxDir
 
     if ($ProjectScope -eq 'Full') {
         # Run product tests with coverage
@@ -268,6 +274,8 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
 function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
     Write-CiLog "=== PACK ==="
     $script:CurrentStageCode = 60
+    
+    New-CiDirectory $PassDir
     
     $version = ([xml](Get-Content (Join-Path $CloneDir "src\WeatherParser.Parsing\WeatherParser.Parsing.csproj"))).Project.PropertyGroup.Version
     if ($version -is [array]) {
@@ -338,6 +346,8 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
     Write-CiLog "=== CONSUMER ==="
     $script:CurrentStageCode = 70
     
+    New-CiDirectory $PassDir
+    
     # Check for ProjectReference in consumer project
     $consumerProjectPath = Join-Path $CloneDir "tests/WeatherParser.Package.Tests/WeatherParser.Package.Tests.csproj"
     $consumerProjectContent = [IO.File]::ReadAllText($consumerProjectPath)
@@ -352,9 +362,7 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
     
     $nupkgPath = Join-Path $PassDir "WeatherParser.Parsing.$version.nupkg"
     $localNuGetPath = Join-Path $CloneDir "artifacts/local-nuget"
-    if (!(Test-Path $localNuGetPath)) {
-        New-Item -ItemType Directory -Path $localNuGetPath | Out-Null
-    }
+    New-CiDirectory $localNuGetPath
     Copy-Item $nupkgPath $localNuGetPath
 
     $lockJsonPath = Join-Path $CloneDir "tests/WeatherParser.Package.Tests/packages.lock.json"
@@ -425,9 +433,7 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
 
     # Build and test consumer (without coverage)
     $trxDir = Join-Path $PassDir 'trx'
-    if (!(Test-Path $trxDir)) {
-        New-Item -ItemType Directory -Path $trxDir | Out-Null
-    }
+    New-CiDirectory $trxDir
     
     Invoke-Native 70 'dotnet' @('build', 'tests/WeatherParser.Package.Tests', '-c', 'Release', '--no-restore') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
     
@@ -440,12 +446,12 @@ function Invoke-ConversionStage([string]$CloneDir, [string]$PassDir) {
     Write-CiLog "=== CONVERSION ==="
     $script:CurrentStageCode = 80
     
+    New-CiDirectory $PassDir
+    
     $coverageRawDir = Join-Path $PassDir 'coverage/raw'
     $coverageXmlPath = Join-Path $PassDir 'coverage/coverage.xml'
 
-    if (!(Test-Path $coverageXmlPath)) {
-        New-Item -ItemType Directory -Path (Split-Path $coverageXmlPath) | Out-Null
-    }
+    New-CiDirectory (Split-Path $coverageXmlPath)
 
     Invoke-Native 80 'dotnet' @('tool', 'restore') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
     
@@ -695,16 +701,12 @@ try {
     # Create run directory
     $commitShort = git -C "$script:RepoRoot" rev-parse --short $commitSha
     $script:RunDir = Join-Path $script:RepoRoot "artifacts/ci/$commitShort-$([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ'))"
-    if (!(Test-Path $script:RunDir)) {
-        New-Item -ItemType Directory -Path $script:RunDir | Out-Null
-    }
+    New-CiDirectory $script:RunDir
     Write-CiLog "Run directory: $script:RunDir"
     
     # Create work directory
     $script:WorkDir = Join-Path ([IO.Path]::GetTempPath()) "weatherparser-ci-$([guid]::NewGuid())"
-    if (!(Test-Path $script:WorkDir)) {
-        New-Item -ItemType Directory -Path $script:WorkDir | Out-Null
-    }
+    New-CiDirectory $script:WorkDir
     Write-CiLog "Work directory: $script:WorkDir"
 
     # Clone and checkout
