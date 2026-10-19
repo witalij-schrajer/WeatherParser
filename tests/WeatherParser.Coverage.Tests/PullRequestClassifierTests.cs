@@ -79,21 +79,31 @@ public sealed class PullRequestClassifierTests
     public void Classify_FromFixtureFiles_ExpectedResult()
     {
         var docsOnlyContent = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "changes-docs-only.txt"));
-        var changesDocsOnly = new ChangedFileList(docsOnlyContent.Split('\n', System.StringSplitOptions.RemoveEmptyEntries));
+        var changesDocsOnly = new ChangedFileList(docsOnlyContent.Split('\n', System.StringSplitOptions.RemoveEmptyEntries).Select(line => line.Trim()).Where(line => line.Length > 0).ToArray());
 
         var resultDocsOnly = _pullRequestClassifier.Classify(changesDocsOnly);
         resultDocsOnly.Should().Be(PullRequestCategory.DocumentationOnly);
 
         var docsAndCsprojContent = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "changes-docs-and-csproj.txt"));
-        var changesDocsAndCsproj = new ChangedFileList(docsAndCsprojContent.Split('\n', System.StringSplitOptions.RemoveEmptyEntries));
+        var changesDocsAndCsproj = new ChangedFileList(docsAndCsprojContent.Split('\n', System.StringSplitOptions.RemoveEmptyEntries).Select(line => line.Trim()).Where(line => line.Length > 0).ToArray());
 
         var resultDocsAndCsproj = _pullRequestClassifier.Classify(changesDocsAndCsproj);
         resultDocsAndCsproj.Should().Be(PullRequestCategory.Code);
 
         var coverageConfigContent = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "changes-coverage-config.txt"));
-        var changesCoverageConfig = new ChangedFileList(coverageConfigContent.Split('\n', System.StringSplitOptions.RemoveEmptyEntries));
+        var changesCoverageConfig = new ChangedFileList(coverageConfigContent.Split('\n', System.StringSplitOptions.RemoveEmptyEntries).Select(line => line.Trim()).Where(line => line.Length > 0).ToArray());
 
         var resultCoverageConfig = _pullRequestClassifier.Classify(changesCoverageConfig);
         resultCoverageConfig.Should().Be(PullRequestCategory.Code);
+    }
+
+    [TestMethod]
+    [TestCategory("T-P1-23")]
+    public void Classify_CrLfFixtureLines_AreTrimmedBeforeClassification()
+    {
+        // Test that CRLF line endings are trimmed properly
+        var changes = new ChangedFileList("README.md\r\ndocs/x.md\r\n".Split('\n').Select(line => line.Trim()).Where(line => line.Length > 0).ToArray());
+        var result = _pullRequestClassifier.Classify(changes);
+        result.Should().Be(PullRequestCategory.DocumentationOnly);
     }
 }
