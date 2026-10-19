@@ -80,7 +80,7 @@ g) **Compatibility matrix location.** Options: a new `docs/COMPATIBILITY.md`, or
 h) **Coverage improvement for this package (step 3a).** Options:
    - (1) Cover all six remaining blocks. Library coverage becomes exactly 100%, and from then on every code PR must also stay at exactly 100% (exact-100% rule).
    - (2) Cover only the behaviours worth specifying (for example invalid schemes), which is still a strict increase below 100%.
-   - (3) Add no tests and accept the expected gate failure (exit 90) for this package.
+   - (3) Add no tests and accept the expected gate failure (exit 90) for this package. This completes P1.10 with the status EXPECTED-COMPARISON-FAILURE, but it does **not** satisfy the passing coverage gate that P1 acceptance requires (P1.12 plan, section 4). P1 then stays NOT_READY until coverage strictly improves through meaningful tests or a separately authorized policy change.
 
    **Recommended: (2).** It improves coverage through meaningful tests without silently committing the project to the exact-100% regime; choose (1) only deliberately.
 
@@ -171,7 +171,7 @@ If no authorized ARM64 target is available, perform steps 1–3 and 11 only. Mar
 | Status | Condition | Evidence required |
 |---|---|---|
 | PASSED | Gate exit 0 (full run, or `-ResumeFrom`) | `gate-result.json` with every rule passed |
-| EXPECTED-COMPARISON-FAILURE | Decision h = (3), and gate exit 90 with only the `Comparison` rule failed (equality below 100%) | `gate-result.json` showing equal counters for both passes and every other rule passed |
+| EXPECTED-COMPARISON-FAILURE | Decision h = (3), and gate exit 90 with only the `Comparison` rule failed (equality below 100%) | `gate-result.json` showing equal counters for both passes and every other rule passed. Valid for P1.10; it blocks P1 acceptance (decision h) |
 | OPEN | No comparable target commit exists (step 7), or Class B could not run | Reason recorded; current-pass counters reported descriptively, without a gate claim |
 
 Any other gate failure is a defect, not one of these statuses.
@@ -218,6 +218,7 @@ Update the P1.10 row in `PHASE_P1_PLAN.md`, the phase status in `DEVELOPMENT_PLA
 - [ ] Class B: every stage before the gate succeeds on Debian 13 ARM64, including the package consumer against the package built on the target. This holds in a full run, or via `-CollectOnly` exiting 0 on the target.
 - [ ] `-FaultInjection FailingTest` exits 50 on the target, and the section 7 environment fields are recorded.
 - [ ] The gate outcome is recorded with exactly one status from section 6: PASSED (expected with h = 1 or 2), EXPECTED-COMPARISON-FAILURE (only with h = 3, with its evidence), or OPEN (with its reason). If Class B could not run at all, it is recorded as OPEN with its reason.
+- [ ] If h = (3), the result explicitly names the failed P1 passing-gate criterion and the P1.12 NOT_READY consequence. Completing the P1.10 evidence record is not acceptance of P1.
 - [ ] If the fallback is used: `-ResumeFrom` completes from `<run>/resume/` after the ARM64 work directory was deleted, and the tampered-runner check exits 20.
 - [ ] No `-Bootstrap` is used on the target; the gate uses a baseline measured on the same target.
 - [ ] ARM64 block counters and the gate result are recorded, including where conversion and gate ran.

@@ -69,6 +69,8 @@ e) **Default `-TargetRef`.** Options: required parameter, or default `origin/fea
 
 `-Bootstrap` and `-BaselinePath` are mutually exclusive. If `-TargetRef` resolves to `-Commit` without `-Bootstrap`, the run fails with exit 20. Bootstrap is never implied (AGENTS.md: a missing baseline is never treated as bootstrap).
 
+**Initial-bootstrap decision (2026-10-19, shared with the P1.12 plan section 4):** if no accepted integrated baseline exists, the first accepted, fault-free P1.09 full-pipeline run of this branch establishes it. Identify seed commit `C` and run `-Commit C -TargetRef C -Bootstrap`. Record why the earlier `b6100e2` runner tests/57/63 measurement are not an accepted pipeline baseline. Require every normal stage and the minimum rule to pass; preserve unsuccessful attempts. After gate success, call `write-baseline` on the current native report with commit `C` and its actual tool/exclusions, writing `<run>/current/bootstrap-baseline.json`; retain collection settings and provenance. Seed creation is required output of that bootstrap run. Fault-injection runs never establish the seed. If an accepted baseline already exists, do not create another bootstrap; later candidates use a valid comparable baseline and normal improvement rules. Losing a baseline, changing platform or lacking older tooling is not a bootstrap justification.
+
 ### Exit codes
 
 | Code | Stage |
@@ -125,12 +127,13 @@ Each step below is one script stage. Implement the stages in this order and veri
    - `-Bootstrap`: `--bootstrap` alone. `--expected-baseline-commit` is never passed with `--bootstrap` (runner contract in the P1.08 closure plan, which tests this exact invocation).
 
    The report passed is always the current pass's report. Redirect stdout to `gate-result.json`. Map runner exit 1 to 90 and runner exit 2 to 91.
+   After a successful genuine initial bootstrap, write `<run>/current/bootstrap-baseline.json` from that report using `write-baseline`, commit `<commitSha>` and the actual recorded tool/exclusions. Require successful writing and read-back of its identity/counters before the run can exit 0; a runner input/output failure exits 91. This seed-output step is skipped for fault-injection tests and normal comparison runs.
 10. **Finish.** Write `packages.txt`. Log the duration and final exit code. Delete the work directory unless `-KeepWorkDir` is set; the run directory is kept in every case.
 
 Verification runs, recorded in the result record:
 
 1. A real run of `2f8c670`-or-later against a target with the same tooling, which passes.
-2. One run with `-Bootstrap`.
+2. The genuine initial bootstrap run described in section 4, or reference its existing accepted record. Later bootstrap tests exercise fixtures/faults only; they never establish a new accepted branch baseline.
 3. One run per `-FaultInjection` value; `IncomparableTarget` needs two-pass mode.
 
 ## 6. Tests and Test IDs
@@ -192,6 +195,7 @@ Updates: the P1.09 row and T-P1-08 status in `PHASE_P1_PLAN.md`; phase status in
 - [ ] A two-pass run writes `collection-settings.json` for both passes; `IncomparableTarget` exits 85.
 - [ ] The current and target passes write to separate directories, and the gate always evaluates the current pass's report.
 - [ ] The consumer restore runs in locked mode; the only lock-file change is the `WeatherParser.Parsing` `contentHash`, and the restored package hash equals the hash of the package packed in the same run.
+- [ ] The genuine initial run is identified once, with a passing full pipeline, justification, `current/bootstrap-baseline.json` and settings/provenance; an existing accepted baseline is reused instead of re-bootstrap.
 - [ ] The `.nupkg` contains only the allowed entries.
 - [ ] No step uses the global `dotnet-coverage`, a production secret, or the developer working tree.
 - [ ] `docs/p1/P1_09_LOCAL_CI.md` and the documents named in section 7 are updated.

@@ -52,8 +52,8 @@ Names are provisional. Create projects only when needed. No empty infrastructure
 | P1.08 | Test-drive coverage evaluation/exceptions | Evaluator, runner and pinned dotnet-coverage implemented and tested on Windows (2026-10-19); acceptance pending review; [plan](docs/p1/P1_08_COVERAGE_EVALUATION.md); [closure plan](docs/p1/P1_08B_COVERAGE_GATE_COMPLETION_PLAN.md) |
 | P1.09 | Prepare local CI job sequence/artifacts | Executable checks without production secrets; after P1.04–P1.08; [plan](docs/p1/P1_09_LOCAL_CI_PLAN.md) |
 | P1.10 | Verify Debian/ARM64 package foundations | Package/restore evidence; runtime success only after actual execution; after P1.09; [plan](docs/p1/P1_10_DEBIAN_ARM64_PLAN.md) |
-| P1.11 | Complete English developer instructions/evidence | Restore/build/pack/test/coverage procedures and limits; ongoing |
-| P1.12 | Accept phase and document P2 handoff | Results, artifacts and remaining limitations; after all packages |
+| P1.11 | Complete English developer instructions/evidence | Restore/build/pack/test/coverage procedures and limits; ongoing; [plan](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md) |
+| P1.12 | Accept phase and document P2 handoff | Results, artifacts and remaining limitations; after all packages; [plan](docs/p1/P1_12_ACCEPTANCE_HANDOFF_PLAN.md) |
 
 ### Test-driven starting point
 
