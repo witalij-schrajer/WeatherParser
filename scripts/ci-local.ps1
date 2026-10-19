@@ -21,6 +21,8 @@ Keep clones and the isolated NuGet folder.
 Run settings file for coverage collection; copied once into the run directory and used by both passes.
 .PARAMETER FaultInjection
 Injects one fault inside the clone or the run directory.
+.PARAMETER ResumeFrom
+Run directory of a -CollectOnly run: verify its resume package, convert both raw reports with the pinned tool, write the baseline and run the gate.
 .EXAMPLE
 ci-local.ps1 -Commit 2f8c670 -TargetRef HEAD
 .EXAMPLE
@@ -29,7 +31,6 @@ ci-local.ps1 -Commit 2f8c670 -TargetRef HEAD -Bootstrap
 [CmdletBinding()]
 param(
     [string]$Commit = 'HEAD',
-    [Parameter(Mandatory=$true)]
     [string]$TargetRef,
     [string]$BaselinePath,
     [string]$RunSettings,
@@ -37,8 +38,11 @@ param(
     [switch]$CollectOnly,
     [switch]$KeepWorkDir,
     [ValidateSet('SdkMismatch','LockDrift','FailingTest','MissingCoverage','ConsumerLockDrift','IncomparableTarget','GateFailure','RunSettingsTamper')]
-    [string]$FaultInjection
+    [string]$FaultInjection,
+    [string]$ResumeFrom
 )
+
+$script:BoundParameterNames = @($PSBoundParameters.Keys)
 
 class CiFailure : System.Exception {
     [int]$ExitCode;
@@ -53,6 +57,15 @@ function New-CiDirectory([string]$Path) {
 
 function Get-FileSha256([string]$Path) {
     $bytes = [IO.File]::ReadAllBytes($Path)
+    $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
+    return [BitConverter]::ToString($hash).Replace('-', '').ToLowerInvariant()
+}
+
+function Get-ScriptSha256([string]$Path) {
+    # line endings are normalized because Git may check the same commit out with CRLF on Windows and LF on Linux
+    $content = [IO.File]::ReadAllText($Path)
+    $normalizedContent = $content -replace "`r`n", "`n"
+    $bytes = [Text.Encoding]::UTF8.GetBytes($normalizedContent)
     $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
     return [BitConverter]::ToString($hash).Replace('-', '').ToLowerInvariant()
 }
@@ -773,7 +786,7 @@ function New-ResumePackage() {
         targetCommit = $script:TargetSha
         mode = if ($Bootstrap) { "bootstrap" } elseif ($BaselinePath) { "baseline-path" } else { "two-pass" }
         collectOnly = [bool]$CollectOnly
-        scriptSha256 = Get-FileSha256 $PSCommandPath
+        scriptSha256 = Get-ScriptSha256 $PSCommandPath
         dotnetToolsSha256 = $dotnetToolsSha256
         runnerFiles = $runnerFiles
         toolName = 'Microsoft.CodeCoverage'
@@ -891,7 +904,7 @@ function Invoke-GateStage() {
 function Invoke-FinishStage() {
     Write-CiLog "=== FINISH ==="
     try {
-        if (Test-Path "$script:WorkDir/src") {
+        if ($script:WorkDir -and (Test-Path "$script:WorkDir/src")) {
             $packagesOutput = Invoke-Native 0 'dotnet' @('list', 'WeatherParser.Ci.slnf', 'package', '--include-transitive') -WorkingDirectory "$script:WorkDir/src" -AllowAnyExitCode -CaptureStdOut (Join-Path $script:RunDir 'packages.txt')
             if ($packagesOutput.ExitCode -ne 0) {
                 Write-CiLog "Warning: packages.txt not written: dotnet list package exit code $($packagesOutput.ExitCode)"
@@ -913,9 +926,219 @@ function Invoke-FinishStage() {
     }
 }
 
+function Invoke-ResumeFrom() {
+    Write-CiLog "=== RESUME ==="
+    
+    # Validate forbidden parameters
+    $forbiddenParams = @($script:BoundParameterNames | Where-Object { $_ -notin @('ResumeFrom', 'KeepWorkDir') })
+    if ($forbiddenParams.Count -gt 0) {
+        Fail 20 "-ResumeFrom cannot be combined with: $($forbiddenParams -join ', ')"
+    }
+
+    # Validate run directory
+    if (!(Test-Path -LiteralPath $ResumeFrom)) {
+        Fail 20 "Resume directory does not exist: $ResumeFrom"
+    }
+    
+    $resumeDir = Join-Path $ResumeFrom 'resume'
+    if (!(Test-Path -LiteralPath $resumeDir)) {
+        Fail 20 "Resume directory missing resume subdirectory: $resumeDir"
+    }
+    
+    $resumeJsonPath = Join-Path $resumeDir 'resume.json'
+    if (!(Test-Path -LiteralPath $resumeJsonPath)) {
+        Fail 20 "Resume directory missing resume.json: $resumeJsonPath"
+    }
+    
+    $script:RunDir = (Resolve-Path -LiteralPath $ResumeFrom).Path
+    Write-CiLog "Resuming from run directory: $script:RunDir"
+
+    # Read resume.json
+    $resumeJson = Get-Content $resumeJsonPath | ConvertFrom-Json -AsHashtable
+    
+    if ($resumeJson.collectOnly -ne $true) {
+        Fail 20 "Run directory was not produced by -CollectOnly"
+    }
+    
+    if ($resumeJson.mode -ne 'two-pass') {
+        Fail 20 "Resume is only supported for two-pass mode"
+    }
+
+    # Hash checks
+    $scriptSha256 = Get-ScriptSha256 $PSCommandPath
+    if ($scriptSha256 -ne $resumeJson.scriptSha256) {
+        Fail 20 "ci-local.ps1 script hash mismatch: expected $($resumeJson.scriptSha256), found $scriptSha256"
+    }
+
+    $dotnetToolsSha256 = Get-FileSha256 (Join-Path $resumeDir 'dotnet-tools.json')
+    if ($dotnetToolsSha256 -ne $resumeJson.dotnetToolsSha256) {
+        Fail 20 "dotnet-tools.json hash mismatch: expected $($resumeJson.dotnetToolsSha256), found $dotnetToolsSha256"
+    }
+
+    # Check runner files
+    $runnerDir = Join-Path $resumeDir 'runner'
+    $expectedRunnerFiles = @($resumeJson.runnerFiles.Keys | Sort-Object)
+    $actualRunnerFiles = @(Get-ChildItem -Path $runnerDir -Recurse -File | ForEach-Object {
+        $_.FullName.Substring($runnerDir.Length + 1).Replace('\', '/')
+    } | Sort-Object)
+    
+    if ($expectedRunnerFiles.Count -ne $actualRunnerFiles.Count) {
+        Fail 20 "Runner file count mismatch: expected $($expectedRunnerFiles.Count), found $($actualRunnerFiles.Count)"
+    }
+    
+    # Compare expected and actual files
+    for ($i = 0; $i -lt $expectedRunnerFiles.Count; $i++) {
+        $file = $expectedRunnerFiles[$i]
+        if ($actualRunnerFiles[$i] -ne $file) {
+            Fail 20 "Runner file mismatch at index ${i}: expected '$file', found '$($actualRunnerFiles[$i])'"
+        }
+        
+        $expectedHash = $resumeJson.runnerFiles[$file]
+        $actualPath = Join-Path $runnerDir $file
+        if (!(Test-Path -LiteralPath $actualPath)) {
+            Fail 20 "Missing runner file: $file"
+        }
+        $actualHash = Get-FileSha256 $actualPath
+        if ($expectedHash -ne $actualHash) {
+            Fail 20 "Runner file hash mismatch for ${file}: expected $expectedHash, found $actualHash"
+        }
+    }
+
+    # Check for extra files in runner directory
+    $extraFiles = @($actualRunnerFiles | Where-Object { $expectedRunnerFiles -notcontains $_ })
+    if ($extraFiles.Count -gt 0) {
+        Fail 20 "Extra runner files: $($extraFiles -join ', ')"
+    }
+
+    # Check runsettings if present
+    if ($resumeJson.runSettingsSha256 -ne 'none') {
+        $runSettingsPath = Join-Path $script:RunDir 'coverage.runsettings'
+        if (!(Test-Path -LiteralPath $runSettingsPath)) {
+            Fail 20 "Run settings file missing: $runSettingsPath"
+        }
+        $actualRunSettingsSha256 = Get-FileSha256 $runSettingsPath
+        if ($actualRunSettingsSha256 -ne $resumeJson.runSettingsSha256) {
+            Fail 20 "Run settings hash mismatch: expected $($resumeJson.runSettingsSha256), found $actualRunSettingsSha256"
+        }
+    }
+
+    # Check changed-files.txt
+    $changedFilesPath = Join-Path $script:RunDir 'changed-files.txt'
+    if (!(Test-Path -LiteralPath $changedFilesPath)) {
+        Fail 20 "Changed files list missing: $changedFilesPath"
+    }
+
+    Write-CiLog "Resume package verified"
+
+    # Restore pinned tool
+    Invoke-Native 80 'dotnet' @('tool', 'restore', '--tool-manifest', (Join-Path $resumeDir 'dotnet-tools.json')) -WorkingDirectory $resumeDir -AllowedExitCodes @(0)
+
+    # Converter (stage 80)
+    $dotnetCoverageVersion = Invoke-Native 80 'dotnet' @('tool', 'run', 'dotnet-coverage', '--version') -WorkingDirectory $resumeDir -AllowedExitCodes @(0) -CaptureStdOut (Join-Path $script:RunDir 'current/dotnet-coverage-version.txt')
+    $dotnetCoverageVersion = $dotnetCoverageVersion.Output[0] -split '\+' | Select-Object -First 1
+    $script:ResumeConverterVersion = $dotnetCoverageVersion
+    $script:ResumeConverterRid = [System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier
+    Copy-Item (Join-Path $script:RunDir 'current/dotnet-coverage-version.txt') (Join-Path $script:RunDir 'target/dotnet-coverage-version.txt')
+
+    # Process each pass
+    foreach ($pass in @('current', 'target')) {
+        $coverageRawDir = Join-Path $script:RunDir "$pass/coverage/raw"
+        $coverageFiles = @(Get-ChildItem -Path $coverageRawDir -Filter "*.coverage" -Recurse -File)
+        if ($coverageFiles.Count -ne 1) {
+            Fail 80 "Expected exactly one .coverage file in $pass, found $($coverageFiles.Count)"
+        }
+
+        $coverageXmlPath = Join-Path $script:RunDir "$pass/coverage/coverage.xml"
+        New-CiDirectory (Split-Path $coverageXmlPath)
+        
+        Invoke-Native 80 'dotnet' @('tool', 'run', 'dotnet-coverage', 'merge', $coverageFiles[0].FullName, '-f', 'xml', '-o', $coverageXmlPath) -WorkingDirectory $resumeDir -AllowedExitCodes @(0)
+
+        # Update collection-settings.json
+        $settingsPath = Join-Path $script:RunDir "$pass/collection-settings.json"
+        $settings = Get-Content $settingsPath | ConvertFrom-Json -AsHashtable
+        $settings['dotnetCoverageToolVersion'] = $dotnetCoverageVersion
+        $settings['converterRid'] = $script:ResumeConverterRid
+        $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsPath
+    }
+
+    # Assert comparable settings
+    Assert-ComparableSettings (Join-Path $script:RunDir 'current/collection-settings.json') (Join-Path $script:RunDir 'target/collection-settings.json')
+
+    # Baseline (stage 91)
+    $baselinePath = Join-Path $script:RunDir 'target/baseline.json'
+    $runnerDll = Join-Path $resumeDir 'runner/WeatherParser.Coverage.Runner.dll'
+    $targetSettings = Get-Content (Join-Path $script:RunDir 'target/collection-settings.json') | ConvertFrom-Json
+    $currentSettings = Get-Content (Join-Path $script:RunDir 'current/collection-settings.json') | ConvertFrom-Json
+    
+    $excludeArgs = @()
+    foreach ($exclusion in $resumeJson.exclusions) {
+        $excludeArgs += @('--exclude', $exclusion)
+    }
+    
+    $baselineArgs = @($runnerDll, 'write-baseline', '--report', (Join-Path $script:RunDir 'target/coverage/coverage.xml'), '--commit', $resumeJson.targetCommit, '--tool-name', $resumeJson.toolName, '--tool-version', $targetSettings.microsoftCodeCoverageVersion) + $excludeArgs + @('--output', $baselinePath)
+    Invoke-Native 91 'dotnet' $baselineArgs -WorkingDirectory $script:RunDir -AllowedExitCodes @(0)
+
+    # Gate (stage 90)
+    $changedFiles = Join-Path $script:RunDir 'changed-files.txt'
+    $coverageXmlPath = Join-Path $script:RunDir 'current/coverage/coverage.xml'
+
+    $evaluateArgs = @($runnerDll, 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', $resumeJson.toolName, '--tool-version', $currentSettings.microsoftCodeCoverageVersion) + $excludeArgs + @('--baseline', $baselinePath, '--expected-baseline-commit', $resumeJson.targetCommit)
+    $gate = Invoke-Native 90 'dotnet' $evaluateArgs -WorkingDirectory $script:RunDir -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+    
+    switch ($gate.ExitCode) {
+        1 {
+            $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
+            $failedRules = $gateResult.rules | Where-Object { $_.verdict -eq $false } | ForEach-Object { $_.ruleId }
+            Fail 90 "Coverage gate failed: $($failedRules -join ', ')"
+        }
+        2 {
+            Fail 91 "Coverage gate input error"
+        }
+    }
+
+    Write-CiLog "Gate passed (resumed)"
+}
+
+if ($ResumeFrom) {
+    $script:ResumeConverterVersion = $null
+    $script:ResumeConverterRid = $null
+    try {
+        Invoke-ResumeFrom
+        $exit = 0
+    } catch [CiFailure] {
+        $exit = $_.Exception.ExitCode
+    } catch {
+        Write-CiLog "UNEXPECTED: $($_.Exception.Message)"
+        $exit = if ($script:CurrentStageCode -gt 0) { $script:CurrentStageCode } else { 20 }
+    } finally {
+        try {
+            if ($script:RunDir) {
+                $duration = [DateTime]::UtcNow - $script:StartTime
+                $durationStr = $duration.ToString('hh\:mm\:ss')
+                Write-CiLog "Resume completed in $durationStr"
+                
+                $resumeResult = @{
+                    startedUtc = $script:StartTime.ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+                    finishedUtc = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+                    exitCode = $exit
+                    converterRid = $script:ResumeConverterRid
+                    converterToolVersion = $script:ResumeConverterVersion
+                }
+                
+                $resumeResult | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'resume/resume-result.json')
+            }
+        } catch {
+            Write-CiLog "Error in cleanup: $_"
+        }
+    }
+    exit $exit
+}
+
 try {
     # Setup
     $script:RepoRoot = git -C $PSScriptRoot rev-parse --show-toplevel
+    
+    if (!$TargetRef) { Fail 20 "-TargetRef is required" }
     
     # Resolve SHAs
     $commitSha = git -C $script:RepoRoot rev-parse --verify --quiet "$Commit^{commit}"
