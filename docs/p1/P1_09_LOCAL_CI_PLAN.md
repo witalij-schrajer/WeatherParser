@@ -1,6 +1,6 @@
 # P1.09 – Local CI Job Sequence and Artifacts: Implementation Plan
 
-**Status: plan only (2026-10-19); nothing is implemented or verified yet.** Drafted with the local qwen3-coder:30b model over five review rounds and finalized by review against [AGENTS.md](../../AGENTS.md), the [P1 detailed plan](../../PHASE_P1_PLAN.md) (sections 4 and 7) and the repository state at commit `2f8c670`. Covers T-P1-08, T-P1-19, T-P1-21 and T-P1-22.
+**Status (2026-10-19): implemented, verified on Windows x64 and accepted by the user; see the [result and acceptance record](P1_09_LOCAL_CI.md#p109-acceptance-2026-10-19).** The original plan below was drafted with the local qwen3-coder:30b model over five review rounds and finalized by review against [AGENTS.md](../../AGENTS.md), the [P1 detailed plan](../../PHASE_P1_PLAN.md) (sections 4 and 7) and the repository state at commit `2f8c670`. Covers T-P1-08, T-P1-19, T-P1-21 and T-P1-22. The original acceptance checklist is retained below; completed checks and deviations are recorded in the result record.
 
 ## 1. Goal and Scope
 

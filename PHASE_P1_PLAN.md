@@ -44,7 +44,7 @@ Names are provisional. Create projects only when needed. No empty infrastructure
 |---|---|---|
 | P1.01 | Check working state/P0 completion and confirm P1 scope | Completed on 2026-10-15; [entry audit](docs/p1/P1_01_BASELINE.md) |
 | P1.02 | Verify SDK/packages, licenses and compatibility | Review complete; SDK update open; [report](docs/p1/P1_02_TOOLING_REVIEW.md) |
-| P1.03 | Prepare minimal solution, library and test projects | Complete (SDK 10.0.402, locked restore, CLI build, IDE build); [record](docs/p1/P1_03_BUILD_SETUP.md); clean-checkout reproducibility pending |
+| P1.03 | Prepare minimal solution, library and test projects | Complete (SDK 10.0.402, locked restore, CLI build, IDE build); [record](docs/p1/P1_03_BUILD_SETUP.md); clean-checkout reproducibility verified on Windows x64 by accepted [P1.09](docs/p1/P1_09_LOCAL_CI.md#p109-acceptance-2026-10-19) |
 | P1.04 | Establish local NuGet pack and isolated consumer | Complete; [record](docs/p1/P1_04_PACKAGE_CONSUMER.md) |
 | P1.05 | Establish MSTest/Moq/FluentAssertions and TDD evidence | Complete (parser-endpoint validation, 6 passing tests); [record](docs/p1/P1_05_TDD_BASELINE.md) |
 | P1.06 | Test-drive minimally needed package/DI contracts | Complete (`AddWeatherParsing` entry point, real DI resolution, missing registration detected, 8 passing tests); [record](docs/p1/P1_06_DI_CONTRACTS.md) |

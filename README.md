@@ -1,6 +1,6 @@
 # WeatherParser
 
-**Phase status (2026-10-19): P0 complete; P1.01–P1.07 are recorded as complete. SDK 10.0.402 is pinned; remaining P1 acceptance, including clean-checkout reproducibility, is pending.**
+**Phase status (2026-10-19): P0 and P1.01–P1.09 complete. SDK 10.0.402 is pinned; P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. Debian/ARM64 verification and overall P1 acceptance remain pending.**
 
 WeatherParser is primarily a planned C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts. The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
@@ -256,4 +256,4 @@ Historical initial-scaffolding verification on 2026-10-15: solution listing and 
 P1.01 entry audit completed on 2026-10-15: [record and starting inventory](docs/p1/P1_01_BASELINE.md). Existing scaffolding is preserved; no new domain code or test/coverage result is claimed. P1.02 review has since completed; current follow-up is recorded below.
 
 
-**P1.02 review (2026-10-15) complete:** [tooling/license/compatibility report](docs/p1/P1_02_TOOLING_REVIEW.md). All 16 test packages were reviewed; six direct versions were current, with no reported NuGet vulnerability/deprecation findings at that review. SDK 10.0.303 was outside servicing; the review selected 10.0.402 for an update before P1.03 acceptance. No SDK/package changes or new tests were made in P1.02. [P1.03](docs/p1/P1_03_BUILD_SETUP.md) subsequently pinned 10.0.402 and verified CLI/IDE builds; clean-checkout reproducibility remains pending.
+**P1.02 review (2026-10-15) complete:** [tooling/license/compatibility report](docs/p1/P1_02_TOOLING_REVIEW.md). All 16 test packages were reviewed; six direct versions were current, with no reported NuGet vulnerability/deprecation findings at that review. SDK 10.0.303 was outside servicing; the review selected 10.0.402 for an update before P1.03 acceptance. No SDK/package changes or new tests were made in P1.02. [P1.03](docs/p1/P1_03_BUILD_SETUP.md) subsequently pinned 10.0.402 and verified CLI/IDE builds; [P1.09](docs/p1/P1_09_LOCAL_CI.md#p109-acceptance-2026-10-19) verified clean-checkout reproducibility on Windows x64.

@@ -1,6 +1,6 @@
 # WeatherParser – Development plan
 
-**Phase status (2026-10-19): P0 complete; P1.01-P1.08 complete (P1.08 accepted with its documented Red-step deviation; Visual Studio build limitation resolved; clean-checkout reproducibility still pending); remaining P1 acceptance is pending.**
+**Phase status (2026-10-19): P0 complete; P1.01-P1.09 complete (P1.08 accepted with its documented Red-step deviation; Visual Studio build limitation resolved; P1.09 accepted and clean-checkout reproducibility verified on Windows x64); Debian/ARM64 verification and overall P1 acceptance remain pending.**
 
 As of 2026-10-14. Based on [REQUIREMENTS.md](REQUIREMENTS.md) and [AGENTS.md](AGENTS.md). P0 is complete; P1 has started with project scaffolding only. The repository contains documentation, a solution and library/test project scaffolding; no domain implementation yet. This plan does not authorize application-code generation, GitHub publication or installation on R76S.
 
@@ -174,7 +174,7 @@ English guides cover configuration and cron/n8n invocation without installing in
 
 ## Next concrete step
 
-P1.02 review is complete. P1.03 closed the SDK finding: global.json now pins SDK 10.0.402, with locked restore and a CLI Release build proven successful ([record](docs/p1/P1_03_BUILD_SETUP.md)). The Visual Studio/MSBuild NETSDK1141 build failure has been resolved (via `dotnet build-server shutdown` plus a full Visual Studio restart) and a subsequent IDE solution build succeeded. Still pending is clean-checkout reproducibility after the first commit. Package versions remain unchanged; remaining P1 acceptance is pending.
+P1.02 review is complete. P1.03 closed the SDK finding: global.json now pins SDK 10.0.402, with locked restore and a CLI Release build proven successful ([record](docs/p1/P1_03_BUILD_SETUP.md)). The Visual Studio/MSBuild NETSDK1141 build failure has been resolved (via `dotnet build-server shutdown` plus a full Visual Studio restart) and a subsequent IDE solution build succeeded. [P1.09](docs/p1/P1_09_LOCAL_CI.md#p109-acceptance-2026-10-19) subsequently verified clean-checkout reproducibility on Windows x64. Package versions remain unchanged; overall P1 acceptance is pending.
 
 ## Binding MOSMIX schema source
 
