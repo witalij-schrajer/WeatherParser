@@ -7,12 +7,18 @@ namespace WeatherParser.Parsing.Tests;
 [TestClass]
 public sealed class ServiceCollectionExtensionsTests
 {
+    private ServiceCollection _services = null!;
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _services = new ServiceCollection();
+    }
+
     [TestMethod]
     public void GetRequiredService_WithoutAnyRegistration_ThrowsInvalidOperationException()
     {
-        var services = new ServiceCollection();
-
-        using var provider = services.BuildServiceProvider();
+        using var provider = _services.BuildServiceProvider();
 
         var act = () => provider.GetRequiredService<IParserEndpointValidator>();
 
@@ -22,10 +28,9 @@ public sealed class ServiceCollectionExtensionsTests
     [TestMethod]
     public void GetRequiredService_WithOnlyParserEndpointValidatorRegistered_ThrowsInvalidOperationException()
     {
-        var services = new ServiceCollection();
-        services.AddSingleton<IParserEndpointValidator, ParserEndpointValidator>();
+        _services.AddSingleton<IParserEndpointValidator, ParserEndpointValidator>();
 
-        using var provider = services.BuildServiceProvider();
+        using var provider = _services.BuildServiceProvider();
 
         var act = () => provider.GetRequiredService<IParserEndpointValidator>();
 
@@ -35,10 +40,9 @@ public sealed class ServiceCollectionExtensionsTests
     [TestMethod]
     public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesParserEndpointValidator()
     {
-        var services = new ServiceCollection();
-        services.AddWeatherParsing();
+        _services.AddWeatherParsing();
 
-        using var provider = services.BuildServiceProvider();
+        using var provider = _services.BuildServiceProvider();
         var validator = provider.GetRequiredService<IParserEndpointValidator>();
 
         validator.Should().BeOfType<ParserEndpointValidator>();
@@ -47,10 +51,9 @@ public sealed class ServiceCollectionExtensionsTests
     [TestMethod]
     public void AddWeatherParsing_ResolvedValidator_PerformsRealValidation()
     {
-        var services = new ServiceCollection();
-        services.AddWeatherParsing();
+        _services.AddWeatherParsing();
 
-        using var provider = services.BuildServiceProvider();
+        using var provider = _services.BuildServiceProvider();
         var validator = provider.GetRequiredService<IParserEndpointValidator>();
 
         var endpoint = new ParserEndpointDefinition("Mosmix", new Uri("https://example.org/mosmix"));

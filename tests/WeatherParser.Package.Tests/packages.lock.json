@@ -50,7 +50,10 @@
         "type": "Direct",
         "requested": "[0.1.0-initial, )",
         "resolved": "0.1.0-initial",
-        "contentHash": "ALvcivVWWtFkSFvnKVCPgfBFmf/H+jYbxWI8L4rXNgLJLIph34S1StIqejbuxOzA8ZkNUu2+IN0AcT6Jv/JkOA=="
+        "contentHash": "icy3sINjcxz+OE7+MX4Zg3oPQNooQWfkIcetlSZsX23Hx9VIUap5OpiwEA0gJWo/Gy2QoZKyf2I6BOt3uYPoRA==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.0"
+        }
       },
       "Microsoft.ApplicationInsights": {
         "type": "Transitive",
@@ -104,6 +107,12 @@
         "type": "Transitive",
         "resolved": "4.5.1",
         "contentHash": "oa0w2QC/T3U+ulUn38AmbWE/wnEMtqSFRb2z277z5SpswqNc/ySWcAVlG1qEWUxzm+NztCjkoeLAn/83gIx3ug=="
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.0, )",
+        "resolved": "10.0.0",
+        "contentHash": "L3AdmZ1WOK4XXT5YFPEwyt0ep6l8lGIPs7F5OOBZc77Zqeo01Of7XXICy47628sdVl0v/owxYJTe86DTgFwKCA=="
       }
     }
   }

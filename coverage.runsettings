@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- P1.10: identical static managed instrumentation on Windows and Linux ARM64, where the dynamic profiler is unsupported -->
+<!-- Source: https://github.com/microsoft/codecoverage/blob/main/docs/configuration.md (checked 2026-10-19) -->
+<!-- Source: https://learn.microsoft.com/visualstudio/test/customizing-code-coverage-analysis (checked 2026-10-19) -->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <Format>coverage</Format>
+          <CodeCoverage>
+            <EnableStaticManagedInstrumentation>True</EnableStaticManagedInstrumentation>
+            <EnableDynamicManagedInstrumentation>False</EnableDynamicManagedInstrumentation>
+            <EnableStaticManagedInstrumentationRestore>True</EnableStaticManagedInstrumentationRestore>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

@@ -1,0 +1,9 @@
+{
+  "commitId": "1962d6b437cc52186b1fb0f7bbdc061c22ba97a2",
+  "toolName": "Microsoft.CodeCoverage",
+  "toolVersion": "18.11.0",
+  "format": "native-xml",
+  "exclusions": ["*.Tests.dll"],
+  "blocksCovered": 57,
+  "blocksNotCovered": 33
+}

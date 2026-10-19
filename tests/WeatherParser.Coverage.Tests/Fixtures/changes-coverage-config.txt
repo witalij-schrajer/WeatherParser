@@ -1,0 +1,3 @@
+docs/p1/P1_07_COVERAGE_CONTRACT.md
+coverage.runsettings
+coverage-exclusions.json

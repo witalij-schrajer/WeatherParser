@@ -1,71 +1,69 @@
 # WeatherParser
 
-[Deutsch](README.md) | [English](README.en.md)
+**Phase status (2026-10-19): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); P2 has not started. The SDK is pinned ([DEPENDENCIES.md](DEPENDENCIES.md)); P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; P1.11 developer instructions ([CONTRIBUTING.md](CONTRIBUTING.md)) are accepted.**
 
-**Phasenstatus (15.10.2026): P0 abgeschlossen; P1.01 und P1.02-Prüfung abgeschlossen; SDK-Aktualisierung und übrige P1-Abnahmen stehen aus.**
+WeatherParser is primarily a planned C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts. The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
-WeatherParser ist primär eine geplante C#-NuGet-Bibliothek für DWD-/OsthessenWetter-Messdaten und MOSMIX-Vorhersagen. Veröffentlicht wird das Paket mit Parsern, Ausgabeentitäten, generischem MQTT-Serializer und DI-Integration. Die CLI ist nur ein Nutzungsbeispiel, das dieses Paket konsumiert.
+## NuGet primary product and example CLI
 
-## NuGet-Hauptprodukt und Beispiel-CLI
+The intended published product is a reusable NuGet library. It contains DWD/OsthessenWetter/MOSMIX parsers with required retrieval/normalization, public output entities, a generic MQTT serializer and dependency-injection integration. The CLI is only a usage example and consumes a versioned package reference; other applications can use the package without the CLI.
 
-Das zur Veröffentlichung bestimmte Hauptprodukt ist eine wiederverwendbare NuGet-Bibliothek. Sie enthält DWD-/OsthessenWetter-/MOSMIX-Parser einschließlich benötigtem Quellenabruf und Normalisierung, die öffentlichen Ausgabeentitäten, einen generischen MQTT-Serializer sowie die Dependency-Injection-Integration. Die CLI ist ausschließlich ein Nutzungsbeispiel und konsumiert eine versionierte Paketreferenz; andere Anwendungen können das Paket ohne CLI verwenden.
+Each parser receives its required source URLs explicitly as constructor parameters, preferably typed as `Uri`. Name multiple endpoints separately. DI integration forwards consumer-supplied endpoints to the corresponding constructors, without invented built-in sources or global URI singletons. HTTP, time and other services remain constructor-injected. The library does not independently read CLI arguments or application-specific configuration files/environment variables.
 
-Jeder Parser erhält seine benötigten Quell-URLs ausdrücklich über Konstruktorparameter, vorzugsweise typisiert als `Uri`. Mehrere Endpunkte werden getrennt benannt. Die DI-Integration übernimmt die vom Konsumenten gelieferten Endpunkte und übergibt sie an die jeweiligen Konstruktoren; sie erfindet keine fest eingebauten Quellen oder globalen URI-Singletons. HTTP, Zeit und weitere Services bleiben ebenfalls über Konstruktoren injizierbar. Die Bibliothek liest keine CLI-Argumente und keine anwendungsspezifischen Konfigurationsdateien oder Umgebungsvariablen selbstständig ein.
+The MQTT serializer is source-independent: it serializes suitable output entities and creates a message containing topic, JSON payload, QoS and retain setting. Topics/templates and their mapping to message types come from consumer configuration, not hardcoded weather paths. Validate resolved publication topics; missing mappings and unresolved placeholders produce defined failures. Existing `haus/weather/...` topics are configurable examples only. Serialization and broker transport are separate; serialization needs neither a broker connection nor credentials.
 
-Der MQTT-Serializer ist quellenunabhängig: Er serialisiert geeignete Ausgabeentitäten und erzeugt eine Nachricht mit Topic, JSON-Payload, QoS und Retain-Einstellung. Topics bzw. Topic-Vorlagen und deren Zuordnung zu Nachrichtentypen stammen aus der Konfiguration des Konsumenten, nicht aus festen Wetterpfaden im Paket. Aufgelöste Publish-Topics müssen gültig sein; fehlende Zuordnungen und unaufgelöste Platzhalter erzeugen definierte Fehler. Die bisherigen `haus/weather/...`-Topics sind nur konfigurierbare Beispiele. Serializer und tatsächlicher Brokertransport sind getrennt; die Serialisierung verlangt keine Brokerverbindung und benötigt keine Zugangsdaten.
+Provide documented DI registration for library parsers, serializer and required services. Consumers supply endpoints, topic configuration and external dependencies. Every doing class has an interface; output entities remain dedicated `[Serializable]` types. Preserve testability, UTC and JSON/XML compatibility.
 
-Die Bibliothek stellt eine dokumentierte DI-Registrierung für ihre Parser, Serializer und benötigten Services bereit. Der Konsument stellt Endpunkte, Topic-Konfiguration und externe Abhängigkeiten bereit. Jede Doing-Klasse besitzt ein Interface. Ausgabeentitäten bleiben eigene `[Serializable]`-Typen. Testbarkeit, UTC-Vertrag und JSON-/XML-Kompatibilität bleiben erhalten.
+The example CLI owns arguments, application configuration, single-command process execution, exit codes, file/stdout export and optional MQTT transmission. It accesses parsing only through the package, never copied implementations. Acceptance prioritizes the public API, package versioning and independent consumption. The local test package `WeatherParser.Parsing` (version in `Directory.Packages.props`) was first built and consumed in [P1.04](docs/p1/P1_04_PACKAGE_CONSUMER.md). Public package identity, feed and publication procedure remain release decisions; no public package publication is claimed.
+## Languages
 
-Das Beispiel-CLI übernimmt Argumente, Anwendungskonfiguration, Ein-Befehl-Prozessablauf, Exitcodes, Datei-/Konsolenexport und gegebenenfalls MQTT-Versand. Der Paketaufruf ist sein einziger Weg zur Parserlogik; keine Parserkopien. Öffentliche Paket-API, Paketversionierung und unabhängiger Paketkonsum stehen im Mittelpunkt der Abnahme. Paket-ID, Feed und Veröffentlichungsvorgang sind vor Veröffentlichung zu entscheiden; derzeit existiert kein gebautes oder veröffentlichtes Paket.
-## Sprachen
+English is the sole maintained language for project documentation and instructions. Use one canonical English file at each standard unsuffixed path; do not maintain German or `.en.md` counterparts. Preserve requirement IDs, commands, data fields, units, examples and original source names. This decision dated 2026-10-19 supersedes the earlier bilingual policy.
 
-Die Projektdokumentation wird vollständig auf Deutsch und Englisch gepflegt. Jede inhaltliche Änderung muss beide Sprachfassungen synchron aktualisieren. Anforderungen besitzen in beiden Fassungen dieselben IDs; CLI-Befehle, Datenfelder, Einheiten und Beispiele werden nicht übersetzt.
+**All code comments must be written in English**, including inline/block comments, XML documentation comments, and comments in scripts and configuration examples. All program-generated runtime messages must be English. The binding MIT license text in `LICENSE` remains in English.
 
-**Alle Codekommentare werden auf Englisch verfasst**, einschließlich Inline-/Blockkommentaren, XML-Dokumentationskommentaren sowie Kommentaren in Skripten und Konfigurationsbeispielen. Alle vom Programm erzeugten Laufzeitmeldungen sind Englisch. Der verbindliche MIT-Lizenztext in `LICENSE` bleibt auf Englisch.
+## Project status
 
-## Projektstatus
+As of 2026-10-19, the solution contains the library, source-reference tests, isolated package-consumer tests and coverage tooling. Parser-endpoint validation and the `AddWeatherParsing` DI entry point exist; the unused export-entity scaffolding was removed on 2026-10-19 and will be reintroduced test-first in P2. Test and coverage evidence is kept in the [P1 records](docs/p1/). **Weather-source parsers and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. Full P1 acceptance remains open; no public package publication is claimed.
 
-Stand: 15.10.2026. Das lokale Git-Repository, die Dokumentation und eine Solution mit Bibliotheks-/Testprojekt sind angelegt. **Es gibt noch keine Fachimplementierung, Testmethoden oder ausführbare CLI-Befehle.** Die folgenden Aufrufe beschreiben die geplante Schnittstelle; sie sind noch nicht ausführbar. Die Veröffentlichung auf GitHub als Open-Source-Projekt ist vorgesehen, aber noch nicht erfolgt.
+## Workflow role and execution
 
-## Rolle im Gesamtworkflow und Betrieb
+The example CLI is an independently callable component of the overall weather-data and automation workflow. Its responsibilities are retrieval, parsing, station selection, normalization and the requested output. Downstream storage, display and other actions belong to other components.
 
-Die Beispiel-CLI ist ein separat aufrufbarer Baustein im gesamten Wetterdaten- und Automationsworkflow. Er übernimmt Abruf, Parsing, Stationsauswahl bzw. Aufbereitung und die gewünschte Ausgabe. Nachfolgende Speicherung, Anzeige und weitere Aktionen liegen bei anderen Workflow-Bausteinen.
+**Each invocation executes exactly one command and then exits.** Scheduling and retries across invocations are external responsibilities, for example in n8n or cron. WeatherParser has no built-in scheduler and does not run as a persistent service. One command may return results for multiple stations. The CLI must support noninteractive execution, meaningful exit codes and separate data and log output.
 
-**Pro Aufruf wird genau ein Befehl ausgeführt; anschließend beendet sich das Programm.** Zeitliche Steuerung und laufübergreifende Wiederholungen erfolgen extern, beispielsweise durch n8n oder cron. WeatherParser enthält keinen eigenen Scheduler und läuft nicht als dauerhafter Dienst. Mehrere Stationsergebnisse innerhalb eines einzelnen Befehls bleiben möglich. Die CLI muss nichtinteraktiv mit auswertbaren Exitcodes sowie getrennten Daten- und Logausgaben nutzbar sein.
+Example workflows:
 
-Beispielabläufe:
+- n8n or cron → WeatherParser → MQTT → dashboard or other consumers.
+- External workflow → WeatherParser → JSON/XML file → downstream processing.
 
-- n8n oder cron → WeatherParser → MQTT → Dashboard bzw. weitere Verbraucher.
-- Externer Workflow → WeatherParser → JSON-/XML-Datei → nachgelagerte Verarbeitung.
+There is no hard dependency on n8n; other programs and shell scripts can invoke the component.
 
-Eine feste Abhängigkeit von n8n besteht nicht; auch andere Programme oder Shell-Skripte können den Baustein aufrufen.
+## Target platform
 
-## Zielplattform
+Binding platform policy (2026-10-14): .NET version 10 or newer and Debian version 13 Trixie or newer. The initial library/example target framework is `net10.0`; the minimum architecture is ARM64 (`linux-arm64`), particularly NanoPi R76S. Add newer stable .NET/Debian releases to the verified compatibility matrix; previews are not automatically guaranteed. The pinned SDK and the verified toolchain are listed in [DEPENDENCIES.md](DEPENDENCIES.md), the developer setup in [CONTRIBUTING.md](CONTRIBUTING.md) and the verified platforms in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md); extra ARM variants and the deployment model remain undecided. Verify the library, actual package consumer and example on Debian 13/ARM64 with .NET 10. Distinguish platform requirements from verified compatibility; never claim runtime success without documented tests.
 
-Verbindliche Plattformvorgabe (14.10.2026): .NET ab Version 10 und Debian ab Version 13 Trixie. Initiales Ziel-Framework für Bibliothek und CLI-Beispiel ist `net10.0`; Mindestarchitektur ist ARM64 (`linux-arm64`), insbesondere NanoPi R76S. Neuere stabile .NET-/Debian-Versionen werden in die geprüfte Kompatibilitätsmatrix aufgenommen; Preview-Versionen sind nicht automatisch zugesichert. Visual Studio 2026 und SDK 10.0.303 sind als lokale Ausgangsbasis festgestellt; Paketversionen, weitere ARM-Varianten und Deployment-Modell bleiben festzulegen. Bibliothek, echter Paketkonsument und Beispiel müssen auf Debian 13/ARM64 mit .NET 10 geprüft werden. Plattformanforderung und tatsächlich nachgewiesene Kompatibilität bleiben getrennt; ohne dokumentierten Test kein behaupteter Laufzeiterfolg.
+Sources (checked 2026-10-14): [.NET support](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core), [.NET 10 OS matrix](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md), [Debian releases](https://www.debian.org/releases/).
 
-Quellen (geprüft am 14.10.2026): [.NET-Support](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core), [.NET-10-OS-Matrix](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md), [Debian-Versionen](https://www.debian.org/releases/).
-
-## Geplante Befehle des CLI-Nutzungsbeispiels
+## Planned commands of the example CLI
 
 ```text
-WeatherParser --<command> [optionen]
+WeatherParser --<command> [options]
 ```
 
-| Befehl | Zweck | Fachliche Optionen |
+| Command | Purpose | Functional options |
 |---|---|---|
-| `--SelectDWD` | Passende DWD-Stationen suchen und als MQTT-Stationsliste veröffentlichen | `--Latitude`, `--Longitude`, `--Altitude`, `--MaxDistance`, `--MaxAltDifference` |
-| `--ParseDWD` | Messdaten einer DWD-Station abrufen und veröffentlichen | `--StationID`; alternativ konfigurierte Bezugsmessstation |
-| `--ParseOstHessen` | Messdaten der passenden OsthessenWetter-Stationen abrufen und veröffentlichen | `--StationNamePattern` |
-| `--SelectMOSMIX` | Passende MOSMIX-Vorhersagestandorte suchen | `--Latitude`, `--Longitude`, `--Altitude`, `--MaxDistance`, `--MaxAltDifference` |
-| `--ParseMOSMIX` | Wettervorhersage für einen MOSMIX-Standort abrufen | `--MOSMIXID`, `--Product` (`MOSMIX_S`/`MOSMIX_L`) |
+| `--SelectDWD` | Find suitable DWD stations and publish an MQTT station list | `--Latitude`, `--Longitude`, `--Altitude`, `--MaxDistance`, `--MaxAltDifference` |
+| `--ParseDWD` | Retrieve and publish observations for a DWD station | `--StationID`; otherwise the configured reference station |
+| `--ParseOstHessen` | Retrieve and publish observations for matching OsthessenWetter stations | `--StationNamePattern` |
+| `--SelectMOSMIX` | Find suitable MOSMIX forecast locations | `--Latitude`, `--Longitude`, `--Altitude`, `--MaxDistance`, `--MaxAltDifference` |
+| `--ParseMOSMIX` | Retrieve a forecast for a MOSMIX location | `--MOSMIXID`, `--Product` (`MOSMIX_S`/`MOSMIX_L`) |
 
-Beispiele der geplanten Verwendung:
+Planned usage examples:
 
 ```text
 WeatherParser --SelectDWD --Latitude 50.5549 --Longitude 9.6738 --Altitude 300 --MaxDistance 50 --MaxAltDifference 200
 WeatherParser --SelectDWD --Latitude "50° 33′ 18″ N" --Longitude "9° 40′ 26″ E" --Altitude 300 --MaxDistance 50 --MaxAltDifference 200
-WeatherParser --ParseDWD --StationID <DWD-STATIONS-ID>
+WeatherParser --ParseDWD --StationID <DWD-STATION-ID>
 WeatherParser --ParseDWD
 WeatherParser --ParseOstHessen --StationNamePattern "Fulda*"
 WeatherParser --SelectMOSMIX --Latitude 50.5549 --Longitude 9.6738 --Altitude 300 --MaxDistance 50 --MaxAltDifference 200
@@ -73,162 +71,137 @@ WeatherParser --ParseMOSMIX --Product MOSMIX_L --MOSMIXID <MOSMIX-ID>
 WeatherParser --ParseMOSMIX --Product MOSMIX_S --MOSMIXID <MOSMIX-ID>
 ```
 
-Die Beispielkoordinaten zeigen zwei Eingabeformate; die Werte sind nicht exakt identisch. Die Höhe ist eine Beispieleingabe. Das Stationsmuster ist ein Suchbeispiel und garantiert keinen Treffer. Die Schreibweisen `Longitude` und `AltitudeDifference` sind verbindlich; `Langitude` und `AltitudeDiffeference` aus der ursprünglichen Beschreibung sind Tippfehler.
+The example coordinates demonstrate two input formats and are not exactly equivalent. The altitude is an example value. The station pattern is illustrative and does not guarantee a match. `Longitude` and `AltitudeDifference` are the required spellings; `Langitude` and `AltitudeDiffeference` in the original description are typos.
 
-Fehlt bei `ParseDWD` sowohl `StationID` als auch eine konfigurierte Bezugsmessstation, muss die Anwendung einen Fehler protokollieren und mit Fehlerstatus enden. Eine Station wird niemals stillschweigend gewählt. Ein expliziter CLI-Wert hat Vorrang vor dem Konfigurationswert.
+If `ParseDWD` has neither a `StationID` argument nor a configured reference station, the application must log an error and exit unsuccessfully. It must never select a station silently. An explicit CLI value overrides configuration.
 
-## Geplanter JSON- und XML-Export
+## Planned JSON and XML export
 
-Alle fünf Befehle erhalten `--Output mqtt|json|xml`. Standard ist MQTT. JSON und XML können unabhängig von einem MQTT-Broker exportiert werden. `--OutputFile <pfad>` schreibt eine UTF-8-Datei; ohne Dateipfad wird das vollständige Dokument auf Standardausgabe ausgegeben. Logs bleiben auf Standardfehler. Bestehende Dateien werden nicht stillschweigend überschrieben.
+All five commands support `--Output mqtt|json|xml`, with MQTT as the default. JSON and XML export require no MQTT broker. `--OutputFile <path>` writes a UTF-8 file; without a path, the complete document goes to standard output. Logs remain on standard error. Existing files are not silently overwritten.
 
 ```text
-WeatherParser --ParseDWD --StationID <DWD-STATIONS-ID> --Output json --OutputFile weather.json
+WeatherParser --ParseDWD --StationID <DWD-STATION-ID> --Output json --OutputFile weather.json
 WeatherParser --ParseOstHessen --StationNamePattern "Fulda*" --Output xml --OutputFile weather.xml
 WeatherParser --SelectDWD --Latitude 50.5549 --Longitude 9.6738 --Altitude 300 --MaxDistance 50 --MaxAltDifference 200 --Output json
 ```
 
-Die Aufrufe sind noch nicht implementiert. Beide Exportformate enthalten dieselben fachlichen Mess- bzw. Vorhersagedaten und UTC-Zeitstempel wie MQTT, einschließlich der Kennzeichnung geschätzter Datumsangaben. Mehrere Stationsergebnisse, Stationslisten bzw. Vorhersagezeitschritte werden in einem einzigen vollständigen Dokument zusammengefasst. MQTT-Nachrichten des Bibliotheks-Serializers bleiben JSON.
+These commands are not implemented yet. Both export formats contain the same observation or forecast data and UTC timestamps as MQTT, including estimated-date markers. Multiple station results, station lists and forecast steps are grouped into one complete document. The library serializer MQTT payloads remain JSON.
 
-### Exportentitäten und Serialisierung
+### Export entities and serialization
 
-Jeder fachliche Exportobjekttyp erhält eine eigene stark typisierte C#-Entität mit `[Serializable]`, einschließlich verschachtelter Exportobjekte. Dazu gehören Stationslisten und ihre Einträge, Messdatensätze, Vorhersageläufe und -zeitschritte sowie Qualitäts-/Zeitraumdaten. Wiederverwendbare Wertentitäten können gemeinsam genutzt werden.
+Each functional export object type has its own strongly typed C# entity marked `[Serializable]`, including nested export objects. This includes station lists and entries, observation datasets, forecast runs and steps, and quality/period metadata. Reusable value entities may be shared.
 
-JSON wird über `System.Text.Json.JsonSerializer`, XML über `System.Xml.Serialization.XmlSerializer` erzeugt. Beide Formate verwenden dieselben aufbereiteten Exportentitäten; auch MQTT-JSON nutzt diese Entitäten. Feldnamen, fehlende Werte und UTC ohne Zeitzonensuffix werden durch die jeweiligen Serialisierungsregeln festgelegt. Serializer-Dienste werden per Konstruktor injiziert. Dies ist eine Architekturvorgabe; Entitäten und Anwendungscode sind noch nicht implementiert.
+JSON uses `System.Text.Json.JsonSerializer`; XML uses `System.Xml.Serialization.XmlSerializer`. Both formats and MQTT JSON use the same prepared export entities. Serializer-specific rules control field names, omitted values and UTC without a timezone suffix. Serializer services use constructor injection. The earlier, untested export-entity scaffolding was removed on 2026-10-19; P2 introduces each entity test-first together with its serializer contracts.
 
-## Gemeinsame Messdaten
+## Shared observation data
 
-Alle Quellen verwenden denselben Datenvertrag. Zeitstempel sind immer **UTC im Format `YYYY-MM-DDTHH:mm:ss`, ohne `Z` oder Offset**. Empfänger müssen diese Konvention ausdrücklich berücksichtigen; erst die Anzeige rechnet in Ortszeit um.
+All sources use the same data contract. Timestamps are always **UTC in `YYYY-MM-DDTHH:mm:ss` format, without `Z` or an offset**. Consumers must explicitly interpret this convention; local-time conversion happens only for display.
 
-Messgrößen: Temperatur in °C, Luftdruck in hPa und mmHg, relative Feuchtigkeit in %, Windrichtung in Grad, Windgeschwindigkeit in km/h, Beleuchtungsstärke in Lux, Sonnenstrahlung in W/m² und Regenintensität in mm/h. Fehlende Werte werden weggelassen. `0` bezeichnet einen tatsächlichen Messwert.
+Quantities include temperature in °C, pressure in hPa and mmHg, relative humidity in %, wind direction in degrees, wind speed in km/h, illuminance in lux, solar irradiance in W/m² and rain intensity in mm/h. Missing values are omitted. `0` represents an actual measurement.
 
-hPa und mmHg beziehen sich auf denselben Ausgangswert und dieselbe Druckreferenz. Lux und W/m² sind getrennte Größen. Zeitlich gemittelte Werte erhalten einen nachvollziehbaren Messzeitraum. Vorhersagen werden durch `--ParseMOSMIX` separat ausgegeben und niemals als Messdaten behandelt.
+hPa and mmHg refer to the same original value and pressure reference. Lux and W/m² are separate quantities. Averaged values retain their measurement periods. `--ParseMOSMIX` produces forecasts separately, never as observations.
 
-OsthessenWetter zeigt in der untersuchten Messwertübersicht je Station nur eine Uhrzeit. Nach Projektentscheidung darf das Datum anhand des Abrufzeitpunkts und der Quellzeitzone `Europe/Berlin` abgeleitet werden. Der vollständige Zeitstempel wird anschließend nach UTC umgerechnet und **als geschätzt gekennzeichnet**. Sommerzeitwechsel und nicht eindeutig auflösbare Uhrzeiten benötigen eine explizite Behandlung; das Abrufdatum beweist keine Aktualität des Messwerts.
+The inspected OsthessenWetter overview provides only a time of day per station. The project permits deriving the date from retrieval time and the source timezone `Europe/Berlin`, then converting to UTC and **marking the date as estimated**. Daylight-saving transitions and ambiguous times require explicit handling; the retrieval date does not prove that the observation is current.
 
-## Geplante MOSMIX-Vorhersagen
+## Planned MOSMIX forecasts
 
-`--SelectMOSMIX` verwendet dieselben Standort- und Filterparameter wie `--SelectDWD`, aber den DWD-MOSMIX-Stationskatalog. Die Liste enthält MOSMIX-ID, Name, Koordinaten, Höhe, Entfernung, Höhenunterschied und nachgewiesene Vorhersageelemente. MOSMIX-IDs sind eigenständige, auch alphanumerische Kennungen; sie werden nicht aus CDC-Messstations-IDs abgeleitet.
+`--SelectMOSMIX` uses the same location/filter parameters as `--SelectDWD` but searches the DWD MOSMIX station catalog. Results include MOSMIX ID, name, coordinates, altitude, distance, altitude difference and verified forecast elements. MOSMIX IDs are independent, potentially alphanumeric identifiers and are not derived from CDC observation-station IDs.
 
-`--ParseMOSMIX --Product MOSMIX_S|MOSMIX_L --MOSMIXID <id>` liest den neuesten verfügbaren Vorhersagelauf für den angegebenen Standort. Ausgabezeitpunkt (`issued_at`), Abrufzeitpunkt (`retrieved_at`) und Vorhersagezeitpunkte (`forecasts[].valid_at`) bleiben getrennt und werden als UTC ohne Zeitzonensuffix ausgegeben. Intervallgrößen behalten ihre Bezugszeiträume. Beide Produktparser sind verbindlich; ihre konkrete Parameterabbildung und Aktualitätsgrenzen werden vor Implementierung dokumentiert.
+`--ParseMOSMIX --Product MOSMIX_S|MOSMIX_L --MOSMIXID <id>` retrieves the latest available forecast run for the location. Issue time (`issued_at`), retrieval time (`retrieved_at`) and forecast times (`forecasts[].valid_at`) remain separate and are output as UTC without a timezone suffix. Interval quantities retain their reference periods. Both product parsers are required; document their parameter mappings and freshness limits before implementation.
 
-Im MQTT-Modus gehen Vorhersagen an `haus/weather/forecasts/<source>/state`, MOSMIX-Stationslisten an `haus/weather/stations/mosmix/selection`; das Präfix ist konfigurierbar. Das CLI-Beispiel konfiguriert den Bibliotheks-Serializer für eine retained-Nachricht je vollständigem Vorhersagelauf, Standort und Produkt; den Versand übernimmt der Brokertransport. JSON- und XML-Export verwenden denselben normalisierten Vorhersagevertrag.
+MQTT forecasts use `haus/weather/forecasts/<source>/state`; MOSMIX station lists use `haus/weather/stations/mosmix/selection`. The prefix is configurable. The example CLI configures the library serializer for one retained message per complete run, location and product; separate broker transport sends it. JSON and XML exports use the same normalized forecast contract.
 
 ```text
 WeatherParser --ParseMOSMIX --Product MOSMIX_L --MOSMIXID <MOSMIX-ID> --Output json --OutputFile forecast.json
 WeatherParser --ParseMOSMIX --Product MOSMIX_L --MOSMIXID <MOSMIX-ID> --Output xml --OutputFile forecast.xml
 ```
 
-### Getrennte MOSMIX-Parser und Aktualisierung
+### Separate MOSMIX parsers and update frequency
 
-Die Bibliothek bietet zwei eigenständige Parser mit eigenen Interfaces: `MosmixSParser` / `IMosmixSParser` für `MOSMIX_S` und `MosmixLParser` / `IMosmixLParser` für `MOSMIX_L`. Beide erhalten ihre jeweiligen Quell-URLs über Konstruktorparameter und werden separat über die DI-Integration konfiguriert. Gemeinsame KML-/KMZ-Hilfslogik darf wiederverwendet werden; ein einzelner umschaltbarer Parser ersetzt die beiden öffentlichen Verträge nicht. Bei fehlenden Daten gibt es keinen stillschweigenden Wechsel zum anderen Produkt.
+Provide two distinct parsers with separate interfaces: `MosmixSParser` / `IMosmixSParser` for `MOSMIX_S`, and `MosmixLParser` / `IMosmixLParser` for `MOSMIX_L`. Both receive their own source URLs as constructor parameters and have independent DI configuration. Shared KML/KMZ helpers may be reused, but one switchable parser cannot replace the two public contracts. Missing data never triggers silent fallback to the other product.
 
-| Produkt | DWD-Ausgabehäufigkeit | Laufzeitangaben |
+| Product | DWD output frequency | Run times |
 |---|---|---|
-| `MOSMIX_S` | Stündlich | Neuer Produktlauf je Stunde |
-| `MOSMIX_L` | Viermal täglich | 03, 09, 15 und 21 UTC |
+| `MOSMIX_S` | Hourly | A new product run each hour |
+| `MOSMIX_L` | Four times daily | 03, 09, 15 and 21 UTC |
 
-Diese Angaben beschreiben die DWD-Produktzyklen, keinen internen Scheduler und keine garantierte Dateiverfügbarkeit exakt zur Laufzeit. Ausgabezeitpunkt, Abrufzeitpunkt und Vorhersagegültigkeit bleiben getrennt. Der tatsächliche Vorhersagehorizont kommt aus der Datei-Zeitachse; eine neue Dateiausgabe beweist nicht die Neuberechnung sämtlicher darin enthaltener Zeitschritte. Aktualitätsgrenzen und externe Abrufpläne müssen produktbezogen festgelegt werden.
+These describe provider cycles, not an internal scheduler or guaranteed file availability exactly at run time. Keep issue, retrieval and validity times separate. Read the actual forecast horizon from the file timeline; a new file does not prove all contained steps were recalculated. Define freshness limits and external retrieval plans per product.
 
-Das CLI-Beispiel behält `--ParseMOSMIX` und verlangt zusätzlich `--Product MOSMIX_S|MOSMIX_L` zur eindeutigen Auswahl des Bibliotheksparsers. Fehlende oder unbekannte Produkte sind Fehler vor Quellenabruf. `--SelectMOSMIX` behält die bisherigen Geo-/Höhenparameter und weist die bekannte Verfügbarkeit/Elemente getrennt nach Produkt aus; unbekannte Verfügbarkeit bleibt gekennzeichnet. Ausgabemetadaten, Quellenkennung und konfigurierte MQTT-Topics müssen S und L unterscheiden, damit ihre retained-Nachrichten nicht unbeabsichtigt einander ersetzen.
+The example keeps `--ParseMOSMIX` and additionally requires `--Product MOSMIX_S|MOSMIX_L` to select the library parser. Reject missing/unknown products before retrieval. `--SelectMOSMIX` keeps the existing geographic/altitude options and distinguishes known availability/elements per product; explicitly mark unknown availability. Output metadata, source identifiers and configured MQTT topics must distinguish S/L to prevent accidental retained-state replacement.
 
-Quelle, geprüft am 14.10.2026: [DWD-Verfahrensbeschreibung, Abschnitt 2.1.3 und Tabelle 2.1](https://www.dwd.de/DE/leistungen/met_verfahren_mosmix/mosmix_verfahrenbeschreibung_gesamt.pdf?__blob=publicationFile&v=6). Produktzyklen vor Implementierung/Release erneut prüfen; die Bibliothek enthält derzeit noch keinen implementierten Parser.
+Source, checked 2026-10-14: [DWD procedure description, section 2.1.3/table 2.1](https://www.dwd.de/DE/leistungen/met_verfahren_mosmix/mosmix_verfahrenbeschreibung_gesamt.pdf?__blob=publicationFile&v=6). Recheck cycles before implementation/release; no parser is implemented yet.
 
-## Architektur und Tests
+## Architecture and tests
 
-- C# und .NET ab Version 10 (`net10.0` als initiales TFM); SDK-Patch- und Paketversionen werden vor Implementierung fixiert.
-- Jede Klasse mit ausführender Logik („Doing-Klasse“) implementiert ein passendes Interface. Abhängigkeiten werden über diese Interfaces per Konstruktor injiziert; Verdrahtung erfolgt zentral im Composition Root. Reine Daten-/Exportentitäten bleiben separat.
-- Getrennte Verantwortlichkeiten für CLI, Konfiguration, Quellenabruf, Parsing, Stationsauswahl, Normalisierung, Serialisierung und MQTT.
-- TDD nach Red → Green → Refactor, auch für Fehlerkorrekturen. MSTest, Moq und FluentAssertions; Testobjektaufbau in `[TestInitialize]`, `VerifyAll()` für verwendete Mocks in `[TestCleanup]`.
-- Automatisierte Tests verwenden synthetische Fixtures und Mocks, keine verpflichtenden Live-Webseiten oder produktiven MQTT-Broker.
-- Zeilen- und Branch-Coverage müssen jeweils mindestens 80 % erreichen. Beim erstmaligen Aufbau ohne messbare Zielbranch-Baseline gilt nur diese Mindestgrenze; der Zielbranch-Vergleich ist nicht anwendbar. Eine unerwartet fehlende, veraltete oder nicht vergleichbare Baseline im späteren Betrieb ist weiterhin ein Fehler. Reine Dokumentations-PRs dürfen je Kennzahl die gleiche Coverage wie der Zielbranch haben; Rückgänge sind nicht erlaubt. Für andere PRs muss jede Kennzahl unter 100 % Baseline strikt steigen; bei exakt 100 % Baseline werden exakt 100 % akzeptiert. Aktuelle Commit-IDs, vergleichbare Messbedingungen und ungerundete Zählerverhältnisse verwenden. Fehlende PR-Messungen, ungültige Zähler und Null-Nenner gelten nicht als Erfolg. Microsoft.CodeCoverage-Reports einschließlich der Codeblock-Aufschlüsselung sind Grundlage der Prüfung; Codeblock- und Branch-Coverage sind nicht gleichzusetzen. Messabbildung und Reportformat werden in P1 anhand echter Reports verifiziert.
+- C# and .NET 10 or newer (initial TFM `net10.0`); pin SDK patch and package versions before implementation.
+- Each class with executable logic (a “doing class”) implements a suitable interface. Dependencies are constructor-injected through these interfaces and wired centrally in the composition root. Pure data/export entities remain separate.
+- Separate responsibilities for CLI, configuration, retrieval, parsing, station selection, normalization, serialization and MQTT.
+- TDD follows Red → Green → Refactor, including bug fixes. Use MSTest, Moq and FluentAssertions; construct test objects in `[TestInitialize]` and call `VerifyAll()` for mocks in `[TestCleanup]`.
+- Automated tests use synthetic fixtures and mocks, without mandatory live websites or production MQTT brokers.
+- Code-block coverage (as defined above) must reach at least 80%. During initial bootstrap without a measurable target-branch baseline, only this minimum applies; target-branch comparison is not applicable. An unexpectedly missing, stale or incomparable baseline in subsequent operation remains an error. Documentation-only PRs may retain the same coverage for the block metric as the target branch; decreases are forbidden. Other PRs must strictly improve the block metric below a 100% baseline; an exact 100% baseline accepts an exact 100% result. Use current commit IDs, comparable collection conditions and unrounded counter ratios. Missing PR measurements, invalid counts and zero denominators cannot pass. Microsoft.CodeCoverage reports, including the code-block breakdown, are the basis for verification; Cobertura line-rate, branch-rate or any Cobertura-derived value must never be used as or substituted for the block metric; missing or unreadable native block counters fail. Verify metric mapping and report format against real reports in P1.
 
-Die Umsetzungsschritte, Abhängigkeiten und Phasenabnahmen stehen im [Entwicklungsplan](DEVELOPMENT_PLAN.md). Die erste Implementierungsphase ist im [Detailplan P1](PHASE_P1_PLAN.md) in Arbeitspakete und Testfälle zerlegt. Details und Abnahmekriterien stehen in [REQUIREMENTS.md](REQUIREMENTS.md). Regeln für die Mitarbeit stehen in [AGENTS.md](AGENTS.md). Restore-/Buildbefehle sind unten dokumentiert; Testmethoden sind noch nicht implementiert.
+See the [development plan](DEVELOPMENT_PLAN.md) for phases, dependencies and acceptance gates. The [P1 detailed plan](PHASE_P1_PLAN.md) breaks the first implementation phase into work packages and tests. See [REQUIREMENTS.md](REQUIREMENTS.md) for detailed requirements and acceptance criteria, and [AGENTS.md](AGENTS.md) for contributor rules. Developer procedures (restore, build, tests, pack, coverage, local CI, Debian/ARM64) are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Konfiguration und Veröffentlichung
+## Configuration and publication
 
-Stationsauswahl, Quellenparameter, MQTT-Verbindung und Topics sollen konfigurierbar sein. Zugangsdaten gehören in Umgebungsvariablen beziehungsweise lokale, von Git ausgeschlossene Konfiguration. Das öffentliche Repository enthält ausschließlich Beispiele ohne Geheimnisse und ohne private Betriebsdaten.
+Station selection, source settings, MQTT connection and topics are configurable. Credentials belong in environment variables or local configuration excluded from Git. The public repository contains only examples without secrets or private operational data.
 
-Der separate Brokertransport des CLI-Beispiels verwendet eigene Zugangsdaten und gezielte Topic-Rechte. Pro Quelle sind eigene Messdaten- bzw. Vorhersagenachrichten vorgesehen; Mess- und Vorhersagedaten sowie beide Stationslisten erhalten getrennte Topics. Topic-Konfiguration und Detailverhalten sind in der Anforderungsliste beschrieben.
+The example CLI separate broker transport uses dedicated credentials and scoped topic permissions. Sources have separate observation or forecast messages; observations, forecasts and both station-list types use separate topics. Topic behavior is defined in the requirements.
 
-## Datenquellen
+## Data sources
 
-- [DWD Climate Data Center: 10-Minuten-Messdaten](https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/)
-- [DWD: Beschreibung der Temperatur-, Feuchte- und Luftdruckdaten](https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/air_temperature/DESCRIPTION_obsgermany_climate_10min_air_temperature_en.pdf)
-- [OsthessenWetter: Messwerte](https://osthessen-wetter.de/messwerte/)
-- [DWD MOSMIX: Stationskatalog, Formate und Elementdefinitionen](https://www.dwd.de/DE/leistungen/opendata/hilfe.html)
-- [DWD MOSMIX_L: Vorhersagen für Einzelstandorte](https://opendata.dwd.de/weather/local_forecasts/mos/MOSMIX_L/single_stations/)
+- [DWD Climate Data Center: 10-minute observations](https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/)
+- [DWD: temperature, humidity and pressure dataset description](https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/air_temperature/DESCRIPTION_obsgermany_climate_10min_air_temperature_en.pdf)
+- [OsthessenWetter observations](https://osthessen-wetter.de/messwerte/)
+- [DWD MOSMIX: catalog, formats and element definitions](https://www.dwd.de/DE/leistungen/opendata/hilfe.html)
+- [DWD MOSMIX_L: individual forecast locations](https://opendata.dwd.de/weather/local_forecasts/mos/MOSMIX_L/single_stations/)
 
-Der Code steht unter der [MIT-Lizenz](LICENSE). Diese Lizenz erteilt keine Rechte an fremden Wetterdaten oder Webseiten. Quellenbedingungen, Attribution und zulässige Abrufhäufigkeit werden für jeden Adapter separat dokumentiert und vor produktivem Betrieb geprüft. Insbesondere wird eine frei verfügbare API von OsthessenWetter nicht vorausgesetzt.
+Code is licensed under [MIT](LICENSE). This does not grant rights to third-party weather data or websites. Source conditions, attribution and permitted retrieval frequency must be documented separately for each adapter and checked before production use. A publicly available OsthessenWetter API is not assumed.
 
-## Verbindliche MOSMIX-Schemaquelle
+## Binding MOSMIX schema source
 
-[DWD pointforecast_dwd_extension_V1_0.xsd](https://opendata.dwd.de/weather/lib/pointforecast_dwd_extension_V1_0.xsd) ist die verbindliche Grundlage für die MOSMIX-Quell-/XML-Datenstrukturen beider Parser. Typen, Namensräume, Elemente und Kardinalitäten werden daraus abgeleitet; ergänzende KML-Strukturen werden vor Implementierung geprüft. Die Schemafassung und ihre Prüfsumme sind für reproduzierbare Typenerzeugung bzw. Typableitung festzuhalten. Diese Quelltypen werden auf die separaten öffentlichen Ausgabeentitäten abgebildet; sie ersetzen nicht den normalisierten Forecast-Vertrag. Schema-/Mappingtests erfolgen testgetrieben. Es wurden noch keine C#-Datenstrukturen erzeugt.
-
-
-## Ergänzende Entscheidungen vom 14.10.2026
-
-- Entwicklungsumgebung: Visual Studio 2026. Lokal nachgewiesen: Community 18.8.3 und .NET SDK 10.0.303; dieser SDK-Stand ist die reproduzierbare Ausgangsbasis für die geplante `global.json` und CI, Ziel-Framework bleibt `net10.0`. Vor Implementierung Wartungsstand prüfen und ein erforderliches SDK-Update ausdrücklich dokumentieren. Visual Studio ist keine Laufzeitabhängigkeit unter Debian. [Microsoft SDK-/Visual-Studio-Zuordnung](https://learn.microsoft.com/en-us/dotnet/core/porting/versioning-sdk-msbuild-vs).
-- Sämtliche vom Programm erzeugten Meldungen sind Englisch: Hilfe, Validierungs-, Fehler-, Log- und Statusmeldungen. Datenfeldnamen bleiben sprachunabhängig; Originalnamen aus Quellen bleiben erhalten. Projektdokumentation bleibt Deutsch/Englisch.
-- Beobachtungsdaten enthalten den Messzeitpunkt jeder ausgegebenen Messgröße in UTC ohne Zeitzonensuffix. Unterschiedliche Messzeitpunkte bleiben je Wert erhalten; zeitliche Zusammenführung, Auswahl und Bewertung übernimmt der Konsument. Geschätzte Quellzeiten bleiben entsprechend gekennzeichnet. Vorhersagen behalten ihre eigenen Ausgabe-/Gültigkeitszeiten.
-- Erst nach Normalisierung und Umrechnung für die Ausgabe runden: Temperatur auf 0,1 °C, Druck auf 1 hPa bzw. 1 mmHg, relative Feuchtigkeit auf 1 Prozentpunkt und Windgeschwindigkeit auf 1 km/h. Beide Druckwerte aus demselben ungerundeten Ausgangswert berechnen; Rundungstoleranzen berücksichtigen. Exakte Mittelpunktwerte vom Nullpunkt weg runden (20,25 → 20,3; −20,25 → −20,3). Andere Größen erhalten keine neue Rundungsvorgabe.
-- Für die öffentlichen XML-Exportentitäten werden reproduzierbar XSD-Dateien generiert. XML-Serializer-Vertragstests validieren Exporte gegen diese Schemas. Diese Ausgabeschemas sind von der DWD-MOSMIX-Quell-XSD getrennt; Generierung/Versionierung wird in P2 umgesetzt.
-- Tests verwenden MSTest, Moq und FluentAssertions; Coverage wird mit Microsoft.CodeCoverage erfasst. Konkrete Versionen, Test-Runner-Integration und Plattformnachweise werden in P1 festgehalten.
-- Coverage-Ausnahme: Jede Kennzahl mit exakt 100 % im Zielbranch darf im PR bei exakt 100 % bleiben. Für andere als reine Dokumentations-PRs bleibt unter 100 % der strikte Anstieg erforderlich; beim erstmaligen Start ohne Baseline entfällt der Vergleich. Jeweils mindestens 80 %. Angezeigte gerundete 100 % reichen nicht.
-- Verbleibende CLI-Fragen werden bei der CLI-Entwicklung in P3 entschieden: Konfigurationsformat/-pfad, Umgebungsvariablen, Secret-Verwaltung, konkrete Exitcodes und CLI-Abbruch-/Timeoutgrenzen. Sie sind keine P0-/P1-Voraussetzung für die Bibliothek. Öffentliche Bibliotheks-Fehler-/Cancellation-Verträge bleiben davon getrennt; P1 darf für Testzwecke minimale Prozesskonventionen dokumentieren, ohne den endgültigen CLI-Vertrag vorwegzunehmen.
-
-Diese Entscheidungen aktualisieren ausschließlich die Dokumentation; es wurden weder Anwendungscode noch XSD-Dateien generiert.
+[DWD pointforecast_dwd_extension_V1_0.xsd](https://opendata.dwd.de/weather/lib/pointforecast_dwd_extension_V1_0.xsd) is the binding basis for both parsers' MOSMIX source/XML data structures. Derive types, namespaces, elements and cardinalities from this schema; verify additional KML structures before implementation. Record schema revision and checksum for reproducible type generation/derivation. Map source types to separate public output entities; they do not replace the normalized forecast contract. Follow TDD for schema/mapping tests. No C# data structures have been generated yet.
 
 
-## P0-Präzisierungen vom 14.10.2026
+## Decisions dated 2026-10-14
 
-- Abhängigkeiten: Bei der Aufnahme bzw. einem beauftragten Update die aktuellsten verfügbaren stabilen Versionen wählen, auf .NET-/Plattformkompatibilität und Lizenzbedingungen prüfen und die konkret aufgelösten Versionen reproduzierbar fixieren. Keine ungeprüften Floating-Versionen bei jedem Build; ein Konflikt wird dokumentiert statt unbemerkt eine ältere Version zu wählen.
-- Coverage-Start: Mindestens 80 % je Kennzahl, ohne Zielbranch-Vergleich bei noch nicht vorhandener messbarer Baseline. Dokumentations-PRs dürfen Gleichstand haben. Die bestehende exakte 100-%-Ausnahme bleibt gültig. Reports von Microsoft.CodeCoverage mit Codeblock-Aufschlüsselung werden zur Prüfung verwendet.
-- Rundung: Auf den nächstgelegenen vereinbarten Schritt runden; bei genau halben Schritten vom Nullpunkt weg (`MidpointRounding.AwayFromZero`), beispielsweise 20,25 → 20,3 und −20,25 → −20,3. Nach Umrechnung runden, nicht vorher.
-- Quellen: Die konkreten DWD- und OsthessenWetter-Endpunkte liefert der Konsument über die Konstruktorparameter des jeweiligen Parsers. Quellenpfade werden weder fest eingebaut noch als offene globale P0-Konfigurationsentscheidung behandelt. Konkrete Quellenformate und Parameterabbildungen sind bei der jeweiligen Adapterimplementierung zu dokumentieren.
-- OsthessenWetter: Ist die konfigurierte Seite nicht abrufbar, löst der Parser eine Exception mit nachvollziehbarer englischer Diagnose aus; keine Ersatzdaten oder vorgetäuschten Erfolge. Eine abrufbare Seite wird in der dokumentierten As-is-Struktur ausgelesen, einschließlich der dort angegebenen Messzeitpunkte. Keine zusätzliche Aktualitätsbewertung oder künstliche Korrektur der Quelldaten; der Konsument bewertet die Messzeitpunkte. Gemeinsame UTC-/Einheiten-/Rundungsregeln bleiben gültig. Bei nur einer Uhrzeit bleibt die ausdrücklich erlaubte Datumsableitung nach REQ-042 als geschätzt gekennzeichnet; ein vollständiger Quellzeitpunkt wird nicht ersetzt. CLI-Fehlerdarstellung und Exitcodes werden in P3 festgelegt.
-
-Diese Festlegungen sind Dokumentationsentscheidungen; sie erzeugen noch keinen Anwendungscode.
+The additional decisions and P0 clarifications dated 2026-10-14 (development environment, English output, measurement timestamps, rounding, output XSDs, test frameworks, coverage exception and metric, deferred CLI questions, dependencies, coverage bootstrap, sources, OsthessenWetter behaviour) are maintained in [AGENTS.md](AGENTS.md#additional-decisions-dated-2026-10-14) and [REQUIREMENTS.md](REQUIREMENTS.md). The current toolchain is listed in [DEPENDENCIES.md](DEPENDENCIES.md).
 
 
-## Verbindlicher Phasenstatus und Ablauf
+## Binding phase status and sequence
 
-**15.10.2026: P0 abgeschlossen; P1-Solution-/Projektstruktur erstellt. P1 ist noch nicht abgenommen.**
+**2026-10-15: P0 complete; P1 solution/project scaffolding created. P1 is not yet accepted.**
 
-Reihenfolge bei unveränderten Phasen-IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Erst die vollständige Bibliothek einschließlich Stationsauswahl, DWD-/OsthessenWetter-/MOSMIX_S-/MOSMIX_L-Parsern, Ausgabeentitäten, JSON/XML, XSDs, MQTT-Serializer und DI fertigstellen und abnehmen. Danach P3 mit CLI-Nutzungsbeispiel, Konfiguration und Beispiel-Brokertransport beginnen. Öffentliches Release bleibt P9.
+**2026-10-19: P1 accepted by the user (see the [P1 acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)). P2 is next and starts only on a separate instruction.**
 
-P1 enthält nur einen technischen Paketkonsumenten als Integrationstest, kein CLI-/Anwendungsbeispiel. Vor P3 Quellenfunktionen direkt über die Bibliothek und ihre Tests abnehmen; kein CLI-Aufruf ist Voraussetzung für die Bibliotheksphasen. Die Phasenreihenfolge ersetzt frühere numerische Reihenfolge oder Abhängigkeiten auf P3. [Detailplan P1](PHASE_P1_PLAN.md). Der aktuelle Auftrag ergänzt die Projektstruktur; Fachimplementierung bleibt vertagt.
+Sequence with unchanged phase IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Complete and accept the entire library first, including station selection, DWD/OsthessenWetter/MOSMIX_S/MOSMIX_L parsers, output entities, JSON/XML, XSDs, MQTT serializer and DI. Then begin P3 with the CLI usage example, configuration and example broker transport. Public release remains P9.
+
+P1 contains only a technical package consumer as an integration test, not a CLI/application example. Before P3, accept source functionality directly through the library and its tests; CLI commands do not gate library phases. This sequence supersedes earlier numeric ordering or dependencies on P3. [P1 detailed plan](PHASE_P1_PLAN.md). The current task adds project scaffolding; domain implementation remains deferred.
 
 
-## Projektstruktur und lokaler Build
+## Development
 
-Stand: 15.10.2026. Die [WeatherParser.slnx](WeatherParser.slnx) enthält zwei Projekte:
+The solution [WeatherParser.slnx](WeatherParser.slnx) contains seven projects:
 
 ```text
-WeatherParser.slnx
 src/
-  WeatherParser.Parsing/           # Packable net10.0 library
+  WeatherParser.Parsing/                # Packable net10.0 library (local test package)
 tests/
-  WeatherParser.Parsing.Tests/     # MSTest project with source reference
-  WeatherParser.Package.Tests/    # Reserved for P1.04; no project yet
+  WeatherParser.Parsing.Tests/          # MSTest project with source reference
+  WeatherParser.Package.Tests/          # Isolated NuGet PackageReference consumer tests
+  WeatherParser.Coverage.Tests/         # Coverage evaluator tests
+  WeatherParser.Coverage.Runner.Tests/  # Coverage runner tests
+tools/
+  WeatherParser.Coverage/               # Non-packable coverage evaluator library
+  WeatherParser.Coverage.Runner/        # Non-packable console runner for the coverage gate
 ```
 
-SDK 10.0.303 wird durch `global.json` fixiert. Visual Studio 2026 kann die `.slnx` direkt öffnen. `Directory.Build.props` setzt `net10.0`, Nullable, implizite Usings und deterministische Builds. `Directory.Packages.props` fixiert die geprüften stabilen Testpakete; siehe [Abhängigkeiten und Lizenzen](DEPENDENCIES.md). NuGet verwendet ausschließlich die öffentliche Quelle aus `NuGet.Config`.
-
-Aus dem Repository-Verzeichnis:
+Quickstart (Windows, PowerShell 7, from the repository root):
 
 ```powershell
-dotnet restore WeatherParser.slnx --locked-mode
-dotnet build WeatherParser.slnx --configuration Release --no-restore
+New-Item -ItemType Directory -Force artifacts/local-nuget
+dotnet build WeatherParser.Ci.slnf --configuration Release
+pwsh ./scripts/ci-local.ps1 -TargetRef <comparison branch> -RunSettings coverage.runsettings
 ```
 
-Lockdateien werden mitgeführt. Bei beauftragten Paketupdates einmal ohne `--locked-mode` neu auflösen und Änderungen prüfen. Buildausgaben, Testberichte und lokale Secrets sind von Git ausgeschlossen.
-
-Die Projekte enthalten bewusst noch keine Parser, öffentlichen Fachtypen oder Testmethoden. Damit ist nur die Struktur angelegt: kein TDD-, Test- oder Coverage-Erfolg und keine vollständige P1-Abnahme. Das Paketkonsumentenprojekt wird mit lokalem Pack/Restore in P1.04 ergänzt; es erhält keine Quellreferenz. Das CLI-Beispiel entsteht erst nach der fertigen Bibliothek in P3.
-
-Lokale Prüfung am 15.10.2026: Solution-Liste und Restore erfolgreich; Release-Build mit 0 Warnungen und 0 Fehlern. Beide Projekte besitzen Lockdateien. Der leere Strukturstand ist kein Test-/Coverage-Nachweis.
-
-
-P1.01-Eingangsprüfung am 15.10.2026 abgeschlossen: [Protokoll und Ausgangsinventur](docs/p1/P1_01_BASELINE.md). Vorhandene Projektstruktur erhalten; kein neuer Fachcode und kein Test-/Coverage-Ergebnis behauptet. P1.02-Prüfung inzwischen abgeschlossen; aktueller Folgeschritt unten dokumentiert.
-
-
-**P1.02-Prüfung (15.10.2026) abgeschlossen:** [Werkzeug-/Lizenz-/Kompatibilitätsbericht](docs/p1/P1_02_TOOLING_REVIEW.md). Alle 16 Testpakete geprüft; sechs direkte Versionen aktuell, keine gemeldeten NuGet-Schwachstellen/Abkündigungen. SDK 10.0.303 nicht mehr gewartet; vor P1.03-Abnahme auf ausgewähltes 10.0.402 aktualisieren und prüfen. Kein SDK-/Paketwechsel und keine neuen Tests in dieser Prüfung.
+Every developer procedure, its platform and its verification status are in [CONTRIBUTING.md](CONTRIBUTING.md); contributor rules are in [AGENTS.md](AGENTS.md), versions and licenses in [DEPENDENCIES.md](DEPENDENCIES.md), and the verified platform matrix in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md). Phase history and acceptance records: [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md), [PHASE_P1_PLAN.md](PHASE_P1_PLAN.md) and [docs/p1](docs/p1/).

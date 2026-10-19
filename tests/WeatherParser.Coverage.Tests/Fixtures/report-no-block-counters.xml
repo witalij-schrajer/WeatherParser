@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<results>
+  <modules>
+    <module name="WeatherParser.Parsing.dll" path="WeatherParser.Parsing.dll" block_coverage="63.33" line_coverage="50.00">
+    </module>
+  </modules>
+</results>

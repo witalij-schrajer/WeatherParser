@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>WeatherParser.Coverage.Runner</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../WeatherParser.Coverage/WeatherParser.Coverage.csproj" />
+    <InternalsVisibleTo Include="WeatherParser.Coverage.Runner.Tests" />
+  </ItemGroup>
+
+</Project>

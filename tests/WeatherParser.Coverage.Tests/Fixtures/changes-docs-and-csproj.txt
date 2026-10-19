@@ -1,0 +1,2 @@
+README.md
+src/WeatherParser.Parsing/WeatherParser.Parsing.csproj

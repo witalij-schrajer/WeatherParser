@@ -1,5 +1,7 @@
 # Copilot Instructions
 
-## Projektrichtlinien
-- User prefers to delegate as much coding/work as possible to the local model qwen2.5-coder:14b running under Ollama.
-- Für dieses Projekt (WeatherParser) gilt: qwen2.5-coder (lokal via Ollama) soll nicht nur für Planung, sondern auch für die eigentliche Codegenerierung eingesetzt werden. Bei der Ausarbeitung eines Plans müssen die Anforderungen für jede betroffene Klasse präzise beschrieben werden. Anpassungen der englischen Dokumentation sollen ebenfalls qwen2.5-coder überlassen werden; die deutsche Dokumentation wird danach anhand der Änderungen in der englischen Fassung angepasst (nicht umgekehrt).
+## Project guidelines
+
+- The user prefers delegating as much coding and other work as possible to the local `qwen3-coder:30b` model running through Ollama.
+- For WeatherParser, follow the "AI-assisted development" section of `AGENTS.md`: where applicable, qwen3-coder:30b generates, changes and fixes code, plans and English documentation, while the orchestrating LLM writes precise briefs, verifies qwen's results, runs the builds and tests, and reviews each step's result. Plans must describe the requirements for every affected class precisely. If the local model is unavailable, report that limitation.
+- English is the project's sole maintained language, as instructed on 2026-10-19. Follow `AGENTS.md` and update canonical unsuffixed English documents directly. The former instruction to update German documentation after English changes is superseded; do not recreate translations or `.en.md` copies.
