@@ -171,6 +171,9 @@ function Invoke-RestoreStage([string]$CloneDir, [string]$PassDir, [string]$Proje
     New-CiDirectory $PassDir
     
     $env:NUGET_PACKAGES = Join-Path $script:WorkDir 'nuget-packages'
+    # The tool resolver cache lives under DOTNET_CLI_HOME and must be isolated together with the package folder.
+    $env:DOTNET_CLI_HOME = Join-Path $script:WorkDir 'cli-home'
+    New-CiDirectory $env:DOTNET_CLI_HOME
     
     # Create local package source directory if it doesn't exist
     $localNuGetPath = Join-Path $CloneDir "artifacts/local-nuget"
@@ -1032,6 +1035,12 @@ function Invoke-ResumeFrom() {
     Write-CiLog "Resume package verified"
 
     # Restore pinned tool
+    $script:ResumeWorkDir = Join-Path ([IO.Path]::GetTempPath()) "weatherparser-resume-$([guid]::NewGuid())"
+    $env:NUGET_PACKAGES = Join-Path $script:ResumeWorkDir 'nuget-packages'
+    $env:DOTNET_CLI_HOME = Join-Path $script:ResumeWorkDir 'cli-home'
+    New-CiDirectory $env:NUGET_PACKAGES
+    New-CiDirectory $env:DOTNET_CLI_HOME
+    Write-CiLog "Resume work directory: $script:ResumeWorkDir"
     Invoke-Native 80 'dotnet' @('tool', 'restore', '--tool-manifest', (Join-Path $resumeDir 'dotnet-tools.json')) -WorkingDirectory $resumeDir -AllowedExitCodes @(0)
 
     # Converter (stage 80)
@@ -1103,6 +1112,7 @@ function Invoke-ResumeFrom() {
 if ($ResumeFrom) {
     $script:ResumeConverterVersion = $null
     $script:ResumeConverterRid = $null
+    $script:ResumeWorkDir = $null
     try {
         Invoke-ResumeFrom
         $exit = 0
@@ -1127,6 +1137,10 @@ if ($ResumeFrom) {
                 }
                 
                 $resumeResult | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'resume/resume-result.json')
+                if ($script:ResumeWorkDir -and !$KeepWorkDir -and (Test-Path -LiteralPath $script:ResumeWorkDir)) {
+                    Remove-Item -Recurse -Force -LiteralPath $script:ResumeWorkDir
+                    Write-CiLog "Deleted resume work directory: $script:ResumeWorkDir"
+                }
             }
         } catch {
             Write-CiLog "Error in cleanup: $_"
