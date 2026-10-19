@@ -1,6 +1,6 @@
 # P1.11 – Developer Instructions and Evidence: Result Record
 
-**Status (2026-10-19): implemented and verified on Windows x64; parts (a) and (b) done together; acceptance pending.** Implements the [P1.11 plan](P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md).
+**Status (2026-10-19): implemented and verified on Windows x64; parts (a) and (b) done together; accepted by the user ([acceptance](#p111-acceptance-2026-10-19)).** Implements the [P1.11 plan](P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md).
 
 ## Decision (user, 2026-10-19)
 
@@ -160,3 +160,9 @@ Verification: the content-check lines were extracted verbatim from the corrected
 | Copy with README.md line endings changed from CRLF to LF only | Rejected: "README.md in the package is not byte-identical to the working tree" |
 
 The complete section 4 block was then executed again: the packed and restored hashes are equal, the 2 consumer tests passed, and the tree was clean. Only CONTRIBUTING.md changed. README.md is unchanged since `8a96f58`, so the package-readme check and the documentation-only gate result recorded above still apply.
+
+### P1.11 acceptance (2026-10-19)
+
+The user accepted the P1.11 results on 2026-10-19, after two external reviews whose findings are fixed and verified above (sections "Review fixes" and "Second review fix"). The accepted state is commit `d721940`: CONTRIBUTING.md (decision D) with every procedure Verified or marked as a historical remedy, the reduced README.md, the consistency table in AGENTS.md, and the documentation checks of plan section 6.
+
+Remaining outside P1.11: overall P1 acceptance and handoff (P1.12). The REQ-004 and AGENTS.md texts that still name SDK 10.0.303 as the historical starting point of 2026-10-14 are binding requirement and rule texts, unchanged by P1.11.
