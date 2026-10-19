@@ -784,6 +784,21 @@ function New-ResumePackage() {
     
     $collectionSettings = Get-Content (Join-Path $script:RunDir 'current/collection-settings.json') | ConvertFrom-Json
     
+    # Compute input hashes for resume verification
+    $changedFilesSha256 = Get-FileSha256 (Join-Path $script:RunDir 'changed-files.txt')
+    
+    $rawReports = [ordered]@{}
+    foreach ($pass in @('current', 'target')) {
+        $rawDir = Join-Path $script:RunDir "$pass/coverage/raw"
+        if (Test-Path $rawDir) {
+            $passReports = @(Get-ChildItem -Path $rawDir -Filter "*.coverage" -Recurse -File | Sort-Object FullName)
+            foreach ($report in $passReports) {
+                $relativePath = "$pass/coverage/raw/" + $report.FullName.Substring($rawDir.Length + 1).Replace('\', '/')
+                $rawReports[$relativePath] = Get-FileSha256 $report.FullName
+            }
+        }
+    }
+    
     $resumeJson = @{
         commit = $script:CommitSha
         targetCommit = $script:TargetSha
@@ -797,6 +812,8 @@ function New-ResumePackage() {
         microsoftCodeCoverageVersion = $collectionSettings.microsoftCodeCoverageVersion
         runSettingsSha256 = $script:RunSettingsSha256
         changedFiles = 'changed-files.txt'
+        changedFilesSha256 = $changedFilesSha256
+        rawReports = $rawReports
         createdUtc = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
     }
     
@@ -1026,10 +1043,39 @@ function Invoke-ResumeFrom() {
         }
     }
 
-    # Check changed-files.txt
+    # Check changed-files.txt and the raw coverage reports against the recorded hashes
     $changedFilesPath = Join-Path $script:RunDir 'changed-files.txt'
     if (!(Test-Path -LiteralPath $changedFilesPath)) {
         Fail 20 "Changed files list missing: $changedFilesPath"
+    }
+    if (!$resumeJson.ContainsKey('changedFilesSha256') -or !$resumeJson.ContainsKey('rawReports')) {
+        Fail 20 "Resume package lacks input hashes; collect again with the current script"
+    }
+    $actualChangedFilesSha256 = Get-FileSha256 $changedFilesPath
+    if ($actualChangedFilesSha256 -ne $resumeJson.changedFilesSha256) {
+        Fail 20 "changed-files.txt hash mismatch: expected $($resumeJson.changedFilesSha256), found $actualChangedFilesSha256"
+    }
+    $expectedReports = @($resumeJson.rawReports.Keys | Sort-Object)
+    $actualReports = @(foreach ($pass in @('current', 'target')) {
+        $rawDir = Join-Path $script:RunDir "$pass/coverage/raw"
+        if (Test-Path -LiteralPath $rawDir) {
+            Get-ChildItem -Path $rawDir -Filter '*.coverage' -Recurse -File | ForEach-Object {
+                "$pass/coverage/raw/" + $_.FullName.Substring($rawDir.Length + 1).Replace('\', '/')
+            }
+        }
+    }) | Sort-Object
+    $actualReports = @($actualReports)
+    foreach ($missing in @($expectedReports | Where-Object { $actualReports -notcontains $_ })) {
+        Fail 20 "Raw coverage report missing: $missing"
+    }
+    foreach ($extra in @($actualReports | Where-Object { $expectedReports -notcontains $_ })) {
+        Fail 20 "Unexpected raw coverage report: $extra"
+    }
+    foreach ($report in $expectedReports) {
+        $actualReportSha256 = Get-FileSha256 (Join-Path $script:RunDir $report)
+        if ($actualReportSha256 -ne $resumeJson.rawReports[$report]) {
+            Fail 20 "Raw coverage report hash mismatch for ${report}: expected $($resumeJson.rawReports[$report]), found $actualReportSha256"
+        }
     }
 
     Write-CiLog "Resume package verified"
