@@ -1,6 +1,6 @@
 # P1.08 closure – Coverage Gate Completion: Implementation Plan
 
-**Status: plan only (2026-10-19); nothing is implemented or verified yet.** Drafted with the local qwen3-coder:30b model over three review rounds and finalized by review against [AGENTS.md](../../AGENTS.md), the [P1 detailed plan](../../PHASE_P1_PLAN.md) (sections 4 and 5), the [P1.08 record](P1_08_COVERAGE_EVALUATION.md) and the [P1.09 plan](P1_09_LOCAL_CI_PLAN.md), which depends on this package. Covers T-P1-09 to T-P1-18, T-P1-23 and T-P1-24.
+**Status: COMPLETE AND ACCEPTED by the user (2026-10-19), with the documented original Red-step deviation accepted for P1.08 only.** See the [acceptance record](P1_08_COVERAGE_EVALUATION.md#p108-acceptance-2026-10-19). The procedure below preserves the intended implementation sequence; it is not a claim that the missing historical Red steps occurred. Drafted with the local qwen3-coder:30b model over three review rounds and finalized by review against [AGENTS.md](../../AGENTS.md), the [P1 detailed plan](../../PHASE_P1_PLAN.md) (sections 4 and 5), the [P1.08 record](P1_08_COVERAGE_EVALUATION.md) and the [P1.09 plan](P1_09_LOCAL_CI_PLAN.md), which depends on this package. Covers T-P1-09 to T-P1-18, T-P1-23 and T-P1-24.
 
 ## 1. Goal and Scope
 
@@ -150,11 +150,13 @@ Update the P1.08 row in `PHASE_P1_PLAN.md`, the local tool entry in `DEPENDENCIE
 
 ## 9. Acceptance Criteria
 
-- [ ] The decision in section 3 is recorded, and `.config/dotnet-tools.json` pins that version.
-- [ ] `dotnet tool restore` works, and the conversion counter check passes or its difference is documented.
-- [ ] Every row of section 6 passes.
-- [ ] Every remaining fixture is loaded by at least one test; deleted fixtures are listed.
-- [ ] The runner uses exactly the contract in section 4, proven by tests.
-- [ ] Every doing class in the runner has an interface and constructor injection; `Program.cs` contains wiring only.
-- [ ] Self-coverage counters of `WeatherParser.Coverage.dll` and `WeatherParser.Coverage.Runner.dll` are recorded.
-- [ ] Documents named in section 7 are updated; the build has 0 warnings; all tests pass offline.
+- [x] The decision in section 3 is recorded, and `.config/dotnet-tools.json` pins that version.
+- [x] `dotnet tool restore` works, and the conversion counter check passes or its difference is documented.
+- [x] Every row of section 6 passes.
+- [x] Every remaining fixture is loaded by at least one test; deleted fixtures are listed.
+- [x] The runner uses exactly the contract in section 4, proven by tests.
+- [x] Every doing class in the runner has an interface and constructor injection; `Program.cs` contains wiring only.
+- [x] Self-coverage counters of `WeatherParser.Coverage.dll` and `WeatherParser.Coverage.Runner.dll` are recorded.
+- [x] Documents named in section 7 are updated; the build has 0 warnings; all tests pass offline.
+
+These checkboxes reference the recorded closure verification accepted by the user, not a fresh build/test run. The acceptance record retains the later aborted-build limitation and the expressly accepted original Red-step deviation.

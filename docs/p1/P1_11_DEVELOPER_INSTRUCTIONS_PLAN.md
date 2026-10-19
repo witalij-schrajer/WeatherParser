@@ -21,7 +21,7 @@ Out of scope:
 
 ## 2. Preconditions and Inputs
 
-- Commit `b6100e2`: P1.08 closure implemented, with acceptance pending review. The runner, the pinned `dotnet-coverage` 18.11.0 in `.config/dotnet-tools.json`, the README "Coverage gate" block and the result record in `P1_08_COVERAGE_EVALUATION.md` section 8 exist.
+- Commit `b6100e2`: P1.08 closure implemented; classifier correction in `a562f63`. P1.08 was accepted by the user on 2026-10-19 with its documented original Red-step deviation; see the [acceptance record](P1_08_COVERAGE_EVALUATION.md#p108-acceptance-2026-10-19). The runner, the pinned `dotnet-coverage` 18.11.0 in `.config/dotnet-tools.json`, the README "Coverage gate" block and the result record in `P1_08_COVERAGE_EVALUATION.md` section 8 exist.
 - Historical records exist for these procedures (each keeps its original scope; the current commands are verified by the part (a) walkthrough):
   - P1.03: locked restore, Release build, NETSDK1141 remedy.
   - P1.04: pack, local feed, isolated consumer.
@@ -84,7 +84,7 @@ Section 9 contains statements, not procedures, so it carries no status.
 | 1 Prerequisites | SDK selection via `global.json` (rollForward disable) | Windows: walkthrough; historical: P1_03_BUILD_SETUP.md |
 | | Git (clone, checkout) | Planned – P1.09 (first record of a fresh-clone run) |
 | | PowerShell 7 | Planned – P1.09 |
-| | `dotnet tool restore` (pinned `dotnet-coverage`) | Windows: P1_08_COVERAGE_EVALUATION.md §8 at `b6100e2`, rechecked by the walkthrough (P1.08 acceptance pending) |
+| | `dotnet tool restore` (pinned `dotnet-coverage`) | Windows: P1_08_COVERAGE_EVALUATION.md §8 at `b6100e2`, rechecked by the walkthrough (P1.08 accepted on recorded evidence) |
 | | Telemetry opt-out variables | Verified as documented – P1_02_TOOLING_REVIEW.md; use in CI Planned – P1.09 |
 | 2 Restore and build | `dotnet restore WeatherParser.slnx --locked-mode`, Release build of the current solution (seven projects in `WeatherParser.slnx`) | Windows: walkthrough; historical: P1_03_BUILD_SETUP.md (two-project structure) |
 | | Pack before restoring the package consumer | Windows: walkthrough; historical: P1_04_PACKAGE_CONSUMER.md |
@@ -95,7 +95,7 @@ Section 9 contains statements, not procedures, so it carries no status.
 | | Automated prevention (isolated `NUGET_PACKAGES`, `contentHash` rewrite) | Planned – P1.09 |
 | 5 Coverage | Collection | Windows: walkthrough; historical: P1_07_COVERAGE_CONTRACT.md |
 | | Conversion with the pinned tool | Windows: walkthrough; P1_08_COVERAGE_EVALUATION.md §8 |
-| | Runner `evaluate`/`write-baseline`, JSON contract, exit codes, baseline rules | Windows: walkthrough; P1_08_COVERAGE_EVALUATION.md §8 at `b6100e2` (P1.08 acceptance pending) |
+| | Runner `evaluate`/`write-baseline`, JSON contract, exit codes, baseline rules | Windows: walkthrough; P1_08_COVERAGE_EVALUATION.md §8 at `b6100e2` (P1.08 accepted on recorded evidence) |
 | | Two-pass baseline and collection-settings comparison | Planned – P1.09 |
 | 6 Local CI | `scripts/ci-local.ps1` parameters, exit codes, run layout, fault injection, lock-file drift detection | Planned – P1.09 |
 | 7 Debian/ARM64 | Target preparation, `-RunSettings`, `-CollectOnly`/`-ResumeFrom`, target run | Debian/ARM64: Planned – P1.10 recorded target execution (Class B may end OPEN); `-ResumeFrom` on Windows: Planned – P1.10 |

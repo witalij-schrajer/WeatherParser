@@ -1,6 +1,6 @@
 # WeatherParser – Development plan
 
-**Phase status (2026-10-16): P0 complete; P1.01-P1.07 complete (Visual Studio build limitation resolved; clean-checkout reproducibility still pending); remaining P1 acceptance is pending.**
+**Phase status (2026-10-19): P0 complete; P1.01-P1.08 complete (P1.08 accepted with its documented Red-step deviation; Visual Studio build limitation resolved; clean-checkout reproducibility still pending); remaining P1 acceptance is pending.**
 
 As of 2026-10-14. Based on [REQUIREMENTS.md](REQUIREMENTS.md) and [AGENTS.md](AGENTS.md). P0 is complete; P1 has started with project scaffolding only. The repository contains documentation, a solution and library/test project scaffolding; no domain implementation yet. This plan does not authorize application-code generation, GitHub publication or installation on R76S.
 
@@ -230,3 +230,5 @@ P1.01 entry audit completed on 2026-10-15: [record and starting inventory](docs/
 **P1.06 complete:** [package/DI contract record](docs/p1/P1_06_DI_CONTRACTS.md). The public `AddWeatherParsing` entry point registers endpoint validators using DI abstractions in the library. Real `ServiceProvider` tests demonstrate successful resolution and validation, and detect absent or incomplete registrations. The record reports successful library/source-test/package-test builds and 8 passing unit tests after replacing the earlier duplicate DI tests. These are recorded completion results, not new test executions.
 
 **P1.07 (2026-10-16) complete:** [coverage report contract record](docs/p1/P1_07_COVERAGE_CONTRACT.md). Microsoft.CodeCoverage raw report (`.coverage`) produced and converted with `dotnet-coverage` into XML/Cobertura format; code block breakdown per function and separate, traceable counter mapping per assembly (production code 63.33% block/50.00% line coverage; test code 97.93%/94.67%) proven. Coverage evaluation including the 80% threshold and exceptions remains assigned to P1.08.
+
+**P1.08 (2026-10-19) complete and accepted by the user:** [acceptance record](docs/p1/P1_08_COVERAGE_EVALUATION.md#p108-acceptance-2026-10-19). The evaluator, executable runner, fixture tests and pinned conversion tool are accepted on the recorded Windows evidence. The user explicitly accepted the missing original Red-step evidence for P1.08 only; subsequent work retains the TDD requirement. Local CI and integrated baseline evidence remain P1.09; overall P1 acceptance is pending.

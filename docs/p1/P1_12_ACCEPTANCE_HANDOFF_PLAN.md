@@ -21,7 +21,7 @@ Out of scope: new application/tool behavior, new test projects, source retrieval
 
 ## 2. Preconditions and Current Limitations
 
-As checked on 2026-10-19, the P1.08 closure implementation, including the runner, is committed in `b6100e2`; its acceptance is pending review. `scripts/ci-local.ps1` is absent. P1.09, P1.10 and P1.11 plans exist, but their presence does not establish completion or acceptance. Re-inspect the repository when executing this plan; do not freeze today's state as a future completion claim.
+As checked on 2026-10-19, the P1.08 closure implementation, including the runner, is committed in `b6100e2`, with the classifier correction in `a562f63`. The user accepted P1.08 as complete, expressly accepting its missing original Red-step evidence; see the [acceptance record](P1_08_COVERAGE_EVALUATION.md#p108-acceptance-2026-10-19). `scripts/ci-local.ps1` is absent. P1.09, P1.10 and P1.11 plans exist, but their presence does not establish completion or acceptance. Re-inspect the repository when executing this plan; do not freeze today's state as a future completion claim.
 
 - P1.01–P1.07 have historical records. Preserve those records and their dates; verify that their conclusions still apply to the candidate.
 - P1.08 closure must have runner/fixture/tool-pinning/self-coverage evidence, not just the evaluator's earlier unit-test result.
