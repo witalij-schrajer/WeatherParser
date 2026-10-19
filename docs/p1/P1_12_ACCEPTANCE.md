@@ -132,3 +132,14 @@ All tests named below ran and passed in the candidate run unless a row says othe
 ## 10. Decision
 
 **ACCEPTED** (audit decision; formal acceptance by the user pending). Every mandatory P1 foundation criterion has current, traceable passing evidence from the committed candidate `654bf56` and its fresh-clone run against the genuine bootstrap seed `0a2dabe`, and every test ID T-P1-01 to T-P1-24 has a passing outcome. The platform-runtime status is PROVEN for the P1-scope checks executed on the Debian 13 ARM64 target, so no runtime deferral is needed. P2 may start on a separate instruction; see the [P2 handoff](P2_HANDOFF.md).
+
+## 11. Documentation revision (plan step 8)
+
+This record, the P2 handoff and the status updates were committed after the audit, as `bd3f257`. The tested implementation candidate stays `654bf56`; the documentation revision `bd3f257` changes only Markdown files (`DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `README.md` and the two new records).
+
+`README.md` is the packed package readme, so the documentation revision got its own package check, using `pwsh ./scripts/ci-local.ps1 -Commit bd3f257 -TargetRef 654bf56 -RunSettings coverage.runsettings`, exit 0, run `artifacts/ci/bd3f257-20261019T210213Z`:
+- **Tests:** WeatherParser.Parsing.Tests 15, WeatherParser.Coverage.Tests 91, WeatherParser.Coverage.Runner.Tests 54 and WeatherParser.Package.Tests 2, all passed. The consumer lock rewrite in the clone was exactly one line.
+- **Package:** SHA-512 `yJBV7t+Cbvb+0HFpxgmOQSDKSpWRQXSl05bp8q57RsElgUGukRM6zyl1qWZpS9cL9EKxupHM46rLtt5WjPL09A==`, allowed entries only. The packed README.md and LICENSE equal the committed files apart from the CRLF line endings added at checkout.
+- **Gate:** documentation-only, "Block coverage 54/56 (96.43%) is at or above baseline 54/56 (96.43%)". SHA-256 of `gate-result.json`: `36aa8f6f6aa5bd9f82b58caad8e2e31368b80b270f25f917b07e11fd944e2916`.
+
+This section was added in a later commit that does not change `README.md`.
