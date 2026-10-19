@@ -10,12 +10,12 @@ This is acceptance of the P1 foundation only, not release readiness (P9), not fu
 |---|---|
 | Review date | 2026-10-19 |
 | Reviewer | Claude (orchestrating LLM) on the user's instruction; documentation drafts by the local qwen3-coder:30b model, reviewed by Claude; formal acceptance: the user |
-| Candidate | `463eae584a8c4f22d0dbbd1702ccba314420d0a7` (`features/develop/initial`, local): the P1.11 accepted state `654bf56`, the P1.12 documents and the T-P1-06 test correction (section 12). The first audit run used `654bf56` (`artifacts/ci/654bf56-20261019T205341Z`, exit 0, same gate result); this run supersedes it |
+| Candidate | `6ac88e783ce10fa6d676860ba831ee371abd9cdf` (`features/develop/initial`, local): the P1.11 accepted state `654bf56`, the P1.12 documents, the T-P1-06 test correction (section 12) and the corrections of the second review (section 13). Intermediate candidate `463eae5` (`artifacts/ci/463eae5-20261019T211011Z`) is superseded. The first audit run used `654bf56` (`artifacts/ci/654bf56-20261019T205341Z`, exit 0, same gate result); this run supersedes it |
 | Target | `0a2dabeaa4b4baa836b87d7a4aa1a456e3dcb552`, the genuine initial bootstrap seed `C` (P1.09), an ancestor of the candidate |
 | Script revision | `scripts/ci-local.ps1` at the candidate (last changed in `660dc7e`, P1.10) |
 | Working-tree exclusions | None: the working tree was clean, and the run tests only the committed candidate from a fresh clone |
-| Command | `pwsh ./scripts/ci-local.ps1 -Commit 463eae5 -TargetRef 0a2dabe -RunSettings coverage.runsettings` (two-pass, no `-Bootstrap`) |
-| Run ID | `artifacts/ci/463eae5-20261019T211011Z/` (local, gitignored, retained) |
+| Command | `pwsh ./scripts/ci-local.ps1 -Commit 6ac88e7 -TargetRef 0a2dabe -RunSettings coverage.runsettings` (two-pass, no `-Bootstrap`) |
+| Run ID | `artifacts/ci/6ac88e7-20261019T213031Z/` (local, gitignored, retained) |
 
 **Initial bootstrap (plan section 4).** No accepted integrated baseline existed before P1.09, so the first fault-free full pipeline run on the committed seed `0a2dabe` is the genuine bootstrap: `-Commit 0a2dabe -TargetRef 0a2dabe -Bootstrap`, exit 0, 52/56 blocks. Its seed artifacts (`current/bootstrap-baseline.json`, collection settings, SHA-256 provenance) are recorded in the [P1.09 record](P1_09_LOCAL_CI.md#genuine-initial-bootstrap-seed-2026-10-19). The candidate is a later commit, so it is evaluated by the normal two-pass comparison against `0a2dabe`, which is remeasured in the same run with identical settings. Bootstrap was not used again.
 
@@ -24,24 +24,24 @@ This is acceptance of the P1 foundation only, not release readiness (P9), not fu
 - **Exit:** 0. Every stage passed: SDK check, locked restore, Release build, the four test projects, pack and package-content check, package consumer, conversion, target pass and gate.
 - **Toolchain:** .NET SDK 10.0.402 and .NET runtime 10.0.13 (host, `win-x64`), recorded separately. `Microsoft.CodeCoverage` 18.11.0; `dotnet-coverage` 18.11.0 (manifest and tool); collector "Code Coverage"; configuration Release; RID and converter RID `win-x64`.
 - **Collection settings:** run-settings SHA-256 `dc6f662e4f6faaa853c33ed5497f182a31527fd126961411a604b683ffcf05d2` (`coverage.runsettings`, static managed instrumentation), exclusions `*.Tests.dll`, `WeatherParser.Coverage*.dll`. Both passes are identical except `commit`.
-- **Tests (current pass):** WeatherParser.Parsing.Tests 15, WeatherParser.Coverage.Tests 91, WeatherParser.Coverage.Runner.Tests 54, WeatherParser.Package.Tests 2; all passed, none skipped. The target pass ran WeatherParser.Parsing.Tests: 8 passed. Build warnings: 0 in both passes.
-- **Package:** `WeatherParser.Parsing.0.1.0-initial.nupkg`, SHA-512 `4/na9/gV6VcI5XsJIQroSfA+AaYVpEObwjWVLcHxZTLuROYEWvDQK1mzZpHBZsn45nlciU+aLVFw4rpUuae9IA==`. Entries: `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, the nuspec, `[Content_Types].xml`, `_rels/.rels` and `nuget.psmdcp` only.
+- **Tests (current pass):** WeatherParser.Parsing.Tests 15, WeatherParser.Coverage.Tests 99, WeatherParser.Coverage.Runner.Tests 56, WeatherParser.Package.Tests 2; all passed, none skipped (10 new regression tests from section 13). The target pass ran WeatherParser.Parsing.Tests: 8 passed. Build warnings: 0 in both passes.
+- **Package:** `WeatherParser.Parsing.0.1.0-initial.nupkg`, SHA-512 `ld4iecLFargjHkaan1xitVHa/j5GuV5VanGuoCR2olCRDetWgY8h/dqNEF76Di5fLpnrQLpDqORsZK85oYd8jQ==`. Entries: `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, the nuspec, `[Content_Types].xml`, `_rels/.rels` and `nuget.psmdcp` only.
 - **Consumer:** the only lock change in the disposable clone was the documented one-line `contentHash` rewrite. The locked restore passed, the restored hash was checked against the packed hash (a mismatch would exit 70), and the consumer tests passed.
 - **Native block counters:** current `WeatherParser.Parsing.dll` 54/56 (96.43%), target 52/56 (92.86%). One raw `.coverage` report per pass.
-- **Change scope:** 23 files since the target, including `coverage.runsettings`, `scripts/ci-local.ps1`, `scripts/prepare-debian-arm64.sh`, `tests/WeatherParser.Parsing.Tests/EndpointUriValidatorTests.cs` and the three test classes corrected in section 12. Classified as a **code** change, with no documentation bypass.
+- **Change scope:** 35 files since the target, including `coverage.runsettings`, `scripts/ci-local.ps1`, `scripts/prepare-debian-arm64.sh`, `tests/WeatherParser.Parsing.Tests/EndpointUriValidatorTests.cs` the three test classes corrected in section 12 and the coverage-tooling, test and script changes of section 13. Classified as a **code** change, with no documentation bypass.
 - **Gate verdicts:** Comparability passed ("Baseline is comparable."); Measurement passed ("Block counters 54/56 are valid."); Minimum passed (54/56 ≥ 80%); Baseline passed ("Baseline block counters 52/56 are valid."); **Comparison passed** ("Block coverage 54/56 (96.43%) exceeds baseline 52/56 (92.86%).").
-- **SHA-256 of the run artifacts:** `.nupkg` `14a374258620d9507a377087be40a8ffeae349a499beecf367e767f68e96a80f`; `gate-result.json` `8c76191964f208952bc97603b185a2b790783864408467310a3217cf08fae269` (identical to the `654bf56` run, because the gate content is the same); `commits.json` `df5a0570bd090b627bc5a6610e879ec842e060baba458dacc2cf420ce6592ccc`; `current/collection-settings.json` `a48873e9b5a679b82b665e72fe0ff4c65b7633536a1b0024282db1f8afd7a3c5`; `target/collection-settings.json` `4870f1053b6607be8508173ddfdfae4ff7dcf06c2b9e7f454de6df222b45ed0f`; `current/coverage/coverage.xml` `daa57d1fecef845874627430b63692fba723fa057a7a9f5115bc42e2065c552a`.
+- **SHA-256 of the run artifacts:** `.nupkg` `819f64425820f739f222345f0a9d79caa899dabafedfcf036e72a0ea314022fb`; `gate-result.json` `8c76191964f208952bc97603b185a2b790783864408467310a3217cf08fae269` (identical to the earlier candidate runs, because the gate content is the same); `commits.json` `1b47a1af9afcbe2cec2f9595b3a768a2b5fdce05406bbac8b525b712c96b6357`; `current/collection-settings.json` `91541a0fe3a038c750231121396faee4dedab83753fe7e66152d69c00b428c13`; `target/collection-settings.json` `1add8ed80136636ca8a347f808eae752bc4740a51166a624845c18ec7d0b1b95`; `current/coverage/coverage.xml` `4044206cd1ef56e5a9cd11712191a981ff8e332114a8c268c4d94ed18815821d`.
 
 ## 3. Coverage provenance (T-P1-24)
 
-- **Module:** the current report contains one `WeatherParser.Parsing.dll` module (id `35B2D75C4E8E4F46B58ACA94C0A01428E33F5BAA`), counted once, and the test module `WeatherParser.Parsing.Tests.dll`, which the exclusions remove. The library is measured from source-reference tests only. The package consumer is not instrumented, so the package assembly is not double-counted.
+- **Module:** the current report contains one `WeatherParser.Parsing.dll` module (id `FBFB226F3D1F1742B3F17CC3E084EBE3DB2D0AED`), counted once, and the test module `WeatherParser.Parsing.Tests.dll`, which the exclusions remove. The library is measured from source-reference tests only. The package consumer is not instrumented, so the package assembly is not double-counted.
 - **Source identity:** the report lists the 5 library source files that contain executable code, each with a SHA-256 checksum. All 5 match the candidate's committed blobs as checked out with CRLF line endings (`core.autocrlf=true`): `EndpointUriValidator.cs`, `ParserEndpointDefinition.cs`, `ParserEndpointValidationException.cs`, `ParserEndpointValidator.cs`, `ServiceCollectionExtensions.cs`. The two interface files contain no executable code and are absent, as expected.
 - **Limitations:** the native report carries no assembly version, PDB GUID or package identity. The module `id` is not claimed to be a PDB identity. Build and package identity are established independently: the run builds, packs and consumes the package from the same clone and commit, and records the package hash. The package also embeds the commit ID (nuspec `repository commit`, informational version `+<SHA>`; P1.09 finding 5).
-- **Separate gates:** checker and runner self-coverage are not part of the product gate (`WeatherParser.Coverage*.dll` is excluded). Their behaviour is covered by the 91 + 54 meta-tests.
+- **Separate gates:** checker and runner self-coverage are not part of the product gate (`WeatherParser.Coverage*.dll` is excluded). Their behaviour is covered by the 99 + 56 meta-tests.
 
 ## 4. Platform evidence (P1.10)
 
-**Status: PROVEN for the checks executed on the target. No deferral was needed.**
+**Status: PROVEN for the checks executed on the target. No deferral was needed.** The target runs used script revision `660dc7e`. The later corrections (sections 12 and 13: test setup, coverage-tooling overflow and exclusion checks, resume input hashes) were verified on Windows only. They tighten failure detection and change no product code; the target was not re-run, because its working directory and installs were removed after P1.10 and no new target authorization was requested.
 - **Target:** NanoPi R76S, Debian 13.3 (trixie), `aarch64`, SDK 10.0.402 and runtime 10.0.13 in user directories.
 - **Run on the target:** full two-pass run of `660dc7e` against `c6cb86a`, exit 0. It ran locked restore, Release build, 162 tests, pack, package-content check, and the package consumer against the package built on the target. Conversion and gate also ran on the target (`converterRid` `linux-arm64`); gate PASSED with 54/56 against 52/56.
 - **Fault injections on the target:** `FailingTest` exit 50; `RunSettingsTamper` exit 85.
@@ -70,7 +70,7 @@ Windows and ARM64 counters are equal for the same commits; that comparison is de
 - **Result revision and part (b):** P1.11's record covers part (b) for P1.08 closure, P1.09 and P1.10. No item is Planned or OPEN; NETSDK1141 stays a historical remedy.
 - **Checks recorded:** English-only rules and the comment scan (inline/block, XML docs, scripts and configuration: 83 files, no finding); current status and commands (walkthrough of `ba93447`, re-verification of `8a96f58` and `d721940`); versions and package sources (single-source check); links; the 84 requirement IDs in identical order; license and inventory preservation; the byte-identical package-readme check.
 - **Named handover items:** none. P1.11 handed over no OPEN platform item.
-- **Changes after the P1.11 revision `654bf56`:** the P1.12 documents (`bd3f257`, `084b5fd`) and the T-P1-06 test correction (`463eae5`, section 12), all inside the candidate. Its README status-line change was re-checked by a CI run (documentation-only, exit 0) before this audit.
+- **Changes after the P1.11 revision `654bf56`:** the P1.12 documents (`bd3f257`, `084b5fd`), the T-P1-06 test correction (`463eae5`, section 12) and the second-review corrections (`5435c63`, `6ac88e7`, section 13), all inside the candidate. Its README status-line change was re-checked by a CI run (documentation-only, exit 0) before this audit.
 - **Acceptance impact:** none.
 
 ## 7. Test-ID matrix (T-P1-01 – T-P1-24)
@@ -91,18 +91,18 @@ All tests named below ran and passed in the candidate run unless a row says othe
 | T-P1-10 | Pass | `Evaluate_85_15_Vs_85_15_Code_ComparisonFailsEqualityBelow100`, `Evaluate_86_14_Vs_85_15_Code_ComparisonPasses`, `EqualBaseline_CodeChange_FailsComparison`; this candidate strictly improves (54/56 > 52/56); P1.09's two-pass exit 90 for an equal code change | Foundation, met |
 | T-P1-11 | Pass | `ReadAsync_CoberturaFormat_ThrowsCoverageInputException`, `ReadAsync_ModuleWithoutBlockCounters_ThrowsCoverageInputException`, `NonNativeOrIncompleteReport_IsInputError` | Foundation, met |
 | T-P1-12 | Pass | `Evaluate_99999_1_Vs_100_0_Code_ComparisonFailsRounded100NotExact`, `ReadAsync_Rounded100Report_ReturnsExactCounters`, `Rounded100_AgainstExact100Baseline_FailsComparison` | Foundation, met |
-| T-P1-13 | Pass | `ReadAsync_MissingReport_…`, `ReadAsync_MalformedXml_…`, `MalformedOrMissingReport_IsInputError`, `ZeroDenominator_FailsMeasurement`; script level: P1.09 `MissingCoverage` exit 80 | Foundation, met |
+| T-P1-13 | Pass after correction | `ReadAsync_MissingReport_…`, `ReadAsync_MalformedXml_…`, `MalformedOrMissingReport_IsInputError`, `ZeroDenominator_FailsMeasurement`; script level: P1.09 `MissingCoverage` exit 80; overflowing counters are rejected since section 13 (`ReadAsync_ModuleCountersSumExceedsInt64_ThrowsCoverageInputException`, `ReadAsync_ExistingFile_CountersSumExceedsInt64_ThrowsCoverageInputException`, `OverflowingCounters_IsInputError`) | Foundation, met |
 | T-P1-14 | Pass | `Evaluate_85_15_Null_Code_False_BaselineFailsMissingAfterBootstrap`, `NoBaselineNoBootstrap_FailsBaselineRule`, `SuppliedBaselineMissing_IsInputError`, `PassingReport_P109BootstrapInvocation_Passes`; genuine bootstrap on `0a2dabe` (section 1) | Foundation, met |
 | T-P1-15 | Pass | `Check_StaleCommit_Fails`, `ReadAsync_StaleCommitFixture_ReadsCommitUnchanged`; script: external baseline commit mismatch exits 20 (P1.09 review fixes) | Foundation, met |
 | T-P1-16 | Pass | `Check_DifferentToolName_Fails`, `Check_DifferentToolVersion_Fails`, `Check_DifferentFormat_Fails`, `Check_DifferentExclusions_Fails`, `IncomparableBaseline_FailsComparability`; script: `IncomparableTarget` and a Debug/Release mismatch exit 85, `RunSettingsTamper` exit 85 | Foundation, met |
-| T-P1-17 | Pass | `Aggregate_TwoProductionModules_ExpectedResult`, `Aggregate_SameNameDifferentModuleId_Throws`, `Aggregate_SameModuleIdDifferentName_Throws`, `DuplicateModule_IsInputError`; one product module in this run (section 3) | Foundation, met |
+| T-P1-17 | Pass after correction | `Aggregate_TwoProductionModules_ExpectedResult`, `Aggregate_SameNameDifferentModuleId_Throws`, `Aggregate_SameModuleIdDifferentName_Throws`, `DuplicateModule_IsInputError`; one product module in this run (section 3). Corrected in section 13: checked totals and aggregation (`Total_SumExceedsInt64_ThrowsOverflowException`, `Aggregate_CountersSumExceedsInt64_ThrowsCoverageInputException`, `Evaluate_MaxValue_MaxValue_Null_Code_True_MeasurementFailsWithoutException`) and start-anchored exclusion patterns (`Aggregate_ExclusionPatternIsAnchoredAtStart_DoesNotExcludeLongerName`, `ExclusionPattern_DoesNotExcludeLongerAssemblyName_FailsMinimum`) | Foundation, met |
 | T-P1-18 | Pass | `Evaluate_100_0_Vs_100_0_Code_ComparisonPassesExact100`, `Evaluate_85_15_Vs_85_15_DocumentationOnly_AllPass`, `Evaluate_84_16_Vs_85_15_DocumentationOnly_ComparisonFails`, `Evaluate_84_16_Vs_85_15_Code_ComparisonFailsDecrease`; documentation-only runs `ef9b9ac` and `83579f4`/`8a96f58` passed at equality | Foundation, met |
 | T-P1-19 | Pass | Script level: `FailingTest` 50, `MissingCoverage` 80, `GateFailure` 90, `IncomparableTarget` 85, `SdkMismatch` 10 (with `commits.json`), `LockDrift` 30, `ConsumerLockDrift` 70 (P1.09); `FailingTest` 50 and `RunSettingsTamper` 85 on ARM64 (P1.10); run directories and diagnostics retained | Foundation, met |
 | T-P1-20 | Pass | Class A: RID restore and build on Windows (NU1004 finding; projects stay RID-neutral by user decision). Class B: actual Debian 13 ARM64 runs (section 4) | Platform, PROVEN at P1 scope |
 | T-P1-21 | Pass | `Deps_file_declares_the_library_as_a_restored_package_not_a_project_reference`; same-run package and hash check in this run | Foundation, met |
 | T-P1-22 | Pass | `Package_exposes_only_the_expected_library_assembly`; allowed package entries; no consumer `ProjectReference` (the script fails with exit 70 otherwise) | Foundation, met |
 | T-P1-23 | Pass | `Classify_ChangedFiles_ExpectedResult`, `Classify_NonMarkdownPathEvenInDocumentationFolder_ReturnsCode`, `Classify_EmptyList_ExpectedResult`; this run classifies the 18-file scope as code | Foundation, met |
-| T-P1-24 | Pass with recorded limitations | Section 3: native counters only; module counted once; source checksums trace to the candidate; no PDB identity claimed | Foundation, met |
+| T-P1-24 | Pass after correction, with recorded limitations | Section 3: native counters only; module counted once; source checksums trace to the candidate; no PDB identity claimed. Corrected in section 13: exclusions no longer remove unrelated assemblies, and a resume package now hashes and verifies its changed-file list and raw reports | Foundation, met |
 
 ## 8. Acceptance checklist (PHASE_P1_PLAN.md section 8)
 
@@ -131,7 +131,7 @@ All tests named below ran and passed in the candidate run unless a row says othe
 
 ## 10. Decision
 
-**ACCEPTED** (audit decision; formal acceptance by the user pending). Every mandatory P1 foundation criterion has current, traceable passing evidence from the committed candidate `463eae5` and its fresh-clone run against the genuine bootstrap seed `0a2dabe`, and every test ID T-P1-01 to T-P1-24 has a passing outcome. The platform-runtime status is PROVEN for the P1-scope checks executed on the Debian 13 ARM64 target, so no runtime deferral is needed. P2 may start on a separate instruction; see the [P2 handoff](P2_HANDOFF.md).
+**ACCEPTED** (audit decision; formal acceptance by the user pending). Every mandatory P1 foundation criterion has current, traceable passing evidence from the committed candidate `6ac88e7` and its fresh-clone run against the genuine bootstrap seed `0a2dabe`, and every test ID T-P1-01 to T-P1-24 has a passing outcome. The platform-runtime status is PROVEN for the P1-scope checks executed on the Debian 13 ARM64 target, so no runtime deferral is needed. P2 may start on a separate instruction; see the [P2 handoff](P2_HANDOFF.md).
 
 ## 11. Documentation revision (plan step 8)
 
@@ -155,5 +155,35 @@ An external review of `084b5fd` confirmed the run evidence: 162 passing tests in
   - `CoverageGateRealReportTests` (P1.08) builds the gate with its real dependencies there.
   - `RunnerEndToEndTests` (P1.08) creates the output writers and the composed runner there.
 - **Verification:** Release build with 0 warnings; WeatherParser.Parsing.Tests 15, WeatherParser.Coverage.Tests 91 and WeatherParser.Coverage.Runner.Tests 54, all passed, with the same counts as before.
-- **Candidate run:** `463eae5` against `0a2dabe` (section 2), exit 0, gate passed at 54/56 against 52/56.
+- **Candidate run:** `463eae5` against `0a2dabe` (`artifacts/ci/463eae5-20261019T211011Z`), exit 0, gate passed at 54/56 against 52/56; superseded by `6ac88e7` (section 13).
 - **Gate statement:** the test refactor changes no product code. Measured against its parent `654bf56` on its own, it would be a code change with equal coverage (54/56 both), which the gate rejects below 100% (Comparison). It was not evaluated that way. The candidate's complete change scope since the accepted bootstrap baseline was evaluated instead, and the refactor is part of that scope.
+
+## 13. Second review findings and corrections (2026-10-19)
+
+A second external review of `2c273c5` confirmed the earlier evidence: 162 tests in an isolated copy, consistent acceptance artifacts. It found three defects that the existing suite missed. All three were returned to their owners and fixed by qwen from Claude's briefs, test-first for the tooling.
+
+1. **[P1.08] Counter overflow could pass the gate.** `BlockCounters.Total` added two `long` counters unchecked. With both at `long.MaxValue` the total wrapped to −2, and the runner reported a valid measurement, a passed minimum and exit 0.
+   - **Fix:** `Total` uses checked arithmetic. Both readers reject counters whose total exceeds the range (input error). The aggregator sums with checked arithmetic and reports an overflow as an input error. The evaluator treats an out-of-range total as an invalid measurement or baseline, without throwing.
+2. **[P1.08] Exclusion patterns matched unintended assemblies.** The wildcard matcher was not anchored at the start: `WeatherParser.Coverage*.dll` also excluded `OtherWeatherParser.CoverageDomain.dll`, turning an actual 50% into a reported 100%.
+   - **Fix:** patterns now match the whole module name, case-insensitively, with `*` matching any sequence.
+3. **[P1.09/P1.10] The resume package omitted gate inputs.** `resume.json` hashed the runner and tool manifest, but `-ResumeFrom` only checked that `changed-files.txt` existed, and the raw reports had no hashes; a replaced changed-file list was accepted.
+   - **Fix:** the package records the SHA-256 of `changed-files.txt` and of every raw `.coverage` report (paths relative to the run). `-ResumeFrom` verifies them and rejects missing, extra or changed reports and packages without these hashes (exit 20).
+
+**Red → Green (findings 1 and 2, commit `5435c63`).**
+- **New tests and fixtures:** `BlockCountersTests` (2), three `ProvenanceAggregatorTests`, one test each in `RuleEvaluatorTests`, `CoverageReportReaderTests` and `BaselineMetadataReaderTests`, two `RunnerEndToEndTests`, and the fixtures `report-overflow.xml` and `report-unanchored-exclusion.xml`.
+- **Red:** before the fix, exactly the eight defect-probing tests failed. The two characterization tests (`Total_SumWithinInt64_ReturnsSum`, `Aggregate_TestsSuffixPattern_StillExcludesTestAssembly`) and all existing tests passed.
+- **Corrected test:** the first version of `Evaluate_MaxValue_MaxValue_Null_Code_True_MeasurementFailsWithoutException` expected Minimum and Baseline to pass, which would have preserved the defect. It was corrected to the existing zero-denominator contract: exactly one failed Measurement rule. Against the original evaluator the corrected test fails; against the fix it passes.
+- **Green:** WeatherParser.Parsing.Tests 15, WeatherParser.Coverage.Tests 99, WeatherParser.Coverage.Runner.Tests 56; 0 warnings.
+
+**Script verification (finding 3, commit `6ac88e7`, Windows).**
+
+| Run | Exit | Result |
+|---|---|---|
+| Full two-pass run against `0a2dabe` | 0 | This record's candidate run (section 2) |
+| `-CollectOnly` | 0 | `resume.json` records `changedFilesSha256` and both raw reports |
+| `-ResumeFrom` on an unchanged copy | 0 | "Gate passed (resumed)" |
+| `-ResumeFrom` after replacing `changed-files.txt` | 20 | "changed-files.txt hash mismatch" |
+| `-ResumeFrom` after appending a byte to the current raw report | 20 | "Raw coverage report hash mismatch for current/coverage/raw/…" |
+| `-ResumeFrom` with an extra `.coverage` file in the target pass | 20 | "Unexpected raw coverage report: target/coverage/raw/…/extra.coverage" |
+
+**Gate statement.** All three corrections change tooling, tests and the CI script, not the product library. `WeatherParser.Coverage*.dll` is excluded from the product gate, so product coverage stays at 54/56. Measured against its parent on its own, each correction commit would be a code change with equal coverage, which the gate rejects below 100%. Following the user's disposition for section 12, the candidate's complete change scope since the accepted bootstrap baseline was evaluated instead: `6ac88e7` against `0a2dabe`, gate passed at 54/56 against 52/56 (section 2).
