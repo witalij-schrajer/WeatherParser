@@ -1,0 +1,769 @@
+#Requires -Version 7.0
+<#
+.SYNOPSIS
+Local CI script for WeatherParser repository.
+.DESCRIPTION
+Runs the complete CI sequence locally from a fresh clone of a given commit,
+producing all artifacts in one run directory, and fails with a stage-specific exit code.
+.PARAMETER Commit
+Commit to verify (default: HEAD of the original repository).
+.PARAMETER TargetRef
+Comparison target for the baseline and the changed-file list (required).
+.PARAMETER BaselinePath
+External baseline JSON; skips the baseline pass.
+.PARAMETER Bootstrap
+Explicit initial bootstrap: no baseline, minimum rule only.
+.PARAMETER KeepWorkDir
+Keep clones and the isolated NuGet folder.
+.PARAMETER FaultInjection
+Injects one fault inside the clone or the run directory.
+.EXAMPLE
+ci-local.ps1 -Commit 2f8c670 -TargetRef HEAD
+.EXAMPLE
+ci-local.ps1 -Commit 2f8c670 -TargetRef HEAD -Bootstrap
+#>
+[CmdletBinding()]
+param(
+    [string]$Commit = 'HEAD',
+    [Parameter(Mandatory=$true)]
+    [string]$TargetRef,
+    [string]$BaselinePath,
+    [switch]$Bootstrap,
+    [switch]$KeepWorkDir,
+    [ValidateSet('SdkMismatch','LockDrift','FailingTest','MissingCoverage','ConsumerLockDrift','IncomparableTarget','GateFailure')]
+    [string]$FaultInjection
+)
+
+class CiFailure : System.Exception {
+    [int]$ExitCode;
+    CiFailure([int]$code,[string]$msg) : base($msg) { $this.ExitCode = $code }
+}
+
+$ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $false
+Set-StrictMode -Version Latest
+
+# Set required environment variables
+$env:DOTNET_CLI_UI_LANGUAGE='en'
+$env:DOTNET_CLI_TELEMETRY_OPTOUT='1'
+$env:TESTINGPLATFORM_TELEMETRY_OPTOUT='1'
+$env:DOTNET_NOLOGO='1'
+
+$script:CurrentStageCode = 0
+$script:StartTime = [DateTime]::UtcNow
+
+# Initialize these before main try block to avoid errors in catch
+$script:RunDir = $null
+$script:WorkDir = $null
+$exit = 20
+
+function Write-CiLog([string]$Message) {
+    $timestamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+    $logLine = "$timestamp $Message"
+    [Console]::Error.WriteLine($logLine)
+    if ($script:RunDir) {
+        $logPath = Join-Path $script:RunDir 'ci.log'
+        Add-Content -Path $logPath -Value $logLine
+    }
+}
+
+function Fail([int]$Code, [string]$Message) {
+    Write-CiLog "FAIL: $Message"
+    throw [CiFailure]::new($Code, $Message)
+}
+
+function Invoke-Native(
+    [int]$Stage,
+    [string]$FilePath,
+    [string[]]$Arguments,
+    [string]$WorkingDirectory = $script:WorkDir,
+    [int[]]$AllowedExitCodes = @(0),
+    [string]$CaptureStdOut = $null
+) {
+    $script:CurrentStageCode = $Stage
+    $cmdLine = "$FilePath $($Arguments -join ' ')"
+    Write-CiLog "EXEC: $cmdLine"
+    if ($WorkingDirectory) {
+        Push-Location $WorkingDirectory
+    }
+    try {
+        $errFile = [IO.Path]::GetTempFileName()
+        try {
+            $stdoutLines = @(& $FilePath @Arguments 2> $errFile)
+            $exitCode = $LASTEXITCODE
+            $stderrLines = @(Get-Content -LiteralPath $errFile)
+            
+            if ($CaptureStdOut) {
+                $stdoutLines | Out-File -FilePath $CaptureStdOut -Encoding utf8NoBOM
+            }
+            
+            $logPath = Join-Path $script:RunDir 'ci.log'
+            $stdoutLines | ForEach-Object { Add-Content -Path $logPath -Value "$_" }
+            $stderrLines | ForEach-Object { Add-Content -Path $logPath -Value "$_" }
+            $stderrLines | ForEach-Object { [Console]::Error.WriteLine($_) }
+            
+            if ($AllowedExitCodes -notcontains $exitCode) {
+                Fail $Stage "$cmdLine failed with exit code $exitCode"
+            }
+            
+            return [pscustomobject]@{
+                ExitCode = $exitCode
+                Output = $stdoutLines
+            }
+        } finally {
+            Remove-Item -LiteralPath $errFile -ErrorAction SilentlyContinue
+        }
+    } finally {
+        if ($WorkingDirectory) {
+            Pop-Location
+        }
+    }
+}
+
+function Invoke-RestoreStage([string]$CloneDir, [string]$PassDir, [string]$ProjectScope = 'Full') {
+    Write-CiLog "=== RESTORE ==="
+    $script:CurrentStageCode = 30
+    
+    $env:NUGET_PACKAGES = Join-Path $script:WorkDir 'nuget-packages'
+    
+    if ($FaultInjection -eq 'LockDrift' -and $PassDir -eq (Join-Path $script:RunDir 'current')) {
+        Write-CiLog "FAULT INJECTION: LockDrift"
+        $lockJsonPath = Join-Path $CloneDir "src\WeatherParser.Parsing\packages.lock.json"
+        $lockJsonContent = [IO.File]::ReadAllText($lockJsonPath)
+        $lockJsonContent = $lockJsonContent -replace '"resolved": "10\.0\.0"', '"resolved": "10.0.1"'
+        [IO.File]::WriteAllText($lockJsonPath, $lockJsonContent, [Text.UTF8Encoding]::new($false))
+    }
+
+    if ($ProjectScope -eq 'Full') {
+        Invoke-Native 30 'dotnet' @('restore', 'WeatherParser.Ci.slnf', '--locked-mode') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    } else {
+        # Product scope
+        Invoke-Native 30 'dotnet' @('restore', 'tests/WeatherParser.Parsing.Tests', '--locked-mode') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    }
+    
+    $status = Invoke-Native 30 'git' @('status', '--porcelain') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    if ($status.Output) {
+        Fail 30 "Lock-file drift detected after restore"
+    }
+    Write-CiLog "Restore complete"
+}
+
+function Invoke-BuildStage([string]$CloneDir, [string]$PassDir, [string]$ProjectScope = 'Full') {
+    Write-CiLog "=== BUILD ==="
+    $script:CurrentStageCode = 40
+    
+    if ($FaultInjection -eq 'FailingTest' -and $PassDir -eq (Join-Path $script:RunDir 'current')) {
+        Write-CiLog "FAULT INJECTION: FailingTest"
+        $testPath = Join-Path $CloneDir "tests\WeatherParser.Parsing.Tests\InjectedFailureTests.cs"
+        $testContent = @"
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace WeatherParser.Parsing.Tests
+{
+    [TestClass]
+    public class InjectedFailureTests
+    {
+        [TestMethod]
+        public void AssertFail()
+        {
+            Assert.Fail("Injected failure");
+        }
+    }
+}
+"@
+        Set-Content -Path $testPath -Value $testContent
+    }
+
+    if ($ProjectScope -eq 'Full') {
+        $buildOutput = Invoke-Native 40 'dotnet' @('build', 'WeatherParser.Ci.slnf', '-c', 'Release', '--no-restore') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    } else {
+        # Product scope
+        $buildOutput = Invoke-Native 40 'dotnet' @('build', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-restore') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    }
+    
+    $warningCount = 0
+    if ($buildOutput.Output -match '(\d+) Warning\(s\)') {
+        $warningCount = [int]$matches[1]
+    }
+    "$warningCount" | Out-File -FilePath (Join-Path $PassDir 'build-warnings.txt') -Encoding utf8NoBOM
+    Write-CiLog "Build complete with $warningCount warnings"
+}
+
+function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectScope = 'Full') {
+    Write-CiLog "=== TESTS ==="
+    $script:CurrentStageCode = 50
+    
+    $coverageRawDir = Join-Path $PassDir 'coverage/raw'
+    if (!(Test-Path $coverageRawDir)) {
+        New-Item -ItemType Directory -Path $coverageRawDir | Out-Null
+    }
+
+    $trxDir = Join-Path $PassDir 'trx'
+    if (!(Test-Path $trxDir)) {
+        New-Item -ItemType Directory -Path $trxDir | Out-Null
+    }
+
+    if ($ProjectScope -eq 'Full') {
+        # Run product tests with coverage
+        Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+        
+        # Run coverage tests without coverage
+        Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Coverage.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Coverage.Tests.trx', '--results-directory', $trxDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+        
+        # Run coverage runner tests without coverage
+        Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Coverage.Runner.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Coverage.Runner.Tests.trx', '--results-directory', $trxDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    } else {
+        # Product scope
+        Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Parsing.Tests.trx', '--results-directory', $coverageRawDir, '--collect', 'Code Coverage') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    }
+
+    if ($FaultInjection -eq 'MissingCoverage' -and $PassDir -eq (Join-Path $script:RunDir 'current')) {
+        Write-CiLog "FAULT INJECTION: MissingCoverage"
+        $coverageFiles = Get-ChildItem -Path $coverageRawDir -Filter "*.coverage" -Recurse
+        if ($coverageFiles.Count -gt 0) {
+            Remove-Item $coverageFiles[0].FullName
+        }
+    }
+
+    $coverageFiles = Get-ChildItem -Path $coverageRawDir -Filter "*.coverage" -Recurse
+    if ($coverageFiles.Count -ne 1) {
+        Fail 80 "Expected exactly one .coverage file, found $($coverageFiles.Count)"
+    }
+
+    # Move TRX files from raw to trx directory and log test counts
+    $rawTrxFiles = Get-ChildItem -Path $coverageRawDir -Filter "*.trx"
+    $testCounts = @{}
+    foreach ($rawTrx in $rawTrxFiles) {
+        Copy-Item $rawTrx.FullName (Join-Path $trxDir $rawTrx.Name)
+        try {
+            $xml = [xml](Get-Content $rawTrx.FullName)
+            $counters = $xml.TestRun.ResultSummary.Counters
+            if ($counters) {
+                $projectName = $rawTrx.BaseName -replace '\.Tests$', ''
+                $testCounts[$projectName] = @{
+                    total = [int]$counters.total
+                    passed = [int]$counters.passed
+                    failed = [int]$counters.failed
+                }
+                Write-CiLog "${projectName}: total=$($testCounts[$projectName].total) passed=$($testCounts[$projectName].passed) failed=$($testCounts[$projectName].failed)"
+            }
+        } catch {
+            Write-CiLog "Warning: Failed to parse TRX file $($rawTrx.FullName): $_"
+        }
+    }
+
+    $testCounts | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $PassDir 'test-counts.json')
+
+    Write-CiLog "Tests complete"
+}
+
+function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
+    Write-CiLog "=== PACK ==="
+    $script:CurrentStageCode = 60
+    
+    $version = ([xml](Get-Content (Join-Path $CloneDir "src\WeatherParser.Parsing\WeatherParser.Parsing.csproj"))).Project.PropertyGroup.Version
+    if ($version -is [array]) {
+        $version = ($version | Where-Object { $_ -ne '' } | Select-Object -First 1)
+    }
+    
+    $nupkgPath = Join-Path $PassDir "WeatherParser.Parsing.$version.nupkg"
+    Invoke-Native 60 'dotnet' @('pack', 'src/WeatherParser.Parsing', '-c', 'Release', '--no-build', '-o', $PassDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+
+    if (!(Test-Path $nupkgPath)) {
+        Fail 60 "Pack failed, no .nupkg created"
+    }
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = $null
+    try {
+        $zip = [IO.Compression.ZipFile]::OpenRead($nupkgPath)
+        $expectedEntries = @(
+            'lib/net10.0/WeatherParser.Parsing.dll',
+            'README.md',
+            'LICENSE',
+            'WeatherParser.Parsing.nuspec',
+            '[Content_Types].xml',
+            '_rels/.rels'
+        )
+        $psmdcpPattern = '^package/services/metadata/core-properties/[0-9a-f]+\.psmdcp$'
+
+        $actualEntries = @()
+        foreach ($entry in $zip.Entries) {
+            $actualEntries += $entry.FullName
+        }
+
+        $missingEntries = @()
+        $unexpectedEntries = @()
+
+        foreach ($expectedEntry in $expectedEntries) {
+            if ($actualEntries -notcontains $expectedEntry) {
+                $missingEntries += $expectedEntry
+            }
+        }
+
+        foreach ($actualEntry in $actualEntries) {
+            if ($actualEntry -notmatch $psmdcpPattern -and $expectedEntries -notcontains $actualEntry) {
+                $unexpectedEntries += $actualEntry
+            }
+        }
+
+        if ($missingEntries.Count -gt 0) {
+            Fail 60 "Missing entries in .nupkg: $($missingEntries -join ', ')"
+        }
+
+        if ($unexpectedEntries.Count -gt 0) {
+            Fail 60 "Unexpected entries in .nupkg: $($unexpectedEntries -join ', ')"
+        }
+
+        $hash = [Convert]::ToBase64String([System.Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes($nupkgPath)))
+        $hash | Out-File -FilePath (Join-Path $PassDir 'package-hash.txt') -Encoding utf8NoBOM
+    } finally {
+        if ($zip) {
+            $zip.Dispose()
+        }
+    }
+
+    Write-CiLog "Pack complete"
+}
+
+function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
+    Write-CiLog "=== CONSUMER ==="
+    $script:CurrentStageCode = 70
+    
+    # Check for ProjectReference in consumer project
+    $consumerProjectPath = Join-Path $CloneDir "tests/WeatherParser.Package.Tests/WeatherParser.Package.Tests.csproj"
+    $consumerProjectContent = Get-Content -LiteralPath $consumerProjectPath
+    if ($consumerProjectContent -match '<ProjectReference') {
+        Fail 70 "Package consumer must not use a ProjectReference (T-P1-22)"
+    }
+
+    $version = ([xml](Get-Content (Join-Path $CloneDir "src\WeatherParser.Parsing\WeatherParser.Parsing.csproj"))).Project.PropertyGroup.Version
+    if ($version -is [array]) {
+        $version = ($version | Where-Object { $_ -ne '' } | Select-Object -First 1)
+    }
+    
+    $nupkgPath = Join-Path $PassDir "WeatherParser.Parsing.$version.nupkg"
+    $localNuGetPath = Join-Path $CloneDir "artifacts/local-nuget"
+    if (!(Test-Path $localNuGetPath)) {
+        New-Item -ItemType Directory -Path $localNuGetPath | Out-Null
+    }
+    Copy-Item $nupkgPath $localNuGetPath
+
+    $lockJsonPath = Join-Path $CloneDir "tests/WeatherParser.Package.Tests/packages.lock.json"
+    $lockJsonContent = [IO.File]::ReadAllText($lockJsonPath)
+    
+    # Targeted text replacement for contentHash
+    $contentHash = Get-Content (Join-Path $PassDir 'package-hash.txt')
+    $contentHash = $contentHash.Trim()
+    $pattern = '(?s)("WeatherParser\.Parsing"\s*:\s*\{.*?"contentHash"\s*:\s*")[^"]*(")'
+    $lockJsonContent = [regex]::new($pattern).Replace($lockJsonContent, '${1}' + $contentHash + '${2}', 1)
+
+    if ($FaultInjection -eq 'ConsumerLockDrift') {
+        Write-CiLog "FAULT INJECTION: ConsumerLockDrift"
+        $lockJsonContent = $lockJsonContent -replace '"resolved": "8\.11\.0"', '"resolved": "8.11.1"'
+    }
+
+    [IO.File]::WriteAllText($lockJsonPath, $lockJsonContent, [Text.UTF8Encoding]::new($false))
+
+    Invoke-Native 70 'dotnet' @('restore', 'tests/WeatherParser.Package.Tests', '--locked-mode') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+
+    # Verify only the lock file was changed
+    $numStat = Invoke-Native 70 'git' @('diff', '--numstat') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    if ($numStat.Output.Count -ne 1 -or $numStat.Output[0] -ne "1	1	tests/WeatherParser.Package.Tests/packages.lock.json") {
+        Fail 70 "Consumer lock file diff not exactly one line with 1 1"
+    }
+
+    $status = Invoke-Native 70 'git' @('status', '--porcelain') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    if ($status.Output.Count -ne 1 -or $status.Output[0] -ne " M tests/WeatherParser.Package.Tests/packages.lock.json") {
+        Fail 70 "Consumer lock file status not exactly one line with ' M tests/WeatherParser.Package.Tests/packages.lock.json'"
+    }
+
+    # Parse old and new JSON to verify only contentHash changed
+    $oldLockJson = git -C $CloneDir show HEAD:tests/WeatherParser.Package.Tests/packages.lock.json
+    $newLockJson = Get-Content $lockJsonPath
+    
+    $oldJson = $oldLockJson | ConvertFrom-Json -AsHashtable
+    $newJson = $newLockJson | ConvertFrom-Json -AsHashtable
+
+    # Verify only contentHash changed
+    $oldContentHash = $oldJson.dependencies.'net10.0'.'WeatherParser.Parsing'.contentHash
+    $newContentHash = $newJson.dependencies.'net10.0'.'WeatherParser.Parsing'.contentHash
+    
+    if ($oldContentHash -ne $contentHash) {
+        Fail 70 "Consumer lock file contentHash not updated correctly"
+    }
+
+    # Set both contentHash fields to empty for comparison
+    $oldJson.dependencies.'net10.0'.'WeatherParser.Parsing'.contentHash = ''
+    $newJson.dependencies.'net10.0'.'WeatherParser.Parsing'.contentHash = ''
+
+    $oldJsonStr = ConvertTo-Json -Depth 20 -Compress -InputObject $oldJson
+    $newJsonStr = ConvertTo-Json -Depth 20 -Compress -InputObject $newJson
+
+    if ($oldJsonStr -ne $newJsonStr) {
+        Fail 70 "Consumer lock file differs beyond the WeatherParser.Parsing contentHash"
+    }
+
+    # Verify package hash matches
+    $expectedSha512 = Get-Content (Join-Path $PassDir 'package-hash.txt')
+    $sha512Path = Join-Path "$script:WorkDir/nuget-packages" "weatherparser.parsing/$version/weatherparser.parsing.$version.nupkg.sha512"
+    if (!(Test-Path $sha512Path)) {
+        Fail 70 "Package SHA512 file not found: $sha512Path"
+    }
+    $actualSha512 = Get-Content $sha512Path
+    if ($expectedSha512 -ne $actualSha512) {
+        Fail 70 "Package SHA512 mismatch"
+    }
+
+    # Build and test consumer (without coverage)
+    $trxDir = Join-Path $PassDir 'trx'
+    if (!(Test-Path $trxDir)) {
+        New-Item -ItemType Directory -Path $trxDir | Out-Null
+    }
+    
+    Invoke-Native 70 'dotnet' @('build', 'tests/WeatherParser.Package.Tests', '-c', 'Release', '--no-restore') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    
+    Invoke-Native 70 'dotnet' @('test', 'tests/WeatherParser.Package.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Package.Tests.trx', '--results-directory', $trxDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+
+    Write-CiLog "Consumer complete"
+}
+
+function Invoke-ConversionStage([string]$CloneDir, [string]$PassDir) {
+    Write-CiLog "=== CONVERSION ==="
+    $script:CurrentStageCode = 80
+    
+    $coverageRawDir = Join-Path $PassDir 'coverage/raw'
+    $coverageXmlPath = Join-Path $PassDir 'coverage/coverage.xml'
+
+    if (!(Test-Path $coverageXmlPath)) {
+        New-Item -ItemType Directory -Path (Split-Path $coverageXmlPath) | Out-Null
+    }
+
+    Invoke-Native 80 'dotnet' @('tool', 'restore') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    
+    $dotnetCoverageVersion = Invoke-Native 80 'dotnet' @('tool', 'run', 'dotnet-coverage', '--version') -WorkingDirectory $CloneDir -AllowedExitCodes @(0) -CaptureStdOut (Join-Path $PassDir 'dotnet-coverage-version.txt')
+    $dotnetCoverageVersion = $dotnetCoverageVersion.Output[0] -split '\+' | Select-Object -First 1
+
+    $coverageFiles = Get-ChildItem -Path $coverageRawDir -Filter "*.coverage" -Recurse
+    if ($coverageFiles.Count -ne 1) {
+        Fail 80 "Expected exactly one .coverage file, found $($coverageFiles.Count)"
+    }
+
+    Invoke-Native 80 'dotnet' @('tool', 'run', 'dotnet-coverage', 'merge', $coverageFiles[0].FullName, '-f', 'xml', '-o', $coverageXmlPath) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+
+    if ($FaultInjection -eq 'GateFailure' -and $PassDir -eq (Join-Path $script:RunDir 'current')) {
+        Write-CiLog "FAULT INJECTION: GateFailure"
+        $fixturePath = Join-Path $CloneDir "tests/WeatherParser.Coverage.Tests/Fixtures/report-real-p1-07.xml"
+        Copy-Item $fixturePath $coverageXmlPath
+    }
+
+    # Get commit, SDK version, Microsoft.CodeCoverage version, RID
+    $commit = git -C $CloneDir rev-parse HEAD
+    
+    $sdkVersion = Invoke-Native 80 'dotnet' @('--version') -WorkingDirectory $CloneDir -AllowedExitCodes @(0,1,145,150,155)
+    $sdkVersion = $sdkVersion.Output[0].Trim()
+    
+    # Get Microsoft.CodeCoverage version from Directory.Packages.props
+    $microsoftCodeCoverageVersion = ([xml](Get-Content (Join-Path $CloneDir "Directory.Packages.props"))).Project.ItemGroup.PackageVersion | Where-Object Include -eq 'Microsoft.CodeCoverage' | Select-Object -ExpandProperty Version
+    
+    # Get dotnet-tools.json version for manifest version
+    $dotnetToolsJson = Get-Content (Join-Path $CloneDir ".config/dotnet-tools.json") | ConvertFrom-Json
+    $dotnetCoverageManifestVersion = $dotnetToolsJson.tools.'dotnet-coverage'.version
+    
+    # Get RID from dotnet --info
+    $dotnetInfo = Invoke-Native 80 'dotnet' @('--info') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+    $ridLine = $dotnetInfo.Output | Where-Object { $_ -like "*RID:*" }
+    $rid = $ridLine -split ':' | Select-Object -Last 1
+    $rid = $rid.Trim()
+
+    $collectionSettings = @{
+        commit = $commit
+        sdkVersion = $sdkVersion
+        microsoftCodeCoverageVersion = $microsoftCodeCoverageVersion
+        dotnetCoverageManifestVersion = $dotnetCoverageManifestVersion
+        dotnetCoverageToolVersion = $dotnetCoverageVersion
+        collector = "Code Coverage"
+        runSettingsSha256 = "none"
+        exclusions = @("*.Tests.dll", "WeatherParser.Coverage*.dll")
+        rid = $rid
+    }
+
+    $collectionSettings | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $PassDir 'collection-settings.json')
+
+    Write-CiLog "Conversion complete"
+}
+
+function Invoke-BaselinePass() {
+    Write-CiLog "=== BASELINE PASS ==="
+    $script:CurrentStageCode = 85
+    if ($Bootstrap -or $BaselinePath) {
+        Write-CiLog "Skipping baseline pass"
+        return
+    }
+
+    $targetDir = Join-Path $script:WorkDir 'target'
+    Invoke-Native 20 'git' @('clone', '--no-local', '--quiet', $script:RepoRoot, "$targetDir") -WorkingDirectory $script:RepoRoot -AllowedExitCodes @(0)
+    Invoke-Native 20 'git' @('checkout', '--detach', '--quiet', $script:TargetSha) -WorkingDirectory $targetDir -AllowedExitCodes @(0)
+
+    # Check if target commit has the required tool manifest
+    if (!(Test-Path (Join-Path $targetDir ".config/dotnet-tools.json"))) {
+        Fail 91 "Target commit $($script:TargetSha) lacks the pinned dotnet-coverage tool manifest; it cannot produce a comparable baseline."
+    }
+
+    # Reuse the pass functions for target
+    Invoke-RestoreStage -CloneDir $targetDir -PassDir (Join-Path $script:RunDir 'target') -ProjectScope 'Product'
+    Invoke-BuildStage -CloneDir $targetDir -PassDir (Join-Path $script:RunDir 'target') -ProjectScope 'Product'
+    Invoke-TestStage -CloneDir $targetDir -PassDir (Join-Path $script:RunDir 'target') -ProjectScope 'Product'
+    Invoke-ConversionStage -CloneDir $targetDir -PassDir (Join-Path $script:RunDir 'target')
+
+    $currentSettings = Get-Content (Join-Path $script:RunDir 'current/collection-settings.json') | ConvertFrom-Json
+    $targetSettings = Get-Content (Join-Path $script:RunDir 'target/collection-settings.json') | ConvertFrom-Json
+
+    if ($FaultInjection -eq 'IncomparableTarget') {
+        Write-CiLog "FAULT INJECTION: IncomparableTarget"
+        $targetSettings.dotnetCoverageToolVersion = "0.0.0-injected"
+        $targetSettings | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'target/collection-settings.json')
+    }
+
+    $fieldsToCompare = @('sdkVersion', 'microsoftCodeCoverageVersion', 'dotnetCoverageToolVersion', 'collector', 'runSettingsSha256', 'rid')
+    foreach ($field in $fieldsToCompare) {
+        if ($currentSettings.$field -ne $targetSettings.$field) {
+            Fail 85 "Incomparable measurement: field '$field' differs (current: '$($currentSettings.$field)', target: '$($targetSettings.$field)')"
+        }
+    }
+
+    # Compare exclusions as arrays
+    $currentExclusions = @($currentSettings.exclusions)
+    $targetExclusions = @($targetSettings.exclusions)
+    if ((@($currentExclusions) -join ',') -ne (@($targetExclusions) -join ',')) {
+        Fail 85 "Incomparable measurement: field 'exclusions' differs (current: '$(($currentExclusions) -join ',')', target: '$(($targetExclusions) -join ',')')"
+    }
+
+    # Write baseline using the current clone's runner
+    $baselinePath = Join-Path $script:RunDir 'target/baseline.json'
+    Invoke-Native 91 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'write-baseline', '--report', (Join-Path $script:RunDir 'target/coverage/coverage.xml'), '--commit', $script:TargetSha, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $targetSettings.microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--output', $baselinePath) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0)
+
+    Write-CiLog "Baseline pass complete"
+}
+
+function Invoke-GateStage() {
+    Write-CiLog "=== GATE ==="
+    $script:CurrentStageCode = 90
+    
+    $changedFiles = Join-Path $script:RunDir 'changed-files.txt'
+    Invoke-Native 90 'git' @('diff', '--name-only', "$($script:TargetSha)...$($script:CommitSha)") -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0) -CaptureStdOut $changedFiles
+
+    $coverageXmlPath = Join-Path $script:RunDir 'current/coverage/coverage.xml'
+
+    $microsoftCodeCoverageVersion = ([xml](Get-Content (Join-Path "$script:WorkDir/src" "Directory.Packages.props"))).Project.ItemGroup.PackageVersion | Where-Object Include -eq 'Microsoft.CodeCoverage' | Select-Object -ExpandProperty Version
+
+    if ($Bootstrap) {
+        Write-CiLog "Running bootstrap gate"
+        $gate = Invoke-Native 90 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--bootstrap') -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        switch ($gate.ExitCode) {
+            1 {
+                $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
+                $failedRules = $gateResult.rules | Where-Object { $_.verdict -eq $false } | ForEach-Object { $_.ruleId }
+                Fail 90 "Coverage gate failed: $($failedRules -join ', ')"
+            }
+            2 {
+                Fail 91 "Coverage gate input error"
+            }
+        }
+    } elseif ($BaselinePath) {
+        Write-CiLog "Running gate with external baseline"
+        $gate = Invoke-Native 90 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', $BaselinePath, '--expected-baseline-commit', $script:TargetSha) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        switch ($gate.ExitCode) {
+            1 {
+                $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
+                $failedRules = $gateResult.rules | Where-Object { $_.verdict -eq $false } | ForEach-Object { $_.ruleId }
+                Fail 90 "Coverage gate failed: $($failedRules -join ', ')"
+            }
+            2 {
+                Fail 91 "Coverage gate input error"
+            }
+        }
+    } else {
+        Write-CiLog "Running gate with two-pass baseline"
+        $gate = Invoke-Native 90 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', (Join-Path $script:RunDir 'target/baseline.json'), '--expected-baseline-commit', $script:TargetSha) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        switch ($gate.ExitCode) {
+            1 {
+                $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
+                $failedRules = $gateResult.rules | Where-Object { $_.verdict -eq $false } | ForEach-Object { $_.ruleId }
+                Fail 90 "Coverage gate failed: $($failedRules -join ', ')"
+            }
+            2 {
+                Fail 91 "Coverage gate input error"
+            }
+        }
+    }
+
+    if ($Bootstrap -and !$FaultInjection) {
+        Write-CiLog "Writing bootstrap baseline"
+        Invoke-Native 91 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'write-baseline', '--report', (Join-Path $script:RunDir 'current/coverage/coverage.xml'), '--commit', $script:CommitSha, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--output', (Join-Path $script:RunDir 'current/bootstrap-baseline.json')) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0)
+
+        if (!(Test-Path (Join-Path $script:RunDir 'current/bootstrap-baseline.json'))) {
+            Fail 91 "Failed to write bootstrap baseline"
+        }
+
+        $baseline = Get-Content (Join-Path $script:RunDir 'current/bootstrap-baseline.json') | ConvertFrom-Json
+        if ($null -eq $baseline.commitId) {
+            Fail 91 "Bootstrap baseline missing commitId"
+        }
+        
+        # Verify the baseline matches expected values and commit ID
+        $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
+        if ($baseline.blocksCovered -ne $gateResult.current.covered -or $baseline.blocksNotCovered -ne $gateResult.current.notCovered) {
+            Fail 91 "Bootstrap baseline values do not match gate result"
+        }
+        
+        if ($baseline.commitId -ne $script:CommitSha) {
+            Fail 91 "Bootstrap baseline commit ID does not match expected commit"
+        }
+    }
+
+    Write-CiLog "Gate complete"
+}
+
+function Invoke-FinishStage() {
+    Write-CiLog "=== FINISH ==="
+    try {
+        if (Test-Path "$script:WorkDir/src") {
+            $packagesOutput = Invoke-Native 0 'dotnet' @('list', 'WeatherParser.Ci.slnf', 'package', '--include-transitive') -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1) -CaptureStdOut (Join-Path $script:RunDir 'packages.txt')
+            if ($packagesOutput.ExitCode -eq 1) {
+                Write-CiLog "Warning: dotnet list package failed"
+            }
+        }
+
+        $duration = [DateTime]::UtcNow - $script:StartTime
+        $durationStr = $duration.ToString('hh\:mm\:ss')
+        Write-CiLog "Run completed in $durationStr"
+
+        if ($script:WorkDir -and !$KeepWorkDir) {
+            Remove-Item -Recurse -Force $script:WorkDir
+            Write-CiLog "Deleted work directory: $script:WorkDir"
+        } else {
+            Write-CiLog "Kept work directory: $script:WorkDir"
+        }
+    } catch {
+        Write-CiLog "Error in finish stage: $_"
+    }
+}
+
+try {
+    # Setup
+    $script:RepoRoot = git -C $PSScriptRoot rev-parse --show-toplevel
+    
+    # Resolve SHAs
+    $commitSha = git -C $script:RepoRoot rev-parse --verify --quiet "$Commit^{commit}"
+    if (!$commitSha) {
+        Fail 20 "Invalid commit reference: $Commit"
+    }
+    
+    $targetSha = git -C $script:RepoRoot rev-parse --verify --quiet "$TargetRef^{commit}"
+    if (!$targetSha) {
+        Fail 20 "Invalid target reference: $TargetRef"
+    }
+    
+    $script:CommitSha = $commitSha
+    $script:TargetSha = $targetSha
+    
+    if ($commitSha -eq $targetSha -and !$Bootstrap) {
+        Fail 20 "TargetRef equals Commit without Bootstrap"
+    }
+
+    if ($BaselinePath -and $Bootstrap) {
+        Fail 20 "Both -BaselinePath and -Bootstrap specified"
+    }
+
+    if ($BaselinePath -and !(Test-Path $BaselinePath)) {
+        Fail 20 "BaselinePath file does not exist: $BaselinePath"
+    }
+
+    if ($FaultInjection -eq 'IncomparableTarget' -and ($Bootstrap -or $BaselinePath)) {
+        Fail 20 "IncomparableTarget requires two-pass mode (no BaselinePath and no Bootstrap)"
+    }
+    
+    # Create run directory
+    $commitShort = git -C "$script:RepoRoot" rev-parse --short $commitSha
+    $script:RunDir = Join-Path $script:RepoRoot "artifacts/ci/$commitShort-$([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ'))"
+    if (!(Test-Path $script:RunDir)) {
+        New-Item -ItemType Directory -Path $script:RunDir | Out-Null
+    }
+    Write-CiLog "Run directory: $script:RunDir"
+    
+    # Create work directory
+    $script:WorkDir = Join-Path ([IO.Path]::GetTempPath()) "weatherparser-ci-$([guid]::NewGuid())"
+    if (!(Test-Path $script:WorkDir)) {
+        New-Item -ItemType Directory -Path $script:WorkDir | Out-Null
+    }
+    Write-CiLog "Work directory: $script:WorkDir"
+
+    # Clone and checkout
+    Invoke-Native 20 'git' @('clone', '--no-local', '--quiet', $script:RepoRoot, "$script:WorkDir/src") -WorkingDirectory $script:RepoRoot -AllowedExitCodes @(0)
+    Invoke-Native 20 'git' @('checkout', '--detach', '--quiet', $commitSha) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0)
+
+    if ($FaultInjection -eq 'SdkMismatch') {
+        Write-CiLog "FAULT INJECTION: SdkMismatch"
+        $globalJsonPath = Join-Path "$script:WorkDir/src" "global.json"
+        $globalJsonContent = [IO.File]::ReadAllText($globalJsonPath)
+        $globalJsonContent = $globalJsonContent -replace '"version": "[^"]*"', '"version": "0.0.0"'
+        [IO.File]::WriteAllText($globalJsonPath, $globalJsonContent, [Text.UTF8Encoding]::new($false))
+    }
+
+    # SDK check
+    $dotnetVersion = Invoke-Native 10 'dotnet' @('--version') -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0,1,145,150,155)
+    $globalJson = Get-Content (Join-Path "$script:WorkDir/src" "global.json") | ConvertFrom-Json
+    if ($dotnetVersion.Output[0].Trim() -ne $globalJson.sdk.version) {
+        $sdks = Invoke-Native 10 'dotnet' @('--list-sdks') -WorkingDirectory ([IO.Path]::GetTempPath()) -AllowedExitCodes @(0)
+        Fail 10 "DotNet SDK version mismatch: expected $($globalJson.sdk.version), got $($dotnetVersion.Output[0]). Available SDKs:`n$($sdks.Output -join "`n")"
+    }
+
+    $commitShort = git -C "$script:WorkDir/src" rev-parse --short HEAD
+    $targetCommitShort = git -C "$script:WorkDir/src" rev-parse --short $targetSha
+
+    $commitsJson = @{
+        commit = $commitSha
+        commitShort = $commitShort
+        targetRef = $TargetRef
+        targetCommit = $targetSha
+        mode = if ($Bootstrap) { "bootstrap" } elseif ($BaselinePath) { "baseline-path" } else { "two-pass" }
+        faultInjection = if ($FaultInjection) { $FaultInjection } else { $null }
+        startedUtc = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+    }
+
+    $commitsJson | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'commits.json')
+
+    $dotnetInfo = Invoke-Native 10 'dotnet' @('--info') -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0)
+    $dotnetInfo.Output | Out-File -FilePath (Join-Path $script:RunDir 'dotnet-info.txt') -Encoding utf8NoBOM
+
+    # Run stages
+    Invoke-RestoreStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
+    Invoke-BuildStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
+    Invoke-TestStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
+    Invoke-PackStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
+    Invoke-ConsumerStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
+    Invoke-ConversionStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
+    Invoke-BaselinePass
+    Invoke-GateStage
+    $exit = 0
+} catch [CiFailure] {
+    $exit = $_.Exception.ExitCode
+} catch {
+    Write-CiLog "UNEXPECTED: $($_.Exception.Message)"
+    $exit = if ($script:CurrentStageCode -gt 0) { $script:CurrentStageCode } else { 20 }
+} finally {
+    try {
+        if ($script:RunDir) {
+            $commitsJson = Get-Content (Join-Path $script:RunDir 'commits.json') | ConvertFrom-Json -AsHashtable
+            $commitsJson['finishedUtc'] = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+            $commitsJson['exitCode'] = $exit
+            $commitsJson | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $script:RunDir 'commits.json')
+        }
+    } catch {
+        Write-CiLog "Error in cleanup: $_"
+    }
+    Invoke-FinishStage
+}
+
+exit $exit
