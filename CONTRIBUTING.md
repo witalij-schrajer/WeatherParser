@@ -238,7 +238,7 @@ pwsh ./scripts/ci-local.ps1 -TargetRef <comparison commit or branch> -RunSetting
 The run directory `artifacts/ci/<commit>-<UTC timestamp>/` contains `ci.log`, `commits.json`, test results, package and hash, coverage reports, `collection-settings.json` per pass, `changed-files.txt`, `gate-result.json`, `resume/`.
 
 ### Hosted CI (GitHub Actions)
-*Status: Planned – first hosted run pending*
+*Status: Verified (Windows, Debian/ARM64 and Ubuntu x64 hosted runners) – [manual run 39332959206](https://github.com/witalij-schrajer/WeatherParser/actions/runs/39332959206) against the seed `0a2dabe`, all three jobs passed (2026-10-20)*
 
 The repository includes a GitHub Actions workflow `.github/workflows/ci.yml` that runs the same `scripts/ci-local.ps1` script as documented in CONTRIBUTING.md section 6, on Windows x64 (`windows-latest`), Ubuntu x64 (`ubuntu-latest`), and Debian 13 ARM64 (`debian:trixie` container on `ubuntu-24.04-arm`) runners.
 
