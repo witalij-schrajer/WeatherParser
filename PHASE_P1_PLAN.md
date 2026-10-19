@@ -1,6 +1,6 @@
 # WeatherParser – P1 detailed plan
 
-As of 2026-10-19. **P0 is complete. P1.01-P1.11 are complete; the Visual Studio build limitation is resolved; clean-checkout reproducibility is verified on Windows x64 (P1.09), on Debian 13 ARM64 by P1.10 (accepted)**. P1.08's evaluator, runner and pinned tooling are accepted; the user explicitly accepted its missing original Red-step evidence. Local CI (P1.09) is accepted. P1.10 platform foundations are verified on the NanoPi R76S and accepted; P1.11 developer instructions are verified and accepted; overall P1 acceptance remains pending.
+As of 2026-10-19. **P0 is complete. P1.01-P1.11 are complete; the Visual Studio build limitation is resolved; clean-checkout reproducibility is verified on Windows x64 (P1.09), on Debian 13 ARM64 by P1.10 (accepted)**. P1.08's evaluator, runner and pinned tooling are accepted; the user explicitly accepted its missing original Red-step evidence. Local CI (P1.09) is accepted. P1.10 platform foundations are verified on the NanoPi R76S and accepted; P1.11 developer instructions are verified and accepted; the P1.12 audit decision is ACCEPTED ([record](docs/p1/P1_12_ACCEPTANCE.md)); formal P1 acceptance by the user is pending.
 
 Basis: [requirements](REQUIREMENTS.md), [development plan](DEVELOPMENT_PLAN.md) and [repository rules](AGENTS.md).
 
@@ -53,7 +53,7 @@ Names are provisional. Create projects only when needed. No empty infrastructure
 | P1.09 | Prepare local CI job sequence/artifacts | Implemented and verified on Windows x64 (2026-10-19): fresh-clone pipeline, seven fault injections, genuine bootstrap seed on `0a2dabe` (52/56 blocks, Release); passing two-pass run (documentation-only `ef9b9ac` against `0a2dabe`); `-BaselinePath` settings validation after review; **accepted by the user 2026-10-19** ([acceptance](docs/p1/P1_09_LOCAL_CI.md#p109-acceptance-2026-10-19)); [plan](docs/p1/P1_09_LOCAL_CI_PLAN.md); [record](docs/p1/P1_09_LOCAL_CI.md) |
 | P1.10 | Verify Debian/ARM64 package foundations | Implemented and verified (2026-10-19) on the NanoPi R76S, Debian 13 ARM64: full CI run on the target, package consumer, conversion and gate on ARM64, gate passed (54/56 against 52/56); Class A NU1004 finding, projects stay RID-neutral; **accepted by the user 2026-10-19** ([acceptance](docs/p1/P1_10_DEBIAN_ARM64.md#p110-acceptance-2026-10-19)); [plan](docs/p1/P1_10_DEBIAN_ARM64_PLAN.md); [record](docs/p1/P1_10_DEBIAN_ARM64.md); [compatibility](docs/COMPATIBILITY.md) |
 | P1.11 | Complete English developer instructions/evidence | Implemented and verified (2026-10-19): `CONTRIBUTING.md` holds every procedure with platform and status (decision D), README reduced, consistency table in AGENTS.md, Windows walkthrough and documentation checks passed; **accepted by the user 2026-10-19** ([acceptance](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md#p111-acceptance-2026-10-19)); [plan](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md); [record](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md) |
-| P1.12 | Accept phase and document P2 handoff | Results, artifacts and remaining limitations; after all packages; [plan](docs/p1/P1_12_ACCEPTANCE_HANDOFF_PLAN.md) |
+| P1.12 | Accept phase and document P2 handoff | Audit done (2026-10-19): decision ACCEPTED for the P1 foundation, formal user acceptance pending; candidate `654bf56` against the bootstrap seed `0a2dabe`, gate passed (54/56 against 52/56), all T-P1-01 – T-P1-24 passed, ARM64 runtime PROVEN at P1 scope; [plan](docs/p1/P1_12_ACCEPTANCE_HANDOFF_PLAN.md); [acceptance record](docs/p1/P1_12_ACCEPTANCE.md); [P2 handoff](docs/p1/P2_HANDOFF.md) |
 
 ### Test-driven starting point
 
@@ -122,16 +122,16 @@ Public PR execution receives no production secrets or privileged publishing righ
 
 ## 8. Acceptance and handoff
 
-- [ ] P0 completion and P1 implementation instruction documented.
-- [ ] Minimal build, reproducible restore and pinned compatible dependencies with license evidence.
-- [ ] Actual `.nupkg` and isolated package consumption verified.
-- [ ] Meaningful TDD cycle, interfaces, constructor DI, MSTest/Moq/FluentAssertions and setup/cleanup demonstrated.
-- [ ] Microsoft.CodeCoverage report with traceable block/metric mapping available.
-- [ ] At least 80% for block coverage; bootstrap/documentation/100% rules demonstrated.
-- [ ] Error/comparability/provenance/PR-classification tests pass.
-- [ ] Local CI procedures/artifacts verified; truthful GitHub/ARM runtime status recorded.
-- [ ] English output/comments and complete English documentation.
-- [ ] P1 acceptance record with versions, working revision, evidence and limitations created.
+- [x] P0 completion and P1 implementation instruction documented (audit evidence: [acceptance record](docs/p1/P1_12_ACCEPTANCE.md#8-acceptance-checklist-phase_p1_planmd-section-8)).
+- [x] Minimal build, reproducible restore and pinned compatible dependencies with license evidence (audit evidence: [acceptance record](docs/p1/P1_12_ACCEPTANCE.md#8-acceptance-checklist-phase_p1_planmd-section-8)).
+- [x] Actual `.nupkg` and isolated package consumption verified (audit evidence: [acceptance record](docs/p1/P1_12_ACCEPTANCE.md#8-acceptance-checklist-phase_p1_planmd-section-8)).
+- [x] Meaningful TDD cycle, interfaces, constructor DI, MSTest/Moq/FluentAssertions and setup/cleanup demonstrated (audit evidence: [acceptance record](docs/p1/P1_12_ACCEPTANCE.md#8-acceptance-checklist-phase_p1_planmd-section-8)).
+- [x] Microsoft.CodeCoverage report with traceable block/metric mapping available (audit evidence: [acceptance record](docs/p1/P1_12_ACCEPTANCE.md#8-acceptance-checklist-phase_p1_planmd-section-8)).
+- [x] At least 80% for block coverage; bootstrap/documentation/100% rules demonstrated (audit evidence: [acceptance record](docs/p1/P1_12_ACCEPTANCE.md#8-acceptance-checklist-phase_p1_planmd-section-8)).
+- [x] Error/comparability/provenance/PR-classification tests pass (audit evidence: [acceptance record](docs/p1/P1_12_ACCEPTANCE.md#8-acceptance-checklist-phase_p1_planmd-section-8)).
+- [x] Local CI procedures/artifacts verified; truthful GitHub/ARM runtime status recorded (audit evidence: [acceptance record](docs/p1/P1_12_ACCEPTANCE.md#8-acceptance-checklist-phase_p1_planmd-section-8)).
+- [x] English output/comments and complete English documentation (audit evidence: [acceptance record](docs/p1/P1_12_ACCEPTANCE.md#8-acceptance-checklist-phase_p1_planmd-section-8)).
+- [x] P1 acceptance record with versions, working revision, evidence and limitations created (audit evidence: [acceptance record](docs/p1/P1_12_ACCEPTANCE.md#8-acceptance-checklist-phase_p1_planmd-section-8)).
 
 P1 completes only after this evidence. P2 builds on the package/test foundation for export entities, UTC/unit/rounding logic, real JSON/XML serializers and generated output schemas. CLI decisions remain P3, source formats their parser phases and public package publication P9.
 
