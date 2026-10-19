@@ -51,7 +51,7 @@ Sources (checked 2026-10-14): [.NET support](https://dotnet.microsoft.com/en-us/
 |---|---|---|---|
 | P0 – complete | Foundational decisions documented; details assigned to implementation phases | None | REQ-001–009, 054–056, 064, 086, 090–093, 102–106 |
 | P1 | .NET structure, test foundation and CI design/pipeline | P0; implementation authorization, separate GitHub authorization | REQ-004–007, 009–011, 070–073, 078, 080–086, 090, 093 |
-| P2 | Entities, unit/time normalization and real JSON/XML serializers | P1 | REQ-050–056, 067–069, 074–078, 082, 105–108 |
+| P2 | Entities, unit/time normalization, real JSON/XML serializers and output XSDs | P1 | REQ-023 and 101–102 (export entity contracts only), 042–043 (shared time normalization), 050–057, 067–069, 074–079, 082, 105–108 |
 | P4 | Shared geographic selection and both catalogs | P2 | REQ-020–024, 065–068, 100–102 |
 | P5 | DWD observations as the first complete provider flow | P4 | REQ-030–032, 050–056, 082 |
 | P6 | OsthessenWetter observations with timestamp-quality markers | P5; verified source access | REQ-040–046, 050–056, 082, 092 |
