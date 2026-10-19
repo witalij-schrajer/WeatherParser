@@ -461,13 +461,18 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
 
     # Verify only the lock file was changed
     $numStat = Invoke-Native 70 'git' @('diff', '--numstat') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
-    if ($numStat.Output.Count -ne 1 -or $numStat.Output[0] -ne "1	1	tests/WeatherParser.Package.Tests/packages.lock.json") {
-        Fail 70 "Consumer lock file diff not exactly one line with 1 1"
-    }
-
+    $numStatLines = @($numStat.Output | Where-Object { "$_".Trim() -ne '' })
     $status = Invoke-Native 70 'git' @('status', '--porcelain') -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
-    if ($status.Output.Count -ne 1 -or $status.Output[0] -ne " M tests/WeatherParser.Package.Tests/packages.lock.json") {
-        Fail 70 "Consumer lock file status not exactly one line with ' M tests/WeatherParser.Package.Tests/packages.lock.json'"
+    $statusLines = @($status.Output | Where-Object { "$_".Trim() -ne '' })
+    
+    # Accept either no change or exactly one line change
+    if ($numStatLines.Count -eq 0 -and $statusLines.Count -eq 0) {
+        Write-CiLog "Consumer lock file already matches the packed package hash"
+    } elseif ($numStatLines.Count -eq 1 -and $numStatLines[0] -eq "1	1	tests/WeatherParser.Package.Tests/packages.lock.json" -and 
+              $statusLines.Count -eq 1 -and $statusLines[0] -eq " M tests/WeatherParser.Package.Tests/packages.lock.json") {
+        Write-CiLog "Consumer lock file contentHash rewritten (one line)"
+    } else {
+        Fail 70 "Consumer lock file diff not exactly one line with 1 1"
     }
 
     # Parse old and new JSON to verify only contentHash changed
@@ -609,18 +614,25 @@ function Assert-ComparableSettings([string]$CurrentSettingsPath, [string]$Baseli
     $currentSettings = Get-Content $CurrentSettingsPath | ConvertFrom-Json
     $baselineSettings = Get-Content $BaselineSettingsPath | ConvertFrom-Json
 
-    $fieldsToCompare = @('sdkVersion', 'microsoftCodeCoverageVersion', 'dotnetCoverageToolVersion', 'collector', 'runSettingsSha256', 'rid', 'configuration')
-    foreach ($field in $fieldsToCompare) {
-        if ($currentSettings.$field -ne $baselineSettings.$field) {
-            Fail 85 "Incomparable measurement: field '$field' differs (current: '$($currentSettings.$field)', baseline: '$($baselineSettings.$field)')"
-        }
-    }
+    # Get all field names from both objects (excluding commit)
+    $currentFields = @($currentSettings.PSObject.Properties.Name | Where-Object { $_ -ne 'commit' })
+    $baselineFields = @($baselineSettings.PSObject.Properties.Name | Where-Object { $_ -ne 'commit' })
+    $allFields = @($currentFields + $baselineFields) | Sort-Object -Unique
 
-    # Compare exclusions as arrays
-    $currentExclusions = @($currentSettings.exclusions)
-    $baselineExclusions = @($baselineSettings.exclusions)
-    if ((@($currentExclusions) -join ',') -ne (@($baselineExclusions) -join ',')) {
-        Fail 85 "Incomparable measurement: field 'exclusions' differs (current: '$(($currentExclusions) -join ',')', baseline: '$(($baselineExclusions) -join ',')')"
+    foreach ($field in $allFields) {
+        $currentProp = $currentSettings.PSObject.Properties[$field]
+        $currentValue = if ($currentProp) { $currentProp.Value } else { $null }
+        
+        $baselineProp = $baselineSettings.PSObject.Properties[$field]
+        $baselineValue = if ($baselineProp) { $baselineProp.Value } else { $null }
+        
+        # Convert arrays to comma-separated strings for comparison
+        $currentStr = if ($currentValue -is [array]) { @($currentValue) -join ',' } else { "$currentValue" }
+        $baselineStr = if ($baselineValue -is [array]) { @($baselineValue) -join ',' } else { "$baselineValue" }
+        
+        if ($currentStr -ne $baselineStr) {
+            Fail 85 "Incomparable measurement: field '$field' differs (current: '$currentStr', baseline: '$baselineStr')"
+        }
     }
 }
 
