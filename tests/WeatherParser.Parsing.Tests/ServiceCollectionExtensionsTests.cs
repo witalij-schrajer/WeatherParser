@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Serialization;
+using WeatherParser.Parsing.Time;
 
 namespace WeatherParser.Parsing.Tests;
 
@@ -100,5 +101,15 @@ public sealed class ServiceCollectionExtensionsTests
 
         using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         provider.GetRequiredService<IListEntryOrdering>().Should().BeOfType<ListEntryOrdering>();
+    }
+
+    [TestMethod]
+    public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesTimeServices()
+    {
+        _services.AddWeatherParsing();
+
+        using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+        provider.GetRequiredService<ITimeZoneResolver>().Should().BeOfType<TimeZoneResolver>();
+        provider.GetRequiredService<ISourceTimeNormalizer>().Should().BeOfType<SourceTimeNormalizer>();
     }
 }

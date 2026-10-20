@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); hosted CI of the draft pull request #3 checks every push.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (marked completed by the user; section 4); hosted CI of the draft pull request #3 checks every push.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -128,3 +128,41 @@ Record note: qwen drafted the slice rows of 3.2 as a list; the orchestrating age
 - Commit `0f59e1c` pushed to `features/develop/P2`; hosted CI run 39396695630 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
 - The user marked P2.03 completed on 2026-10-20; all acceptance criteria of the [P2.03 plan](P2_03_LIST_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
+
+## 4. P2.04 – UTC and source-time normalization
+
+### 4.1 Contract approval (S0)
+
+Decisions C-28 to C-35 (`P2_EXPORT_CONTRACT.md` section 8) were approved by the user on 2026-10-20 after one review round. The user's review found that the midnight rule could hide a DST ambiguity (retrieval 2026-10-25T01:15:00 UTC, display 02:45) and that non-nullable inputs could not represent a missing time. The fixes are the DST check before and after the midnight rule (C-31) and nullable inputs with valid midnight (C-29, C-33). The user chose a midnight tolerance of 5 minutes (C-30); a follow-up review aligned the P2.04 plan, which still called the tolerance OPEN.
+
+### 4.2 Slice evidence
+
+| Slice | Red test(s) and observed failure | Green / Refactor | Tests after slice |
+|---|---|---|---|
+| S1 explicit offsets | `NormalizeComplete_WithOffset_ReturnsUtcAndSourceQuality` failed: "Expected result.UtcInstant to be <2026-10-25 00:30:00>, but found <0001-01-01 00:00:00.000>." (stub) | `DateTimeOffset.UtcDateTime`, quality `source` | 163 passed |
+| S2 Berlin local | `NormalizeCompleteLocal_BerlinLocal_ConvertsWinterAndSummer` failed (stub result `0001-01-01`; the strict resolver mock reported that `Resolve` was never called) | Conversion through the resolved Europe/Berlin zone; `source_timezone` `Europe/Berlin` | 164 passed |
+| S3 DST gap/overlap | `NormalizeCompleteLocal_NonexistentLocalTime_IsRejected` found a raw `System.ArgumentException`; `NormalizeCompleteLocal_AmbiguousLocalTimeWithoutOffset_IsRejected`: no exception was thrown | `IsInvalidTime`/`IsAmbiguousTime` checks with `SourceTimeNormalizationException` | 166 passed |
+| S4 date inference | Seven tests failed against the stub, including `InferDate_DisplayAmbiguousOnRetrievalDate_IsRejected` (retrieval 2026-10-25T01:15:00 UTC, display 02:45), `InferDate_RolledOverDateAmbiguous_IsRejected` (retrieval 2026-10-25T23:30:00 UTC, display 02:45), `InferDate_DisplayNonexistentOnRetrievalDate_IsRejected` and `InferDate_ToleranceBoundary_FiveMinutes` | Berlin date of the retrieval instant; DST check on the retrieval date, 5-minute midnight rule, DST check on the chosen date; `estimated_date` | 173 passed |
+| S5 input guards | `Normalize_NullInputs_AreRejectedAndNeverUseRetrievalTime` found `System.InvalidOperationException`; `Normalize_NonUtcRetrievalInstant_IsRejected` and `NormalizeCompleteLocal_NonUnspecifiedKind_IsRejected` found `Moq.MockException` (the zone was resolved before any guard); `Normalize_SubSecondInput_IsRejected`: no exception was thrown. `InferDate_DisplayedMidnight_IsValid` passed (characterization) | Guards before the zone lookup in all three methods | 178 passed |
+| S6 time-zone data | `Normalize_ResolverCannotProvideZone_RaisesDefinedFailure` (two rows) found raw `System.TimeZoneNotFoundException` and `System.InvalidTimeZoneException`; `TimeZoneResolverTests` passed (characterization) | `ResolveBerlin()` wraps both in `SourceTimeNormalizationException` naming the zone and the missing ICU/tzdata | 182 passed |
+| S1 completion check | Characterization: `NormalizeComplete_SecondPassOfOverlapWithOffset_ReturnsUtc` (2026-10-25 02:30 +01:00 → 2026-10-25T01:30:00) passed immediately; the completion check found this worked example of C-28 unasserted | none | 186 passed (after S8) |
+| S7 serialization | Characterization: `NormalizedTimes_SerializeWithoutSuffixInBothFormatsUnderDeDe` passed immediately | none | 183 passed |
+| S8 DI | `AddWeatherParsing_WithoutFurtherRegistration_ResolvesTimeServices` failed: "No service for type 'WeatherParser.Parsing.Time.ITimeZoneResolver' has been registered." | Singleton registrations of both time services | 184 passed |
+
+### 4.3 Checks run on the working tree (2026-10-20)
+
+- `dotnet build WeatherParser.Ci.slnf -c Release`: 0 warnings, 0 errors.
+- Tests: `WeatherParser.Parsing.Tests` 186 passed (185 before the completion check), `WeatherParser.Coverage.Tests` 99 passed, `WeatherParser.Coverage.Runner.Tests` 56 passed.
+- Local native block coverage of `WeatherParser.Parsing.dll`: 508/512 after S8; the characterization test `Constructor_NullResolver_ThrowsArgumentNullException` covered the constructor guard, giving 510/512 (99.61 %); unchanged at 510/512 after the completion-check test. The two remaining uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`.
+- Time-zone data on this machine: Windows ICU data used by .NET 10.0.13. The Debian ARM64 behavior (tzdata) is verified in P2.11.
+- Committed and pushed to draft pull request #3 with the completion records; the hosted CI result is recorded in a follow-up.
+
+### 4.4 Authorship
+
+qwen3-coder:30b generated all production code and tests of S1–S8 and the characterization tests from the orchestrating agent's briefs, and corrected its own defects in further rounds (garbled using lines that broke the build in S3, a Red test omitted in S6). The orchestrating agent wrote the briefs including the exact inference algorithm, confirmed every failure reason, ran all builds, tests and coverage runs, and applied mechanical corrections itself: removal of duplicate and unused usings and moving the `using` of `SourceTimeNormalizer` before the namespace. qwen's draft of this section lost the failure evidence and misstated the coverage sequence, so the orchestrating agent wrote this section from its verified records.
+
+### 4.5 Completion (2026-10-20)
+
+- The user reviewed the P2.04 implementation without findings and marked P2.04 completed on 2026-10-20; all acceptance criteria of the [P2.04 plan](P2_04_TIME_NORMALIZATION_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- Before checking "Every example value from the behavior facts asserted", the orchestrating agent found the +01:00 example of C-28 unasserted; qwen3-coder:30b added the characterization test from the agent's brief, and the agent re-ran build (0 warnings), tests (186/99/56 passed) and coverage (510/512).
+- Recorded by the orchestrating agent (user decision and run results).
