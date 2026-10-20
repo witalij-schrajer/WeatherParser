@@ -23,7 +23,7 @@ Out of scope:
 
 ## 2. Preconditions and Inputs
 - P2.01 has completed with READY outcome and recorded user authorization
-- Work happens on branch `features/develop/P2` after P2.01 recorded READY; the coverage integration target is the PR base (currently `develop` at `22b3ae2`) as remeasured by P2.01.
+- Work happens on branch `features/develop/P2` after P2.01 recorded READY; the coverage integration target is the PR base (currently `develop` at `64e460b`) as remeasured by P2.01, measured at 54/56.
 - Existing test project `tests/WeatherParser.Parsing.Tests` and library project `src/WeatherParser.Parsing/` are available
 - The existing `ServiceCollectionExtensions.AddWeatherParsing(IServiceCollection)` method is the target for DI registration
 
