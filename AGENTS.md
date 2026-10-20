@@ -37,6 +37,7 @@ These rules apply throughout the repository. Current explicit user instructions 
 - Document source conditions and attribution separately. MIT for code does not automatically license weather data, websites or images.
 - Set up GitHub repositories, remotes, pushes, releases and publication only within explicit authorization. The general open-source objective does not authorize automatic publication.
 - Check the working tree before editing; preserve others' changes and avoid destructive resets/cleanup. Use meaningful small commits when requested, and do not claim a commit when only files were created.
+- Phase pull requests (user decision dated 2026-10-20): each phase is implemented on its own feature branch created from `develop`. Directly after the first commit on the new branch has been pushed, open a draft pull request into `develop` that tracks the phase implementation; push every further commit of the phase to it, so CI runs on every push. Mark it ready for review only at the end of the phase; the user merges it.
 
 ## AI-assisted development (user decision dated 2026-10-19)
 
