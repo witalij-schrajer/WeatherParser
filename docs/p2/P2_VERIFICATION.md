@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); P2.06 completed (commit `90106eb`, marked completed by the user; section 6); P2.07 completed (commit `41c29d6`, marked completed by the user; section 7); P2.08 completed (commit `7c9b919`, marked completed by the user; section 8); P2.09 completed (commit `77c92a9`, marked completed by the user; section 9); hosted CI of the draft pull request #3 checks every push.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); P2.06 completed (commit `90106eb`, marked completed by the user; section 6); P2.07 completed (commit `41c29d6`, marked completed by the user; section 7); P2.08 completed (commit `7c9b919`, marked completed by the user; section 8); P2.09 completed (commit `77c92a9`, marked completed by the user; section 9); P2.10 completed (commits `f7b9b9e` and `186f900`, marked completed by the user; section 10); hosted CI of the draft pull request #3 checks every push.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -490,7 +490,7 @@ Round 1 reported three findings, all confirmed: the `Exists` condition could lea
 - `dotnet restore WeatherParser.Ci.slnf --locked-mode`: succeeded. `dotnet build WeatherParser.Ci.slnf -c Release`: 0 warnings, 0 errors.
 - Tests: `WeatherParser.Parsing.Tests` 880, `WeatherParser.SchemaGeneration.Tests` 43, `WeatherParser.Coverage.Tests` 99, `WeatherParser.Coverage.Runner.Tests` 56 and the package consumer `WeatherParser.Package.Tests` 17 passed.
 - Local native block coverage of `WeatherParser.Parsing.dll`: 3035/3037 (99.93 %); the two uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`.
-- Not yet committed; hosted CI pending.
+- Committed as `f7b9b9e` and `186f900` (C-109 amendment); hosted CI and S6 results in section 10.10.
 
 ### 10.6 Test IDs
 
@@ -516,3 +516,18 @@ qwen3-coder:30b drafted the contract rows and generated all tests, the consumer 
 - `pwsh ./scripts/ci-local.ps1 -Commit f7b9b9e -TargetRef 64e460b -RunSettings coverage.runsettings` (run directory `artifacts/ci/f7b9b9e-20261020T195020Z`) failed with exit 50 in the test stage: `LibraryTypes_DeclareNoStaticState` reported `Microsoft.CodeCoverage.Instrumentation.Static.Tracker.StaticManagedTrackerTemplate_<guid>` types with static `Byte*` fields. Static coverage instrumentation (`coverage.runsettings`) injects them into the assembly under test; the local P2.10 runs had not collected coverage. The orchestrating agent reproduced the failure with `--collect "Code Coverage" --settings coverage.runsettings`.
 - C-109 was amended: types whose namespace equals or starts with `Microsoft.CodeCoverage.Instrumentation.` (ordinal) are exempt, and the package consumer proves that the packed assembly contains no such type. Codex reviewed the amendment read-only with 1 and 0 findings (round 1: the amendment had been spliced into the reflection expression because the approved cell contained unescaped pipes, which are now escaped); the user approved it on 2026-10-20.
 - qwen added the exemption to `NoSharedStateTests` (passes with and without coverage collection) and `Package_assembly_contains_no_coverage_instrumentation_types` to the consumer (18 consumer tests).
+
+### 10.10 S6 package identity and hash evidence (2026-10-20)
+
+- `pwsh ./scripts/ci-local.ps1 -Commit 186f900 -TargetRef 64e460b -RunSettings coverage.runsettings` (script revision of commit `186f900`; run directory `artifacts/ci/186f900-20261020T195555Z`) passed with exit 0 in 39 s.
+- Tests: `WeatherParser.Parsing.Tests` 880, `WeatherParser.Coverage.Tests` 99, `WeatherParser.Coverage.Runner.Tests` 56, `WeatherParser.SchemaGeneration.Tests` 43 and the consumer `WeatherParser.Package.Tests` 18 passed; the target pass on `64e460b` ran its 15 product tests.
+- Package entries (allowlist check passed): `_rels/.rels`, `WeatherParser.Parsing.nuspec`, `LICENSE`, `README.md`, `lib/net10.0/WeatherParser.Parsing.dll`, `schemas/export/v1/weatherparser-export-v1.xsd`, `[Content_Types].xml`, `package/services/metadata/core-properties/nuget.psmdcp`.
+- Packed SHA-512 (`package-hash.txt`) `8jkDhZ3nqd4aQLHqpjSUK7sE6nh0whsIcgglmuRyJ2HC9SUL8rVmv4mgGrPdai8O4N7GOmGQF4rxOtNLIwsfRA==`; the script compared it with the restored `.nupkg.sha512` of the isolated package folder (it fails with exit 70 on a mismatch).
+- Consumer lock: the run rewrote exactly one line, the `WeatherParser.Parsing` `contentHash` (logged "Consumer lock file contentHash rewritten (one line)"); every other locked dependency, including the committed `Microsoft.Extensions.DependencyInjection` entry, stayed unchanged (the script fails with exit 70 otherwise).
+- Coverage gate: passed; block coverage 3035/3037 (99.93 %) exceeds the PR-base baseline 54/56 (96.43 %), comparable collection settings.
+- Hosted CI run 39487633043 of draft pull request #3 for `186f900` passed on `windows-x64`, `ubuntu-x64` and `debian13-arm64` (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence); each job's TRX lists 880 executed and passed `WeatherParser.Parsing.Tests` (including `LibraryTypes_DeclareNoStaticState` under coverage instrumentation) and 18 passed consumer tests. The earlier run 39486827200 for `f7b9b9e` had failed on that test before the C-109 amendment (section 10.9).
+
+### 10.11 Completion (2026-10-20)
+
+- The user marked P2.10 completed on 2026-10-20 after hosted CI run 39487633043 and the S6 run passed (section 10.10); all acceptance criteria of the [P2.10 plan](P2_10_DI_PACKAGE_CONSUMPTION_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- Recorded by the orchestrating agent (run results and user decision).

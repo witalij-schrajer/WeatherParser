@@ -1,6 +1,6 @@
 # P2.10 – DI and Actual Package Consumption: Implementation Plan
 
-**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.10 row of section 5 and the package paragraphs of sections 7 and 8 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (S1 Green, S2 compiler-generated exclusion, scope lists, artifact descriptions, evidence destination); the orchestrating agent split the csproj/lock-file artifact row, restored backticks and fixed one parenthesis that qwen did not apply. User review (2026-10-20): qwen replaced the readonly-only static-field check with an immutable-type allowlist and a direct cache-isolation test in one round.
+**Status: completed (2026-10-20, marked completed by the user after the hosted CI passed).** Implemented test-first in commits `f7b9b9e` and `186f900` (C-109 amendment for coverage-instrumentation types); hosted CI run 39487633043 of draft pull request #3 passed on Windows x64, Ubuntu x64 and Debian 13 ARM64, and the S6 `ci-local.ps1` run on `186f900` passed with exact package entries, matching packed and restored SHA-512 and the single permitted consumer-lock rewrite. Contract decisions C-107 to C-116 refine this plan (reflection-based service list, `decimal` and `Regex` on the static-field allowlist, schema packed at `schemas/export/v1/` and consumed through `GeneratePathProperty`, mandatory README status correction); evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 10. Original planning note: this document started as a plan on 2026-10-20. This plan refines the P2.10 row of section 5 and the package paragraphs of sections 7 and 8 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (S1 Green, S2 compiler-generated exclusion, scope lists, artifact descriptions, evidence destination); the orchestrating agent split the csproj/lock-file artifact row, restored backticks and fixed one parenthesis that qwen did not apply. User review (2026-10-20): qwen replaced the readonly-only static-field check with an immutable-type allowlist and a direct cache-isolation test in one round.
 
 ## 1. Goal and Scope
 Goal: prove that every P2 service is wired centrally and resolvable through real dependency injection, that missing dependencies fail visibly, that independent containers share no state, and that an independent consumer using the same-run versioned `.nupkg` through a `PackageReference` can resolve the services and serialize representative graphs of all five roots through the public API — with the schema delivered as decided in P2.09 and the package contents, hashes and locks verified exactly.
@@ -113,12 +113,12 @@ Out of scope (owner):
 - (e) The consumer's package assembly must not be counted twice in coverage (phase plan section 8).
 
 ## 9. Acceptance Criteria
-- [ ] S0 decisions recorded.
-- [ ] Red failures or characterization recorded for S1–S4.
-- [ ] The consumer resolves and serializes all five roots from the same-run package.
-- [ ] Missing dependencies fail visibly.
-- [ ] No static fields in the library except `const` or allowlisted immutable static readonly fields; serializer caches proven per instance.
-- [ ] Package entries exactly as decided.
-- [ ] Hashes and lock rewrite verified in S6.
-- [ ] README, DEPENDENCIES.md and CONTRIBUTING.md consistent.
-- [ ] All tests pass.
+- [x] S0 decisions recorded.
+- [x] Red failures or characterization recorded for S1–S4.
+- [x] The consumer resolves and serializes all five roots from the same-run package.
+- [x] Missing dependencies fail visibly.
+- [x] No static fields in the library except `const` or allowlisted immutable static readonly fields; serializer caches proven per instance.
+- [x] Package entries exactly as decided.
+- [x] Hashes and lock rewrite verified in S6.
+- [x] README, DEPENDENCIES.md and CONTRIBUTING.md consistent.
+- [x] All tests pass.
