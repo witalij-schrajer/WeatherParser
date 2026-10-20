@@ -292,10 +292,15 @@ On the target:
 cd <directory>
 git clone weatherparser.bundle weatherparser
 cd weatherparser
+git checkout --detach origin/<branch>
+git branch --force ci-commit origin/<branch>
+git branch --force ci-target origin/<target branch>
 bash scripts/prepare-debian-arm64.sh > env.sh
 . ./env.sh
-pwsh ./scripts/ci-local.ps1 -Commit origin/<branch> -TargetRef origin/<target branch> -RunSettings coverage.runsettings
+pwsh ./scripts/ci-local.ps1 -Commit ci-commit -TargetRef ci-target -RunSettings coverage.runsettings
 ```
+
+The bundle clone has no checked-out branch, so the checkout provides `scripts/`. `ci-local.ps1` clones the repository with `--no-local`, which copies local branches only; the two `ci-*` branches make the candidate and the target available even when the target is not an ancestor of the candidate (the hosted workflow creates the same branches). Without them the target pass fails with exit 20 (found in P2.11).
 
 Back on Windows, copy the run directory:
 
