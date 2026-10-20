@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using WeatherParser.Parsing.Parsing;
+using WeatherParser.Parsing.Serialization;
 
 namespace WeatherParser.Parsing.Tests;
 
@@ -60,5 +61,34 @@ public sealed class ServiceCollectionExtensionsTests
         var result = validator.ValidateAndMap([endpoint]);
 
         result.Should().ContainKey("Mosmix");
+    }
+
+    [TestMethod]
+    public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesExportSerializers()
+    {
+        _services.AddWeatherParsing();
+
+        using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+        
+        provider.GetRequiredService<IJsonExportSerializer>().Should().BeOfType<JsonExportSerializer>();
+        provider.GetRequiredService<IXmlExportSerializer>().Should().BeOfType<XmlExportSerializer>();
+    }
+
+    [TestMethod]
+    public void AddWeatherParsing_ExportSerializers_AreSingletonsPerContainer()
+    {
+        _services.AddWeatherParsing();
+        
+        using var provider1 = _services.BuildServiceProvider();
+        var xmlSerializer1 = provider1.GetRequiredService<IXmlExportSerializer>();
+        var xmlSerializer2 = provider1.GetRequiredService<IXmlExportSerializer>();
+        
+        xmlSerializer1.Should().BeSameAs(xmlSerializer2);
+        
+        _services.AddWeatherParsing();
+        using var provider2 = _services.BuildServiceProvider();
+        var xmlSerializer3 = provider2.GetRequiredService<IXmlExportSerializer>();
+        
+        xmlSerializer1.Should().NotBeSameAs(xmlSerializer3);
     }
 }
