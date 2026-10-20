@@ -15,4 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/WeatherParser.Parsing/WeatherParser.Parsing.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="../../schemas/export/v1/weatherparser-export-v1.xsd" Link="Schemas/weatherparser-export-v1.xsd" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

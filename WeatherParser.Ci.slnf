@@ -7,7 +7,9 @@
       "tools\\WeatherParser.Coverage\\WeatherParser.Coverage.csproj",
       "tests\\WeatherParser.Coverage.Tests\\WeatherParser.Coverage.Tests.csproj",
       "tools\\WeatherParser.Coverage.Runner\\WeatherParser.Coverage.Runner.csproj",
-      "tests\\WeatherParser.Coverage.Runner.Tests\\WeatherParser.Coverage.Runner.Tests.csproj"
+      "tests\\WeatherParser.Coverage.Runner.Tests\\WeatherParser.Coverage.Runner.Tests.csproj",
+      "tools\\WeatherParser.SchemaGeneration\\WeatherParser.SchemaGeneration.csproj",
+      "tests\\WeatherParser.SchemaGeneration.Tests\\WeatherParser.SchemaGeneration.Tests.csproj"
     ]
   }
 }

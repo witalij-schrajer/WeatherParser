@@ -180,8 +180,7 @@ P1 contains only a technical package consumer as an integration test, not a CLI/
 
 
 ## Development
-
-The solution [WeatherParser.slnx](WeatherParser.slnx) contains seven projects:
+The solution [WeatherParser.slnx](WeatherParser.slnx) contains nine projects:
 
 ```text
 src/
@@ -191,9 +190,11 @@ tests/
   WeatherParser.Package.Tests/          # Isolated NuGet PackageReference consumer tests
   WeatherParser.Coverage.Tests/         # Coverage evaluator tests
   WeatherParser.Coverage.Runner.Tests/  # Coverage runner tests
+  WeatherParser.SchemaGeneration.Tests/ # Export schema generator, golden-file and refinement tests
 tools/
   WeatherParser.Coverage/               # Non-packable coverage evaluator library
   WeatherParser.Coverage.Runner/        # Non-packable console runner for the coverage gate
+  WeatherParser.SchemaGeneration/       # Non-packable export schema (XSD) generator library
 ```
 
 Quickstart (Windows, PowerShell 7, from the repository root):

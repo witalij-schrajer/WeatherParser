@@ -1,6 +1,6 @@
 # Development dependencies
 
-Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The library has no external runtime packages. Tests resolve six direct and ten transitive packages. All direct versions match the latest stable NuGet releases at review time. Exact resolved versions/hashes remain in the project lock files.
+Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The library has no external runtime packages. Tests resolve six direct and ten transitive packages. All direct versions match the latest stable NuGet releases at review time. Exact resolved versions/hashes remain in the project lock files. P2.09 (2026-10-20) added the lock files of `tools/WeatherParser.SchemaGeneration` and `tests/WeatherParser.SchemaGeneration.Tests`; they resolve the same pinned packages as the other test projects and add no package.
 
 | Package | Version | Scope | Declared license |
 |---|---|---|---|
