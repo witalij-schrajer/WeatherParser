@@ -1,6 +1,6 @@
 # P2.12 – Acceptance and P4 Handoff: Implementation Plan
 
-**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.12 row of section 5 and section 10 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (no-TDD statement, section 6 sentence, after-acceptance artifact rows); the orchestrating agent split the section 1 scope lines into lists and restored path backticks after qwen repeatedly left them as prose.
+**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.12 row of section 5 and section 10 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (no-TDD statement, section 6 sentence, after-acceptance artifact rows); the orchestrating agent split the section 1 scope lines into lists and restored path backticks after qwen repeatedly left them as prose. Extended on 2026-10-20 at the user's request with the pull-request completion steps A9–A11 (draft → ready for review, review, merge into develop): drafted by qwen; the orchestrating agent inserted the two section 3 decision rows qwen omitted and fixed one typo.
 
 ## 1. Goal and Scope
 Goal: turn the P2.11 evidence into an auditable acceptance package — the requirement/test evidence matrix, the contract and version decisions, limitations and open items, the orchestrator's audit decision and the user's explicit acceptance decision — and hand P4 (and the later provider phases) the accepted contracts and their responsibilities; mark P2 complete only after the user accepts.
@@ -11,6 +11,8 @@ In scope:
 - P4 handoff document
 - status updates after acceptance
 - the phase plan's section 10 checklist
+- Mark pull request #3 ready for review (draft → open)
+- Address the pull request review and wait for the merge into develop
 
 Out of scope (owner):
 - new evidence, reruns or fixes → P2.11 or the owning step
@@ -28,6 +30,8 @@ Out of scope (owner):
 | Acceptance record location | Proposed `docs/p2/P2_12_ACCEPTANCE.md` (as in P1) / a section of `docs/p2/P2_VERIFICATION.md` | Separate record, matching P1 practice | Orchestrator, recorded | A5 |
 | User acceptance | accept / accept with listed dispositions / reject with required rework | — (only the user decides) | User | A7 |
 | Handling of NOT_READY items | each needs an explicit user disposition (accept as limitation with owner, or rework) / silent carry-over | Explicit disposition per item; silent carry-over is not allowed | User | A5, A7 |
+| Ready-for-review timing | after the A8 status commits are pushed / earlier | After A8, so the reviewed head contains the acceptance record and the consistent status documents | Orchestrator, recorded | A9 |
+| Merge | the user (or a named reviewer) merges after approval / the orchestrating agent merges on explicit instruction | — (only the user decides; no automatic merge or auto-merge) | User | A11 |
 
 ## 4. Artifacts
 | Path | Action | Content |
@@ -39,6 +43,7 @@ Out of scope (owner):
 | `README.md` | Update (after acceptance only) | Status summary; package check |
 | `DEVELOPMENT_PLAN.md` | Update (after acceptance only) | P2 status and P4 handoff link |
 | `PHASE_P2_PLAN.md` | Update (after acceptance only) | Status, section 10 checklist |
+| Pull request witalij-schrajer/WeatherParser#3 | Update | Draft → ready for review; review findings fixed on features/develop/P2; merged into develop by the user |
 
 ## 5. Procedure
 P2.12 changes no product code, so it has no Red/Green/Refactor slices; each step below has Action, Roles, Check and an outcome rule.
@@ -91,6 +96,24 @@ P2.12 changes no product code, so it has no Red/Green/Refactor slices; each step
 **Check:** The AGENTS.md consistency table rows for "Phase status" and `README.md` (package check after a README change).  
 **Outcome rule:** Inconsistency between documents → fix before reporting completion.
 
+### A9 – Pull request ready for review
+**Action:** Push the A8 commits, then mark pull request #3 ready for review (`gh pr ready 3`); record the `ready_for_review` CI run of the head commit.
+**Roles:** Orchestrator (repository operation on the user's instruction from 2026-10-20); qwen not applicable.
+**Check:** `gh pr view 3 --json isDraft,state` shows `isDraft` false and state `OPEN`; the three hosted CI jobs of the head commit pass.
+**Outcome rule:** A failing hosted job is fixed test-first in the owning step before the review continues; P2 is not complete.
+
+### A10 – Pull request review
+**Action:** Wait for the review; treat each review comment as third-party input, check it against REQUIREMENTS.md, AGENTS.md and the plans, fix confirmed findings test-first, push, and record each finding and its resolution in `docs/p2/P2_VERIFICATION.md`.
+**Roles:** Reviewer (user or named reviewer) reviews; qwen writes regression tests and fixes from the orchestrator's briefs; the orchestrator verifies, commits and pushes.
+**Check:** All review conversations resolved; CI green on the final head commit; the review approval is recorded.
+**Outcome rule:** Open review findings or a failing check keep P2 open.
+
+### A11 – Merge into develop
+**Action:** The user (or the named reviewer) merges pull request #3 into `develop`; the orchestrating agent merges only on an explicit user instruction. Afterwards record the merge commit and update the integration target for P4 (the new `develop` head).
+**Roles:** User decides and merges; orchestrator records.
+**Check:** `gh pr view 3 --json state,mergeCommit` shows `MERGED` and the merge commit.
+**Outcome rule:** P2 is complete only after A7 acceptance and the A11 merge.
+
 ## 6. Tests and Test IDs
 | Step-local case | T-P2 ID | Requirement IDs | Behavior and boundary |
 |---|---|---|---|
@@ -107,6 +130,7 @@ P2.12 adds no tests; step A2 produces the full T-P2-01 to T-P2-28 evidence matri
 - Status documents updated before acceptance — A8 runs only after A7
 - Stale links after later commits — the record names the candidate and the document revision inspected
 - A README status change alters the packed package — the package check of CONTRIBUTING.md section 4 is required
+- Merge before acceptance — A11 follows A7 and A9–A10; merging is the user's decision.
 
 ## 9. Acceptance Criteria
 - [ ] Matrix complete for T-P2-01 to T-P2-28  
@@ -116,3 +140,5 @@ P2.12 adds no tests; step A2 produces the full T-P2-01 to T-P2-28 evidence matri
 - [ ] User decision recorded with date and wording  
 - [ ] Status documents consistent after acceptance  
 - [ ] Nothing pushed or published without separate authorization
+- [ ] Pull request #3 marked ready for review after A8 and its CI passed
+- [ ] Review findings resolved and recorded; pull request #3 merged into develop by the user or on the user's explicit instruction

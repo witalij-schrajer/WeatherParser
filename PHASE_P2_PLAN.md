@@ -111,7 +111,7 @@ Apply the [AGENTS.md AI-assisted development workflow](AGENTS.md#ai-assisted-dev
 | P2.09 – Reproducible output XSDs | P2.08 and generator/delivery decision | Complete the feasibility and generation/negative-validation work in section 7. Produce deterministic versioned output schemas tied to entity mappings and prove valid exports and invalid documents are distinguished. |
 | P2.10 – DI and actual package consumption | P2.08–09 | Extend central registration and independent package tests. Resolve serializer/normalization services through real DI from the same-run `.nupkg`, serialize representative graphs, and validate packaged/schema delivery as decided. Prove missing-dependency failures and independent consumer configurations. |
 | P2.11 – Integrated coverage/platform verification | P2.03–10 | Execute section 8 for a committed candidate supplied by an authorized author. Preserve real test/TDD/schema/package/native coverage evidence and separate Windows and ARM64 outcomes. Failed/missing mandatory evidence yields NOT_READY. |
-| P2.12 – Acceptance and P4 handoff | P2.11 | Write the requirement/test evidence matrix, limitations, contract/version decisions and explicit acceptance disposition. Hand P4 the accepted entities/helpers and downstream source-mapping responsibilities. Mark P2 complete only after acceptance. |
+| P2.12 – Acceptance and P4 handoff | P2.11 | Write the requirement/test evidence matrix, limitations, contract/version decisions and explicit acceptance disposition. Hand P4 the accepted entities/helpers and downstream source-mapping responsibilities. Mark P2 complete only after acceptance. Mark pull request #3 ready for review, resolve review findings test-first, wait for the user's merge into `develop`; P2 complete only after acceptance and merge. |
 
 Each step has a detailed implementation plan under `docs/p2/`; the step plans refine this phase plan and must not contradict it; they are plans only and contain no execution evidence.
 
@@ -232,6 +232,7 @@ Every box below is intentionally unchecked. The planning-time P1 check does not 
 - [ ] Full candidate coverage minimum/comparison and provenance checks pass without another bootstrap or exclusion/bypass workaround.
 - [ ] New P2 platform behavior is verified, or any missing mandatory check has a named blocker and explicit acceptance disposition; no unsupported runtime claim is made.
 - [ ] The result record states actual SHAs, tool versions, test counts, package/schema hashes, qwen/orchestrator authorship per step, limitations and the explicit acceptance decision.
+- [ ] Pull request #3 marked ready for review after the status updates, review findings resolved, and the pull request merged into `develop` by the user (or on the user's explicit instruction)
 - [ ] P4 receives the accepted public contracts/helpers, schema/version mapping and source-specific validation/mapping responsibilities; plans and current status agree.
 
 P4 implements coordinates/catalog selection against these contracts; P5–P7 own provider extraction and verified element mappings; P8 adds MQTT serialization/integration; P3 later adds the CLI and transport. P2 acceptance neither completes those phases nor permits publication.

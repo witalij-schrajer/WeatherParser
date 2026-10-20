@@ -5,6 +5,8 @@ name: CI
 on:
   pull_request:
     branches: [ "develop", "master" ]
+    # Explicit types: every push to a pull request runs CI, including drafts (work in progress), and marking a draft ready for review starts a fresh run.
+    types: [ opened, synchronize, reopened, ready_for_review ]
   workflow_dispatch:
     inputs:
       target_ref:

@@ -244,6 +244,8 @@ The repository includes a GitHub Actions workflow `.github/workflows/ci.yml` tha
 
 For pull requests, the workflow compares the PR head commit against the PR base commit; for manual runs, a deliberate target is specified via the `target_ref` input (e.g., the bootstrap seed `0a2dabe` or a remote branch like `origin/develop`). The workflow uses pinned actions by full commit SHA and has read-only permissions with no secrets or publishing. Run directories are uploaded as artifacts named `ci-<job>` (30 days retention) on success or failure.
 
+The workflow runs for pull requests into `develop` and `master` on `opened`, `synchronize`, `reopened` and `ready_for_review`, so every push to a pull request branch is checked, also while the pull request is a draft (work in progress), and marking it ready for review starts a fresh run; pushes to branches without a pull request do not run the workflow; manual runs stay available through `workflow_dispatch`.
+
 ### Fault injection and lock drift
 
 *Status: Verified (Windows) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md), [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
