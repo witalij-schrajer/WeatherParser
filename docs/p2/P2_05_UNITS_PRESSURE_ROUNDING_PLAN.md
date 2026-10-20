@@ -1,6 +1,6 @@
 # P2.05 – Units, Pressure and Output Rounding: Implementation Plan
 
-**Status: implemented on `features/develop/P2` (2026-10-20), not yet committed; evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 5.** Original planning note: this document started as a plan on 2026-10-20 and was updated after the user's review of the P2.05 decisions (pressure bounds per original unit, whole-second period endpoints, wind-direction range decided). This plan refines the P2.05 row of section 5 and the pressure, rounding, conversion and omission paragraphs of section 4 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (concrete Refactor targets); the orchestrating agent reworded one table cell whose absolute-value bars (from its own brief) broke the Markdown table.
+**Status: completed (2026-10-20, marked completed by the user after the hosted CI passed).** Implemented test-first in commit `02393bb`; hosted CI run 39411112653 of draft pull request #3 passed on Windows x64, Ubuntu x64 and Debian 13 ARM64; evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 5. Original planning note: this document started as a plan on 2026-10-20 and was updated after the user's review of the P2.05 decisions (pressure bounds per original unit, whole-second period endpoints, wind-direction range decided). This plan refines the P2.05 row of section 5 and the pressure, rounding, conversion and omission paragraphs of section 4 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (concrete Refactor targets); the orchestrating agent reworded one table cell whose absolute-value bars (from its own brief) broke the Markdown table.
 
 ## 1. Goal and Scope
 Goal: interface-based, source-independent services for output rounding, hPa/mmHg pressure conversion from one authoritative original, field-specific validity and omission, period-aware energy/accumulation transformations, and quantity-kind separation — each proven test-first with exact values.
@@ -139,9 +139,9 @@ Roles: qwen drafts prose from the orchestrator's decisions; the orchestrator ver
 - Every new code block needs a meaningful test (strict-improvement coverage rule).
 
 ## 9. Acceptance Criteria
-- [ ] S0 approval recorded
-- [ ] Red failures recorded for S1–S5 and S7 (and S6 if included)
-- [ ] Every exact example value asserted
-- [ ] No lux ↔ W/m² path exists
-- [ ] No rounding before conversion anywhere
-- [ ] All tests pass
+- [x] S0 approval recorded
+- [x] Red failures recorded for S1–S5 and S7 (and S6 if included)
+- [x] Every exact example value asserted
+- [x] No lux ↔ W/m² path exists
+- [x] No rounding before conversion anywhere
+- [x] All tests pass

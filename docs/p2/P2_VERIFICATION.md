@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (marked completed by the user; section 4); P2.05 implemented on `features/develop/P2`, not yet committed (section 5); hosted CI of the draft pull request #3 checks every push.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); hosted CI of the draft pull request #3 checks every push.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -155,7 +155,7 @@ Decisions C-28 to C-35 (`P2_EXPORT_CONTRACT.md` section 8) were approved by the 
 - Tests: `WeatherParser.Parsing.Tests` 186 passed (185 before the completion check), `WeatherParser.Coverage.Tests` 99 passed, `WeatherParser.Coverage.Runner.Tests` 56 passed.
 - Local native block coverage of `WeatherParser.Parsing.dll`: 508/512 after S8; the characterization test `Constructor_NullResolver_ThrowsArgumentNullException` covered the constructor guard, giving 510/512 (99.61 %); unchanged at 510/512 after the completion-check test. The two remaining uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`.
 - Time-zone data on this machine: Windows ICU data used by .NET 10.0.13. The Debian ARM64 behavior (tzdata) is verified in P2.11.
-- Committed and pushed to draft pull request #3 with the completion records; the hosted CI result is recorded in a follow-up.
+- Committed as `15928cf` and pushed to draft pull request #3 with the completion records; hosted CI run 39403102531 passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
 
 ### 4.4 Authorship
 
@@ -192,7 +192,7 @@ Decisions C-36 to C-47 (`P2_EXPORT_CONTRACT.md` section 9) were approved by the 
 - Tests: `WeatherParser.Parsing.Tests` 306 passed (314 after the review fixes in section 5.6), `WeatherParser.Coverage.Tests` 99 passed, `WeatherParser.Coverage.Runner.Tests` 56 passed.
 - Local native block coverage of `WeatherParser.Parsing.dll`: 703/710 after S7. The uncovered blocks were the compiler-generated static constructors of `PressureConverter` (3) and `WindSpeedConverter` (2): a `const decimal` is emitted as a `static readonly` field initialized in a static constructor while every use is inlined, so that constructor never runs. After changing the factors to `static readonly decimal` (behavior unchanged, all tests green): 705/707 (99.72 %). The two remaining uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`. After the review fixes of section 5.6: 727/729 (99.73 %), same two blocks.
 - Acceptance checks: no lux ↔ W/m² path exists (exhaustive pair test); no service rounds before converting (`PressureConverter` rounds both outputs from the original, `WindSpeedConverter` and `PeriodRateConverter` return unrounded values).
-- Not yet committed; the hosted CI of draft pull request #3 runs after the push.
+- Committed as `02393bb` together with the review fixes of section 5.6; hosted CI result in section 5.7.
 
 ### 5.4 Deviations and design notes
 
@@ -215,3 +215,9 @@ The user reviewed the uncommitted P2.05 implementation and reported two findings
 | 2. `value * 3600m / seconds` overflowed for 1e26 mm over one hour although the result is exactly 1e26 mm/h | `ToMeanRainRate_LargeAccumulationOverOneHour_IsExact` and `ToMeanRainRate_IntermediateOverflowWithRepresentableResult_IsComputed` (1e26 mm over 7 s, result ≈ 5.14e28) failed with `System.OverflowException`; `ToMeanRainRate_UnrepresentableResult_RaisesQuantityConversionException` (`decimal.MaxValue` over 1 s) found `System.OverflowException` instead of `QuantityConversionException` | 3600 and the period seconds are reduced by their greatest common divisor; the product is tried before the quotient; an unrepresentable result raises `QuantityConversionException` with the overflow as inner exception (new constructor `(string, Exception)`) | 314 passed |
 
 Authorship: qwen3-coder:30b generated the regression tests, both fixes and the refactoring from the orchestrating agent's briefs, each on the first try. The orchestrating agent wrote the briefs, added the pressure 1e-30 row and the two overflow cases beyond the user's examples, confirmed the failure reasons, found the unreachable blocks, ran all checks, removed two re-added `using System;` lines, extended the exception summary and the validator remark, and wrote the contract clarifications and this section.
+
+### 5.7 Hosted CI and completion (2026-10-20)
+
+- Commit `02393bb` pushed to `features/develop/P2`; hosted CI run 39411112653 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
+- The user asked to mark P2.05 completed once the hosted CI succeeded; all acceptance criteria of the [P2.05 plan](P2_05_UNITS_PRESSURE_ROUNDING_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- Recorded by the orchestrating agent (run results and user decision).
