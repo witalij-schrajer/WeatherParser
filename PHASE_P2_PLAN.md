@@ -111,6 +111,23 @@ Apply the [AGENTS.md AI-assisted development workflow](AGENTS.md#ai-assisted-dev
 | P2.11 – Integrated coverage/platform verification | P2.03–10 | Execute section 8 for a committed candidate supplied by an authorized author. Preserve real test/TDD/schema/package/native coverage evidence and separate Windows and ARM64 outcomes. Failed/missing mandatory evidence yields NOT_READY. |
 | P2.12 – Acceptance and P4 handoff | P2.11 | Write the requirement/test evidence matrix, limitations, contract/version decisions and explicit acceptance disposition. Hand P4 the accepted entities/helpers and downstream source-mapping responsibilities. Mark P2 complete only after acceptance. |
 
+Each step has a detailed implementation plan under `docs/p2/`; the step plans refine this phase plan and must not contradict it; they are plans only and contain no execution evidence.
+
+- P2.01 – [Check P1, extract and revise](docs/p2/P2_01_FOUNDATION_CHECK_PLAN.md)
+- P2.02 – [Contract decisions and first serializer slice](docs/p2/P2_02_CONTRACT_AND_FIRST_SLICE_PLAN.md)
+- P2.03 – [CDC and MOSMIX list graphs](docs/p2/P2_03_LIST_GRAPHS_PLAN.md)
+- P2.04 – [UTC and source-time normalization](docs/p2/P2_04_TIME_NORMALIZATION_PLAN.md)
+- P2.05 – [Units, pressure and output rounding](docs/p2/P2_05_UNITS_PRESSURE_ROUNDING_PLAN.md)
+- P2.06 – [Observation graphs](docs/p2/P2_06_OBSERVATION_GRAPHS_PLAN.md)
+- P2.07 – [Forecast graphs](docs/p2/P2_07_FORECAST_GRAPHS_PLAN.md)
+- P2.08 – [Full serializer and envelope contract](docs/p2/P2_08_SERIALIZER_ENVELOPE_PLAN.md)
+- P2.09 – [Reproducible output XSDs](docs/p2/P2_09_OUTPUT_SCHEMAS_PLAN.md)
+- P2.10 – [DI and actual package consumption](docs/p2/P2_10_DI_PACKAGE_CONSUMPTION_PLAN.md)
+- P2.11 – [Integrated coverage and platform verification](docs/p2/P2_11_INTEGRATED_VERIFICATION_PLAN.md)
+- P2.12 – [Acceptance and P4 handoff](docs/p2/P2_12_ACCEPTANCE_HANDOFF_PLAN.md)
+
+Decisions marked OPEN or "Decided by: User" in the step plans are not approved contracts; they are recorded in `docs/p2/P2_EXPORT_CONTRACT.md` when the user decides them.
+
 ## 6. Requirement-to-test matrix
 
 These new `T-P2-*` IDs are planned traceability identifiers, not executed results. At implementation, map each to actual test names, Red/Green evidence and run artifacts. Existing P1 IDs and all 84 binding requirement IDs remain unchanged.
@@ -222,3 +239,5 @@ P4 implements coordinates/catalog selection against these contracts; P5–P7 own
 Local `qwen3-coder:30b` produced the initial draft and one correction draft. Both were reviewed against the repository and precise correction briefs. The correction draft still misplaced serializer responsibilities, invented foundation/package details and omitted the required first-step sequence and detailed evidence mapping. Under AGENTS.md's exception for repeated precise briefs that still fail, the orchestrating agent corrected/restructured this plan directly and extracted the subsequently accepted P1 evidence. No model-generated statement was treated as a test result. Preparing this document implements no P2 production code, tests or schemas.
 
 Review revision (2026-10-20): four review findings were applied — standalone dataset/run roots as the shared MQTT JSON payload contract, the AI-assisted workflow in execution and records, ownership reconciliation with DEVELOPMENT_PLAN.md and the P1 handoff, and the coverage integration target with its strict-improvement consequence. qwen generated the added text from precise briefs and corrected its own defects in two further rounds. The orchestrating agent wrote the briefs, reviewed every block, and itself deleted one outdated target sentence that qwen kept after three precise briefs and fixed the resulting sentence fragment (AGENTS.md exception). The stale "no hosted CI" inherited limitation in section 1 was replaced by qwen text, corrected by qwen in two further rounds after review. The orchestrating agent wrote this record.
+
+Step plans (2026-10-20): the twelve step plans in `docs/p2/` were drafted by qwen from the orchestrating agent's briefs and corrected by qwen in review rounds; each plan's status line records the corrections the orchestrating agent applied itself under the AGENTS.md exception, and qwen drafted the step-plan link list above.
