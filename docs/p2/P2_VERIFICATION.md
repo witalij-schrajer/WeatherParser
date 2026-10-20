@@ -531,3 +531,102 @@ qwen3-coder:30b drafted the contract rows and generated all tests, the consumer 
 
 - The user marked P2.10 completed on 2026-10-20 after hosted CI run 39487633043 and the S6 run passed (section 10.10); all acceptance criteria of the [P2.10 plan](P2_10_DI_PACKAGE_CONSUMPTION_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
+
+## 11. P2.11 – Integrated coverage and platform verification
+
+### 11.1 Decisions (2026-10-20)
+
+- The user authorized access to the NanoPi R76S through the SSH alias `R76S` (bundle transfer, `scripts/prepare-debian-arm64.sh` user-directory install, `ci-local.ps1`, P2-specific checks, copying the run directory back) and chose the network-blocked run for the offline proof.
+- Recorded by the orchestrating agent: both locales if installed (only `C.utf8` is installed on the target; no system packages were installed); a defect is fixed in a new candidate and V1 to V6 are repeated, earlier runs stay recorded.
+
+### 11.2 V1 – Identities
+
+| Item | Candidate 1 | Candidate 2 (final) |
+|---|---|---|
+| Candidate commit | `40628b1fe0af74495702cdc159ec9e5835d779cd` | `bced7be380c3e637fdd042c4165cd074e25f25a6` |
+| PR / target | draft pull request #3 into `develop` | same |
+| PR base | `64e460b475b4a29b9e3ddd331394076e53982d9e` | same |
+| Diff against the PR base | 205 files, 178 code, script or configuration files (not documentation-only) | same plus the CONTRIBUTING.md section 7 fix |
+| Script revision | `scripts/ci-local.ps1` of `f7b9b9e` | same |
+| SDK / runtime | 10.0.402 / `Microsoft.NETCore.App` 10.0.13 (Windows and target) | same |
+| Run settings | `coverage.runsettings`, SHA-256 `DC6F662E4F6FAAA853C33ED5497F182A31527FD126961411A604B683FFCF05D2` | same |
+
+### 11.3 V2 – Local two-pass run on Windows
+
+| Candidate | Run directory | Exit | Tests (Parsing, Coverage, Runner, SchemaGeneration, consumer, target pass) | Warnings | Package SHA-512 | Gate |
+|---|---|---|---|---|---|---|
+| 1 | `artifacts/ci/40628b1-20261020T200519Z` | 0 (39 s) | 880, 99, 56, 43, 18, 15 | 0 | `YChNjlG87adzhWowqSmtcvom8K7PZ61kWCpBbNb+31ohyTipePx5HVMUldAZfAEdQZI7oh8B93pJf15bxHdC0Q==` | passed |
+| 2 | `artifacts/ci/bced7be-20261020T203551Z` | 0 (46 s) | 880, 99, 56, 43, 18, 15 | 0 | `nTYtQEeriukG4BQnYfybiDaTpqHEiRQtuZqGCZY26g+BUEJT3Lwc7tMT++x1PqpsrK2vCYHJFRCI6SYjVUlMdg==` | passed |
+
+Gate of candidate 2 (`gate-result.json`, SHA-256 `774C212BC9ACAEDEA2F30FB5687DA137D968895ADA94A13DB17BAFED19916678`): Comparability, Measurement (3035/3037 valid), Minimum (99.93 % at or above 80 %), Baseline (54/56 valid) and Comparison (3035/3037 exceeds the remeasured PR-base baseline 54/56, 96.43 %) all true; two-pass mode, no bootstrap, not documentation-only. Package entries: `_rels/.rels`, `WeatherParser.Parsing.nuspec`, `LICENSE`, `README.md`, `lib/net10.0/WeatherParser.Parsing.dll`, `schemas/export/v1/weatherparser-export-v1.xsd`, `[Content_Types].xml`, `package/services/metadata/core-properties/nuget.psmdcp`; the consumer-lock rewrite was one line.
+
+### 11.4 V3 – Hosted workflow
+
+- Candidate 1: run 39488784495 succeeded on `windows-x64`, `ubuntu-x64` and `debian13-arm64`.
+- Candidate 2: run 39493310294 succeeded on `windows-x64`, `ubuntu-x64` and `debian13-arm64`.
+- The `debian13-arm64` job is a Debian 13 container on a GitHub-hosted ARM64 runner and is recorded separately; it is not target evidence.
+
+### 11.5 V4 – NanoPi R76S target run and P2-specific checks
+
+Host: FriendlyElec NanoPi R76S (`NanoPi-R76S`), Debian GNU/Linux 13 (trixie), `aarch64`, RID `linux-arm64`; SDK 10.0.402 and `Microsoft.NETCore.App` 10.0.13 installed by `scripts/prepare-debian-arm64.sh` into user directories, PowerShell 7.6.7, ICU 76 (`libicuuc.so.76`), tzdata `2025b-4+deb13u1`, locales: only `C.utf8`.
+
+| Run | Procedure | Exit | Tests | Package SHA-512 | Gate |
+|---|---|---|---|---|---|
+| Candidate 1, run 1 | CONTRIBUTING.md section 7 as then written (`-Commit origin/features/develop/P2 -TargetRef origin/develop`) | 20 after the current pass | current pass 880, 99, 56, 43 and consumer 18 passed; target pass failed: "git checkout --detach --quiet 64e460b... failed with exit code 128" | `lhegkzh3Z7BvUD3dn6s6WcdKUrv4pISS3ptNzXsFBFZ2D1cH7s1GULrx7aUgyIlX3dsuUZX6bXt1cvbxfx1bnQ==` | not reached (defect D1) |
+| Candidate 1, run 2 | local branches `ci-commit` and `ci-target`, as the hosted workflow does | 0 (2:53) | 880, 99, 56, 43, 18, 15 | `dyfJy4dOfryYNHBdArxUGR2MgprAgKe/iOqQmYK9RLaRwn/04DEyWDAfU3c+IRAReXSIxUbipJ1DnqeqZDe0Ag==` | passed, 3035/3037 vs 54/56 |
+| Candidate 2 | corrected section 7 executed verbatim in a fresh directory (bundle SHA-256 `734322D8B8E013A7BFE984A4801DAF2C405BBC1C0886E9F25BB8D13AA582A297`) | 0 (3:19) | 880, 99, 56, 43, 18, 15 | `B96skjTa2IfCHhtVeOHDYUhHID8y6wTelfDOo6zIbjcd+WYAJ4wBpBfArnb4HcgRs2PgEw2GX3nP+XVZTXhNaA==` | passed, 3035/3037 vs 54/56; `gate-result.json` SHA-256 `FA9CF8D54512F92F490E7D6CE0A371895BB527F72F70B5CF44B5CCA8F4314599`; run directory copied to `artifacts/ci/arm64-bced7be-20261020T203606Z` (37 files) |
+
+P2-specific results on the target (candidate 2): both serializers for all five roots (`AllRootsEquivalenceTests`, `AllRootsDeterminismTests`, `SerializerStreamBehaviourTests`, `LineBreakPreservationTests`) passed; `Europe/Berlin` resolution, DST gap and overlap handling and the missing-time-zone-data failure (`TimeZoneResolverTests`, `SourceTimeNormalizerTests`) passed with tzdata `2025b-4+deb13u1`; culture checks under `en-US` and `de-DE` (`AllRootsCultureTests`, `CultureInvarianceContractTests`) passed with the ICU culture data while the system locale is `C.utf8` (the `de_DE.UTF-8` system locale is not installed and was not installed); the schema regenerated on the target equals the committed file (`GeneratedSchema_MatchesCommittedFile` passed; SHA-256 `4817672EE025B1F62FF71A0DC91FC92DFD90C8FDE230F44DCABCD6FC91D0A42B`, identical to Windows); the package consumer ran 18 tests against the same-run package, including schema delivery and validation.
+
+### 11.6 V5 – Offline behavior
+
+The standard test projects ran on the target in a network namespace (`unshare -rn`, no root) with only the loopback interface up; inside it a TCP probe to `1.1.1.1:443` failed and `nuget.org` did not resolve. Candidate 1 and candidate 2 each passed `WeatherParser.Parsing.Tests` 880, `WeatherParser.SchemaGeneration.Tests` 43, `WeatherParser.Coverage.Tests` 99, `WeatherParser.Coverage.Runner.Tests` 56 and `WeatherParser.Package.Tests` 18. A first attempt without loopback aborted because `vstest.console` connects to the test host over loopback; this is a test-runner requirement, not a network dependence. A source search found no `HttpClient`, `WebRequest`, `TcpClient`, socket or MQTT use in `src`, `tools` or `tests`; the only matches are string literals.
+
+### 11.7 V6 – TDD and evidence audit
+
+All 14 test classes that use mocks create them in `[TestInitialize]` and call `VerifyAll()` in `[TestCleanup]` with `MockBehavior.Strict` (12 through a `MockRepository`, `ParserEndpointValidatorTests` and `SourceTimeNormalizerTests` with strict mocks directly). Every test class named in sections 2 to 10 exists, except the deliberately removed P2.09 S0 spike. qwen/orchestrating-agent authorship is recorded per step in sections 2 to 10. Candidate 2 changes only CONTRIBUTING.md, so the audit applies to both candidates.
+
+| T-P2 ID | Steps and slices | Tests | Red or characterization evidence |
+|---|---|---|---|
+| T-P2-01 | P2.02 S5, P2.03 S4, P2.06 S8, P2.07 S8, P2.08 S8 | `ExportEntitySerializableTests` (traversal from all five roots) | Red in sections 2 and 8.2 (S8: "found ... ExportDocument, ExportError"); sections 3, 6, 7 characterization |
+| T-P2-02 | P2.03 S1, S3, S6 | `CdcStationListContractTests`, `ListEntryOrderingTests`, `ListRequiredMemberGuardTests`, `ListReadBackTests` | Red in section 3 |
+| T-P2-03 | P2.03 S2, S3, S6 | `MosmixLocationListContractTests`, `ListEntryOrderingTests`, `EnumVocabularyGuardTests`, `ListRequiredMemberGuardTests` | Red in section 3 |
+| T-P2-04 | P2.05 S3, P2.06 S1, S3, S4, P2.08 S10 | `QuantityValidatorTests`, `ObservationDatasetBuilderTests`, `ObservationBuilderRulesTests`, `ObservationDatasetContractTests`, `ObservationGraphValidationTests` | Red in sections 5 and 6; section 8.2 characterization for the existing graph rules |
+| T-P2-05 | P2.02 S2, S4, P2.04 S7, P2.08 S5 | `UtcTimestampContractTests`, `CultureInvarianceContractTests`, `NormalizedTimeSerializationTests`, `AllRootsCultureTests` | Red in sections 2 and 4; section 8.2 characterization (all roots) |
+| T-P2-06 | P2.04 S1, S2, S4, S5, P2.06 S6 | `SourceTimeNormalizerTests`, `ObservationBuilderRulesTests` | Red in sections 4 and 6 |
+| T-P2-07 | P2.04 S3, S4, S6 | `SourceTimeNormalizerTests`, `TimeZoneResolverTests` | Red in section 4; target tzdata run in V4 |
+| T-P2-08 | P2.06 S2, S6 | `ObservationDatasetBuilderTests`, `ObservationBuilderRulesTests`, `ObservationGraphValidationTests` | Red in section 6 |
+| T-P2-09 | P2.05 S2, P2.06 S5 | `PressureConverterTests`, `ObservationPressurePairValidationTests` | Red in sections 5 and 6 |
+| T-P2-10 | P2.05 S1, S6, P2.06 S5 | `OutputRoundingTests`, `WindSpeedConverterTests` | Red in sections 5 and 6 |
+| T-P2-11 | P2.05 S4 | `PeriodRateConverterTests`, `AveragingPeriodTests` | Red in section 5 |
+| T-P2-12 | P2.05 S5, P2.06 S7, P2.07 S7 | `QuantityKindSeparationTests`, `ObservationBuilderRulesTests`, `ForecastRunBuilderRulesTests` | Red in sections 5, 6 and 7 |
+| T-P2-13 | P2.07 S1, S2, S3, S6 | `ForecastRunContractTests`, `ForecastRunBuilderTests`, `ForecastGraphValidationTests` | Red in section 7 (S2 characterization) |
+| T-P2-14 | P2.07 S4, S5, S6, P2.08 S10 | `ForecastRunBuilderTests`, `ForecastRunBuilderRulesTests`, `ForecastGraphValidationTests` | Red in section 7; section 8.2 characterization |
+| T-P2-15 | P2.08 S1, S2, S9 | `ExportDocumentContractTests`, `ExportErrorRuleTests`, `AllRootsDeterminismTests` | Red in section 8.2 (S9 characterization) |
+| T-P2-16 | P2.02 S2, P2.06 S8, P2.07 S8, P2.08 S4, S7 | `ObservationExportEquivalenceTests`, `ForecastRunExportEquivalenceTests`, `AllRootsEquivalenceTests`, `AllRootsDeterminismTests`, `ExportDocumentReadBackTests` | Red in section 2; sections 6, 7 and 8.2 characterization |
+| T-P2-17 | P2.02 S1, S3, P2.03 S6, P2.08 S4 and C-92 | `EscapingContractTests`, `ObservationDatasetJsonContractTests`, `AllRootsEquivalenceTests`, `LineBreakPreservationTests` | Red in sections 2, 3 and 8.2 (C-92 regression) |
+| T-P2-18 | P2.02 S6, S7, P2.08 S3, S6, S10 | `ExportSerializerStreamContractTests`, `JsonFailureWrappingTests`, `SupportedRootTests`, `SerializerStreamBehaviourTests`, `ExportGraphValidationTests`, `ListGraphValidationTests` | Red in sections 2 and 8.2 (S6 characterization, mutation-checked) |
+| T-P2-19 | P2.02 S7, P2.03 S5, P2.04 S8, P2.05 S7, P2.06 S9, P2.07 S9, P2.10 S1, S2 | `ServiceCollectionExtensionsTests`, `ServiceRegistrationCompletenessTests`, `NoSharedStateTests` | Red in sections 2 to 7 (registration) and 10.2 (static state); S1 characterization, mutation-checked |
+| T-P2-20 | P2.09 S1, S2 | `GoldenFileTests`, `ReproducibilityTests`, `ExportSchemaGeneratorTests` | Red in section 9.3 (S2 characterization); golden file matched on three hosted platforms |
+| T-P2-21 | P2.09 S3, S4, S5 | `SchemaRefinementTests`, `SchemaRefinementValidationTests`, `RealExportValidationTests`, `SchemaNegativeTests` | Red in section 9.3 (S4 characterization) |
+| T-P2-22 | P2.09 S6 | `SecureValidationTests` | Characterization on .NET 10 (section 9.3), mutation-checked; Red for the semantic DTD path in section 9.5 |
+| T-P2-23 | P2.09 S7 | `ContractMappingGuardTests`, `ClassificationGuardTests`, `RefinerMappingGuardTests` | Characterization (S7) and Red for the review fixes in section 9.3, mutation-checked |
+| T-P2-24 | P2.10 S3, S4 | `PackageConsumptionTests`, `PackageServiceResolutionTests`, `PackageSerializationTests`, `PackageSchemaDeliveryTests` | Red in section 10.2 |
+| T-P2-25 | P2.10 S4, S5, S6 | `PackageSchemaDeliveryTests` and the ci-local.ps1 package check | Red in section 10.2; S6 run in section 10.10 |
+| T-P2-26 | P2.11 V5, V6 | all standard test projects | this audit, the mock rule check and the network-blocked target run |
+| T-P2-27 | P2.11 V1, V2 | ci-local.ps1 coverage gate | V2 gate result |
+| T-P2-28 | P2.11 V4 | target run and P2-specific checks | V4 results |
+
+### 11.8 V7 – Defects
+
+| ID | Defect | Handling | Status |
+|---|---|---|---|
+| D1 | CONTRIBUTING.md section 7 did not check out the candidate and did not create local branches, so `ci-local.ps1` (which clones with `--no-local`) could not reach a PR base that is not an ancestor of the candidate; the target pass failed with exit 20 | qwen drafted the corrected procedure (checkout, `ci-commit` and `ci-target` branches, explanation); commit `bced7be`; V1 to V6 repeated for candidate 2, whose target run executed the corrected procedure verbatim and passed | Fixed |
+
+### 11.9 V8 – Outcome
+
+**READY** for P2.12. Candidate `bced7be380c3e637fdd042c4165cd074e25f25a6` passed the local two-pass gate on Windows and on the NanoPi R76S, the hosted workflow on all three jobs, the P2-specific target checks and the network-blocked offline run; every T-P2 row has evidence and no defect is open. Verified platform results are also recorded in [COMPATIBILITY.md](../COMPATIBILITY.md). Hardware release acceptance (REQ-084) remains P9.
+
+### 11.10 Authorship
+
+qwen3-coder:30b drafted the D1 procedure text (verified exact) and formatted the audit table from the mapping extracted by the orchestrating agent (backticks restored by the orchestrating agent). The orchestrating agent identified the candidates, ran every Windows, target and offline command, checked the hosted runs, extracted and verified the audit mapping, and wrote this section and the COMPATIBILITY.md update from its records because they record run results.
