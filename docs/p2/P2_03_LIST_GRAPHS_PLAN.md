@@ -1,6 +1,6 @@
 # P2.03 – CDC and MOSMIX List Graphs: Implementation Plan
 
-**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.03 row of section 5 and the CDC/MOSMIX rows of section 4 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; qwen's correction round fixed the requested points but duplicated lines, so the orchestrating agent applied the five specified corrections (S0 roles, S2 test path, S4/S5 Red test names, verification artifact row) to the first draft itself.
+**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.03 row of section 5 and the CDC/MOSMIX rows of section 4 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; qwen's correction round fixed the requested points but duplicated lines, so the orchestrating agent applied the five specified corrections (S0 roles, S2 test path, S4/S5 Red test names, verification artifact row) to the first draft itself. Extended on 2026-10-20 after the user's review of the P2.03 contract draft: slice S6 adds regression tests for C-27 (unassigned required members fail in both formats with an untouched destination; explicit zeros and the constant `schema_version` stay valid); text drafted by qwen, inserted and capitalized by the orchestrating agent.
 
 ## 1. Goal and Scope
 Goal: complete typed, `[Serializable]` export graphs for the CDC station list (REQ-023) and the MOSMIX location list (REQ-101–102 entity parts), with list metadata and search parameters, independent string IDs, product availability including explicitly unknown availability, empty lists, and a deterministic ordering service; proven with the real serializers.
@@ -55,6 +55,7 @@ Out of scope (owner):
 | `tests/WeatherParser.Parsing.Tests/Export/ListEntryOrderingTests.cs` | Create | Tests for ordering service |
 | `tests/WeatherParser.Parsing.Tests/Export/ExportEntitySerializableTests.cs` | Change | Extend to include new types |
 | `tests/WeatherParser.Parsing.Tests/ServiceCollectionExtensionsTests.cs` | Change | Add test for DI registration |
+| `tests/WeatherParser.Parsing.Tests/Export/ListRequiredMemberGuardTests.cs` | Create | Regression tests for C-27 in both formats, explicit zeros and the constant schema version. |
 | `docs/p2/P2_VERIFICATION.md` | Change | Append per-slice evidence for P2.03 |
 
 ## 5. Procedure
@@ -97,6 +98,14 @@ Out of scope (owner):
    - Roles: qwen generates tests, minimal implementation and refactoring; orchestrator writes briefs, runs Red test, confirms failure reason, runs build and tests, reviews diff, returns defects to qwen, records authorship.
    - Check: `dotnet restore WeatherParser.Ci.slnf --locked-mode` then `dotnet build WeatherParser.Ci.slnf -c Release --no-restore`; `dotnet test tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj -c Release --no-build`
 
+7. **S6 Required members (C-27)**
+   - Red: `ListRequiredMemberGuardTests` in `tests/WeatherParser.Parsing.Tests/Export/`: for each list root, one representative unassigned required scalar and one unassigned required string — `CdcStationListEntry.DistanceKm`, `CdcStationListEntry.StationId`, `SearchParameters.MaxDistanceKm`, `MosmixLocationListEntry.MosmixId`, `MosmixProductAvailability.Availability`, list `RetrievedAtUtc` and `Source` — each serialized with both `IJsonExportSerializer` and `IXmlExportSerializer`; assert `ExportSerializationException` and `stream.Length` 0 (destination untouched). Expected failure: the S1/S2 entities use plain properties, so the unassigned value is written as `0`, `null` or a default and no exception is thrown.
+   - Characterization (not a Red): `SerializeAsync_ExplicitZeroValues_AreWritten` (both formats) with `Latitude = 0`, `Longitude = 0`, `DistanceKm = 0`, `AltitudeDifferenceM = 0` and `MaxAltitudeDifferenceM = 0` explicitly assigned — they are written as `0` and must keep passing after Green; `SerializeAsync_SchemaVersionNotAssigned_IsWrittenAsOne` (both formats) — `schema_version` is the constant `"1"` and needs no assignment.
+   - Green: assignment tracking for every required member except `schema_version`, reusing the P2.02 pattern (getter throws `InvalidOperationException` for an unassigned value, which both serializers report as `ExportSerializationException`).
+   - Refactor: share one internal presence-tracking value type for required scalars and strings instead of repeating fields.
+   - Roles: qwen generates tests, minimal implementation and refactoring; orchestrator writes briefs, runs Red test, confirms failure reason, runs build and tests, reviews diff, returns defects to qwen, records authorship.
+   - Check: `dotnet restore WeatherParser.Ci.slnf --locked-mode` then `dotnet build WeatherParser.Ci.slnf -c Release --no-restore`; `dotnet test tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj -c Release --no-build`
+
 ## 6. Tests and Test IDs
 | Step-local case | T-P2 ID | Requirement IDs | Behavior and boundary |
 |---|---|---|---|
@@ -105,6 +114,7 @@ Out of scope (owner):
 | S3 | T-P2-02, T-P2-03 | REQ-023, REQ-068, REQ-101 | Distance then ordinal ID; deterministic for identical input; empty input |
 | S4 | T-P2-01 | REQ-074, REQ-076 | New types `[Serializable]` with public parameterless constructors (partial – completed in P2.08) |
 | S5 | T-P2-19 | REQ-070–071, REQ-078 | Ordering service resolved through its interface (partial – completed in P2.10) |
+| S6 | T-P2-02, T-P2-03, T-P2-17 | REQ-023, REQ-053, REQ-067, REQ-101 | Unassigned required members fail in both formats with an untouched destination; explicitly assigned zeros are written; `schema_version` needs no assignment. |
 
 ## 7. Evidence to Record
 - In `docs/p2/P2_VERIFICATION.md`: Red names with observed failure messages, Green/Refactor results, commands, test counts, authorship; contract decisions and user approval date in `docs/p2/P2_EXPORT_CONTRACT.md`
@@ -118,8 +128,10 @@ Out of scope (owner):
 
 ## 9. Acceptance Criteria
 - [ ] S0 approval recorded before S1
-- [ ] Red failure recorded for S1–S5
+- [ ] Red failure recorded for S1–S6
 - [ ] Populated and empty lists of both kinds pass in both formats
 - [ ] IDs never converted to numbers
 - [ ] No geodesy, catalog or filter code added
+- [ ] Unassigned required members of every list root fail with `ExportSerializationException` in both formats and leave the destination untouched
+- [ ] Explicitly assigned zeros are written and `schema_version` needs no assignment
 - [ ] All tests pass

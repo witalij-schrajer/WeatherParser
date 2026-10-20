@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 committed as `b1ba0d2` and its two-pass candidate run passed (section 2.7); P2.02 awaits the user's review.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 committed (`b1ba0d2`) with a passing two-pass candidate run (section 2.7); P2.03 implemented on `features/develop/P2` (section 3); hosted CI of the draft pull request #3 checks every push.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -79,3 +79,40 @@ Authorship: qwen3-coder:30b wrote the regression tests and fixes and corrected i
 The run was executed and checked by the orchestrating agent; it is Windows x64 evidence only and not P2 acceptance evidence (P2.11 verifies the final candidate, including the Debian 13 ARM64 target).
 
 Record note: qwen drafted this section's values as a list; the orchestrating agent converted them into this table without changing any value.
+
+## 3. P2.03 – CDC and MOSMIX list graphs
+
+### 3.1 Contract approval (S0)
+Decisions C-16 to C-27 (`P2_EXPORT_CONTRACT.md` section 7) approved by the user on 2026-10-20 after one review round: the user required C-27 regression tests in both formats (added to the plan as slice S6) and an explicit exemption of the constant `schema_version` from C-27. The enum type names `MosmixProduct` and `AvailabilityState`, not named by C-16, were chosen by the orchestrating agent (wire literals per C-23).
+
+### 3.2 Slice evidence
+A table `| Slice | Red test(s) and observed failure | Green / Refactor | Tests after slice |` with rows:
+| S1 CDC list | `CdcStationListContractTests` (4 tests) failed: JSON `KeyNotFoundException` (PascalCase names, no `schema_version`), XML root "CdcStationList" instead of `{urn:weatherparser:export:v1}cdc_station_list`, empty `stations` element missing | Explicit names, constant `schema_version`, `retrieved_at` through `ExportTimestamp`, collections initialized with XML container/item names | 70 passed |
+| S2 MOSMIX list | `MosmixLocationListContractTests` (6 tests) failed on the missing mapping (names, XML root `MosmixLocationList`) | Mapping plus enum wire values (`[XmlEnum]` and `[JsonStringEnumMemberName]` with `JsonStringEnumConverter<T>`); review corrections: `[XmlEnum]` wrongly placed on properties, uninitialized `Locations`/`Products`, two XML test defects (concatenated element text instead of `mosmix_id`, wrong navigation to the product items) | 76 passed |
+| S3 ordering | `Order_CdcEntries_SortsByDistanceThenOrdinalId` and `Order_MosmixEntries_SortsByDistanceThenOrdinalId` failed: the stub returned the input order (for example `{"44", "00100", "00044", "99999"}` instead of `{"99999", "00044", "00100", "44"}`) | `OrderBy(distance).ThenBy(id, StringComparer.Ordinal)` | 83 passed |
+| S4 Serializable | `ExportTypes_ReachableFromExportRoots_AreSerializable` failed naming the eight new types | `[Serializable]` on the six classes and two enums | 83 passed |
+| S5 DI | `AddWeatherParsing_WithoutFurtherRegistration_ResolvesListEntryOrdering` failed: "No service for type 'WeatherParser.Parsing.Export.IListEntryOrdering' has been registered." | Singleton registration in `AddWeatherParsing` | 84 passed |
+| S6 required members (C-27) | `ListRequiredMemberGuardTests`: every missing-member row failed with "no exception was thrown" except `RetrievedAtUtc` (already guarded since P2.02); the `schema_version` characterization failed with `NullReferenceException`, which exposed a defect: `MosmixLocationList.SearchParameters` was `null` by default | Internal value type `RequiredMember<T>`; `MosmixLocationList.SearchParameters` initialized | 104 passed |
+| S6 completion | The orchestrating agent found `Latitude`, `Longitude`, `AltitudeM` and `AltitudeDifferenceM` of both entry types still unconverted (the first tests covered one representative member per type); the tests were extended to every required member (14 CDC and 16 MOSMIX keys); 16 rows failed as expected | Remaining members converted; Refactor: `MeasurementValue.Value` also uses `RequiredMember<decimal>` | 148 passed |
+
+### 3.3 Coverage finding and characterization
+The local coverage run after S6 measured 344/372 (92.47 %) — below the integration target 54/56 (96.43 %), so the strict-improvement gate would have failed. The uncovered blocks were the read-back paths of both list roots (`SchemaVersion` setter, `RetrievedAtWire` setter, `RetrievedAtUtc` getter). `ListReadBackTests` (7 characterization tests: JSON and XML read-back of both lists, rejection of other `schema_version` values, acceptance of `"1"`) closed the gap; they passed after correcting two qwen test defects (a nonexistent `.Element` member, JSON test data that used the XML item name).
+
+### 3.4 Checks run on the working tree (2026-10-20)
+- `dotnet build WeatherParser.Ci.slnf -c Release`: 0 warnings, 0 errors.
+- Tests: `WeatherParser.Parsing.Tests` 155 passed, `WeatherParser.Coverage.Tests` 99 passed, `WeatherParser.Coverage.Runner.Tests` 56 passed.
+- Local native block coverage of `WeatherParser.Parsing.dll`: 370 covered, 2 not covered (99.46 %); the two uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`.
+- The committed-candidate gate runs in the hosted CI of the draft pull request #3 against its PR base.
+
+### 3.5 Authorship
+qwen3-coder:30b generated all production code and tests of S1–S6, the refactoring and the characterization tests from the orchestrating agent's briefs and corrected its defects in further rounds. The orchestrating agent wrote the briefs (including verbatim builders for the C-27 tests), confirmed every failure reason, ran all builds, tests and coverage runs, found the incomplete C-27 conversion and the coverage gap, and itself applied three mechanical corrections: a missing `using` in `ServiceCollectionExtensionsTests`, an unguarded `RetrievedAtUtc` assignment in its own builder, and the removal of usings provided by ImplicitUsings in thirteen files.
+
+Record note: qwen drafted the slice rows of 3.2 as a list; the orchestrating agent converted them into the table without changing any value.
+
+### 3.6 Review fix: undefined and integer enum values (2026-10-20)
+
+- **Finding**: Product = (MosmixProduct)99 and Availability = (AvailabilityState)99 were accepted; JSON wrote the integer `99` while XML failed with `ExportSerializationException`, violating C-23's fixed string vocabulary and JSON/XML consistency; both enum converters also accepted integers when reading JSON.
+- **Regression tests**: `EnumVocabularyGuardTests` `Product_UndefinedValue_ThrowsArgumentException` and `Availability_UndefinedValue_ThrowsArgumentException` failed ("Expected a <System.ArgumentException> to be thrown, but no exception was thrown."); `JsonRead_IntegerProduct_IsRejected` and `JsonRead_IntegerAvailability_IsRejected` failed ("Expected a <System.Text.Json.JsonException> to be thrown, but no exception was thrown."); `Product_DefinedValues_AreAccepted`, `Availability_DefinedValues_AreAccepted` and `JsonRead_UnknownProductString_IsRejected` passed (characterization).
+- **Fix**: the `Product` and `Availability` setters reject undefined values with `ArgumentException` (`Enum.IsDefined`), so an undefined value never reaches either serializer; both enums use the internal `StrictStringEnumConverter<TEnum>` (`allowIntegerValues: false`), so JSON neither reads nor writes integers.
+- **Result**: `WeatherParser.Parsing.Tests` 162 passed, `WeatherParser.Coverage.Tests` 99, `WeatherParser.Coverage.Runner.Tests` 56; build 0 warnings; local native block coverage 390 covered, 2 not covered (99.49 %, the two pre-existing P1 blocks).
+- **Authorship**: qwen3-coder:30b wrote the regression tests and the fix from the orchestrating agent's briefs; the orchestrating agent confirmed each failure reason and ran all builds, tests and the coverage run.

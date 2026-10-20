@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Serialization;
 
@@ -90,5 +91,14 @@ public sealed class ServiceCollectionExtensionsTests
         var xmlSerializer3 = provider2.GetRequiredService<IXmlExportSerializer>();
         
         xmlSerializer1.Should().NotBeSameAs(xmlSerializer3);
+    }
+
+    [TestMethod]
+    public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesListEntryOrdering()
+    {
+        _services.AddWeatherParsing();
+
+        using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+        provider.GetRequiredService<IListEntryOrdering>().Should().BeOfType<ListEntryOrdering>();
     }
 }

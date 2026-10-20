@@ -9,6 +9,7 @@ This record holds the public export contract decisions of phase P2 ([phase plan]
 | Date | Scope | Decision | Wording |
 |------|-------|----------|---------|
 | 2026-10-20 | P2.02 decisions C-01 to C-15 in sections 2–5 | Approved | User selected "Approve as proposed (Recommended)" for the question "Approve the revised P2.02 export contract C-01 to C-15 in docs/p2/P2_EXPORT_CONTRACT.md (C-05: nullable scalars as the single presence source in both formats; C-03/C-13: v1 provisional until P2 acceptance, then frozen; C-14 value-object quantities; C-15 readable umlauts in JSON)?" |
+| 2026-10-20 | P2.03 decisions C-16 to C-27 in section 7 (after one review round: C-27 exempts the constant `schema_version`; explicit zeros stay valid) | Approved | User selected "Approve as proposed (Recommended)" for the question "Approve the revised P2.03 list-contract decisions C-16 to C-27 (C-27 now exempts the constant schema_version and keeps explicit zeros valid; the P2.03 plan gained slice S6 with C-27 regression tests in both formats)?" |
 
 ## 2. Decision register (P2.02)
 
@@ -103,3 +104,96 @@ The P2.02 plan's slice S1 assumed `temperature_c` to be a nullable number, with 
 - forecast shapes (P2.07)
 - envelope error record and partial marker (P2.08)
 - schema generator and delivery (P2.09)
+
+## 7. P2.03 decisions (CDC and MOSMIX lists)
+
+Approved by the user on 2026-10-20 (section 1); the approval was recorded in section 1 before the first P2.03 Red test; v1 stays provisional (C-03).
+
+| ID   | Decision                                                                 | Value                                                                                                                                                                                                                                                                           | Decided by   | Status   |
+|------|--------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|----------|
+| C-16 | Type names                                                               | `CdcStationList`, `CdcStationListEntry`, `MosmixLocationList`, `MosmixLocationListEntry`, `MosmixProductAvailability`, `SearchParameters`                                                                                                                                      | User         | Approved 2026-10-20 |
+| C-17 | Roots and collections                                                    | Roots `cdc_station_list` and `mosmix_location_list` (C-01) in namespace `urn:weatherparser:export:v1`. CDC entries in the collection `stations` (XML container `stations`, item element `station`); MOSMIX entries in `locations` (XML `locations` / `location`). Empty collections are written (C-04) | User         | Approved 2026-10-20 |
+| C-18 | List metadata | Each list root has `schema_version` (the constant `"1"` as in C-02; it needs no caller assignment and is exempt from C-27), `source` (string identifying the catalog; literal values are verified in P4), `retrieved_at` (C-06 form) and `search_parameters`. | User | Approved 2026-10-20 |
+| C-19 | Search parameters                                                        | `search_parameters` object with `latitude`, `longitude` (decimal degrees), `altitude_m`, `max_distance_km`, `max_altitude_difference_m`; all required                                                                                                                                 | User         | Approved 2026-10-20 |
+| C-20 | CDC entry fields                                                         | `station_id` (string, leading zeros kept), `name`, `latitude`, `longitude`, `altitude_m`, `distance_km`, `altitude_difference_m` (signed: station minus reference altitude), `available_measurements` (collection of strings; XML item element `measurement`) — all required (REQ-023) | User         | Approved 2026-10-20 |
+| C-21 | `available_measurements` vocabulary                                      | REQ-052 field names (for example `temperature_c`); the mapping from DWD products is P4/P5 work                                                                                                                                                                                 | User         | Approved 2026-10-20 |
+| C-22 | MOSMIX entry fields                                                      | `mosmix_id` (string; alphanumeric and leading zeros kept; never a CDC ID), `name`, `latitude`, `longitude`, `altitude_m`, `distance_km`, `altitude_difference_m`, and `products` — all required (REQ-101). `available_forecast_elements` is carried per product (C-23) | User         | Approved 2026-10-20 |
+| C-23 | Product availability                                                     | `products` collection (XML item element `product_availability`), one item per product with `product` (`MOSMIX_S` or `MOSMIX_L`), `availability` (`available`, `unavailable` or `unknown`) and `available_forecast_elements` (XML item element `element`). The element list contains only verified elements; with `unavailable` or `unknown` it is empty, and consumers must read `availability` to distinguish "none" from "not known" | User         | Approved 2026-10-20 |
+| C-24 | MOSMIX element vocabulary                                                | DWD element names as published (for example `TTT`), verified in P4/P7; mapping to REQ-052 names happens in forecast normalization                                                                                                                                              | User         | Approved 2026-10-20 |
+| C-25 | Ordering                                                                 | `stations` and `locations` sorted by `distance_km`, then by ID with ordinal comparison (`StringComparer.Ordinal`), through an injectable ordering service `IListEntryOrdering`                                                                                               | Orchestrator, recorded | Approved 2026-10-20 |
+| C-26 | Numbers                                                                  | Coordinates, altitudes and distances are `decimal` (C-07); no new rounding rule                                                                                                                                                                                                | Orchestrator, recorded | Approved 2026-10-20 |
+| C-27 | Required members | Every required scalar and string of the list graphs tracks whether it was assigned (as `Value` and the timestamps in P2.02); serializing an unassigned required member fails with `ExportSerializationException` and writes nothing, so no fabricated `0`, empty or default value is exported; an explicitly assigned `0` is valid. Exempt: `schema_version`, a constant (C-02, C-18) that needs no caller assignment. | User | Approved 2026-10-20 |
+```json
+{
+  "schema_version": "1",
+  "source": "dwd-cdc",
+  "retrieved_at": "2026-07-15T12:05:00",
+  "search_parameters": {
+    "latitude": 50.5549,
+    "longitude": 9.6738,
+    "altitude_m": 250,
+    "max_distance_km": 30,
+    "max_altitude_difference_m": 200
+  },
+  "stations": [
+    {
+      "station_id": "00044",
+      "name": "Fulda-Horas",
+      "latitude": 50.567,
+      "longitude": 9.653,
+      "altitude_m": 242,
+      "distance_km": 2.1,
+      "altitude_difference_m": -8,
+      "available_measurements": [
+        "temperature_c",
+        "humidity_percent"
+      ]
+    }
+  ]
+}
+```
+
+```json
+{
+  "schema_version": "1",
+  "source": "dwd-mosmix",
+  "retrieved_at": "2026-07-15T12:05:00",
+  "search_parameters": {
+    "latitude": 50.5549,
+    "longitude": 9.6738,
+    "altitude_m": 250,
+    "max_distance_km": 30,
+    "max_altitude_difference_m": 200
+  },
+  "locations": [
+    {
+      "mosmix_id": "X123A",
+      "name": "Example Location",
+      "latitude": 50.567,
+      "longitude": 9.653,
+      "altitude_m": 242,
+      "distance_km": 2.1,
+      "altitude_difference_m": -8,
+      "products": [
+        {
+          "product": "MOSMIX_L",
+          "availability": "available",
+          "available_forecast_elements": [
+            "TTT",
+            "PPPP"
+          ]
+        },
+        {
+          "product": "MOSMIX_S",
+          "availability": "unknown",
+          "available_forecast_elements": []
+        }
+      ]
+    }
+  ]
+}
+```
+
+The values in the examples above are synthetic and not verified catalog data.
+
+Implementation note (2026-10-20, recorded by the orchestrating agent): the enums carrying the C-23 wire literals are named `MosmixProduct` (`MOSMIX_S`, `MOSMIX_L`) and `AvailabilityState` (`available`, `unavailable`, `unknown`); required members are tracked by the internal value type `RequiredMember<T>` (C-27).

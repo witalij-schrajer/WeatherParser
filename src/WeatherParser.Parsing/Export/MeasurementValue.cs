@@ -9,8 +9,7 @@ namespace WeatherParser.Parsing.Export;
 [Serializable]
 public sealed class MeasurementValue
 {
-    private decimal _value;
-    private bool _valueIsSet;
+    private RequiredMember<decimal> _value;
 
     /// <summary>
     /// Gets or sets the measured value.
@@ -20,14 +19,8 @@ public sealed class MeasurementValue
     [JsonPropertyName("value")]
     public decimal Value
     {
-        get => _valueIsSet
-            ? _value
-            : throw new InvalidOperationException("The required value 'value' is not set.");
-        set
-        {
-            _value = value;
-            _valueIsSet = true;
-        }
+        get => _value.Get("value");
+        set => _value = RequiredMember<decimal>.Of(value);
     }
 
     private ExportTimestamp _measuredAt;

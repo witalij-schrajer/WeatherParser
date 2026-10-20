@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Serialization;
 
 namespace WeatherParser.Parsing.Parsing;
@@ -11,7 +12,7 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// Registers the services required to validate and map parser endpoint definitions,
-    /// as well as the JSON and XML export serializers.
+    /// as well as the JSON and XML export serializers and the list entry ordering service.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -23,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IParserEndpointValidator, ParserEndpointValidator>();
         services.AddSingleton<IJsonExportSerializer, JsonExportSerializer>();
         services.AddSingleton<IXmlExportSerializer, XmlExportSerializer>();
+        services.AddSingleton<IListEntryOrdering, ListEntryOrdering>();
 
         return services;
     }

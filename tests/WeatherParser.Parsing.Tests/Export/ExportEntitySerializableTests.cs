@@ -1,4 +1,3 @@
-using System;
 using System.Reflection;
 using System.Runtime.Serialization;
 using FluentAssertions;
@@ -15,14 +14,14 @@ public sealed class ExportEntitySerializableTests
     [TestInitialize]
     public void TestInitialize()
     {
-        _traversedTypes = ExportGraphTraversal.CustomTypesReachableFrom(typeof(ObservationDataset));
+        _traversedTypes = ExportGraphTraversal.CustomTypesReachableFrom(typeof(ObservationDataset), typeof(CdcStationList), typeof(MosmixLocationList));
     }
 
     /// <summary>
-    /// Tests that all custom types reachable from ObservationDataset are serializable.
+    /// Tests that all custom types reachable from the export roots are serializable.
     /// </summary>
     [TestMethod]
-    public void ExportTypes_ReachableFromObservationDataset_AreSerializable()
+    public void ExportTypes_ReachableFromExportRoots_AreSerializable()
     {
         var violations = new List<Type>();
 
@@ -38,10 +37,10 @@ public sealed class ExportEntitySerializableTests
     }
 
     /// <summary>
-    /// Tests that all custom types reachable from ObservationDataset have a public parameterless constructor.
+    /// Tests that all custom types reachable from the export roots have a public parameterless constructor.
     /// </summary>
     [TestMethod]
-    public void ExportTypes_ReachableFromObservationDataset_HavePublicParameterlessConstructors()
+    public void ExportTypes_ReachableFromExportRoots_HavePublicParameterlessConstructors()
     {
         var violations = new List<Type>();
 
@@ -57,16 +56,22 @@ public sealed class ExportEntitySerializableTests
     }
 
     /// <summary>
-    /// Tests that the traversal finds nested types like ObservationDataset, ObservationMeasurements and MeasurementValue.
+    /// Tests that the traversal finds nested types reachable from the export roots.
     /// </summary>
     [TestMethod]
-    public void ExportGraphTraversal_FromObservationDataset_FindsNestedTypes()
+    public void ExportGraphTraversal_FromExportRoots_FindsNestedTypes()
     {
         var expectedTypes = new[]
         {
             typeof(ObservationDataset),
-            typeof(ObservationMeasurements),
-            typeof(MeasurementValue)
+            typeof(CdcStationList),
+            typeof(CdcStationListEntry),
+            typeof(SearchParameters),
+            typeof(MosmixLocationList),
+            typeof(MosmixLocationListEntry),
+            typeof(MosmixProductAvailability),
+            typeof(MosmixProduct),
+            typeof(AvailabilityState)
         };
 
         foreach (var expectedType in expectedTypes)
