@@ -1,6 +1,6 @@
 # P2.08 – Full Serializer and Envelope Contract: Implementation Plan
 
-**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.08 row of section 5, the "Envelope/errors" row of section 4 and the "Envelope and roots", "Ordering" and "Serializer service contract" decisions of section 3 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (S0 without Red/Green/Check). User review (2026-10-20): qwen added graph validation through both serializers (S10) and reclassified S6 as characterization over two rounds; the orchestrating agent appended one risk sentence that qwen did not apply. qwen then added the validator registration; the orchestrating agent moved that sentence from the document end into the S10 Green line and added backticks.
+**Status: completed (2026-10-20, marked completed by the user after the hosted CI passed).** Implemented test-first in commit `7c9b919`; hosted CI run 39466213992 of draft pull request #3 passed on Windows x64, Ubuntu x64 and Debian 13 ARM64. Contract decisions C-82 to C-94 refine this plan (graph validation stays in `IExportRootValidation` instead of an injected `IExportGraphValidator`, one outcome per source, XML newline handling C-92; see the deviation list in section 12 of the export contract); evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 8. Original planning note: this document started as a plan on 2026-10-20. This plan refines the P2.08 row of section 5, the "Envelope/errors" row of section 4 and the "Envelope and roots", "Ordering" and "Serializer service contract" decisions of section 3 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (S0 without Red/Green/Check). User review (2026-10-20): qwen added graph validation through both serializers (S10) and reclassified S6 as characterization over two rounds; the orchestrating agent appended one risk sentence that qwen did not apply. qwen then added the validator registration; the orchestrating agent moved that sentence from the document end into the S10 Green line and added backticks.
 
 ## 1. Goal and Scope
 Goal: complete the export contract: the typed multi-result envelope with typed error records, the full set of supported roots (envelope, CDC list, MOSMIX list, standalone observation dataset, standalone forecast run), rejection of unsupported roots, and whole-graph proof with the real serializers — semantic JSON/XML equivalence, UTC and culture invariance, escaping and omission, deterministic output, UTF-8 without BOM, caller-owned streams, cancellation and failure behavior — all from the same prepared graph without a second assembler.
@@ -189,10 +189,10 @@ Prerequisites: P2.03, P2.06 and P2.07 complete (all root graphs exist).
 - Public setters let consumers bypass the builders — S10 enforces the rules again at serialization time in both formats.
 
 ## 9. Acceptance Criteria
-- [ ] S0 approval recorded
-- [ ] Red failures recorded for S1–S3, S8 and S10
-- [ ] S4–S7 and S9 recorded as characterization or with regression tests for any defect found
-- [ ] T-P2-01, -05, -15, -16, -17 and -18 marked completed with test names
-- [ ] No file/stdout or MQTT code added
-- [ ] All tests pass
-- [ ] Invalid publicly constructed graphs are rejected through both serializers before anything is written
+- [x] S0 approval recorded
+- [x] Red failures recorded for S1–S3, S8 and S10
+- [x] S4–S7 and S9 recorded as characterization or with regression tests for any defect found
+- [x] T-P2-01, -05, -15, -16, -17 and -18 marked completed with test names
+- [x] No file/stdout or MQTT code added
+- [x] All tests pass
+- [x] Invalid publicly constructed graphs are rejected through both serializers before anything is written

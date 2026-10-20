@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); P2.06 completed (commit `90106eb`, marked completed by the user; section 6); P2.07 completed (commit `41c29d6`, marked completed by the user; section 7); hosted CI of the draft pull request #3 checks every push.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); P2.06 completed (commit `90106eb`, marked completed by the user; section 6); P2.07 completed (commit `41c29d6`, marked completed by the user; section 7); P2.08 completed (commit `7c9b919`, marked completed by the user; section 8); hosted CI of the draft pull request #3 checks every push.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -358,7 +358,7 @@ Round 1 reported three findings, all confirmed: the stream tests did not prove t
 - `dotnet restore WeatherParser.Ci.slnf --locked-mode`: succeeded. `dotnet build WeatherParser.Ci.slnf -c Release`: 0 warnings, 0 errors.
 - Tests: `WeatherParser.Parsing.Tests` 830 passed, `WeatherParser.Coverage.Tests` 99 passed, `WeatherParser.Coverage.Runner.Tests` 56 passed.
 - Local native block coverage of `WeatherParser.Parsing.dll`: 3031/3033 (99.93 %); the two uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`. An intermediate measurement of 3019/3033 left the envelope's `schema_version` setter uncovered and was closed with the read-back tests.
-- Not yet committed; hosted CI pending.
+- Committed as `7c9b919`; hosted CI result in section 8.8.
 
 ### 8.6 Deviations and design notes
 
@@ -371,3 +371,9 @@ Round 1 reported three findings, all confirmed: the stream tests did not prove t
 ### 8.7 Authorship
 
 qwen3-coder:30b (through the `/api/chat` invocation of AGENTS.md) drafted the contract rows and generated all entities, the root registry, the validation, the serializer changes, all tests and both fixtures from the orchestrating agent's briefs. Where qwen deviated from the briefs (unrequested validation and usings, attributes added to a stub, an inverted assertion, weakened `ContainInOrder` checks, a corrupted using directive, hand-built fixtures, `MemoryStream`-derived test streams that bypassed the asynchronous write path), the defects were returned to qwen with compiler output or test results; the orchestrating agent applied only mechanical corrections (removed comment lines and redundant using directives, moved two assertions, removed three stub attributes). The OpenAI Codex CLI reviewed the contract draft and the implementation read-only. The orchestrating agent confirmed every failure reason and finding, ran all builds, tests, coverage and reviews, and wrote this section from its verified records because it records run results.
+
+### 8.8 Hosted CI and completion (2026-10-20)
+
+- Commit `7c9b919` pushed to `features/develop/P2`; hosted CI run 39466213992 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
+- The user marked P2.08 completed on 2026-10-20; all acceptance criteria of the [P2.08 plan](P2_08_SERIALIZER_ENVELOPE_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- Recorded by the orchestrating agent (run results and user decision).
