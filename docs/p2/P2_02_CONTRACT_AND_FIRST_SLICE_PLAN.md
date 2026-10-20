@@ -1,6 +1,6 @@
 # P2.02 – Contract Decisions and First Serializer Slice: Implementation Plan
 
-**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 3 and the P2.02 row of section 5. Drafted by the local qwen3-coder:30b model over three review rounds; the orchestrating agent wrote the briefs and reviewed each draft, and itself applied the specified corrections that qwen did not apply (section 3 envelope/version/evolution/empty rows, S0–S4 wording, section 6 mapping, section 7 evidence list).
+**Status: completed (2026-10-20, marked completed by the user).** Implemented test-first in commit `b1ba0d2` (record `6d4b6a2`); local two-pass candidate run passed (179/181 against 54/56); hosted CI run 39383342526 of draft pull request #3 passed on Windows x64, Ubuntu x64 and Debian 13 ARM64; evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 2. Original planning note: this document started as a plan on 2026-10-20. This plan refines [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 3 and the P2.02 row of section 5. Drafted by the local qwen3-coder:30b model over three review rounds; the orchestrating agent wrote the briefs and reviewed each draft, and itself applied the specified corrections that qwen did not apply (section 3 envelope/version/evolution/empty rows, S0–S4 wording, section 6 mapping, section 7 evidence list).
 
 ## 1. Goal and Scope
 Goal: Record contract decisions required for P2.02 before the first Red test, then implement a minimal typed export graph with injectable JSON and XML serializer services using real serializers. The implementation must be test-first and exercise all relevant themes from the step brief.
@@ -140,13 +140,15 @@ Out of scope:
 - Risk: Every new code block needs a meaningful test due to strict-improvement coverage rule — Mitigation: Slice design ensures all blocks are tested
 
 ## 9. Acceptance Criteria
-- [ ] Contract decisions are recorded in `docs/p2/P2_EXPORT_CONTRACT.md` and approved by user before S1
-- [ ] Minimal observation dataset entity is implemented with correct property types and attributes
-- [ ] Measurements entity is implemented with correct property types and attributes
-- [ ] JSON and XML serializer services are implemented with injectable interfaces
-- [ ] Every slice except S0 and S4 has a recorded Red failure for the intended reason before its Green change; all tests pass after Refactor.
-- [ ] Implementation uses recommended patterns for omission, time representation, numeric type, naming approach, service shape, encoding/BOM, and invalid character handling
-- [ ] Entities are explicitly `[Serializable]` and traversable by reflection
-- [ ] Serializer services handle cancellation, stream ownership, and UTF-8 encoding correctly
-- [ ] A local coverage report shows no new code block without a meaningful test
-- [ ] No `xsi:nil`, no `Z` suffix and no BOM in the slice output
+- [x] Contract decisions are recorded in `docs/p2/P2_EXPORT_CONTRACT.md` and approved by user before S1
+- [x] Minimal observation dataset entity is implemented with correct property types and attributes
+- [x] Measurements entity is implemented with correct property types and attributes
+- [x] JSON and XML serializer services are implemented with injectable interfaces
+- [x] Every slice except S0 and S4 has a recorded Red failure for the intended reason before its Green change; all tests pass after Refactor.
+- [x] Implementation uses recommended patterns for omission, time representation, numeric type, naming approach, service shape, encoding/BOM, and invalid character handling
+- [x] Entities are explicitly `[Serializable]` and traversable by reflection
+- [x] Serializer services handle cancellation, stream ownership, and UTF-8 encoding correctly
+- [x] A local coverage report shows no new code block without a meaningful test
+- [x] No `xsi:nil`, no `Z` suffix and no BOM in the slice output
+
+All criteria are evidenced in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 2 and by hosted CI run 39383342526. Documented deviations (verification record section 2.4, contract section 5): S1's XML half and several S6 guarantees passed immediately and are recorded as characterization; S1 already created minimal serializer services; quantities are value objects (C-14), so the `{Name}Specified` scalar pattern of C-05 was not yet needed. The user's review fixes (unset timestamps and values, JSON failure wrapping, fixed `schema_version`) are recorded in section 2.6.

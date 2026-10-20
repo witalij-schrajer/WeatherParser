@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 committed (`b1ba0d2`) with a passing two-pass candidate run (section 2.7); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); hosted CI of the draft pull request #3 checks every push.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); hosted CI of the draft pull request #3 checks every push.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -79,6 +79,12 @@ Authorship: qwen3-coder:30b wrote the regression tests and fixes and corrected i
 The run was executed and checked by the orchestrating agent; it is Windows x64 evidence only and not P2 acceptance evidence (P2.11 verifies the final candidate, including the Debian 13 ARM64 target).
 
 Record note: qwen drafted this section's values as a list; the orchestrating agent converted them into this table without changing any value.
+
+### 2.8 Hosted CI and completion (2026-10-20)
+
+- Hosted CI run 39383342526 of draft pull request #3 on head `6d4b6a2` (contains `b1ba0d2`) passed: `windows-x64`, `ubuntu-x64` and `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
+- The user marked P2.02 completed on 2026-10-20; all acceptance criteria of the [P2.02 plan](P2_02_CONTRACT_AND_FIRST_SLICE_PLAN.md) are checked, with the deviations of section 2.4. This is step completion, not P2 acceptance (P2.11/P2.12).
+- Recorded by the orchestrating agent (run results and user decision).
 
 ## 3. P2.03 – CDC and MOSMIX list graphs
 
