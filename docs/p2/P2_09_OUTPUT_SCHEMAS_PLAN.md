@@ -1,6 +1,6 @@
 # P2.09 – Reproducible Output XSDs: Implementation Plan
 
-**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.09 row of section 5, section 7 and the "XSD delivery and generator" decision of section 3 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (technical-facts subsection, artifact rows, evidence destination); the orchestrating agent added one pair of path backticks. User review (2026-10-20): qwen changed S0 to build before the filtered spike run and to accept it only with TRX evidence of execution, over two rounds; the orchestrating agent added one period.
+**Status: completed (2026-10-20, marked completed by the user after the hosted CI passed).** Implemented test-first in commit `77c92a9` (S0 spike in `f358d0c`); hosted CI run 39482435638 of draft pull request #3 passed on Windows x64, Ubuntu x64 and Debian 13 ARM64. Contract decisions C-95 to C-106 refine this plan (generator in a separate tool project, requiredness derived from the C-05 omission instead of an `[ExportRequired]` marker, no nillable, single-value constants, schema delivered inside the package in P2.10; see the deviation list in section 13 of the export contract); evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 9. Original planning note: this document started as a plan on 2026-10-20. This plan refines the P2.09 row of section 5, section 7 and the "XSD delivery and generator" decision of section 3 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (technical-facts subsection, artifact rows, evidence destination); the orchestrating agent added one pair of path backticks. User review (2026-10-20): qwen changed S0 to build before the filtered spike run and to accept it only with TRX evidence of execution, over two rounds; the orchestrating agent added one period.
 
 ## 1. Goal and Scope
 Goal: deterministic, versioned XSD files for every public XML export root, generated from the entity XML mappings by a recorded, reproducible procedure, refined only by deterministic steps inside that procedure, and proven by validating real exports of all five roots plus negative fixtures offline with DTDs and external resolution prohibited.
@@ -149,13 +149,13 @@ Out of scope (owner):
 - (f) A stale test assembly could hide the spike — S0 builds first and accepts the spike only when the TRX shows it executed.
 
 ## 9. Acceptance Criteria
-- [ ] Spike findings and generator decisions recorded before S1
-- [ ] Schema file generated, never hand-edited
-- [ ] Two clean generations identical
-- [ ] Real exports of all five roots validate
-- [ ] Every negative fixture rejected
-- [ ] DTD and remote imports blocked offline
-- [ ] No `xs:any`
-- [ ] Regeneration procedure in `CONTRIBUTING.md`
-- [ ] MOSMIX input schema untouched
-- [ ] All tests pass
+- [x] Spike findings and generator decisions recorded before S1
+- [x] Schema file generated, never hand-edited
+- [x] Two clean generations identical
+- [x] Real exports of all five roots validate
+- [x] Every negative fixture rejected
+- [x] DTD and remote imports blocked offline
+- [x] No `xs:any`
+- [x] Regeneration procedure in `CONTRIBUTING.md`
+- [x] MOSMIX input schema untouched
+- [x] All tests pass
