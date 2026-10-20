@@ -1,6 +1,6 @@
 # Development dependencies
 
-Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The library has no external runtime packages. Tests resolve six direct and ten transitive packages. All direct versions match the latest stable NuGet releases at review time. Exact resolved versions/hashes remain in the project lock files.
+Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The library's only runtime package is `Microsoft.Extensions.DependencyInjection.Abstractions` (for `AddWeatherParsing`). Tests resolve seven direct test packages (including `Microsoft.Extensions.DependencyInjection`; the package under test, `WeatherParser.Parsing`, is not counted) and ten transitive packages. All direct versions match the latest stable NuGet releases at review time. Exact resolved versions/hashes remain in the project lock files. P2.09 (2026-10-20) added the lock files of `tools/WeatherParser.SchemaGeneration` and `tests/WeatherParser.SchemaGeneration.Tests`; they resolve the same pinned packages as the other test projects and add no package. P2.10 (2026-10-20) added `Microsoft.Extensions.DependencyInjection` as a direct test dependency of the package consumer `tests/WeatherParser.Package.Tests` (it was already a direct test dependency of `tests/WeatherParser.Parsing.Tests`); both DI packages were missing from the table below and are now listed.
 
 | Package | Version | Scope | Declared license |
 |---|---|---|---|
@@ -10,6 +10,8 @@ Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The lib
 | [Moq](https://www.nuget.org/packages/Moq/4.21.0) | 4.21.0 | Direct test | BSD-3-Clause |
 | [MSTest.TestAdapter](https://www.nuget.org/packages/MSTest.TestAdapter/4.5.1) | 4.5.1 | Direct test | MIT |
 | [MSTest.TestFramework](https://www.nuget.org/packages/MSTest.TestFramework/4.5.1) | 4.5.1 | Direct test | MIT |
+| [Microsoft.Extensions.DependencyInjection](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection/10.0.0) | 10.0.0 | Direct test | MIT |
+| [Microsoft.Extensions.DependencyInjection.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection.Abstractions/10.0.0) | 10.0.0 | Direct runtime (library) | MIT |
 | [Castle.Core](https://www.nuget.org/packages/Castle.Core/5.2.1) | 5.2.1 | Transitive test | Apache-2.0 |
 | [Microsoft.ApplicationInsights](https://www.nuget.org/packages/Microsoft.ApplicationInsights/2.23.0) | 2.23.0 | Transitive test | MIT |
 | [Microsoft.Testing.Extensions.Telemetry](https://www.nuget.org/packages/Microsoft.Testing.Extensions.Telemetry/2.5.1) | 2.5.1 | Transitive test | MIT |

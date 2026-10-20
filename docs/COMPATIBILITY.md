@@ -21,9 +21,18 @@ Status legend:
 | MSTest/VSTest on `linux-arm64` | test execution on the target | MSTest 4.5.1 / Microsoft.NET.Test.Sdk as pinned in `Directory.Packages.props` | Class B: all four test projects ran on the target; `-FaultInjection FailingTest` exits 50 with the TRX kept ([P1.10 record](p1/P1_10_DEBIAN_ARM64.md)) |
 | `linux-x64` | only if used | — | Not used ([P1.10 record](p1/P1_10_DEBIAN_ARM64.md)) |
 
+## P2 scope (P2.11, 2026-10-20)
+
+Candidate `bced7be380c3e637fdd042c4165cd074e25f25a6` against PR base `64e460b475b4a29b9e3ddd331394076e53982d9e`; details in the [P2.11 record](p2/P2_VERIFICATION.md#11-p211--integrated-coverage-and-platform-verification).
+
+| Platform | Evidence class | Result |
+|---|---|---|
+| Windows x64 (developer machine), SDK 10.0.402, runtime 10.0.13 | Local two-pass `ci-local.ps1` | Exit 0; tests 880, 99, 56, 43, consumer 18; block coverage 3035/3037 against baseline 54/56; gate passed |
+| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, SDK 10.0.402, runtime 10.0.13, ICU 76, tzdata `2025b-4+deb13u1` | Class B target run (CONTRIBUTING.md section 7) | Exit 0; same tests and gate result; serializers, `Europe/Berlin` handling, `en-US`/`de-DE` culture checks with ICU data (system locale only `C.utf8`), schema regeneration byte-identical to Windows, package consumer with schema delivery; all standard test projects also pass in a network namespace with loopback only |
+| GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 39493310294) | All jobs succeeded; recorded separately and not counted as target evidence |
 ## Limits
 
 - Class B proves the package foundation on ARM64 at P1 scope only, not release readiness (P9).
-- Serializers, timezones, DI under load, CLI, MQTT and network sources are not yet covered (later phases).
+- P2 scope (serializers, output schema, time-zone handling, DI and package consumption) is verified on the target by P2.11 (section below); DI under load, CLI, MQTT and network sources are not yet covered (later phases).
 - Windows-versus-ARM64 block counters are descriptive only, gating always uses a baseline measured on the same platform.
 - Emulation or x64 results never count as ARM64 evidence.

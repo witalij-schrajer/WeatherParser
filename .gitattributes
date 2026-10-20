@@ -1,0 +1,2 @@
+# Generated schemas are compared byte for byte (contract C-98); keep LF on every checkout.
+schemas/**/*.xsd text eol=lf

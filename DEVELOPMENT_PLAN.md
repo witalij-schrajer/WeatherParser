@@ -1,6 +1,6 @@
 # WeatherParser – Development plan
 
-**Phase status (2026-10-19): P0 complete; P1.01-P1.12 complete and P1 accepted by the user on 2026-10-19 (P1.08 accepted with its documented Red-step deviation; Visual Studio build limitation resolved; P1.09 accepted and clean-checkout reproducibility verified on Windows x64); P1.10 Debian 13 ARM64 verification complete and accepted; P1.11 developer instructions complete and accepted; P2 handoff prepared, P2 not started.**
+**Phase status (2026-10-20): P0 complete; P1.01-P1.12 complete and P1 accepted by the user on 2026-10-19 (P1.08 accepted with its documented Red-step deviation; Visual Studio build limitation resolved; P1.09 accepted and clean-checkout reproducibility verified on Windows x64); P1.10 Debian 13 ARM64 verification complete and accepted; P1.11 developer instructions complete and accepted; P2 accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)), complete after the merge of pull request #3 into `develop`; P4 next on a separate instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)).**
 
 As of 2026-10-14. Based on [REQUIREMENTS.md](REQUIREMENTS.md) and [AGENTS.md](AGENTS.md). P0 is complete; P1 has started with project scaffolding only. The repository contains documentation, a solution and library/test project scaffolding; no domain implementation yet. This plan does not authorize application-code generation, GitHub publication or installation on R76S.
 
@@ -51,7 +51,7 @@ Sources (checked 2026-10-14): [.NET support](https://dotnet.microsoft.com/en-us/
 |---|---|---|---|
 | P0 – complete | Foundational decisions documented; details assigned to implementation phases | None | REQ-001–009, 054–056, 064, 086, 090–093, 102–106 |
 | P1 | .NET structure, test foundation and CI design/pipeline | P0; implementation authorization, separate GitHub authorization | REQ-004–007, 009–011, 070–073, 078, 080–086, 090, 093 |
-| P2 | Entities, unit/time normalization and real JSON/XML serializers | P1 | REQ-050–056, 067–069, 074–078, 082, 105–108 |
+| P2 | Entities, unit/time normalization, real JSON/XML serializers and output XSDs | P1 | REQ-023 and 101–102 (export entity contracts only), 042–043 (shared time normalization), 050–057, 067–069, 074–079, 082, 105–108 |
 | P4 | Shared geographic selection and both catalogs | P2 | REQ-020–024, 065–068, 100–102 |
 | P5 | DWD observations as the first complete provider flow | P4 | REQ-030–032, 050–056, 082 |
 | P6 | OsthessenWetter observations with timestamp-quality markers | P5; verified source access | REQ-040–046, 050–056, 082, 092 |
@@ -89,6 +89,8 @@ CI runs builds, offline tests, machine-readable test/coverage results and readab
 **Acceptance:** Reproducible local build/tests, documented TDD cycle, resolved coverage bootstrap and accurate CI status. An unexecuted GitHub pipeline must not be described as passing on GitHub.
 
 ### P2 – Package entities and serialization
+
+Detailed realization plan: [P2 implementation plan](PHASE_P2_PLAN.md). Its first step checks P1 completion, extracts the accepted foundation evidence and adjusts the plan before implementation.
 
 Planned entity families: CDC/MOSMIX lists with their entries/search parameters, observations with typed values, forecast runs with steps/intervals/values, and quality/export-error metadata. Decide names/contracts before implementation. Mark all custom export types `[Serializable]`.
 

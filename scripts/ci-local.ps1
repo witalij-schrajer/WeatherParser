@@ -283,6 +283,9 @@ function Invoke-TestStage([string]$CloneDir, [string]$PassDir, [string]$ProjectS
         
         # Run coverage runner tests without coverage
         Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.Coverage.Runner.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.Coverage.Runner.Tests.trx', '--results-directory', $trxDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
+        
+        # Run schema generation tests without coverage (golden file, P2.09)
+        Invoke-Native 50 'dotnet' @('test', 'tests/WeatherParser.SchemaGeneration.Tests', '-c', 'Release', '--no-build', '--logger', 'trx;LogFileName=WeatherParser.SchemaGeneration.Tests.trx', '--results-directory', $trxDir) -WorkingDirectory $CloneDir -AllowedExitCodes @(0)
     } else {
         # Product scope
         try {
@@ -402,6 +405,7 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
         $zip = [IO.Compression.ZipFile]::OpenRead($nupkgPath)
         $expectedEntries = @(
             'lib/net10.0/WeatherParser.Parsing.dll',
+            'schemas/export/v1/weatherparser-export-v1.xsd',
             'README.md',
             'LICENSE',
             'WeatherParser.Parsing.nuspec',
