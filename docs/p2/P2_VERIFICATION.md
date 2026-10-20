@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 slices S0–S7 executed on the working tree of features/develop/P2; not yet committed; no candidate run for P2.02 yet.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 committed as `b1ba0d2` and its two-pass candidate run passed (section 2.7); P2.02 awaits the user's review.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -31,7 +31,7 @@ Decisions C-01 to C-15 approved by the user on 2026-10-20 after two review round
 - `dotnet build WeatherParser.Ci.slnf -c Release`: 0 warnings, 0 errors.
 - Tests: `WeatherParser.Parsing.Tests` 66 passed; `WeatherParser.Coverage.Tests` 99 passed; `WeatherParser.Coverage.Runner.Tests` 56 passed; 0 failed, 0 skipped.
 - Local native block coverage (`dotnet test tests/WeatherParser.Parsing.Tests --collect "Code Coverage" --settings coverage.runsettings`, converted with `dotnet-coverage` 18.11.0): `WeatherParser.Parsing.dll` 179 covered, 2 not covered (98.90 %, after the review fixes in section 2.6); the two uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`. An unused constructor `ExportSerializationException(string)` that was uncovered was removed. An unused `ExportTimestamp.IsSet` property found by the coverage report after the review fixes was also removed. Against the integration target 54/56 this is a strict improvement; the gate itself is evaluated only by the committed-candidate run (not yet executed).
-- Not yet executed: the two-pass `scripts/ci-local.ps1` run for a committed P2.02 candidate, the package consumer for P2.02 and any ARM64 run.
+- Not yet executed for P2.02: any ARM64 run (planned in P2.11).
 
 ### 2.4 Deviations and design notes
 
@@ -59,3 +59,23 @@ The user's review found three defects; each was fixed test-first with regression
 Result: `WeatherParser.Parsing.Tests` 66 passed, `WeatherParser.Coverage.Tests` 99 passed, `WeatherParser.Coverage.Runner.Tests` 56 passed; build 0 warnings.
 
 Authorship: qwen3-coder:30b wrote the regression tests and fixes and corrected its own defects (an invalid private struct constructor, incomplete test data, the unused `IsSet` member, a documentation sentence placed on the class instead of the `Value` property); the orchestrating agent wrote the briefs, confirmed every failure reason and ran all builds, tests and coverage runs, restored one sentence of section 2.3 that qwen dropped while updating this record, and in the last update repaired a broken backtick in section 1 and moved a misplaced authorship phrase back into this paragraph.
+
+### 2.7 Committed candidate run (2026-10-20)
+
+| Item | Value |
+|---|---|
+| Command | `pwsh ./scripts/ci-local.ps1 -Commit b1ba0d2b8a81b91b01cf7fd7fe043c8adf798c22 -TargetRef 64e460b475b4a29b9e3ddd331394076e53982d9e -RunSettings coverage.runsettings` |
+| Candidate / target | `b1ba0d2b8a81b91b01cf7fd7fe043c8adf798c22` / `64e460b475b4a29b9e3ddd331394076e53982d9e` (PR base `develop`), mode two-pass |
+| Run directory | `artifacts/ci/b1ba0d2-20261020T065138Z` (local, gitignored); exit code 0; 36 s |
+| Build | 0 warnings in both passes |
+| Tests (current pass) | `WeatherParser.Parsing.Tests` 66, `WeatherParser.Coverage.Tests` 99, `WeatherParser.Coverage.Runner.Tests` 56, `WeatherParser.Package.Tests` 2; all passed; target pass `WeatherParser.Parsing.Tests` 15 passed |
+| Package | `WeatherParser.Parsing.0.1.0-initial.nupkg`, SHA-512 `KFkqf7aUwjPKKAOX2MmhHxih8nH7jAzwcwOJU618/45Lw0UQKOLUo0+3jLz+PfonRU74i4j1jWCTOjzK+xMO1A==`, SHA-256 `424d4e5e94837c014bba94e78f9f1f369ced9d4beabef29d835bc719cc6b9ece`; package-content check passed; consumer lock: the one permitted `contentHash` line rewritten |
+| Collection settings | identical in both passes except `commit`; run settings SHA-256 `dc6f662e4f6faaa853c33ed5497f182a31527fd126961411a604b683ffcf05d2` |
+| Changed files | 41 (code, tests and documentation; no documentation-only exemption) |
+| Gate | passed; `gate-result.json` SHA-256 `73aa839b60e430866d4da452ccb46b22427c31d9a2ca35c5d96630f3b7c6d5ec` |
+| Native block counters | current 179/181 (98.90 %), remeasured target 54/56 (96.43 %) |
+| Gate rules | Comparability passed ("Baseline is comparable."); Measurement passed ("Block counters 179/181 are valid."); Minimum passed ("179/181 (98.90%) is at or above the required minimum of 80%"); Baseline passed ("Baseline block counters 54/56 are valid."); Comparison passed ("Block coverage 179/181 (98.90%) exceeds baseline 54/56 (96.43%).") |
+
+The run was executed and checked by the orchestrating agent; it is Windows x64 evidence only and not P2 acceptance evidence (P2.11 verifies the final candidate, including the Debian 13 ARM64 target).
+
+Record note: qwen drafted this section's values as a list; the orchestrating agent converted them into this table without changing any value.
