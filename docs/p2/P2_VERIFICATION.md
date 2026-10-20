@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); P2.06 completed (commit `90106eb`, marked completed by the user; section 6); hosted CI of the draft pull request #3 checks every push.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); P2.06 completed (commit `90106eb`, marked completed by the user; section 6); P2.07 implemented on `features/develop/P2`, not yet committed (section 7); hosted CI of the draft pull request #3 checks every push.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -269,3 +269,44 @@ qwen3-coder:30b drafted the contract rows and their revisions, generated the ent
 - Commit `90106eb` pushed to `features/develop/P2`; hosted CI run 39431824712 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
 - The user asked to mark P2.06 completed once the hosted CI succeeded; all acceptance criteria of the [P2.06 plan](P2_06_OBSERVATION_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
+
+## 7. P2.07 – Forecast run
+
+### 7.1 Contract approval (S0)
+
+qwen3-coder:30b drafted decisions C-66 to C-81 (section 11 of `P2_EXPORT_CONTRACT.md`) through the `/api/chat` invocation of AGENTS.md. Before approval, read-only reviews by the OpenAI Codex CLI reported 7, 2 and 0 findings; the orchestrating agent confirmed every finding, qwen revised the rows, and the orchestrating agent applied three edits qwen omitted (C-68 alternative, C-76 interval-kind errors, the field-mapping wire members). The user approved C-66 to C-81 on 2026-10-20.
+
+### 7.2 Slice evidence
+
+| Slice | Red test(s) and observed failure | Green / Refactor | Tests after slice |
+|---|---|---|---|
+| S1 shape and standalone root | `ForecastRunContractTests` against stub entities without serializer attributes: `KeyNotFoundException` at `schema_version` and `dataset_type` | Serializer mapping, `[Serializable]`, `forecast_run` root, constants, wire timestamps, C-05 omission, `mean` wire value | 520 passed |
+| S2 no `measured_at` | Characterization: `ForecastTypes_HaveNoMeasuredAtMember` and `Serialize_ForecastRun_ContainsNoMeasuredAt` passed immediately | none | 520 passed |
+| Entity rules (C-67, C-69, C-70, C-72, C-74, C-80) | `ForecastRequiredMemberGuardTests` and `ForecastSetterRuleTests`: unassigned members serialized and setter rules absent ("no exception was thrown"); unset timestamps passed (characterization) | Assignment tracking, name, coordinate, MOSMIX ID and enum guards | 579 passed |
+| C-79 graph validation | `ForecastGraphValidationTests`: all 17 violating graphs serialized | `ForecastRun` implements `IExportRootValidation` | 596 passed |
+| S3–S7 builder | One cycle against a naive stub (input order kept, missing values filtered before pairing, mapping by unit only): 11 of 11 behavior tests and 30 of 35 rule tests failed for their slice reasons (14:00 first instead of 12:00; 3 steps instead of 2; no intervals; 20.25 unrounded; no diagnostics; wrong failure types); 5 rule rows passed through entity setters (characterization) | `ForecastRunBuilder` (C-75 to C-78): input and provenance checks before any service call, index-aligned pairing, omission diagnostics, conversions and rounding through the P2.05 services, sorting, rejection without usable values | 642 passed |
+| S8 serializable and equivalence | Characterization: traversal with the `ForecastRun` root and `Serialize_FullForecastRun_JsonAndXmlAreSemanticallyEqual` passed immediately | none | 644 passed |
+| S9 DI | Both DI tests failed: "No service for type 'WeatherParser.Parsing.Forecasts.IForecastRunBuilder' has been registered." | Singleton registration | 645 passed |
+| Coverage gaps | Read-back (`ForecastReadBackTests`) and branch tests; the read-back test found a defect: the `dataset_type` setter rejected every value, so a run could not be read back (JSON `ArgumentException`, XML "There is an error in XML document") | Setter accepts the constant (C-67) | 676 passed |
+
+### 7.3 Implementation review by Codex
+
+Round 1 reported five findings, each confirmed by a Red regression test in `ForecastReviewRegressionTests`: a missing series kind fell back to `Temperature` (`InvalidOperationException`), an undefined series product was classified as a run rejection, a `null` step leaked a `NullReferenceException` from XML serialization, `dataset_type` was serialized last (C-67 order), and an XML `nil` assertion was vacuous. Round 2 reported three findings: pressure consistency arithmetic overflowed before the range check (`OverflowException` in XML), malformed series MOSMIX IDs were classified as run rejections, and three test classes did not create their subjects in `[TestInitialize]`. All were fixed test-first; rounds 3 and 4 reported no findings.
+
+### 7.4 Checks run on the working tree (2026-10-20)
+
+- `dotnet restore WeatherParser.Ci.slnf --locked-mode`: succeeded. `dotnet build WeatherParser.Ci.slnf -c Release`: 0 warnings, 0 errors.
+- Tests: `WeatherParser.Parsing.Tests` 684 passed, `WeatherParser.Coverage.Tests` 99 passed, `WeatherParser.Coverage.Runner.Tests` 56 passed.
+- Local native block coverage of `WeatherParser.Parsing.dll`: 2708/2710 (99.93 %); the two uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`. An intermediate measurement of 2574/2698 was below the PR base and was closed with characterization tests; unreachable branches left by review fixes were removed by refactoring.
+- Not yet committed; the hosted CI of draft pull request #3 runs after the push.
+
+### 7.5 Deviations and design notes
+
+1. S3–S7 ran as one Red/Green cycle against one naive stub with separate behavior and rule test files.
+2. `MosmixProduct` is reused from P2.03; steps without values are omitted; run provenance on each series replaces the plan's separate mixed-input check (C-75, C-76).
+3. Graph validation reuses the internal `IExportRootValidation` of P2.06.
+4. The fixture `ForecastTestData` (written by the orchestrating agent) builds a contract-complete run.
+
+### 7.6 Authorship
+
+qwen3-coder:30b (through the `/api/chat` invocation of AGENTS.md) drafted the contract rows and generated the entities, the graph validation, the builder and most tests from the orchestrating agent's briefs. Where qwen deviated from the briefs (scope creep with tracking during S1 Green, copied validation code, invented members such as `StationId` and a 12-character ID rule, weakened or vacuous assertions, missing data rows), the orchestrating agent reverted or corrected the output, applied mechanical fixes, and under the AGENTS.md exception wrote `ForecastRunBuilderRulesTests`, the fixture and the two rewritten regression tests itself. The OpenAI Codex CLI reviewed the contract draft and the implementation read-only. The orchestrating agent confirmed every failure reason and finding, ran all builds, tests, coverage and reviews, and wrote this section from its verified records because it records run results.

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using WeatherParser.Parsing.Export;
+using WeatherParser.Parsing.Forecasts;
 using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Serialization;
@@ -176,5 +177,23 @@ public sealed class ServiceCollectionExtensionsTests
 
         using var provider = _services.BuildServiceProvider();
         provider.GetRequiredService<IObservationDatasetBuilder>().Should().BeSameAs(provider.GetRequiredService<IObservationDatasetBuilder>());
+    }
+
+    [TestMethod]
+    public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesForecastRunBuilder()
+    {
+        _services.AddWeatherParsing();
+
+        using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+        provider.GetRequiredService<IForecastRunBuilder>().Should().BeOfType<ForecastRunBuilder>();
+    }
+
+    [TestMethod]
+    public void AddWeatherParsing_ForecastRunBuilder_IsSingletonPerContainer()
+    {
+        _services.AddWeatherParsing();
+
+        using var provider = _services.BuildServiceProvider();
+        provider.GetRequiredService<IForecastRunBuilder>().Should().BeSameAs(provider.GetRequiredService<IForecastRunBuilder>());
     }
 }
