@@ -22,6 +22,7 @@ public sealed class XmlExportSerializer : IXmlExportSerializer
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(destination);
         cancellationToken.ThrowIfCancellationRequested();
+        SupportedExportRoots.ThrowIfUnsupported(typeof(TRoot));
 
         using var buffer = new MemoryStream();
         try
@@ -33,7 +34,7 @@ public sealed class XmlExportSerializer : IXmlExportSerializer
             var serializer = _serializers.GetOrAdd(typeof(TRoot), type => new XmlSerializer(type));
             var namespaces = new XmlSerializerNamespaces();
             namespaces.Add(string.Empty, ExportNamespaces.V1);
-            var settings = new XmlWriterSettings { Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), CloseOutput = false };
+            var settings = new XmlWriterSettings { Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), CloseOutput = false, NewLineHandling = NewLineHandling.Entitize };
             using (var writer = XmlWriter.Create(buffer, settings))
             {
                 serializer.Serialize(writer, root, namespaces);

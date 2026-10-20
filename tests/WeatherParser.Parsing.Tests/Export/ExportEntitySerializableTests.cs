@@ -14,7 +14,7 @@ public sealed class ExportEntitySerializableTests
     [TestInitialize]
     public void TestInitialize()
     {
-        _traversedTypes = ExportGraphTraversal.CustomTypesReachableFrom(typeof(ObservationDataset), typeof(CdcStationList), typeof(MosmixLocationList), typeof(ForecastRun));
+        _traversedTypes = ExportGraphTraversal.CustomTypesReachableFrom(typeof(ExportDocument), typeof(ObservationDataset), typeof(CdcStationList), typeof(MosmixLocationList), typeof(ForecastRun));
     }
 
     /// <summary>
@@ -63,6 +63,7 @@ public sealed class ExportEntitySerializableTests
     {
         var expectedTypes = new[]
         {
+            typeof(ExportDocument),
             typeof(ObservationDataset),
             typeof(CdcStationList),
             typeof(CdcStationListEntry),
@@ -71,7 +72,8 @@ public sealed class ExportEntitySerializableTests
             typeof(MosmixLocationListEntry),
             typeof(MosmixProductAvailability),
             typeof(MosmixProduct),
-            typeof(AvailabilityState)
+            typeof(AvailabilityState),
+            typeof(ExportError)
         };
 
         foreach (var expectedType in expectedTypes)

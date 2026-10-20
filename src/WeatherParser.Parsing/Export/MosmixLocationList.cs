@@ -8,7 +8,7 @@ namespace WeatherParser.Parsing.Export;
 /// </summary>
 [Serializable]
 [XmlRoot("mosmix_location_list", Namespace = ExportNamespaces.V1)]
-public sealed class MosmixLocationList
+public sealed class MosmixLocationList : IExportRootValidation
 {
     /// <summary>
     /// Gets or sets the schema version of this list.
@@ -80,4 +80,46 @@ public sealed class MosmixLocationList
     [XmlArrayItem("location")]
     [JsonPropertyName("locations")]
     public List<MosmixLocationListEntry> Locations { get; set; } = new();
+
+    private static InvalidOperationException Violation(string message) => new($"The MOSMIX location list violates contract C-91: {message}");
+
+    void IExportRootValidation.ValidateForExport()
+    {
+        if (SearchParameters is null)
+            throw Violation("search_parameters must not be null");
+
+        if (Locations is null)
+            throw Violation("locations must not be null");
+
+        if (Locations.Any(item => item is null))
+            throw Violation("locations must not contain a null item");
+
+        foreach (var location in Locations)
+        {
+            if (location.Products is null)
+                throw Violation("products must not be null");
+
+            if (location.Products.Any(item => item is null))
+                throw Violation("products must not contain a null item");
+
+            var seenProducts = new HashSet<MosmixProduct>();
+            foreach (var availability in location.Products)
+            {
+                if (!seenProducts.Add(availability.Product))
+                    throw Violation($"product '{availability.Product}' occurs more than once in products (contract C-23)");
+
+                if (availability.AvailableForecastElements is null)
+                    throw Violation("available_forecast_elements must not be null");
+
+                if (availability.AvailableForecastElements.Any(item => item is null))
+                    throw Violation("available_forecast_elements must not contain a null item");
+
+                if (availability.Availability is AvailabilityState.Unavailable or AvailabilityState.Unknown)
+                {
+                    if (availability.AvailableForecastElements.Count != 0)
+                        throw Violation("available_forecast_elements must be empty unless availability is available (contract C-23)");
+                }
+            }
+        }
+    }
 }

@@ -21,6 +21,7 @@ public sealed class JsonExportSerializer : IJsonExportSerializer
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(destination);
         cancellationToken.ThrowIfCancellationRequested();
+        SupportedExportRoots.ThrowIfUnsupported(typeof(TRoot));
 
         using var buffer = new MemoryStream();
         try

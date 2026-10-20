@@ -316,3 +316,58 @@ qwen3-coder:30b (through the `/api/chat` invocation of AGENTS.md) drafted the co
 - Commit `41c29d6` pushed to `features/develop/P2`; hosted CI run 39446243064 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
 - The user marked P2.07 completed on 2026-10-20; all acceptance criteria of the [P2.07 plan](P2_07_FORECAST_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
+
+## 8. P2.08 – Serializer envelope, errors and supported roots
+
+### 8.1 Contract approval (S0)
+
+qwen3-coder:30b drafted decisions C-82 to C-94 (section 12 of `P2_EXPORT_CONTRACT.md`) through the `/api/chat` invocation of AGENTS.md. Before approval, read-only reviews by the OpenAI Codex CLI reported 3, 3 and 0 findings (round 1: partial writes during the copy, XML newline handling, the C-23 availability invariant; round 2: duplicate products, one outcome per source, the deferred builder/validation refactor); the orchestrating agent confirmed every finding and qwen revised the rows. The orchestrating agent restored an example paragraph qwen dropped, added backticks to the mapping paths and removed leftover "Recommended:" prefixes. The user approved C-82 to C-94 on 2026-10-20 and chose the recommended options of C-84 (both result kinds allowed), C-87 (no extra partial-result member) and C-90 (keep `IExportRootValidation`).
+
+### 8.2 Slice evidence
+
+| Slice | Red test(s) and observed failure | Green / Refactor | Tests after slice |
+|---|---|---|---|
+| S1 envelope | `ExportDocumentContractTests` against a stub without attributes and with null collections: JSON names `{"SchemaVersion", "Observations", "ForecastRuns"}` differ at index 0; the empty-envelope test failed on the missing `observations` member | `export_document` root, member names, XML containers and items, collections initialized empty | 686 passed |
+| S2 typed errors | Envelope tests extended for `errors` and the two partial-result tests; `ExportErrorRuleTests`: 32 failures (JSON name `Errors` at index 3; no XML `error` element; every setter-rule row "no exception was thrown"; unassigned members serialized). Kept-value rows passed (characterization) | `errors` mapping; `ExportError` with C-27 tracking and C-86 setter rules | 723 passed |
+| S3 supported roots | `SupportedRootTests`: all five unsupported roots (`string`, dictionary, anonymous type, `object`, `ForecastStep`) were serialized ("no exception was thrown"); the five supported roots and the cancellation-before-root order passed immediately (characterization) | `SupportedExportRoots` checked after the cancellation check in both serializers; `ExportSerializationException(string)` constructor | 734 passed |
+| S8 serializable graph | `ExportEntitySerializableTests` with all five roots: "found at least these items {ExportDocument, ExportError}" | `[Serializable]` on both | 734 passed |
+| S10 graph validation (C-91) | `ExportGraphValidationTests` (13 envelope rows) and `ListGraphValidationTests` (15 list rows): every violating graph was serialized ("no exception was thrown") | `ExportDocument`, `CdcStationList` and `MosmixLocationList` implement `IExportRootValidation` | 764 passed |
+| C-92 line breaks (regression) | `LineBreakPreservationTests`: XML read-back differed at index 5 (the CR was lost) and the XML text contained a raw CR (default `NewLineHandling.Replace`); JSON read-back passed | `NewLineHandling.Entitize` in the XML writer | 768 passed |
+| S4, S5, S6, S7, S9 | Characterization over all five roots, passed immediately: `AllRootsEquivalenceTests` (6), `AllRootsCultureTests` (10), `SerializerStreamBehaviourTests` (20), `AllRootsDeterminismTests` (11) | none | 815 passed |
+| Coverage gap | `ExportDocumentReadBackTests`: JSON and XML read-back with byte-identical re-serialization; `schema_version` setter (characterization) | none | 819 passed |
+
+Plan S10 tests for observation datasets and forecast runs (`ObservationGraphValidationTests`, `ForecastGraphValidationTests`) already existed from P2.06 and P2.07 and pass unchanged; the wrong `dataset_type` is rejected by its setter (`ForecastSetterRuleTests`), as recorded in the deviation list of contract section 12.
+
+### 8.3 Test IDs completed
+
+| T-P2 ID | Tests |
+|---|---|
+| T-P2-01 | `ExportEntitySerializableTests` (all five roots, including `ExportDocument` and `ExportError`) |
+| T-P2-05 | `AllRootsCultureTests` |
+| T-P2-15 | `ExportDocumentContractTests`, `ExportErrorRuleTests`, `AllRootsDeterminismTests.SerializeTwice_IdenticalInput_ProducesIdenticalBytes` |
+| T-P2-16 | `AllRootsEquivalenceTests`, `AllRootsDeterminismTests.SameInstance_SerializesToBothFormatsWithoutMutation`, `ExportDocumentReadBackTests` |
+| T-P2-17 | `AllRootsEquivalenceTests.Envelope_KeepsSpecialTextZeroOmissionAndLeadingZerosInBothFormats`, `LineBreakPreservationTests` |
+| T-P2-18 | `SupportedRootTests`, `SerializerStreamBehaviourTests`, `ExportGraphValidationTests`, `ListGraphValidationTests`, `JsonFailureWrappingTests` |
+
+### 8.4 Implementation review by Codex
+
+Round 1 reported three findings, all confirmed: the stream tests did not prove that the caller's token reaches the destination write or cover a failure after a partial write; `JsonFailureWrappingTests` had become vacuous because its unsupported root type is now rejected before `JsonSerializer` runs; caller order was not tested with unsorted input. qwen added `SerializeAsync_TokenCanceledDuringCopy_PropagatesAndLeavesStreamOpen`, `SerializeAsync_DestinationFailsAfterPartialWrite_PropagatesAndLeavesStreamOpen`, a supported-root wrapping test and `Serialize_UnsortedItems_KeepCallerOrderInBothFormats`. A mutation check by the orchestrating agent (JSON copy with `CancellationToken.None`) made the five JSON copy-cancellation rows fail and was reverted. Round 2 reported no findings.
+
+### 8.5 Checks run on the working tree (2026-10-20)
+
+- `dotnet restore WeatherParser.Ci.slnf --locked-mode`: succeeded. `dotnet build WeatherParser.Ci.slnf -c Release`: 0 warnings, 0 errors.
+- Tests: `WeatherParser.Parsing.Tests` 830 passed, `WeatherParser.Coverage.Tests` 99 passed, `WeatherParser.Coverage.Runner.Tests` 56 passed.
+- Local native block coverage of `WeatherParser.Parsing.dll`: 3031/3033 (99.93 %); the two uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`. An intermediate measurement of 3019/3033 left the envelope's `schema_version` setter uncovered and was closed with the read-back tests.
+- Not yet committed; hosted CI pending.
+
+### 8.6 Deviations and design notes
+
+1. Graph validation stays in the internal `IExportRootValidation` (C-90); no `IExportGraphValidator` and no registration change.
+2. Builders and root validation remain separate implementations of the same rules (open risk); `ObservationExportEquivalenceTests` and `ForecastRunExportEquivalenceTests` pass builder results through both serializers, so a divergence fails a test.
+3. C-92 changes the XML newline handling of every root; this is a behavior fix of the P2.02 serializer, introduced with a Red regression test.
+4. Shared fixtures `ListTestData` and `AllRootsTestData` build contract-complete roots; serialization uses the concrete static type because `object` roots are rejected (C-88).
+5. Cancellation stays coarse for XML (before serialization and during the copy, C-10); a partial document may remain in the destination after a copy-phase failure (C-89).
+
+### 8.7 Authorship
+
+qwen3-coder:30b (through the `/api/chat` invocation of AGENTS.md) drafted the contract rows and generated all entities, the root registry, the validation, the serializer changes, all tests and both fixtures from the orchestrating agent's briefs. Where qwen deviated from the briefs (unrequested validation and usings, attributes added to a stub, an inverted assertion, weakened `ContainInOrder` checks, a corrupted using directive, hand-built fixtures, `MemoryStream`-derived test streams that bypassed the asynchronous write path), the defects were returned to qwen with compiler output or test results; the orchestrating agent applied only mechanical corrections (removed comment lines and redundant using directives, moved two assertions, removed three stub attributes). The OpenAI Codex CLI reviewed the contract draft and the implementation read-only. The orchestrating agent confirmed every failure reason and finding, ran all builds, tests, coverage and reviews, and wrote this section from its verified records because it records run results.

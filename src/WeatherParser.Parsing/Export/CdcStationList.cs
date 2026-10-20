@@ -8,7 +8,7 @@ namespace WeatherParser.Parsing.Export;
 /// </summary>
 [Serializable]
 [XmlRoot("cdc_station_list", Namespace = ExportNamespaces.V1)]
-public sealed class CdcStationList
+public sealed class CdcStationList : IExportRootValidation
 {
     /// <summary>
     /// Gets or sets the schema version of the data format.
@@ -80,4 +80,28 @@ public sealed class CdcStationList
     [XmlArrayItem("station")]
     [JsonPropertyName("stations")]
     public List<CdcStationListEntry> Stations { get; set; } = new();
+
+    private static InvalidOperationException Violation(string message) => new($"The CDC station list violates contract C-91: {message}");
+
+    void IExportRootValidation.ValidateForExport()
+    {
+        if (SearchParameters is null)
+            throw Violation("search_parameters must not be null");
+
+        if (Stations is null)
+            throw Violation("stations must not be null");
+
+        if (Stations.Any(item => item is null))
+            throw Violation("stations must not contain a null item");
+
+        foreach (var station in Stations)
+        {
+            var availableMeasurements = station.AvailableMeasurements;
+            if (availableMeasurements is null)
+                throw Violation("available_measurements must not be null");
+
+            if (availableMeasurements.Any(item => item is null))
+                throw Violation("available_measurements must not contain a null item");
+        }
+    }
 }

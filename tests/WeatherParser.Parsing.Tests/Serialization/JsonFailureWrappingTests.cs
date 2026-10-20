@@ -17,18 +17,15 @@ public sealed class JsonFailureWrappingTests
         _jsonSubject = new JsonExportSerializer();
     }
 
-    public sealed class UnsupportedRoot
-    {
-        public Type Kind { get; set; } = typeof(string);
-    }
-
     [TestMethod]
-    public async Task SerializeAsync_UnsupportedPropertyType_ThrowsExportSerializationExceptionAndWritesNothing()
+    public async Task SerializeAsync_SupportedRootFailingInsideSerializer_WrapsTheFailureAndWritesNothing()
     {
-        var dataset = new UnsupportedRoot();
+        var list = ListTestData.ValidCdcList();
+        list.Stations.Add(new CdcStationListEntry());
         using var stream = new MemoryStream();
-        await FluentActions.Awaiting(() => _jsonSubject!.SerializeAsync(dataset, stream, CancellationToken.None))
-            .Should().ThrowAsync<ExportSerializationException>();
+        (await FluentActions.Awaiting(() => _jsonSubject!.SerializeAsync(list, stream, CancellationToken.None))
+            .Should().ThrowAsync<ExportSerializationException>())
+            .WithInnerException<InvalidOperationException>();
         stream.Length.Should().Be(0);
     }
 
