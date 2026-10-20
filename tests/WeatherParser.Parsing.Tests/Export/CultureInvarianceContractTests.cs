@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using WeatherParser.Parsing.Export;
+using WeatherParser.Parsing.Time;
 using WeatherParser.Parsing.Serialization;
 
 namespace WeatherParser.Parsing.Tests.Export;
@@ -46,18 +47,12 @@ public sealed class CultureInvarianceContractTests
         CultureInfo.CurrentCulture = culture;
         CultureInfo.CurrentUICulture = culture;
 
-        var dataset = new ObservationDataset
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Measurements.TemperatureC = new MeasurementValue
         {
-            Source = "test-source",
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Measurements = new()
-            {
-                TemperatureC = new MeasurementValue
-                {
-                    Value = -1234.5m,
-                    MeasuredAtUtc = new DateTime(2026, 7, 15, 12, 0, 0, DateTimeKind.Utc)
-                }
-            }
+            Value = -1234.5m,
+            MeasuredAtUtc = ObservationTestData.MeasuredAtUtc,
+            TimestampQuality = TimestampQuality.Source
         };
 
         // Test JSON

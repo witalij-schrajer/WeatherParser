@@ -73,4 +73,18 @@ public sealed class OutputRoundingTests
     {
         FluentActions.Invoking(() => _subject.Round((QuantityKind)999, 0m)).Should().Throw<ArgumentOutOfRangeException>();
     }
+
+    [TestMethod]
+    public void Round_TemperatureThatCannotCarryOneDecimal_RaisesQuantityConversionException()
+    {
+        FluentActions.Invoking(() => _subject.Round(QuantityKind.Temperature, 70000000000000000000000000000m))
+            .Should().Throw<QuantityConversionException>();
+    }
+
+    [TestMethod]
+    public void Round_TemperatureThatCanCarryOneDecimal_KeepsScale()
+    {
+        var result = _subject.Round(QuantityKind.Temperature, 7000000000000000000000000000m);
+        result.ToString(CultureInfo.InvariantCulture).Should().Be("7000000000000000000000000000.0");
+    }
 }

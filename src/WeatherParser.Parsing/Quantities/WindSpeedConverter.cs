@@ -1,5 +1,7 @@
 namespace WeatherParser.Parsing.Quantities;
 
+using System.Globalization;
+
 /// <summary>
 /// Converts wind speeds from m/s to km/h with the exact factor 3.6, unrounded (contract C-46).
 /// </summary>
@@ -11,6 +13,16 @@ public sealed class WindSpeedConverter : IWindSpeedConverter
     /// <inheritdoc />
     public decimal ToKilometresPerHour(decimal metresPerSecond)
     {
-        return metresPerSecond * MetresPerSecondToKilometresPerHour;
+        decimal result;
+        try
+        {
+            result = metresPerSecond * MetresPerSecondToKilometresPerHour;
+        }
+        catch (OverflowException exception)
+        {
+            throw new QuantityConversionException($"Converting {metresPerSecond.ToString(CultureInfo.InvariantCulture)} m/s gives a value outside the decimal range (contract C-63).", exception);
+        }
+
+        return result;
     }
 }

@@ -27,30 +27,24 @@ public sealed class EscapingContractTests
     [TestMethod]
     public async Task SerializeAsync_Json_SpecialCharacters_RoundTrip()
     {
-        var dataset = new ObservationDataset
-        {
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Source = "Fulda-Horas (Ä<&>\"')"
-        };
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Location.Name = "Fulda-Horas (Ä<&>\"')";
 
         using var stream = new MemoryStream();
         await _json!.SerializeAsync(dataset, stream, CancellationToken.None);
         stream.Position = 0;
 
         var json = JsonDocument.Parse(stream);
-        var source = json.RootElement.GetProperty("source").GetString()!;
+        var name = json.RootElement.GetProperty("location").GetProperty("name").GetString()!;
 
-        source.Should().Be(dataset.Source);
+        name.Should().Be(dataset.Location.Name);
     }
 
     [TestMethod]
     public async Task SerializeAsync_Json_Umlaut_IsWrittenUnescaped()
     {
-        var dataset = new ObservationDataset
-        {
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Source = "Fulda-Horas (Ä<&>\"')"
-        };
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Location.Name = "Fulda-Horas (Ä<&>\"')";
 
         using var stream = new MemoryStream();
         await _json!.SerializeAsync(dataset, stream, CancellationToken.None);
@@ -67,30 +61,24 @@ public sealed class EscapingContractTests
     [TestMethod]
     public async Task SerializeAsync_Xml_SpecialCharacters_RoundTrip()
     {
-        var dataset = new ObservationDataset
-        {
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Source = "Fulda-Horas (Ä<&>\"')"
-        };
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Location.Name = "Fulda-Horas (Ä<&>\"')";
 
         using var stream = new MemoryStream();
         await _xml!.SerializeAsync(dataset, stream, CancellationToken.None);
         stream.Position = 0;
 
         var doc = XDocument.Load(stream);
-        var source = doc.Root!.Element(Ns + "source")!.Value;
+        var name = doc.Root!.Element(Ns + "location")!.Element(Ns + "name")!.Value;
 
-        source.Should().Be(dataset.Source);
+        name.Should().Be(dataset.Location.Name);
     }
 
     [TestMethod]
     public async Task SerializeAsync_Json_ControlCharacter_IsEscapedAndRoundTrips()
     {
-        var dataset = new ObservationDataset
-        {
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Source = "bad\u0001value"
-        };
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Location.Name = "bad\u0001value";
 
         using var stream = new MemoryStream();
         await _json!.SerializeAsync(dataset, stream, CancellationToken.None);
@@ -101,19 +89,16 @@ public sealed class EscapingContractTests
         rawText.Should().Contain("\\u0001");
 
         using var json = JsonDocument.Parse(stream);
-        var source = json.RootElement.GetProperty("source").GetString()!;
+        var name = json.RootElement.GetProperty("location").GetProperty("name").GetString()!;
 
-        source.Should().Be(dataset.Source);
+        name.Should().Be(dataset.Location.Name);
     }
 
     [TestMethod]
     public async Task SerializeAsync_Xml_InvalidXmlCharacter_ThrowsExportSerializationException()
     {
-        var dataset = new ObservationDataset
-        {
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Source = "bad\u0001value"
-        };
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Location.Name = "bad\u0001value";
 
         using var stream = new MemoryStream();
         await FluentActions.Awaiting(() => _xml!.SerializeAsync(dataset, stream, CancellationToken.None))

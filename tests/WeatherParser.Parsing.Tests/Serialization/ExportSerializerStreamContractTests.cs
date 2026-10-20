@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using FluentAssertions;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Serialization;
+using WeatherParser.Parsing.Tests.Export;
 
 namespace WeatherParser.Parsing.Tests.Serialization;
 
@@ -23,7 +24,7 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Json_LeavesDestinationOpen()
     {
-        var dataset = BuildValidDataset();
+        var dataset = ObservationTestData.ValidDataset();
         using var stream = new MemoryStream();
         await _jsonSubject!.SerializeAsync(dataset, stream, CancellationToken.None);
 
@@ -35,7 +36,7 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Xml_LeavesDestinationOpen()
     {
-        var dataset = BuildValidDataset();
+        var dataset = ObservationTestData.ValidDataset();
         using var stream = new MemoryStream();
         await _xmlSubject!.SerializeAsync(dataset, stream, CancellationToken.None);
 
@@ -47,7 +48,7 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Json_WritesUtf8WithoutBom()
     {
-        var dataset = BuildValidDataset();
+        var dataset = ObservationTestData.ValidDataset();
         using var stream = new MemoryStream();
         await _jsonSubject!.SerializeAsync(dataset, stream, CancellationToken.None);
 
@@ -59,7 +60,7 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Xml_WritesUtf8WithoutBom()
     {
-        var dataset = BuildValidDataset();
+        var dataset = ObservationTestData.ValidDataset();
         using var stream = new MemoryStream();
         await _xmlSubject!.SerializeAsync(dataset, stream, CancellationToken.None);
 
@@ -71,7 +72,7 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Json_PreCancelledToken_ThrowsAndWritesNothing()
     {
-        var dataset = BuildValidDataset();
+        var dataset = ObservationTestData.ValidDataset();
         using var stream = new MemoryStream();
         await FluentActions.Awaiting(() => _jsonSubject!.SerializeAsync(dataset, stream, new CancellationToken(canceled: true)))
             .Should().ThrowAsync<OperationCanceledException>();
@@ -82,7 +83,7 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Xml_PreCancelledToken_ThrowsAndWritesNothing()
     {
-        var dataset = BuildValidDataset();
+        var dataset = ObservationTestData.ValidDataset();
         using var stream = new MemoryStream();
         await FluentActions.Awaiting(() => _xmlSubject!.SerializeAsync(dataset, stream, new CancellationToken(canceled: true)))
             .Should().ThrowAsync<OperationCanceledException>();
@@ -93,7 +94,7 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Json_DestinationWriteFails_PropagatesIOException()
     {
-        var dataset = BuildValidDataset();
+        var dataset = ObservationTestData.ValidDataset();
         var failingStream = new FailingWriteStream();
         await FluentActions.Awaiting(() => _jsonSubject!.SerializeAsync(dataset, failingStream, CancellationToken.None))
             .Should().ThrowExactlyAsync<IOException>();
@@ -102,7 +103,7 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Xml_DestinationWriteFails_PropagatesIOException()
     {
-        var dataset = BuildValidDataset();
+        var dataset = ObservationTestData.ValidDataset();
         var failingStream = new FailingWriteStream();
         await FluentActions.Awaiting(() => _xmlSubject!.SerializeAsync(dataset, failingStream, CancellationToken.None))
             .Should().ThrowExactlyAsync<IOException>();
@@ -111,11 +112,8 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Xml_InvalidCharacter_WritesNothingToDestination()
     {
-        var dataset = new ObservationDataset
-        {
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Source = "bad\u0001value"
-        };
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Location.Name = "bad\u0001value";
         using var stream = new MemoryStream();
         await FluentActions.Awaiting(() => _xmlSubject!.SerializeAsync(dataset, stream, CancellationToken.None))
             .Should().ThrowAsync<ExportSerializationException>();
@@ -126,11 +124,8 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Xml_InvalidCharacterAfterLargeContent_WritesNothingToDestination()
     {
-        var dataset = new ObservationDataset
-        {
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Source = new string('a', 200_000) + "\u0001"
-        };
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Location.Name = new string('a', 200_000) + "\u0001";
         using var stream = new MemoryStream();
         await FluentActions.Awaiting(() => _xmlSubject!.SerializeAsync(dataset, stream, CancellationToken.None))
             .Should().ThrowAsync<ExportSerializationException>();
@@ -141,7 +136,7 @@ public sealed class ExportSerializerStreamContractTests
     [TestMethod]
     public async Task SerializeAsync_Xml_DeclaresOnlyTheExportNamespace()
     {
-        var dataset = BuildValidDataset();
+        var dataset = ObservationTestData.ValidDataset();
         using var stream = new MemoryStream();
         await _xmlSubject!.SerializeAsync(dataset, stream, CancellationToken.None);
 
@@ -151,14 +146,5 @@ public sealed class ExportSerializerStreamContractTests
 
         nsDecls.Should().HaveCount(1);
         nsDecls[0].Value.Should().Be("urn:weatherparser:export:v1");
-    }
-
-    private static ObservationDataset BuildValidDataset()
-    {
-        return new ObservationDataset
-        {
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Source = "Fulda-Horas"
-        };
     }
 }

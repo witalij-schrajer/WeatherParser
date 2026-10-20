@@ -43,4 +43,12 @@ public sealed class WindSpeedConverterTests
         _rounding.Round(QuantityKind.MeanWindSpeed, _subject.ToKilometresPerHour(3.4m))
             .Should().Be(12m);
     }
+
+    [TestMethod]
+    public void ToKilometresPerHour_ResultOutsideDecimalRange_RaisesQuantityConversionException()
+    {
+        FluentActions.Invoking(() => _subject.ToKilometresPerHour(3e28m))
+            .Should().Throw<QuantityConversionException>()
+            .WithInnerException<OverflowException>();
+    }
 }

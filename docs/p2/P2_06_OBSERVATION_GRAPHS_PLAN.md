@@ -1,6 +1,6 @@
 # P2.06 – Observation Graphs: Implementation Plan
 
-**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.06 row of section 5, the Observations row of section 4 and the "Observation time semantics" and "Quantity/quality/period/error shape" decisions of section 3 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (goal label, test path, verification artifact row, evidence bullet).
+**Status: implemented on `features/develop/P2` (2026-10-20), not yet committed; contract decisions C-48 to C-65 extend this plan (graph validation C-64, converter amendments C-63/C-65); evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 6.** Original planning note: this document started as a plan on 2026-10-20. This plan refines the P2.06 row of section 5, the Observations row of section 4 and the "Observation time semantics" and "Quantity/quality/period/error shape" decisions of section 3 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (goal label, test path, verification artifact row, evidence bullet).
 
 ## 1. Goal and Scope
 Goal: The complete observation export graph — dataset metadata, location, all REQ-052 quantities with their own timestamps, quality, source-timezone, pressure-reference and period metadata — and an interface-based builder that assembles it from P2.04 time results and P2.05 quantity services, applies omission and output rounding, enforces the dataset-time rule and rejects datasets without usable readings; proven with both real serializers.
@@ -37,9 +37,9 @@ Prerequisites: P2.02 (slice graph, serializers), P2.04 (time normalization), P2.
 |---|---|---|---|---|
 | Measurement shape | `measurements` object with one typed property per REQ-052 field, each a value object (`value`, `measured_at`, `timestamp_quality`, optional `source_timezone`, optional `period`, optional `quality`) / a list of entries with a `name` field | Typed property per field: keeps the required field names in both formats and avoids untyped name/value lists | User (contract review) | S1 |
 | Pressure representation | two value objects `pressure_hpa` and `pressure_mmhg`, each with the same `measured_at` and `pressure_reference` / one `pressure` object with both units | Two value objects named as in REQ-052, both carrying `pressure_reference` | User (contract review) | S5 |
-| Dataset `measured_at` when readings differ | latest per-quantity time / earliest / reject differing times | OPEN – user decides; Recommended "latest reading time", documented as the most recent reading and never implying alignment; per-quantity times remain authoritative | User | S2 |
+| Dataset `measured_at` when readings differ | latest per-quantity time / earliest / reject differing times | Decided: latest reading time (user decision 2026-10-20, contract C-55); per-quantity times stay authoritative | User | S2 |
 | Dataset `timestamp_quality` | `estimated_date` if any exported quantity is estimated, else `source` / always `source` | First option, so an estimate is never hidden at dataset level | User (contract review) | S6 |
-| `source` format | `<provider>:<station id>` such as `dwd:00044` / separate `provider` and `station_id` fields | OPEN – user decides; it must stay unique per provider/station and keep leading zeros | User | S1 |
+| `source` format | `<provider>:<station id>` such as `dwd:00044` / separate `provider` and `station_id` fields | Decided: one string `<provider>:<station_id>` (user decision 2026-10-20, contract C-50) | User | S1 |
 | `location` fields | `station_id`, `name`, `latitude`, `longitude`, optional `altitude_m` / other | First option; unknown altitude omitted, never zero | User (contract review) | S1 |
 | Source quality metadata | optional `quality` string per value holding the source's quality code unchanged / none | Optional string; meanings are verified per provider in P5/P6 | User (contract review) | S1 |
 | Omitted-reading diagnostics | builder result carries a non-exported list of omitted readings with reasons / silent omission | Diagnostics list, so callers can log omissions (AGENTS.md: no silent suppression) | Orchestrator, recorded | S3 |
@@ -150,7 +150,7 @@ Prerequisites: P2.02 (slice graph, serializers), P2.04 (time normalization), P2.
 - All entries go to `docs/p2/P2_VERIFICATION.md` per slice (Red names with observed failure messages, Green/Refactor results, commands, test counts, authorship), except decisions and approval date, which go to `docs/p2/P2_EXPORT_CONTRACT.md`
 
 ## 8. Risks and Limitations
-- The dataset `measured_at` rule and the `source` format are OPEN user decisions that change S1/S2 test data
+- The dataset `measured_at` rule (C-55) and the `source` format (C-50) were decided by the user on 2026-10-20; the full decision set C-48 to C-65 is recorded in `docs/p2/P2_EXPORT_CONTRACT.md` section 10 and extends this plan (graph validation on serialization C-64, converter amendments C-63 and C-65)
 - `XmlSerializer` needs the `{Name}Specified` omission pattern on every optional value object — S1/S8 assert no empty elements or `xsi:nil`
 - Quality-code meanings are unknown until P5/P6 — the contract keeps the code unchanged and claims no meaning
 - Every new code block needs a meaningful test (strict-improvement coverage rule)

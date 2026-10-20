@@ -1,10 +1,13 @@
 namespace WeatherParser.Parsing.Quantities;
 
+using System.Globalization;
+
 /// <summary>
 /// Rounds values according to the output increment requirements.
 /// </summary>
 /// <remarks>
 /// Rounds only for output, after every conversion; exact midpoint ties are rounded away from zero.
+/// A value that cannot carry its output scale raises QuantityConversionException.
 /// </remarks>
 public sealed class OutputRounding : IOutputRounding
 {
@@ -26,7 +29,14 @@ public sealed class OutputRounding : IOutputRounding
 
         var rounded = decimal.Round(value, places.Value, MidpointRounding.AwayFromZero);
         var zeroWithScale = new decimal(0, 0, 0, false, (byte)places.Value);
-        return rounded == 0m ? zeroWithScale : rounded + zeroWithScale;
+        var result = rounded == 0m ? zeroWithScale : rounded + zeroWithScale;
+
+        if (result.Scale != places.Value)
+        {
+            throw new QuantityConversionException($"The {kind} value {value.ToString(CultureInfo.InvariantCulture)} cannot carry its output scale of {places.Value} decimal place(s) (contract C-65).");
+        }
+
+        return result;
     }
 
     private static int? DecimalPlaces(QuantityKind kind) => kind switch

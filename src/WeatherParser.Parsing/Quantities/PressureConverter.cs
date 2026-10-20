@@ -1,5 +1,7 @@
 namespace WeatherParser.Parsing.Quantities;
 
+using System.Globalization;
+
 /// <summary>
 /// Converts pressure between hPa and mmHg from one unrounded original and rounds both outputs for export (contract C-40).
 /// </summary>
@@ -32,6 +34,7 @@ public sealed class PressureConverter : IPressureConverter
         if (!Enum.IsDefined(reference))
             throw new ArgumentOutOfRangeException(nameof(reference), reference, "Undefined pressure reference.");
 
+        // The factor is below 1, so this product cannot overflow (contract C-63 applies to FromMmHg).
         return new PressureValues(
             _rounding.Round(QuantityKind.Pressure, hpa),
             _rounding.Round(QuantityKind.Pressure, hpa * HpaToMmHg),
@@ -45,8 +48,18 @@ public sealed class PressureConverter : IPressureConverter
         if (!Enum.IsDefined(reference))
             throw new ArgumentOutOfRangeException(nameof(reference), reference, "Undefined pressure reference.");
 
+        decimal hpa;
+        try
+        {
+            hpa = mmHg * MmHgToHpa;
+        }
+        catch (OverflowException exception)
+        {
+            throw new QuantityConversionException($"Converting {mmHg.ToString(CultureInfo.InvariantCulture)} mmHg gives a value outside the decimal range (contract C-63).", exception);
+        }
+
         return new PressureValues(
-            _rounding.Round(QuantityKind.Pressure, mmHg * MmHgToHpa),
+            _rounding.Round(QuantityKind.Pressure, hpa),
             _rounding.Round(QuantityKind.Pressure, mmHg),
             reference,
             PressureUnit.MillimetreOfMercury);

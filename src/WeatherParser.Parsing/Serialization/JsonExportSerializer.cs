@@ -1,6 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
+using WeatherParser.Parsing.Export;
 
 namespace WeatherParser.Parsing.Serialization;
 
@@ -19,10 +20,15 @@ public sealed class JsonExportSerializer : IJsonExportSerializer
     {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(destination);
+        cancellationToken.ThrowIfCancellationRequested();
 
         using var buffer = new MemoryStream();
         try
         {
+            if (root is IExportRootValidation validation)
+            {
+                validation.ValidateForExport();
+            }
             await JsonSerializer.SerializeAsync(buffer, root, _options, cancellationToken);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)

@@ -128,4 +128,19 @@ public sealed class PressureConverterTests
         (r.Hpa * A - r.MmHg).Should().Be(18.491463m);
         Math.Abs(r.Hpa * A - r.MmHg).Should().BeLessThanOrEqualTo(0.5m * A + 0.5m + 100000000m * D, because: "large value test");
     }
+
+    [TestMethod]
+    public void FromMmHg_ResultOutsideDecimalRange_RaisesQuantityConversionException()
+    {
+        FluentActions.Invoking(() => _subject.FromMmHg(decimal.MaxValue, PressureReference.Unknown))
+            .Should().Throw<QuantityConversionException>()
+            .WithInnerException<OverflowException>();
+    }
+
+    [TestMethod]
+    public void FromHpa_LargestDecimal_IsStillConverted()
+    {
+        var result = _subject.FromHpa(decimal.MaxValue, PressureReference.Unknown);
+        result.Hpa.Should().Be(decimal.MaxValue);
+    }
 }

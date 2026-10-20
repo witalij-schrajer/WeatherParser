@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using WeatherParser.Parsing.Export;
+using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Serialization;
 using WeatherParser.Parsing.Time;
@@ -157,5 +158,23 @@ public sealed class ServiceCollectionExtensionsTests
         var converted = pressure1.FromHpa(1000.5m, PressureReference.SeaLevel);
         converted.Hpa.Should().Be(1001m);
         converted.MmHg.Should().Be(750m);
+    }
+
+    [TestMethod]
+    public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesObservationDatasetBuilder()
+    {
+        _services.AddWeatherParsing();
+
+        using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+        provider.GetRequiredService<IObservationDatasetBuilder>().Should().BeOfType<ObservationDatasetBuilder>();
+    }
+
+    [TestMethod]
+    public void AddWeatherParsing_ObservationDatasetBuilder_IsSingletonPerContainer()
+    {
+        _services.AddWeatherParsing();
+
+        using var provider = _services.BuildServiceProvider();
+        provider.GetRequiredService<IObservationDatasetBuilder>().Should().BeSameAs(provider.GetRequiredService<IObservationDatasetBuilder>());
     }
 }

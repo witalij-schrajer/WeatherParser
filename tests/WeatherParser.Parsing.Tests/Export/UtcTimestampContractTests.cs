@@ -27,18 +27,10 @@ public sealed class UtcTimestampContractTests
     [TestMethod]
     public async Task SerializeAsync_Json_UtcTimestamps_WriteSecondsWithoutSuffix()
     {
-        var dataset = new ObservationDataset
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Measurements = new()
         {
-            Source = "test-source",
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Measurements = new()
-            {
-                TemperatureC = new MeasurementValue
-                {
-                    Value = 12.3m,
-                    MeasuredAtUtc = new DateTime(2026, 7, 15, 12, 0, 0, DateTimeKind.Utc)
-                }
-            }
+            TemperatureC = ObservationTestData.Value(12.3m, new DateTime(2026, 7, 15, 12, 0, 0, DateTimeKind.Utc))
         };
 
         using var jsonStream = await SerializeJsonToStream(dataset);
@@ -56,18 +48,10 @@ public sealed class UtcTimestampContractTests
     [TestMethod]
     public async Task SerializeAsync_Xml_UtcTimestamps_WriteSecondsWithoutSuffix()
     {
-        var dataset = new ObservationDataset
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Measurements = new()
         {
-            Source = "test-source",
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Measurements = new()
-            {
-                TemperatureC = new MeasurementValue
-                {
-                    Value = 12.3m,
-                    MeasuredAtUtc = new DateTime(2026, 7, 15, 12, 0, 0, DateTimeKind.Utc)
-                }
-            }
+            TemperatureC = ObservationTestData.Value(12.3m, new DateTime(2026, 7, 15, 12, 0, 0, DateTimeKind.Utc))
         };
 
         using var xmlStream = await SerializeXmlToStream(dataset);

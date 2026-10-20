@@ -49,19 +49,18 @@ public sealed class NormalizedTimeSerializationTests
         var measured = _normalizer.InferDate(new TimeOnly(23, 55), new DateTime(2026, 7, 15, 22, 5, 0, DateTimeKind.Utc));
         var retrieved = _normalizer.NormalizeComplete(new DateTimeOffset(2026, 7, 16, 0, 5, 0, TimeSpan.FromHours(2)));
 
-        var dataset = new ObservationDataset
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.RetrievedAtUtc = retrieved.UtcInstant;
+        dataset.Measurements.TemperatureC = new MeasurementValue
         {
-            Source = "s",
-            RetrievedAtUtc = retrieved.UtcInstant,
-            Measurements = new()
-            {
-                TemperatureC = new MeasurementValue
-                {
-                    Value = 21.5m,
-                    MeasuredAtUtc = measured.UtcInstant
-                }
-            }
+            Value = 21.5m,
+            MeasuredAtUtc = measured.UtcInstant,
+            TimestampQuality = measured.Quality,
+            SourceTimezone = measured.SourceTimeZone
         };
+        dataset.Measurements.HumidityPercent = null;
+        dataset.MeasuredAtUtc = measured.UtcInstant;
+        dataset.TimestampQuality = measured.Quality;
 
         // Test JSON
         using var jsonStream = await SerializeJsonToStream(dataset);

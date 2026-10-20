@@ -26,6 +26,10 @@ public sealed class XmlExportSerializer : IXmlExportSerializer
         using var buffer = new MemoryStream();
         try
         {
+            if (root is IExportRootValidation validation)
+            {
+                validation.ValidateForExport();
+            }
             var serializer = _serializers.GetOrAdd(typeof(TRoot), type => new XmlSerializer(type));
             var namespaces = new XmlSerializerNamespaces();
             namespaces.Add(string.Empty, ExportNamespaces.V1);

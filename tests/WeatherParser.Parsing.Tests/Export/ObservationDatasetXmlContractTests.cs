@@ -23,7 +23,8 @@ public sealed class ObservationDatasetXmlContractTests
     [TestMethod]
     public async Task SerializeAsync_MissingTemperature_OmitsTemperatureElement()
     {
-        var dataset = BuildDataset(temperature: null);
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Measurements.TemperatureC = null;
         using var stream = await SerializeToStream(dataset);
         var doc = XDocument.Load(stream);
 
@@ -44,7 +45,8 @@ public sealed class ObservationDatasetXmlContractTests
     [TestMethod]
     public async Task SerializeAsync_ZeroTemperature_WritesZeroValue()
     {
-        var dataset = BuildDataset(temperature: new MeasurementValue { Value = 0m, MeasuredAtUtc = new DateTime(2026, 7, 15, 12, 0, 0, DateTimeKind.Utc) });
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Measurements.TemperatureC = ObservationTestData.Value(0.0m, ObservationTestData.MeasuredAtUtc);
         using var stream = await SerializeToStream(dataset);
         var doc = XDocument.Load(stream);
 
@@ -59,7 +61,8 @@ public sealed class ObservationDatasetXmlContractTests
     [TestMethod]
     public async Task SerializeAsync_NonZeroTemperature_WritesValue()
     {
-        var dataset = BuildDataset(temperature: new MeasurementValue { Value = -3.5m, MeasuredAtUtc = new DateTime(2026, 7, 15, 12, 0, 0, DateTimeKind.Utc) });
+        var dataset = ObservationTestData.ValidDataset();
+        dataset.Measurements.TemperatureC = ObservationTestData.Value(-3.5m, ObservationTestData.MeasuredAtUtc);
         using var stream = await SerializeToStream(dataset);
         var doc = XDocument.Load(stream);
 
@@ -69,19 +72,6 @@ public sealed class ObservationDatasetXmlContractTests
             .Element(Ns + "value")!;
 
         decimal.Parse(valueElement.Value, System.Globalization.CultureInfo.InvariantCulture).Should().Be(-3.5m);
-    }
-
-    private static ObservationDataset BuildDataset(MeasurementValue? temperature)
-    {
-        return new()
-        {
-            Source = "test-source",
-            RetrievedAtUtc = new DateTime(2026, 7, 15, 12, 5, 0, DateTimeKind.Utc),
-            Measurements = new()
-            {
-                TemperatureC = temperature
-            }
-        };
     }
 
     private async Task<MemoryStream> SerializeToStream(ObservationDataset dataset)

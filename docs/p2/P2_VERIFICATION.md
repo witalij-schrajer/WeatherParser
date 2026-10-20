@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); hosted CI of the draft pull request #3 checks every push.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); P2.06 implemented on `features/develop/P2`, not yet committed (section 6); hosted CI of the draft pull request #3 checks every push.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -221,3 +221,45 @@ Authorship: qwen3-coder:30b generated the regression tests, both fixes and the r
 - Commit `02393bb` pushed to `features/develop/P2`; hosted CI run 39411112653 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
 - The user asked to mark P2.05 completed once the hosted CI succeeded; all acceptance criteria of the [P2.05 plan](P2_05_UNITS_PRESSURE_ROUNDING_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
+
+## 6. P2.06 – Observation graph
+
+### 6.1 Contract approval (S0)
+
+qwen3-coder:30b drafted decisions C-48 to C-62 (section 10 of `P2_EXPORT_CONTRACT.md`). At the user's request the draft went through read-only reviews by the OpenAI Codex CLI before approval: 8, 6, 5, 3, 3 and 2 findings in the first six reviews (the user extended the loop after the fifth), 0 findings in the seventh. The orchestrating agent confirmed every finding against the code or by reproduction (for example the regular expression `$` matching before a trailing line feed, the interval arithmetic of the pressure example, the scale of 7e28) and had qwen revise the rows; the review added C-63 (converter overflow), C-64 (graph validation on serialization) and C-65 (unrepresentable output scale). The user chose C-50 (`provider:station_id`), C-51 (latitude and longitude required) and C-55 (latest reading time) and approved C-48 to C-65 on 2026-10-20.
+
+### 6.2 Slice evidence
+
+| Slice | Red test(s) and observed failure | Green / Refactor | Tests after slice |
+|---|---|---|---|
+| S1 shape | `ObservationDatasetContractTests` against stub members ignored by both serializers: JSON `KeyNotFoundException` and XML `NullReferenceException` at `location`; `ExportTypes_ReachableFromExportRoots_AreSerializable` named `PressureReference` and `TimestampQuality` | Members mapped in both formats, enum wire values (C-61), `[Serializable]`; 24 existing tests then failed on the now-required `measured_at` and were migrated to the fixture `ObservationTestData` (no assertion removed or added, checked by diff) | 316 passed |
+| S1b required members and setter rules | `ObservationRequiredMemberGuardTests` and `ObservationSetterRuleTests`: 39 of 78 failed (unassigned `source`, `location`, enums, identity and coordinates serialized; setter rules absent: "no exception was thrown"); already guarded members passed (characterization) | Assignment tracking (C-27 pattern), identity and coordinate checks, `source_timezone` and `quality` setters, undefined-enum guards | 395 passed |
+| S1c graph validation (C-64) | `ObservationGraphValidationTests`: all 25 violating graphs were serialized; 11 valid graphs accepted (characterization) | Internal `IExportRootValidation` implemented by `ObservationDataset`, called by both serializers inside their failure wrapping; tests that used `source` as a text carrier moved to `location.name`; zero temperatures written as `0.0` | 431 passed |
+| C-63/C-65 | `FromMmHg(decimal.MaxValue)` and `ToKilometresPerHour(3e28)` raised `OverflowException`; `Round(Temperature, 7e28)` returned scale 0 | `QuantityConversionException` with inner `OverflowException`; scale check in `OutputRounding`. Refactor: removed the unreachable overflow wrap in `FromHpa` (factor below 1) | 436 passed |
+| S2–S7 builder | One cycle against a naive stub (times stamped with the retrieval time, mapping by unit only, no validation, conversion, rounding, diagnostics or rejection): 16 of 20 behavior tests (`ObservationDatasetBuilderTests`) and 36 of 36 rule tests (`ObservationBuilderRulesTests`) failed for the slice reasons | `ObservationDatasetBuilder` (C-57 to C-60): input validation, duplicate detection, omission precedence, conversions and rounding through the P2.05 services, dataset time and quality | 492 passed |
+| S8 serializable and equivalence | Characterization: `Serialize_FullObservation_JsonAndXmlAreSemanticallyEqual` and the traversal test passed immediately (attributes added in S1) | none | 493 passed |
+| S9 DI | Both DI tests failed: "No service for type 'WeatherParser.Parsing.Observations.IObservationDatasetBuilder' has been registered." | Singleton registration | 495 passed |
+| Coverage gaps | Characterization tests for the pressure-pair branches (`ObservationPressurePairValidationTests`), builder input rules (`ObservationBuilderInputTests`) and read-back (`ObservationReadBackTests`) | none | 511 passed |
+
+### 6.3 Implementation review by Codex
+
+The first read-only review of the uncommitted implementation reported four findings, each confirmed by a Red regression test in `ObservationReviewRegressionTests`: null `measurements` leaked a `NullReferenceException` from XML serialization; an invalid graph with a cancelled token raised `ExportSerializationException` in JSON instead of `OperationCanceledException` (C-10); the builder called the validator before detecting a duplicate (C-57); JSON wrote `pressure_reference` before the inherited members (C-53 order). Fixes: null check first in the graph validation, cancellation checked before validation, two-pass builder (validation and duplicates first), `[JsonPropertyOrder]` on the value members. The second review reported no findings. A test for directly mapped irradiance and rain rate closed the coverage gap the two-pass change revealed.
+
+### 6.4 Checks run on the working tree (2026-10-20)
+
+- `dotnet restore WeatherParser.Ci.slnf --locked-mode`: succeeded. `dotnet build WeatherParser.Ci.slnf -c Release`: 0 warnings, 0 errors.
+- Tests: `WeatherParser.Parsing.Tests` 516 passed, `WeatherParser.Coverage.Tests` 99 passed, `WeatherParser.Coverage.Runner.Tests` 56 passed.
+- Local native block coverage of `WeatherParser.Parsing.dll`: 1643/1645 (99.88 %); the two uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`.
+- Not yet committed; the hosted CI of draft pull request #3 runs after the push.
+
+### 6.5 Deviations and design notes
+
+1. S2–S7 ran as one Red/Green cycle against one naive stub with test groups per slice, instead of one cycle per slice.
+2. `MeasurementValue` is no longer sealed: `PressureMeasurementValue` derives from it (C-54).
+3. Graph validation lives in the export root through the internal interface `IExportRootValidation`, because the serializers are generic.
+4. The contract test fixture `ObservationTestData` builds a dataset that is complete under the contract; P2.02 to P2.05 tests now use it.
+5. During the step the qwen invocation changed (user-provided analysis, recorded in `AGENTS.md`): `/api/chat` with a fixed system policy, the real source of referenced types as API reference, one authorized file per request and an allowlist when applying output.
+
+### 6.6 Authorship
+
+qwen3-coder:30b drafted the contract rows and their revisions, generated the entities, the graph validation, the builder, the converter amendments, the DI registration and most tests from the orchestrating agent's briefs. The model had to be restarted twice (once by the user). With the earlier single-prompt invocation it repeatedly invented project APIs and rewrote files it was not given, so the orchestrating agent restored reviewed files and applied mechanical corrections (missing namespaces and usings, member paths, test data, contract references in messages) and, under the AGENTS.md exception after repeated failed briefs, wrote `ObservationBuilderRulesTests`, `ObservationExportEquivalenceTests` and the two DI tests itself. The OpenAI Codex CLI reviewed the contract draft and the implementation read-only. The orchestrating agent confirmed every failure reason and finding, ran all builds, tests, coverage and reviews, and wrote this section from its verified records because it records run results.
