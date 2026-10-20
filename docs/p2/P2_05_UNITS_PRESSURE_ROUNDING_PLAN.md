@@ -1,6 +1,6 @@
 # P2.05 – Units, Pressure and Output Rounding: Implementation Plan
 
-**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.05 row of section 5 and the pressure, rounding, conversion and omission paragraphs of section 4 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (concrete Refactor targets); the orchestrating agent reworded one table cell whose absolute-value bars (from its own brief) broke the Markdown table.
+**Status: implemented on `features/develop/P2` (2026-10-20), not yet committed; evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 5.** Original planning note: this document started as a plan on 2026-10-20 and was updated after the user's review of the P2.05 decisions (pressure bounds per original unit, whole-second period endpoints, wind-direction range decided). This plan refines the P2.05 row of section 5 and the pressure, rounding, conversion and omission paragraphs of section 4 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (concrete Refactor targets); the orchestrating agent reworded one table cell whose absolute-value bars (from its own brief) broke the Markdown table.
 
 ## 1. Goal and Scope
 Goal: interface-based, source-independent services for output rounding, hPa/mmHg pressure conversion from one authoritative original, field-specific validity and omission, period-aware energy/accumulation transformations, and quantity-kind separation — each proven test-first with exact values.
@@ -32,8 +32,8 @@ Prerequisites: P2.02 complete (numeric type `decimal` decided; omission pattern 
 |---|---|---|---|---|
 | Service names | Proposed `IOutputRounding`/`OutputRounding`, `IPressureConverter`/`PressureConverter`, `IQuantityValidator`/`QuantityValidator`, `IPeriodRateConverter`/`PeriodRateConverter`, value `QuantityKind`, failure `QuantityConversionException` / other | Proposed names | User (contract review) | S1 |
 | Input numeric boundary | services accept `double` from parsers and convert to `decimal` after rejecting NaN/±Infinity / services accept only `decimal` | Accept `double` at the validator boundary only; everything after validation is `decimal` | Orchestrator, recorded | S3 |
-| Pressure tolerance statement | document the maximum deviation between the two rounded outputs / no statement | Document: each output is within 0.5 of its own unrounded value; the absolute difference between `round(hPa) × 0.7500617` and `round(mmHg)` is at most 0.5 × 0.7500617 + 0.5 | User (contract review) | S2 |
-| Wind direction range | [0, 360) with 360 normalized to 0 / [0, 360] kept as delivered / reject 360 | OPEN – user decides; the validator test covers 0, 359.9, 360 and −1 accordingly | User | S3 |
+| Pressure tolerance statement | document the maximum deviation between the two rounded outputs / no statement | Document bounds per original unit including the factor discrepancy a × b = 1.00000018491463 (contract C-41) | User (contract review) | S2 |
+| Wind direction range | [0, 360) with 360 normalized to 0 / [0, 360] kept as delivered / reject 360 | Decided: [0, 360] with 360 normalized to 0 (user decision 2026-10-20, contract C-43); the validator test covers 0, 359.9, 360 → 0, −1 and 360.1 | User | S3 |
 | m/s → km/h conversion in P2 | include the exact factor 3.6 now / leave all unit conversions except pressure to provider phases | Include: the factor is exact and REQ-057 rounds km/h after conversion; source unit verification stays with P5/P7 | User (contract review) | S6 |
 | Period representation | `TimeSpan` duration plus start/end UTC / duration only | Duration plus start/end, so the averaging period is preserved in the output (REQ-055) | User (contract review) | S4 |
 | Quantity kinds | `MeanWindSpeed`, `WindGust`, `PrecipitationAccumulation`, `PrecipitationRate`, `RadiationEnergy`, `Irradiance`, `Illuminance`, `Probability` (and the REQ-052 kinds) / other | Proposed list; additional kinds need documented names, units and semantics | User (contract review) | S5 |
@@ -76,7 +76,7 @@ Roles: qwen drafts prose from the orchestrator's decisions; the orchestrator ver
 **Check**: `dotnet restore WeatherParser.Ci.slnf --locked-mode`, `dotnet build WeatherParser.Ci.slnf -c Release --no-restore`, `dotnet test tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj -c Release --no-build`.
 
 ### S2 Pressure conversion
-**Red**: `Convert_FromHpa_DerivesBothOutputsFromUnroundedOriginal` (1000.5 → 1001 hPa / 750 mmHg), `Convert_FromMmHg_UsesReverseFactor` (760 → 1013 / 760), `Convert_PreservesPressureReference` (all three references), `Convert_RoundedOutputsStayWithinDocumentedTolerance`. Expected failure: a first implementation that rounds hPa before deriving mmHg yields 751 for the 1000.5 case.
+**Red**: `Convert_FromHpa_DerivesBothOutputsFromUnroundedOriginal` (1000.5 → 1001 hPa / 750 mmHg), `Convert_FromMmHg_UsesReverseFactor` (760 → 1013 / 760), `Convert_PreservesPressureReference` (all three references); `Convert_FromHpa_RoundedOutputsStayWithinOriginBounds` (800.0 to 1100.0 hPa in steps of 0.1, both directions of the hPa bounds), `Convert_FromMmHg_RoundedOutputsStayWithinOriginBounds` (600.0 to 825.0 mmHg in steps of 0.1, both directions of the mmHg bounds, plus 100000000 mmHg → 133322390 hPa with the reverse difference 18.491463 within its bound). Expected failure: a first implementation that rounds hPa before deriving mmHg yields 751 for the 1000.5 case.
 **Green**: Derive both from the original, then round.
 **Refactor**: Keep both conversion factors as named constants with their REQ-054 source in an XML documentation comment.
 **Roles**: qwen generates tests, minimal implementation and refactoring; the orchestrator writes the briefs, runs each Red and confirms the failure reason, runs build and tests, reviews the diff and returns defects to qwen, and records authorship.
@@ -90,7 +90,7 @@ Roles: qwen drafts prose from the orchestrator's decisions; the orchestrator ver
 **Check**: `dotnet restore WeatherParser.Ci.slnf --locked-mode`, `dotnet build WeatherParser.Ci.slnf -c Release --no-restore`, `dotnet test tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj -c Release --no-build`.
 
 ### S4 Period-aware transformations
-**Red**: `ToMeanIrradiance_UsesKnownPeriod` (360000 J/m², 600 s → 600 W/m²), `ToMeanRainRate_UsesKnownPeriod` (0.5 mm, 10 min → 3 mm/h), `PeriodTransforms_RejectZeroNegativeOrMissingPeriod`, `PeriodTransforms_RetainPeriodInResult`. Expected failure: the stub returns the input value unchanged and keeps no period.
+**Red**: `ToMeanIrradiance_UsesKnownPeriod` (360000 J/m², 600 s → 600 W/m²), `ToMeanRainRate_UsesKnownPeriod` (0.5 mm, 10 min → 3 mm/h), `PeriodTransforms_RejectZeroNegativeOrMissingPeriod`, `PeriodTransforms_RetainPeriodInResult`; `AveragingPeriod_FractionalSecondEndpoint_IsRejected` (start or end one tick or one millisecond past a whole second → `ArgumentException`), `AveragingPeriod_OneWholeSecond_IsAccepted` (shortest valid period). Expected failure: the stub returns the input value unchanged, keeps no period and accepts fractional-second endpoints.
 **Green**: Division by the period in seconds/hours with the period carried in the result.
 **Refactor**: Share the period validation between the irradiance and rain-rate conversions.
 **Roles**: qwen generates tests, minimal implementation and refactoring; the orchestrator writes the briefs, runs each Red and confirms the failure reason, runs build and tests, reviews the diff and returns defects to qwen, and records authorship.
@@ -135,7 +135,7 @@ Roles: qwen drafts prose from the orchestrator's decisions; the orchestrator ver
 ## 8. Risks and Limitations
 - `decimal` keeps scale, so outputs must be normalized to the increment's scale before serialization (20.3, not 20.30) — S1 asserts the scale.
 - Source units are not verified here, so a provider phase could feed the wrong unit — mitigation: services take explicit unit/kind inputs and P5–P7 verify source units.
-- The wind-direction range is an OPEN user decision.
+- The wind-direction range was decided by the user (C-43: 360 normalized to 0); a source calm marker must be mapped to an omitted direction by the provider phases.
 - Every new code block needs a meaningful test (strict-improvement coverage rule).
 
 ## 9. Acceptance Criteria

@@ -4,6 +4,7 @@ using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Serialization;
 using WeatherParser.Parsing.Time;
+using WeatherParser.Parsing.Quantities;
 
 namespace WeatherParser.Parsing.Tests;
 
@@ -71,7 +72,7 @@ public sealed class ServiceCollectionExtensionsTests
         _services.AddWeatherParsing();
 
         using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
-        
+
         provider.GetRequiredService<IJsonExportSerializer>().Should().BeOfType<JsonExportSerializer>();
         provider.GetRequiredService<IXmlExportSerializer>().Should().BeOfType<XmlExportSerializer>();
     }
@@ -80,17 +81,17 @@ public sealed class ServiceCollectionExtensionsTests
     public void AddWeatherParsing_ExportSerializers_AreSingletonsPerContainer()
     {
         _services.AddWeatherParsing();
-        
+
         using var provider1 = _services.BuildServiceProvider();
         var xmlSerializer1 = provider1.GetRequiredService<IXmlExportSerializer>();
         var xmlSerializer2 = provider1.GetRequiredService<IXmlExportSerializer>();
-        
+
         xmlSerializer1.Should().BeSameAs(xmlSerializer2);
-        
+
         _services.AddWeatherParsing();
         using var provider2 = _services.BuildServiceProvider();
         var xmlSerializer3 = provider2.GetRequiredService<IXmlExportSerializer>();
-        
+
         xmlSerializer1.Should().NotBeSameAs(xmlSerializer3);
     }
 
@@ -111,5 +112,50 @@ public sealed class ServiceCollectionExtensionsTests
         using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         provider.GetRequiredService<ITimeZoneResolver>().Should().BeOfType<TimeZoneResolver>();
         provider.GetRequiredService<ISourceTimeNormalizer>().Should().BeOfType<SourceTimeNormalizer>();
+    }
+
+    [TestMethod]
+    public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesQuantityServices()
+    {
+        _services.AddWeatherParsing();
+
+        using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+        provider.GetRequiredService<IOutputRounding>().Should().BeOfType<OutputRounding>();
+        provider.GetRequiredService<IPressureConverter>().Should().BeOfType<PressureConverter>();
+        provider.GetRequiredService<IQuantityValidator>().Should().BeOfType<QuantityValidator>();
+        provider.GetRequiredService<IPeriodRateConverter>().Should().BeOfType<PeriodRateConverter>();
+        provider.GetRequiredService<IWindSpeedConverter>().Should().BeOfType<WindSpeedConverter>();
+    }
+
+    [TestMethod]
+    public void AddWeatherParsing_QuantityServices_AreSingletonsPerContainer()
+    {
+        _services.AddWeatherParsing();
+
+        using var provider = _services.BuildServiceProvider();
+
+        var rounding1 = provider.GetRequiredService<IOutputRounding>();
+        var rounding2 = provider.GetRequiredService<IOutputRounding>();
+        rounding1.Should().BeSameAs(rounding2);
+
+        var pressure1 = provider.GetRequiredService<IPressureConverter>();
+        var pressure2 = provider.GetRequiredService<IPressureConverter>();
+        pressure1.Should().BeSameAs(pressure2);
+
+        var validator1 = provider.GetRequiredService<IQuantityValidator>();
+        var validator2 = provider.GetRequiredService<IQuantityValidator>();
+        validator1.Should().BeSameAs(validator2);
+
+        var period1 = provider.GetRequiredService<IPeriodRateConverter>();
+        var period2 = provider.GetRequiredService<IPeriodRateConverter>();
+        period1.Should().BeSameAs(period2);
+
+        var wind1 = provider.GetRequiredService<IWindSpeedConverter>();
+        var wind2 = provider.GetRequiredService<IWindSpeedConverter>();
+        wind1.Should().BeSameAs(wind2);
+
+        var converted = pressure1.FromHpa(1000.5m, PressureReference.SeaLevel);
+        converted.Hpa.Should().Be(1001m);
+        converted.MmHg.Should().Be(750m);
     }
 }

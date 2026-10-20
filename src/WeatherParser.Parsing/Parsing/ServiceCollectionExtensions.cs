@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using WeatherParser.Parsing.Export;
+using WeatherParser.Parsing.Quantities;
 using WeatherParser.Parsing.Serialization;
 using WeatherParser.Parsing.Time;
 
@@ -15,6 +16,7 @@ public static class ServiceCollectionExtensions
     /// Registers the services required to validate and map parser endpoint definitions,
     /// as well as the JSON and XML export serializers and the list entry ordering service.
     /// The source-time normalization services are also registered.
+    /// The quantity services (output rounding, pressure conversion, validation, period-rate and wind-speed conversion) are also registered.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -29,6 +31,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IListEntryOrdering, ListEntryOrdering>();
         services.AddSingleton<ITimeZoneResolver, TimeZoneResolver>();
         services.AddSingleton<ISourceTimeNormalizer, SourceTimeNormalizer>();
+        services.AddSingleton<IOutputRounding, OutputRounding>();
+        services.AddSingleton<IPressureConverter, PressureConverter>();
+        services.AddSingleton<IQuantityValidator, QuantityValidator>();
+        services.AddSingleton<IPeriodRateConverter, PeriodRateConverter>();
+        services.AddSingleton<IWindSpeedConverter, WindSpeedConverter>();
 
         return services;
     }
