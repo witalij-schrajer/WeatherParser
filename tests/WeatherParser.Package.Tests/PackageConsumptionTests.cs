@@ -50,4 +50,25 @@ public sealed class PackageConsumptionTests
                 (name.Contains("Cli", StringComparison.OrdinalIgnoreCase) ||
                  name.Contains("Mqtt", StringComparison.OrdinalIgnoreCase)));
     }
+
+    /// <summary>
+    /// Verifies that the packed library assembly contains no type in the coverage-instrumentation namespace exempted by contract C-109.
+    /// </summary>
+    [TestMethod]
+    public void Package_assembly_contains_no_coverage_instrumentation_types()
+    {
+        Assembly assembly = typeof(ParserEndpointDefinition).Assembly;
+
+        assembly.GetTypes()
+            .Where(type => type.Namespace is { } ns &&
+                (string.Equals(ns, "Microsoft.CodeCoverage.Instrumentation", StringComparison.Ordinal) ||
+                 ns.StartsWith("Microsoft.CodeCoverage.Instrumentation.", StringComparison.Ordinal)))
+            .Should()
+            .BeEmpty("the packed library is never instrumented, so the C-109 exemption cannot hide library state");
+
+        assembly.GetTypes()
+            .Should()
+            .Contain(type => type.Namespace == "WeatherParser.Parsing.Serialization", 
+                "the check must run against the real package assembly");
+    }
 }

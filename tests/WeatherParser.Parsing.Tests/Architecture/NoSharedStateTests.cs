@@ -97,6 +97,10 @@ public sealed class NoSharedStateTests
             if (type.IsDefined(typeof(CompilerGeneratedAttribute), false) && type.Name.StartsWith("<", StringComparison.Ordinal))
                 continue;
 
+            // Skip Microsoft.CodeCoverage static instrumentation types
+            if (IsCoverageInstrumentation(type))
+                continue;
+
             var fields = type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
 
             foreach (var field in fields)
@@ -115,4 +119,10 @@ public sealed class NoSharedStateTests
 
         violations.Should().BeEmpty();
     }
+
+    /// <summary>
+    /// Types that Microsoft.CodeCoverage static instrumentation injects while tests collect coverage;
+    /// test tooling, not library code (contract C-109 amendment).
+    /// </summary>
+    private static bool IsCoverageInstrumentation(Type type) => type.Namespace is { } ns && (string.Equals(ns, "Microsoft.CodeCoverage.Instrumentation", StringComparison.Ordinal) || ns.StartsWith("Microsoft.CodeCoverage.Instrumentation.", StringComparison.Ordinal));
 }
