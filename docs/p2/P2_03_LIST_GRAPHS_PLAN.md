@@ -1,6 +1,6 @@
 # P2.03 – CDC and MOSMIX List Graphs: Implementation Plan
 
-**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.03 row of section 5 and the CDC/MOSMIX rows of section 4 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; qwen's correction round fixed the requested points but duplicated lines, so the orchestrating agent applied the five specified corrections (S0 roles, S2 test path, S4/S5 Red test names, verification artifact row) to the first draft itself. Extended on 2026-10-20 after the user's review of the P2.03 contract draft: slice S6 adds regression tests for C-27 (unassigned required members fail in both formats with an untouched destination; explicit zeros and the constant `schema_version` stay valid); text drafted by qwen, inserted and capitalized by the orchestrating agent.
+**Status: completed (2026-10-20, marked completed by the user).** Implemented test-first in commit `0f59e1c`; hosted CI run 39396695630 of draft pull request #3 passed on Windows x64, Ubuntu x64 and Debian 13 ARM64; evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 3. Original planning note: this document started as a plan on 2026-10-20. This plan refines the P2.03 row of section 5 and the CDC/MOSMIX rows of section 4 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; qwen's correction round fixed the requested points but duplicated lines, so the orchestrating agent applied the five specified corrections (S0 roles, S2 test path, S4/S5 Red test names, verification artifact row) to the first draft itself. Extended on 2026-10-20 after the user's review of the P2.03 contract draft: slice S6 adds regression tests for C-27 (unassigned required members fail in both formats with an untouched destination; explicit zeros and the constant `schema_version` stay valid); text drafted by qwen, inserted and capitalized by the orchestrating agent.
 
 ## 1. Goal and Scope
 Goal: complete typed, `[Serializable]` export graphs for the CDC station list (REQ-023) and the MOSMIX location list (REQ-101–102 entity parts), with list metadata and search parameters, independent string IDs, product availability including explicitly unknown availability, empty lists, and a deterministic ordering service; proven with the real serializers.
@@ -127,11 +127,13 @@ Out of scope (owner):
 - (c) The strict-improvement coverage rule requires tests for every new block, including the ordering stub paths
 
 ## 9. Acceptance Criteria
-- [ ] S0 approval recorded before S1
-- [ ] Red failure recorded for S1–S6
-- [ ] Populated and empty lists of both kinds pass in both formats
-- [ ] IDs never converted to numbers
-- [ ] No geodesy, catalog or filter code added
-- [ ] Unassigned required members of every list root fail with `ExportSerializationException` in both formats and leave the destination untouched
-- [ ] Explicitly assigned zeros are written and `schema_version` needs no assignment
-- [ ] All tests pass
+- [x] S0 approval recorded before S1
+- [x] Red failure recorded for S1–S6
+- [x] Populated and empty lists of both kinds pass in both formats
+- [x] IDs never converted to numbers
+- [x] No geodesy, catalog or filter code added
+- [x] Unassigned required members of every list root fail with `ExportSerializationException` in both formats and leave the destination untouched
+- [x] Explicitly assigned zeros are written and `schema_version` needs no assignment
+- [x] All tests pass
+
+All criteria are evidenced in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 3 (slices S0–S6, coverage characterization, enum review fix) and by the hosted CI run 39396695630 of commit `0f59e1c`.

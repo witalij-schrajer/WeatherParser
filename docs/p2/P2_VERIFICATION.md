@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 committed (`b1ba0d2`) with a passing two-pass candidate run (section 2.7); P2.03 implemented on `features/develop/P2` (section 3); hosted CI of the draft pull request #3 checks every push.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 committed (`b1ba0d2`) with a passing two-pass candidate run (section 2.7); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); hosted CI of the draft pull request #3 checks every push.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -116,3 +116,9 @@ Record note: qwen drafted the slice rows of 3.2 as a list; the orchestrating age
 - **Fix**: the `Product` and `Availability` setters reject undefined values with `ArgumentException` (`Enum.IsDefined`), so an undefined value never reaches either serializer; both enums use the internal `StrictStringEnumConverter<TEnum>` (`allowIntegerValues: false`), so JSON neither reads nor writes integers.
 - **Result**: `WeatherParser.Parsing.Tests` 162 passed, `WeatherParser.Coverage.Tests` 99, `WeatherParser.Coverage.Runner.Tests` 56; build 0 warnings; local native block coverage 390 covered, 2 not covered (99.49 %, the two pre-existing P1 blocks).
 - **Authorship**: qwen3-coder:30b wrote the regression tests and the fix from the orchestrating agent's briefs; the orchestrating agent confirmed each failure reason and ran all builds, tests and the coverage run.
+
+### 3.7 Hosted CI and completion (2026-10-20)
+
+- Commit `0f59e1c` pushed to `features/develop/P2`; hosted CI run 39396695630 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
+- The user marked P2.03 completed on 2026-10-20; all acceptance criteria of the [P2.03 plan](P2_03_LIST_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- Recorded by the orchestrating agent (run results and user decision).
