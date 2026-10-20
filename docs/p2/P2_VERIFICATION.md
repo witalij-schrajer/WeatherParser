@@ -1,6 +1,6 @@
 # P2 Verification Record
 
-**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); P2.06 implemented on `features/develop/P2`, not yet committed (section 6); hosted CI of the draft pull request #3 checks every push.**
+**Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); P2.06 completed (commit `90106eb`, marked completed by the user; section 6); hosted CI of the draft pull request #3 checks every push.**
 
 This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
@@ -250,7 +250,7 @@ The first read-only review of the uncommitted implementation reported four findi
 - `dotnet restore WeatherParser.Ci.slnf --locked-mode`: succeeded. `dotnet build WeatherParser.Ci.slnf -c Release`: 0 warnings, 0 errors.
 - Tests: `WeatherParser.Parsing.Tests` 516 passed, `WeatherParser.Coverage.Tests` 99 passed, `WeatherParser.Coverage.Runner.Tests` 56 passed.
 - Local native block coverage of `WeatherParser.Parsing.dll`: 1643/1645 (99.88 %); the two uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`.
-- Not yet committed; the hosted CI of draft pull request #3 runs after the push.
+- Committed as `90106eb`; hosted CI result in section 6.7.
 
 ### 6.5 Deviations and design notes
 
@@ -263,3 +263,9 @@ The first read-only review of the uncommitted implementation reported four findi
 ### 6.6 Authorship
 
 qwen3-coder:30b drafted the contract rows and their revisions, generated the entities, the graph validation, the builder, the converter amendments, the DI registration and most tests from the orchestrating agent's briefs. The model had to be restarted twice (once by the user). With the earlier single-prompt invocation it repeatedly invented project APIs and rewrote files it was not given, so the orchestrating agent restored reviewed files and applied mechanical corrections (missing namespaces and usings, member paths, test data, contract references in messages) and, under the AGENTS.md exception after repeated failed briefs, wrote `ObservationBuilderRulesTests`, `ObservationExportEquivalenceTests` and the two DI tests itself. The OpenAI Codex CLI reviewed the contract draft and the implementation read-only. The orchestrating agent confirmed every failure reason and finding, ran all builds, tests, coverage and reviews, and wrote this section from its verified records because it records run results.
+
+### 6.7 Hosted CI and completion (2026-10-20)
+
+- Commit `90106eb` pushed to `features/develop/P2`; hosted CI run 39431824712 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
+- The user asked to mark P2.06 completed once the hosted CI succeeded; all acceptance criteria of the [P2.06 plan](P2_06_OBSERVATION_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- Recorded by the orchestrating agent (run results and user decision).

@@ -1,6 +1,6 @@
 # P2.06 – Observation Graphs: Implementation Plan
 
-**Status: implemented on `features/develop/P2` (2026-10-20), not yet committed; contract decisions C-48 to C-65 extend this plan (graph validation C-64, converter amendments C-63/C-65); evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 6.** Original planning note: this document started as a plan on 2026-10-20. This plan refines the P2.06 row of section 5, the Observations row of section 4 and the "Observation time semantics" and "Quantity/quality/period/error shape" decisions of section 3 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (goal label, test path, verification artifact row, evidence bullet).
+**Status: completed (2026-10-20, marked completed by the user after the hosted CI passed).** Implemented test-first in commit `90106eb`; hosted CI run 39431824712 of draft pull request #3 passed on Windows x64, Ubuntu x64 and Debian 13 ARM64. Contract decisions C-48 to C-65 extend this plan (graph validation C-64, converter amendments C-63/C-65); evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 6. Original planning note: this document started as a plan on 2026-10-20. This plan refines the P2.06 row of section 5, the Observations row of section 4 and the "Observation time semantics" and "Quantity/quality/period/error shape" decisions of section 3 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (goal label, test path, verification artifact row, evidence bullet).
 
 ## 1. Goal and Scope
 Goal: The complete observation export graph — dataset metadata, location, all REQ-052 quantities with their own timestamps, quality, source-timezone, pressure-reference and period metadata — and an interface-based builder that assembles it from P2.04 time results and P2.05 quantity services, applies omission and output rounding, enforces the dataset-time rule and rejects datasets without usable readings; proven with both real serializers.
@@ -156,8 +156,8 @@ Prerequisites: P2.02 (slice graph, serializers), P2.04 (time normalization), P2.
 - Every new code block needs a meaningful test (strict-improvement coverage rule)
 
 ## 9. Acceptance Criteria
-- [ ] S0 approval recorded
-- [ ] Red failures recorded for S1–S9
-- [ ] All nine fields, per-quantity times, omissions, zeros, markers and pressure pairs asserted in both formats
-- [ ] An all-unusable dataset never serializes
-- [ ] All tests pass
+- [x] S0 approval recorded
+- [x] Red failures recorded for S1–S9
+- [x] All nine fields, per-quantity times, omissions, zeros, markers and pressure pairs asserted in both formats
+- [x] An all-unusable dataset never serializes
+- [x] All tests pass
