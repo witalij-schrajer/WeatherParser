@@ -1,6 +1,6 @@
 # WeatherParser – Development plan
 
-**Phase status (2026-10-20): P0 complete; P1.01-P1.12 complete and P1 accepted by the user on 2026-10-19 (P1.08 accepted with its documented Red-step deviation; Visual Studio build limitation resolved; P1.09 accepted and clean-checkout reproducibility verified on Windows x64); P1.10 Debian 13 ARM64 verification complete and accepted; P1.11 developer instructions complete and accepted; P2 in progress: P2.01 to P2.09 complete, P2.10 under way ([P2 verification record](docs/p2/P2_VERIFICATION.md)); P2 not yet accepted.**
+**Phase status (2026-10-20): P0 complete; P1.01-P1.12 complete and P1 accepted by the user on 2026-10-19 (P1.08 accepted with its documented Red-step deviation; Visual Studio build limitation resolved; P1.09 accepted and clean-checkout reproducibility verified on Windows x64); P1.10 Debian 13 ARM64 verification complete and accepted; P1.11 developer instructions complete and accepted; P2 accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)), complete after the merge of pull request #3 into `develop`; P4 next on a separate instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)).**
 
 As of 2026-10-14. Based on [REQUIREMENTS.md](REQUIREMENTS.md) and [AGENTS.md](AGENTS.md). P0 is complete; P1 has started with project scaffolding only. The repository contains documentation, a solution and library/test project scaffolding; no domain implementation yet. This plan does not authorize application-code generation, GitHub publication or installation on R76S.
 

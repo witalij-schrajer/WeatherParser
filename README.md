@@ -1,6 +1,6 @@
 # WeatherParser
 
-**Phase status (2026-10-20): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); P2 (export contract) is in progress: steps P2.01 to P2.09 are complete and P2.10 is under way ([P2 verification record](docs/p2/P2_VERIFICATION.md)); P2 is not yet accepted. The SDK is pinned ([DEPENDENCIES.md](DEPENDENCIES.md)); P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; P1.11 developer instructions ([CONTRIBUTING.md](CONTRIBUTING.md)) are accepted.**
+**Phase status (2026-10-20): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); P2 (export contract) accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)), complete after the merge of pull request #3 into `develop`; P4 starts only on a separate instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)). The SDK is pinned ([DEPENDENCIES.md](DEPENDENCIES.md)); P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; P1.11 developer instructions ([CONTRIBUTING.md](CONTRIBUTING.md)) are accepted.**
 
 WeatherParser is primarily a planned C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts. The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
@@ -23,7 +23,7 @@ English is the sole maintained language for project documentation and instructio
 
 ## Project status
 
-As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md) and stays provisional until P2 acceptance. Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). **Weather-source parsers, MQTT and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. No public package publication is claimed.
+As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md); its version 1 is frozen since the P2 acceptance on 2026-10-20 (only additive optional changes, C-03). Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). **Weather-source parsers, MQTT and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. No public package publication is claimed.
 
 ## Workflow role and execution
 
@@ -173,6 +173,8 @@ The additional decisions and P0 clarifications dated 2026-10-14 (development env
 **2026-10-15: P0 complete; P1 solution/project scaffolding created. P1 is not yet accepted.**
 
 **2026-10-19: P1 accepted by the user (see the [P1 acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)). P2 is next and starts only on a separate instruction.**
+
+**2026-10-20: P2 accepted by the user (see the [P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)); complete after the merge of pull request #3 into `develop`. P4 is next and starts only on a separate instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)).**
 
 Sequence with unchanged phase IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Complete and accept the entire library first, including station selection, DWD/OsthessenWetter/MOSMIX_S/MOSMIX_L parsers, output entities, JSON/XML, XSDs, MQTT serializer and DI. Then begin P3 with the CLI usage example, configuration and example broker transport. Public release remains P9.
 

@@ -1,6 +1,6 @@
 # WeatherParser – P2 implementation plan
 
-**Status (2026-10-19): planning only. P1 completion has been checked and its accepted handoff incorporated below. P2 implementation has not started and requires a separate user instruction.**
+**Status (2026-10-20): P2 accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)); steps P2.01 to P2.11 are complete, and P2.12 completes with the merge of pull request #3 into `develop`; P4 handoff: [P4_HANDOFF.md](docs/p2/P4_HANDOFF.md).** Original planning status (2026-10-19): planning only; P1 completion was checked and its accepted handoff incorporated below.
 
 ## 1. First step: check P1 completion, extract evidence and adjust this plan
 
@@ -218,22 +218,22 @@ Keep documentation, generated diagnostics and inline/block comments, XML documen
 
 ## 10. P2 acceptance and P4 handoff checklist
 
-Every box below is intentionally unchecked. The planning-time P1 check does not prove P2 implementation or acceptance.
+Checked on 2026-10-20 against the [P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md#7-phase-plan-checklist-phase_p2_planmd-section-10); the pull-request item stays open until the merge into `develop`.
 
-- [ ] P2.01 has revalidated P1 completion, extracted its accepted data and adjusted this plan; implementation authorization is recorded.
-- [ ] Required contract decisions are recorded before their implementation and agree with binding requirements.
-- [ ] Typed, explicitly `[Serializable]` complete list/observation/forecast/error graphs preserve all required fields, nullability, IDs, metadata and separation.
-- [ ] Real JSON/XML tests prove equivalent meaning, exact UTC/culture behavior, omissions/zeros, escaping, ordering and complete documents.
-- [ ] Normalization tests prove per-quantity times, inference/DST handling, valid units/periods, pressure references and required output rounding.
-- [ ] Serializer failure/cancellation/stream behavior and interface-based DI, including independent consumers, are verified.
-- [ ] Deterministic output-XSD generation, complete local schema compilation and positive/negative real-export validation pass.
-- [ ] Same-run package consumption, frozen unrelated dependencies, hash identity and exact contents/schema delivery are verified.
-- [ ] Meaningful TDD evidence and every T-P2-01–T-P2-28 outcome are mapped to actual test names and artifacts.
-- [ ] Full candidate coverage minimum/comparison and provenance checks pass without another bootstrap or exclusion/bypass workaround.
-- [ ] New P2 platform behavior is verified, or any missing mandatory check has a named blocker and explicit acceptance disposition; no unsupported runtime claim is made.
-- [ ] The result record states actual SHAs, tool versions, test counts, package/schema hashes, qwen/orchestrator authorship per step, limitations and the explicit acceptance decision.
+- [x] P2.01 has revalidated P1 completion, extracted its accepted data and adjusted this plan; implementation authorization is recorded.
+- [x] Required contract decisions are recorded before their implementation and agree with binding requirements.
+- [x] Typed, explicitly `[Serializable]` complete list/observation/forecast/error graphs preserve all required fields, nullability, IDs, metadata and separation.
+- [x] Real JSON/XML tests prove equivalent meaning, exact UTC/culture behavior, omissions/zeros, escaping, ordering and complete documents.
+- [x] Normalization tests prove per-quantity times, inference/DST handling, valid units/periods, pressure references and required output rounding.
+- [x] Serializer failure/cancellation/stream behavior and interface-based DI, including independent consumers, are verified.
+- [x] Deterministic output-XSD generation, complete local schema compilation and positive/negative real-export validation pass.
+- [x] Same-run package consumption, frozen unrelated dependencies, hash identity and exact contents/schema delivery are verified.
+- [x] Meaningful TDD evidence and every T-P2-01–T-P2-28 outcome are mapped to actual test names and artifacts.
+- [x] Full candidate coverage minimum/comparison and provenance checks pass without another bootstrap or exclusion/bypass workaround.
+- [x] New P2 platform behavior is verified, or any missing mandatory check has a named blocker and explicit acceptance disposition; no unsupported runtime claim is made.
+- [x] The result record states actual SHAs, tool versions, test counts, package/schema hashes, qwen/orchestrator authorship per step, limitations and the explicit acceptance decision.
 - [ ] Pull request #3 marked ready for review after the status updates, review findings resolved, and the pull request merged into `develop` by the user (or on the user's explicit instruction)
-- [ ] P4 receives the accepted public contracts/helpers, schema/version mapping and source-specific validation/mapping responsibilities; plans and current status agree.
+- [x] P4 receives the accepted public contracts/helpers, schema/version mapping and source-specific validation/mapping responsibilities; plans and current status agree.
 
 P4 implements coordinates/catalog selection against these contracts; P5–P7 own provider extraction and verified element mappings; P8 adds MQTT serialization/integration; P3 later adds the CLI and transport. P2 acceptance neither completes those phases nor permits publication.
 

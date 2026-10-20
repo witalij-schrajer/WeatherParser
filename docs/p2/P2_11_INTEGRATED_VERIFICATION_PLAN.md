@@ -1,6 +1,6 @@
 # P2.11 – Integrated Coverage and Platform Verification: Implementation Plan
 
-**Status: plan only (2026-10-20); nothing is implemented or verified yet.** This plan refines the P2.11 row of section 5 and section 8 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (scope lists, no-TDD statement, artifact rows, evidence destination); the orchestrating agent restored two pairs of path backticks.
+**Status: completed (2026-10-20); outcome READY for candidate `bced7be380c3e637fdd042c4165cd074e25f25a6` (defect D1 fixed in that candidate), accepted with P2 by the user on 2026-10-20; evidence in [P2_VERIFICATION.md](P2_VERIFICATION.md) section 11.** Original planning note: this document started as a plan on 2026-10-20. This plan refines the P2.11 row of section 5 and section 8 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (scope lists, no-TDD statement, artifact rows, evidence destination); the orchestrating agent restored two pairs of path backticks.
 
 ## 1. Goal and Scope
 Goal: verify one committed P2 candidate end to end — the full two-pass local CI pipeline with the native block-coverage gate against the PR base, the hosted workflow, and the actual Debian 13 ARM64 target (NanoPi R76S) for P2-specific behavior — and audit that every T-P2-01 to T-P2-28 row has real test, TDD and run evidence; produce READY or NOT_READY for P2.12.
@@ -127,11 +127,11 @@ P2.11 changes no product code, so it has no Red/Green/Refactor slices; each veri
 - A rerun after a fix changes the candidate SHA — all evidence must reference the final candidate.
 
 ## 9. Acceptance Criteria
-- [ ] Candidate and PR-base identities recorded.
-- [ ] Local two-pass gate passed with all five rules.
-- [ ] Hosted results recorded.
-- [ ] Target run and P2-specific checks recorded or an OPEN blocker with explicit user disposition.
-- [ ] Offline proof recorded.
-- [ ] Every T-P2 row mapped to real evidence.
-- [ ] `docs/COMPATIBILITY.md` updated.
-- [ ] READY/NOT_READY stated.
+- [x] Candidate and PR-base identities recorded.
+- [x] Local two-pass gate passed with all five rules.
+- [x] Hosted results recorded.
+- [x] Target run and P2-specific checks recorded or an OPEN blocker with explicit user disposition.
+- [x] Offline proof recorded.
+- [x] Every T-P2 row mapped to real evidence.
+- [x] `docs/COMPATIBILITY.md` updated.
+- [x] READY/NOT_READY stated.

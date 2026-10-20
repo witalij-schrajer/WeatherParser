@@ -630,3 +630,7 @@ All 14 test classes that use mocks create them in `[TestInitialize]` and call `V
 ### 11.10 Authorship
 
 qwen3-coder:30b drafted the D1 procedure text (verified exact) and formatted the audit table from the mapping extracted by the orchestrating agent (backticks restored by the orchestrating agent). The orchestrating agent identified the candidates, ran every Windows, target and offline command, checked the hosted runs, extracted and verified the audit mapping, and wrote this section and the COMPATIBILITY.md update from its records because they record run results.
+
+### 11.11 Acceptance record
+
+The P2.12 acceptance record with the evidence matrix, contract decisions, limitations and decisions is [P2_12_ACCEPTANCE.md](P2_12_ACCEPTANCE.md); the P4 handoff is [P4_HANDOFF.md](P4_HANDOFF.md).
