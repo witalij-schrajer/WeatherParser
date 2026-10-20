@@ -456,3 +456,57 @@ qwen3-coder:30b (through the `/api/chat` invocation of AGENTS.md) drafted the co
 - Commit `77c92a9` pushed to `features/develop/P2`; hosted CI run 39482435638 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence); `WeatherParser.SchemaGeneration.Tests` ran in each job with 43 executed and passed tests, including the golden-file comparison (section 9.6).
 - The user marked P2.09 completed on 2026-10-20; all acceptance criteria of the [P2.09 plan](P2_09_OUTPUT_SCHEMAS_PLAN.md) are checked. The schema-delivery decision (C-106, inside the package) is implemented in P2.10. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
+
+## 10. P2.10 – DI and actual package consumption
+
+### 10.1 Contract approval (S0)
+
+qwen3-coder:30b drafted decisions C-107 to C-116 (section 14 of `P2_EXPORT_CONTRACT.md`) after the orchestrating agent scanned the library's static fields (the `decimal`, `Regex`, `TimeSpan` and `string` fields, and one mutable `static readonly HashSet<Type>` in `SupportedExportRoots`) and checked the consumer project. Read-only reviews by the OpenAI Codex CLI reported 6, 2 and 0 findings; the orchestrating agent confirmed every finding (including that the README still stated "P2 has not started"), qwen revised the rows, and the orchestrating agent set two cells qwen did not change to the briefed text. The user approved C-107 to C-116 on 2026-10-20 and chose to allowlist `Regex` (C-109).
+
+### 10.2 Slice evidence
+
+| Slice | Red test(s) and observed failure | Green / Refactor | Tests after slice |
+|---|---|---|---|
+| S1 registration and validation | Characterization: `ServiceRegistrationCompletenessTests` (every visible service interface registered as singleton of its only implementation, only closed type-based descriptors, `IExportRootValidation` the only non-visible interface, missing dependency fails on build) passed immediately; mutation check: removing the `IForecastRunBuilder` registration made the completeness test fail | none | 877 Parsing |
+| S2 no shared state | `NoSharedStateTests.LibraryTypes_DeclareNoStaticState`: "found ... SupportedExportRoots.Roots : HashSet`1"; container independence and cache isolation passed immediately (characterization) | `SupportedExportRoots` decides support with a static method instead of a static collection | 880 Parsing |
+| S3 consumer resolves and serializes | Consumer build against the stale restored package: CS0234 for `WeatherParser.Parsing.Export`, `Forecasts`, `Observations`, `Quantities`, `Serialization`, `Time` and CS0246 `ServiceProvider` (no DI container reference) | `Microsoft.Extensions.DependencyInjection` added to the consumer; same-run pack, stale cache entry removed, lock refreshed, locked restore; `ConsumerTestData`, `PackageServiceResolutionTests`, `PackageSerializationTests` | 10 consumer |
+| S4 schema delivery | `PackageSchemaDeliveryTests`: 7 failures "Expected File.Exists(PackagedSchema) to be True ... found False"; `$(PkgWeatherParser_Parsing)` checked in `nuget.g.props` | Schema packed at `schemas/export/v1/` (plain package file); `ci-local.ps1` allowlist and CONTRIBUTING.md section 4 gain exactly this entry | 17 consumer |
+| S5 documentation | README status, solution paragraph and export section; `DEVELOPMENT_PLAN.md` and `PHASE_P1_PLAN.md` status; DEPENDENCIES.md (runtime sentence, two missing DI rows with MIT licenses checked in the nuspecs, direct-package count); CONTRIBUTING.md section 4; package check rerun after the README change | — | — |
+| Review fixes | — | Stronger consumer cross-format checks; no `Exists` condition on the packaged schema item (a missing file now fails the build) | 17 consumer |
+
+### 10.3 Package evidence (local, working tree)
+
+- Package `WeatherParser.Parsing.0.1.0-initial.nupkg` entries: `_rels/.rels`, `WeatherParser.Parsing.nuspec`, `LICENSE`, `README.md`, `lib/net10.0/WeatherParser.Parsing.dll`, `schemas/export/v1/weatherparser-export-v1.xsd`, `[Content_Types].xml`, `package/services/metadata/core-properties/nuget.psmdcp`; `README.md`, `LICENSE` and the schema are byte-identical to the working tree.
+- Packed SHA-512 of the final local pack `fduKbeo4EGi5RndgO062aL1R4Dt7rL+2KMqGATNVXyLhPnnhxRuHEvEr6ihnEhWIm58Qq1XEmDbTLYJmYmQG5A==` equals the restored `.nupkg.sha512` after the locked restore.
+- Consumer lock: the committed change adds only the `Microsoft.Extensions.DependencyInjection` entry (9 lines); the `WeatherParser.Parsing` `contentHash` keeps its previously committed value (C-111, C-116); the same-run refresh was reset after each local run.
+- S6 (`ci-local.ps1` on a committed checkpoint) is recorded after the commit.
+
+### 10.4 Implementation review by Codex
+
+Round 1 reported three findings, all confirmed: the `Exists` condition could leave a stale schema from an earlier build in the consumer output; the consumer serialization test accepted a JSON document that kept only `schema_version`; the DEPENDENCIES.md direct-package count was wrong. All were fixed through qwen; round 2 reported no findings.
+
+### 10.5 Checks run on the working tree (2026-10-20)
+
+- `dotnet restore WeatherParser.Ci.slnf --locked-mode`: succeeded. `dotnet build WeatherParser.Ci.slnf -c Release`: 0 warnings, 0 errors.
+- Tests: `WeatherParser.Parsing.Tests` 880, `WeatherParser.SchemaGeneration.Tests` 43, `WeatherParser.Coverage.Tests` 99, `WeatherParser.Coverage.Runner.Tests` 56 and the package consumer `WeatherParser.Package.Tests` 17 passed.
+- Local native block coverage of `WeatherParser.Parsing.dll`: 3035/3037 (99.93 %); the two uncovered blocks are the pre-existing P1 constructor `ParserEndpointValidator(IEndpointUriValidator)`.
+- Not yet committed; hosted CI pending.
+
+### 10.6 Test IDs
+
+| T-P2 ID | Tests |
+|---|---|
+| T-P2-19 | `ServiceRegistrationCompletenessTests`, `NoSharedStateTests`, existing `ServiceCollectionExtensionsTests` |
+| T-P2-24 | `PackageConsumptionTests`, `PackageServiceResolutionTests`, `PackageSerializationTests`, `PackageSchemaDeliveryTests` |
+| T-P2-25 | `PackageSchemaDeliveryTests`, the package check of section 10.3 and the S6 run after the commit |
+
+### 10.7 Deviations and design notes
+
+1. The registration tests live in the new `Architecture/ServiceRegistrationCompletenessTests.cs` instead of extending `ServiceCollectionExtensionsTests.cs`; the service list is derived by reflection (C-107).
+2. S1 and the container and cache parts of S2 are characterization; the static-state check found the real `HashSet<Type>` defect.
+3. The `ci-local.ps1` allowlist line was inserted by the orchestrating agent (the 1379-line script exceeds one qwen output).
+4. DEPENDENCIES.md had omitted both DI packages since P1; P2.10 lists them.
+
+### 10.8 Authorship
+
+qwen3-coder:30b drafted the contract rows and generated all tests, the consumer fixture, the `SupportedExportRoots` change, the project-file changes and every documentation passage from the orchestrating agent's briefs; each documentation passage was checked for exact equality with the brief before it was applied. Where qwen deviated (invented `BeGreaterOrEqualTo`, a `StreamReader` misuse, invalid switch expressions, missing XML namespaces, two contract cells left unchanged, missing Status cells), defects were returned with compiler or test output, and the orchestrating agent applied mechanical corrections. The orchestrating agent ran the pack, cache, lock and consumer procedure, reset the consumer lock hash, inserted the `ci-local.ps1` entry, ran all builds, tests, coverage, mutation checks and reviews, and wrote this record. The OpenAI Codex CLI reviewed the contract draft and the implementation read-only.

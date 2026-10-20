@@ -9,8 +9,13 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeCoverage" PrivateAssets="all" />
     <PackageReference Include="FluentAssertions" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WeatherParser.Parsing" />
+    <PackageReference Include="WeatherParser.Parsing" GeneratePathProperty="true" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(PkgWeatherParser_Parsing)/schemas/export/v1/weatherparser-export-v1.xsd" Link="Schemas/weatherparser-export-v1.xsd" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../schemas/export/v1/weatherparser-export-v1.xsd" Link="ReferenceSchemas/weatherparser-export-v1.xsd" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

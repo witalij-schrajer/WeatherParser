@@ -1,6 +1,6 @@
 # WeatherParser
 
-**Phase status (2026-10-19): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); P2 has not started. The SDK is pinned ([DEPENDENCIES.md](DEPENDENCIES.md)); P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; P1.11 developer instructions ([CONTRIBUTING.md](CONTRIBUTING.md)) are accepted.**
+**Phase status (2026-10-20): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); P2 (export contract) is in progress: steps P2.01 to P2.09 are complete and P2.10 is under way ([P2 verification record](docs/p2/P2_VERIFICATION.md)); P2 is not yet accepted. The SDK is pinned ([DEPENDENCIES.md](DEPENDENCIES.md)); P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; P1.11 developer instructions ([CONTRIBUTING.md](CONTRIBUTING.md)) are accepted.**
 
 WeatherParser is primarily a planned C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts. The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
@@ -23,7 +23,7 @@ English is the sole maintained language for project documentation and instructio
 
 ## Project status
 
-As of 2026-10-19, the solution contains the library, source-reference tests, isolated package-consumer tests and coverage tooling. Parser-endpoint validation and the `AddWeatherParsing` DI entry point exist; the unused export-entity scaffolding was removed on 2026-10-19 and will be reintroduced test-first in P2. Test and coverage evidence is kept in the [P1 records](docs/p1/). **Weather-source parsers and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. Full P1 acceptance remains open; no public package publication is claimed.
+As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md) and stays provisional until P2 acceptance. Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). **Weather-source parsers, MQTT and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. No public package publication is claimed.
 
 ## Workflow role and execution
 
@@ -75,7 +75,7 @@ The example coordinates demonstrate two input formats and are not exactly equiva
 
 If `ParseDWD` has neither a `StationID` argument nor a configured reference station, the application must log an error and exit unsuccessfully. It must never select a station silently. An explicit CLI value overrides configuration.
 
-## Planned JSON and XML export
+## JSON and XML export (library implemented, CLI planned)
 
 All five commands support `--Output mqtt|json|xml`, with MQTT as the default. JSON and XML export require no MQTT broker. `--OutputFile <path>` writes a UTF-8 file; without a path, the complete document goes to standard output. Logs remain on standard error. Existing files are not silently overwritten.
 
@@ -91,7 +91,7 @@ These commands are not implemented yet. Both export formats contain the same obs
 
 Each functional export object type has its own strongly typed C# entity marked `[Serializable]`, including nested export objects. This includes station lists and entries, observation datasets, forecast runs and steps, and quality/period metadata. Reusable value entities may be shared.
 
-JSON uses `System.Text.Json.JsonSerializer`; XML uses `System.Xml.Serialization.XmlSerializer`. Both formats and MQTT JSON use the same prepared export entities. Serializer-specific rules control field names, omitted values and UTC without a timezone suffix. Serializer services use constructor injection. The earlier, untested export-entity scaffolding was removed on 2026-10-19; P2 introduces each entity test-first together with its serializer contracts.
+JSON uses `System.Text.Json.JsonSerializer`; XML uses `System.Xml.Serialization.XmlSerializer`. Both formats and MQTT JSON use the same prepared export entities. Serializer-specific rules control field names, omitted values and UTC without a timezone suffix. Serializer services use constructor injection. The library implements these entities and both serializers (P2.02 to P2.08); the XML output schema is generated from the same mappings and ships in the package at `schemas/export/v1/weatherparser-export-v1.xsd` (P2.09).
 
 ## Shared observation data
 

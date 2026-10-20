@@ -405,6 +405,7 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
         $zip = [IO.Compression.ZipFile]::OpenRead($nupkgPath)
         $expectedEntries = @(
             'lib/net10.0/WeatherParser.Parsing.dll',
+            'schemas/export/v1/weatherparser-export-v1.xsd',
             'README.md',
             'LICENSE',
             'WeatherParser.Parsing.nuspec',
