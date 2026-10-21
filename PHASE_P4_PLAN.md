@@ -1,6 +1,6 @@
 # WeatherParser – P4 implementation plan
 
-**Status (2026-10-20): P4.01 executed on 2026-10-21 (outcome READY, [record](docs/p4/P4_01_FOUNDATION_CHECK.md)); no production code is implemented yet.**
+**Status (2026-10-20): P4.01 executed on 2026-10-21 (outcome READY, [record](docs/p4/P4_01_FOUNDATION_CHECK.md)); no production code is implemented yet. P4.02 slices S1 to S5 complete: selection contract SC-01 to SC-23 approved by the user on 2026-10-21 ([contract](docs/p4/P4_SELECTION_CONTRACT.md)); S6 complete on 2026-10-21: this plan and the step plans P4.03 to P4.12 reconciled with it ([P4 verification record](docs/p4/P4_VERIFICATION.md) section 2).**
 Refines the P4 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) using the [P4 handoff](docs/p2/P4_HANDOFF.md); binding rules in [AGENTS.md](AGENTS.md) and [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## 1. First step: check P2 completion and adjust this plan
@@ -44,9 +44,9 @@ In scope:
 
 Out of scope with owner:
 - CLI options, output modes, files/stdout, exit codes → P3
-- DWD observation retrieval/parsing → P5
+- DWD observation retrieval/parsing → P5 (P4 retrieves and structurally checks the per-station `now` files only to establish availability, SC-19; full observation parsing and normalization stay in P5)
 - OsthessenWetter → P6
-- MOSMIX forecast parsing, KML/KMZ, input schema `pointforecast_dwd_extension_V1_0.xsd` → P7
+- MOSMIX forecast parsing, KML/KMZ, input schema `pointforecast_dwd_extension_V1_0.xsd` → P7 (P4 retrieves and structurally checks MOSMIX_L files and the MOSMIX_S all-stations file only to establish availability, SC-20, SC-22; forecast interpretation, time alignment and units stay in P7)
 - MQTT serializer/topics → P8
 - publication → P9
 
@@ -56,21 +56,26 @@ No change of export contract v1 except additive optional members with a recorded
 
 Decisions are recorded in `docs/p4/P4_SELECTION_CONTRACT.md` (Proposed name) in P4.02, reviewed by Codex read-only (up to 10 rounds) and approved by the user before the affected Red test; source formats are taken only from official DWD documentation or the actual published files, with URL and check date recorded; P4.02 also records access conditions, attribution and retrieval-frequency guidance for every catalog and availability endpoint (REQ-092); unresolved restrictions block live retrieval.
 
+All decisions below were approved on 2026-10-21 in [P4_SELECTION_CONTRACT.md](docs/p4/P4_SELECTION_CONTRACT.md) as SC-01 to SC-23.
+
 | Decision | Required resolution / recommendation | Decided by | Blocks |
 | --- | --- | --- | --- |
-| CDC catalog source and format | Which official DWD CDC station description file(s) define station ID, name, coordinates, altitude and active period; exact column layout, encoding and ID width from the actual documented format (OPEN until verified in P4.02) | User (contract review) | P4.05–06 |
-| CDC availability derivation | Which DWD products/metadata prove a quantity per station (REQ-024), how the REQ-052 names of C-21 map to products, and the rule for inactive stations (Recommended: exclude stations whose metadata shows no current data instead of listing them as suitable) | User (contract review) | P4.06 |
-| MOSMIX catalog source and format | Official DWD MOSMIX location catalog: ID, name, coordinate and altitude format (for example degrees and minutes), encoding; missing altitude handling per REQ-102 (OPEN until verified) | User (contract review) | P4.07 |
-| MOSMIX per-product availability | How availability per `MOSMIX_S`/`MOSMIX_L` and the verified element list are derived; Recommended default: `unknown` with an empty element list when no location-specific evidence exists (C-23) | User (contract review) | P4.07 |
-| Geodetic method | Documented WGS84 method and tolerance (Recommended: a named, cited method with published reference distances for tests; OPEN between ellipsoidal and spherical) | User (contract review) | P4.04 |
-| Coordinate grammar | Accepted decimal and DMS spellings (degree, prime/apostrophe, double prime/quote symbols, whitespace, hemisphere letters), sign/hemisphere conflicts, ranges; invariant culture | User (contract review) | P4.03 |
-| Logging of notices | Empty-result and excluded-location notices: abstraction and package (Recommended: `Microsoft.Extensions.Logging.Abstractions` after version/license check, with stable notice IDs, written by the consumer's logger) | User (contract review) | P4.07, P4.09 |
-| Retrieval boundary | HTTP abstraction (`HttpClient` from the consumer or `IHttpClientFactory`), endpoint parameters per catalog/product, timeout, maximum download size, retries (bounded, Recommended none in the library), cancellation and error types | User (contract review) | P4.08 |
-| Catalog failure semantics | Fail or skip for malformed records, diagnostics, behavior when all records are invalid, and when availability metadata is missing or unreadable; a valid empty selection must stay distinguishable from retrieval, format and availability-derivation failures (P2 list roots carry no error collection) | User (contract review) | P4.05–09 |
-| Public selection API | Interfaces, input type for search parameters, result types (Proposed `ICdcStationSelector`, `IMosmixLocationSelector` returning the P2 list roots), error/exception types | User (contract review) | P4.09–10 |
-| List metadata and time source | The `source` literal of each list root (C-18 leaves the literals to P4), the time abstraction for `retrieved_at` (for example the BCL `TimeProvider` abstract class or a library interface), who registers it (library or consumer), when it is sampled during a selection, and its whole-second conversion for `ExportTimestamp.FromUtc` | User (contract review) | P4.06, P4.09 |
-| Service registration under C-107/C-108 | How services with consumer-supplied endpoint `Uri` parameters are registered when C-107 forbids factory and instance registrations (for example a typed endpoint options class registered by the consumer, or a recorded additive amendment of C-107); every new public interface registered in the step that adds it | User (contract review) | P4.03–10 |
-| Live verification | Whether and how an explicitly enabled live check against the real DWD catalogs is run and recorded separately from standard tests | User | P4.11 |
+| CDC catalog source and format | Union of the four 10-minute `now` station lists (air temperature, wind, precipitation, solar), fixed-width ISO-8859-1 layout with verified positions (SC-02) | User, approved 2026-10-21 | P4.05–06 |
+| CDC availability derivation | List pre-filter on from/to dates (UTC assumption, one-day tolerance), then, only for stations inside the search area, the station's current `now` data file per product; a quantity counts only with a usable value (P2 `IQuantityValidator`) within [reference instant − 3 h, reference instant + 10 min] (SC-03, SC-19) | User, approved 2026-10-21 | P4.06 |
+| MOSMIX catalog source and format | ISO-8859-1, header token check, IDs `^[A-Z0-9]{4,5}$`, coordinates in degrees and minutes, elevation −500..9000 m, missing elevation → excluded with notice (SC-04) | User, approved 2026-10-21 | P4.07 |
+| MOSMIX per-product availability | MOSMIX_L (option A) from each in-area location's own file; MOSMIX_S from a cached evidence index of the all-stations file, built by a separate refresh operation (`IMosmixSEvidenceRefresher`) whose timing is controlled externally, for example by n8n or cron (not a dependency); selections only read the index; a stale index is used and marked (`MOSMIX-S-EVIDENCE-STALE`); a missing index fails (`MOSMIX-S-EVIDENCE-MISSING`) (SC-05, SC-20, SC-22) | User, approved 2026-10-21 | P4.07 |
+| Geodetic method | Vincenty (WGS84) with spherical fallback and a spherical pre-filter in the filter; GeographicLib reference values recorded before the P4.04 Red test (SC-06) | User, approved 2026-10-21 | P4.04 |
+| Coordinate grammar | Decimal `^[+-]?\d{1,3}(\.\d{1,20})?$` and DMS `D° M′ [S″] H` with the accepted symbols, hemisphere rules and ranges of SC-07; invariant culture; failures `COORDINATE-INVALID` | User, approved 2026-10-21 | P4.03 |
+| Logging of notices | `Microsoft.Extensions.Logging.Abstractions` 10.0.13 with both DI packages raised to 10.0.13 in P4.07, the first step whose service logs (the MOSMIX catalog reader's missing-altitude notice); the P4.05 and P4.06 readers return diagnostics without logging and the P4.09 selectors log them; services take `ILogger<T>`, the consumer registers logging; notice IDs of SC-17 (SC-08) | User, approved 2026-10-21 | P4.07, P4.09 |
+| Retrieval boundary | Consumer-registered `HttpClient`, no library handler; 30 s per request, 8 MiB / 1 MiB / 64 MiB size bounds, no retries, classification precedence, sanitized messages (SC-09) | User, approved 2026-10-21 | P4.08 |
+| Catalog failure semantics | Malformed records skipped with `CATALOG-RECORD-SKIPPED`; format failure for header mismatch, empty stream, lines over 2048 characters or no valid record; exclusions are not failures; any list, catalog or non-404 per-station failure fails the selection; valid empty selection with one `SELECTION-EMPTY` (SC-10) | User, approved 2026-10-21 | P4.05–09 |
+| Public selection API | Interfaces of SC-11 including `ICdcNowEvidenceReader`, `IMosmixLEvidenceReader`, `ICdcStationSelector` and `IMosmixLocationSelector`; one validation policy for factory and selectors with snapshot at entry; every public exception exposes `ErrorId` (SC-11, SC-17) | User, approved 2026-10-21 | P4.09–10 |
+| List metadata and time source | `source` = `dwd:cdc-10min-now` and `dwd:mosmix-stationskatalog`; the consumer registers the BCL `TimeProvider`; the reference instant is read once per selection, evidence download times separately; `retrieved_at` truncated to whole seconds (SC-13) | User, approved 2026-10-21 | P4.06, P4.09 |
+| Service registration under C-107/C-108 | C-107 unchanged; the consumer registers `CdcCatalogEndpoints` (eight URIs and limits) and `MosmixCatalogEndpoints` (catalog, MOSMIX_L directory, limits, MOSMIX_S settings), an `HttpClient`, a `TimeProvider` and logging; URI composition rules; validation at construction (SC-12) | User, approved 2026-10-21 | P4.03–10 |
+| Live verification | Optional and explicitly enabled (P4.11 S0); the requests of one CDC and one MOSMIX selection with a small search radius, bounded by SC-18; recorded separately (SC-15) | User, approved 2026-10-21 | P4.11 |
+| Per-station request limits | MaxEvidenceCandidates (default 100) and SelectionDeadline (default 120 s), at most 4 parallel requests (SC-18) | User, approved 2026-10-21 | P4.08, P4.09 |
+| MOSMIX_S evidence cache and refresh | Separate operation, externally triggered, no scheduler, SC-22 | User, approved 2026-10-21 | P4.07, P4.08 |
+| Evidence timestamps in the result | Additive optional members `evidence_retrieved_at` and `evidence_issued_at` on `MosmixProductAvailability`, the schema generator extended for optional timestamps, the v1 schema regenerated (SC-23, C-117 to C-119) | User, approved 2026-10-21 | P4.07, P4.09 |
 
 ## 4. Behavior contracts
 
@@ -80,11 +85,11 @@ Decisions are recorded in `docs/p4/P4_SELECTION_CONTRACT.md` (Proposed name) in 
 | Search parameters | REQ-020/022: altitude may be negative, both limits ≥ 0 and finite, values carried unchanged into `SearchParameters` |
 | Distance and filters | REQ-022: documented WGS84 method, both limits inclusive, absolute altitude difference filtered separately, signed `altitude_difference_m` = entry minus reference |
 | CDC catalog | REQ-023/024: IDs as strings with leading zeros, umlauts preserved, format per documentation, malformed records handled per the decided failure semantics, never guessed; a format failure never yields a successful empty list |
-| CDC availability | REQ-024: only verified quantities in `available_measurements`, catalog membership no proof, inactive stations not suitable |
+| CDC availability | REQ-024: only quantities with a usable value in the station's current `now` data (SC-03, SC-19) appear in `available_measurements`; catalog membership no proof; stations without a candidate product or without an available quantity are inactive and never entries |
 | MOSMIX catalog | REQ-100–102: own catalog and IDs, alphanumeric and leading-zero IDs, never a CDC ID, missing altitude never zero, unfilterable locations excluded with a notice, no CDC fallback |
-| MOSMIX availability | C-23: one item per product, `unknown` explicit, elements only when `available` |
-| Retrieval | REQ-014: endpoints as constructor `Uri` parameters validated without retrieval, no built-in or fallback URLs, bounded timeout and size, cancellation, failures surfaced with actionable English messages, no fabricated data |
-| Lists | REQ-023/101: `schema_version`, source, UTC `retrieved_at` from an injected time source, converted to the whole-second representation that `ExportTimestamp.FromUtc` accepts (the conversion rule is decided in P4.02 and tested with a clock value that has fractional seconds), `SearchParameters`, ordering through `IListEntryOrdering`, valid empty list plus log notice, never a substitute |
+| MOSMIX availability | C-23: one item per product, `unknown` explicit, elements only when `available`; MOSMIX_L from each in-area location's file (SC-05 option A, SC-20); MOSMIX_S from the externally refreshed evidence index, a stale index used and marked (SC-22); `evidence_retrieved_at` and `evidence_issued_at` whenever evidence was used (SC-23) |
+| Retrieval | REQ-014: endpoints in consumer-registered options validated at construction without retrieval, no built-in or fallback URLs; consumer `HttpClient`; size and time bounds, classification precedence and sanitized messages (SC-09, SC-12); per-station requests only inside the search area, at most `MaxEvidenceCandidates` candidates, 4 in parallel, within `SelectionDeadline` (SC-18) |
+| Lists | REQ-023/101: `schema_version`, `source` literals (SC-13), UTC `retrieved_at` from the reference instant of the consumer's `TimeProvider` truncated to whole seconds, `SearchParameters` from the validated snapshot (SC-11), ordering through `IListEntryOrdering`, valid empty list plus one `SELECTION-EMPTY` notice, never a substitute |
 | Exports | REQ-067–068: the same list graph serialized by both real serializers, valid against the v1 output schema |
 
 Every class with executable logic has an interface and constructor injection; registration only in `AddWeatherParsing`; no global state.
@@ -97,14 +102,14 @@ Every class with executable logic has an interface and constructor injection; re
 | P4.02 – Source facts and selection contract | P4.01 | Verify the CDC and MOSMIX catalog formats and availability sources from official DWD sources; record the section 3 decisions in `docs/p4/P4_SELECTION_CONTRACT.md`; Codex review loop; user approval; no production code |
 | P4.03 – Coordinate parsing and search parameters | P4.02 | Coordinate parser and search-parameter validation service with interfaces, test-first; every step that adds a public service interface registers it in `AddWeatherParsing` in the same step and keeps `ServiceRegistrationCompletenessTests` green |
 | P4.04 – Geodesy and inclusive filters | P4.02–03 | Distance calculator with the decided method and reference values; inclusive distance/altitude filter; altitude difference |
-| P4.05 – CDC station catalog reader | P4.02 | Reader for the documented CDC catalog format from local streams with synthetic fixtures; IDs, names, coordinates, altitudes, active periods; malformed input |
-| P4.06 – CDC availability derivation | P4.05 | Derive `available_measurements` and inactive-station handling from the decided product metadata |
-| P4.07 – MOSMIX location catalog and product availability | P4.02, P4.04 | Reader for the documented MOSMIX catalog; coordinate/altitude normalization; missing-altitude exclusion with notice; per-product availability with explicit `unknown` |
-| P4.08 – Catalog retrieval boundary | P4.05, P4.07 | Injectable retrieval with constructor endpoints, endpoint validation, bounded timeout/size, cancellation and error handling; tests with a mocked HTTP handler, offline |
-| P4.09 – Selection services and list assembly | P4.03–08 | `CdcStationList`/`MosmixLocationList` assembly with search parameters, source, UTC retrieval time, ordering, empty result and notice; real JSON/XML and schema validation |
-| P4.10 – DI registration and package consumption | P4.09 | Integrated DI configuration with consumer-supplied endpoints and independent configurations; package-consumer tests from the same-run `.nupkg` |
+| P4.05 – CDC station catalog reader | P4.02 | Reader of one CDC station list with the verified SC-02 layout from local streams with synthetic fixtures (SC-14): header check, field grammars, missing altitude, malformed and duplicate records, 2048-character line limit, format failures (SC-10) |
+| P4.06 – CDC availability derivation | P4.05 | Union and conflicts of the four lists, date pre-filter (SC-02, SC-03 stage 1), `ICdcNowEvidenceReader` (SC-19) and the usable-value derivation (SC-03 stage 2) |
+| P4.07 – MOSMIX location catalog and product availability | P4.02, P4.04, P4.05 | Export members C-117 to C-119 with generator change and schema regeneration (SC-23); MOSMIX catalog reader (SC-04); logging package and DI version raise (SC-08); `MosmixCatalogEndpoints` with all its URIs, limits and MOSMIX_S settings, their validation at construction and the URI composition rules (SC-12, SC-18, SC-22), needed by the cache store; `IMosmixLEvidenceReader` (SC-20); MOSMIX_S evidence index and cache store (SC-22 read and write side); availability resolver (SC-05) |
+| P4.08 – Catalog retrieval boundary | P4.05–P4.07 | Downloader with SC-09 bounds and classification; `CdcCatalogEndpoints` with its eight URIs and limits, validated with the P4.07 rules, and the `ErrorId` of `ParserEndpointValidationException` (SC-12, SC-17); per-station evidence downloads with HTTP 404 semantics; `IMosmixSEvidenceRefresher` (SC-22 download and stream parse); catalog sources; offline tests with a mocked HTTP handler |
+| P4.09 – Selection services and list assembly | P4.03–08 | Selectors with snapshot validation (SC-11), reference instant and evidence times (SC-13), candidate cap, deadline and parallelism (SC-18), evidence orchestration, notices and diagnostics, `CdcStationList`/`MosmixLocationList` assembly with evidence timestamps; real JSON/XML and schema validation |
+| P4.10 – DI registration and package consumption | P4.09 | Integrated DI configuration with consumer-registered options and independent configurations; README consumer guidance (SC-16 attribution, IP note, retrieval guidance, refresh scheduling example with n8n or cron, transport settings); package-consumer tests from the same-run `.nupkg` including the refresh and the new export members |
 | P4.11 – Integrated coverage and platform verification | P4.03–10 | Committed candidate through `scripts/ci-local.ps1` on Windows, hosted CI, NanoPi R76S evidence (with authorization); optional separately enabled live check; READY/NOT_READY |
-| P4.12 – Acceptance and P5 handoff | P4.11 | Evidence matrix, limitations, user acceptance, status updates, P5 handoff; pull request ready for review, review fixes, merge by the user |
+| P4.12 – Acceptance and P5 handoff | P4.11 | Evidence matrix, limitations, user acceptance, status updates, P5 handoff including the SC-21 reuse obligations (P5 builds on the CDC evidence reader's archive and format handling; P7 on the MOSMIX_L reader's secure KMZ and XML handling and the MOSMIX_S streaming reader); pull request ready for review, review fixes, merge by the user |
 
 Step plans are stored as `docs/p4/P4_NN_<SHORT_NAME>_PLAN.md`; each is drafted by qwen and reviewed by Codex before the step starts.
 
@@ -131,10 +136,10 @@ Step plans are stored as `docs/p4/P4_NN_<SHORT_NAME>_PLAN.md`; each is drafted b
 | T-P4-04 | REQ-022 | Distance against published reference values within the decided tolerance | P4.04 |
 | T-P4-05 | REQ-022, REQ-082 | Inclusive limits at the exact boundary, altitude filtered separately, signed altitude difference | P4.04 |
 | T-P4-06 | REQ-023, REQ-024, REQ-083 | CDC catalog: leading-zero IDs, umlauts, documented format, malformed records handled per the decided failure semantics, never guessed; a format failure never yields a successful empty list | P4.05 |
-| T-P4-07 | REQ-024 | CDC availability from product metadata; membership no proof; inactive stations not suitable | P4.06 |
+| T-P4-07 | REQ-024 | CDC availability from product metadata; membership no proof; inactive stations not suitable; usable-value rule (SC-03) | P4.06 |
 | T-P4-08 | REQ-100–102, REQ-082 | MOSMIX catalog: alphanumeric and leading-zero IDs, coordinate normalization, missing altitude excluded with notice | P4.07 |
-| T-P4-09 | REQ-101–102 | Per-product availability, explicit `unknown`, no CDC fallback | P4.07 |
-| T-P4-10 | REQ-014, REQ-102 | Constructor endpoints validated without retrieval, no fallback, bounded timeout/size, cancellation, surfaced failures | P4.08 |
+| T-P4-09 | REQ-101–102 | Per-product availability, explicit `unknown`, no CDC fallback; MOSMIX_L files, MOSMIX_S index (SC-22), evidence timestamps (SC-23) | P4.07 |
+| T-P4-10 | REQ-014, REQ-102 | Constructor endpoints validated without retrieval, no fallback, bounded timeout/size, cancellation, surfaced failures | P4.07 (MOSMIX options validation), P4.08 |
 | T-P4-11 | REQ-023, REQ-068 | CDC list assembly: metadata, search parameters, ordering, empty list with notice, no substitute; retrieval time with fractional seconds | P4.09 |
 | T-P4-12 | REQ-101, REQ-068 | MOSMIX list assembly: same rules | P4.09 |
 | T-P4-13 | REQ-067–068, REQ-082 | Both lists through real JSON/XML serializers, equivalence, schema-valid, leading zeros, umlauts | P4.09 |
@@ -143,6 +148,8 @@ Step plans are stored as `docs/p4/P4_NN_<SHORT_NAME>_PLAN.md`; each is drafted b
 | T-P4-16 | REQ-086 | Native block coverage ≥ 80 %; strict improvement against the remeasured integration target below 100 %, exact 100 % accepted only at an exact 100 % baseline; unrounded native counter ratios | P4.11 |
 | T-P4-17 | REQ-017, REQ-084 | P4 behavior on the NanoPi R76S (Debian 13 ARM64), separate from Windows | P4.11 |
 | T-P4-18 | REQ-083, REQ-092 | Optional live catalog check, explicitly enabled and recorded separately | P4.11 |
+| T-P4-19 | REQ-101, REQ-102, REQ-083 | MOSMIX_S evidence refresh and index: download and stream parse bounds, all-stations identity rules, source binding, atomic replacement, missing and stale index handling (SC-22) | P4.07, P4.08 (P4.09 selector index check and stale notice, P4.10 DI and package consumer) |
+| T-P4-20 | REQ-067, REQ-068, REQ-079 | Additive export members `evidence_retrieved_at` and `evidence_issued_at` (C-117 to C-119): generator, regenerated v1 schema, real serializers, package consumer | P4.07, P4.10 |
 
 ## 7. Execution verification and evidence
 
@@ -153,12 +160,12 @@ Per implementation step: qwen generates tests and code from briefs; the orchestr
 
 ## 8. Files and documentation maintenance
 
-New records under `docs/p4/`; production code under `src/WeatherParser.Parsing/<Folder>/` (Proposed folders `Geography/`, `Catalogs/`, `Selection/`); tests under `tests/WeatherParser.Parsing.Tests/` and `tests/WeatherParser.Package.Tests/`; synthetic fixtures only (no unchecked third-party copies); AGENTS.md consistency table applies (new package → `DEPENDENCIES.md`, `Directory.Packages.props` and lock files; README changes → package check of CONTRIBUTING.md section 4); public API and DI usage documented in README.md; phase status changes update the README status summary, `PHASE_P1_PLAN.md`, `DEVELOPMENT_PLAN.md` and this plan; a README change needs the CONTRIBUTING.md section 4 package check and the local CI script run on the committed revision.
+New records under `docs/p4/`; production code under `src/WeatherParser.Parsing/<Folder>/` (Proposed folders `Geography/`, `Catalogs/`, `Selection/`); tests under `tests/WeatherParser.Parsing.Tests/` and `tests/WeatherParser.Package.Tests/`; synthetic fixtures only (no unchecked third-party copies); AGENTS.md consistency table applies (new package → `DEPENDENCIES.md`, `Directory.Packages.props` and lock files; README changes → package check of CONTRIBUTING.md section 4); public API and DI usage documented in README.md; phase status changes update the README status summary, `PHASE_P1_PLAN.md`, `DEVELOPMENT_PLAN.md` and this plan; a README change needs the CONTRIBUTING.md section 4 package check and the local CI script run on the committed revision. The contract record `docs/p4/P4_SELECTION_CONTRACT.md` and the research manifest under `docs/p4/research/` are added. Changes to existing P2 code are allowed only where the contract requires them (`src/WeatherParser.Parsing/Export/MosmixProductAvailability.cs`, `tools/WeatherParser.SchemaGeneration/`, the regenerated `schemas/export/v1/weatherparser-export-v1.xsd`, `ParserEndpointValidationException` gaining `ErrorId`), with the AGENTS.md consistency table (new package and DI version raise → `Directory.Packages.props`, lock files, `DEPENDENCIES.md`).
 
 ## 9. P4 acceptance and P5 handoff checklist
 
 - [x] P4.01 foundation check recorded (2026-10-21, outcome READY)
-- [ ] selection contract approved by the user after Codex review
+- [x] selection contract approved by the user after Codex review
 - [ ] every mandatory T-P4 row has passing tests and recorded evidence; the optional live check T-P4-18 is either passed or recorded as skipped with its limitation
 - [ ] coordinate, filter, catalog and availability behavior matches REQ-020–024 and REQ-100–102
 - [ ] both list roots serialize equivalently and validate against the v1 schema
@@ -170,7 +177,10 @@ New records under `docs/p4/`; production code under `src/WeatherParser.Parsing/<
 - [ ] status documents consistent
 - [ ] pull request ready for review, review findings resolved test-first, merged into `develop` by the user
 - [ ] P5 handoff written
+- [ ] P5 handoff records the SC-21 reuse obligations for P5 and P7
 
 ## 10. Plan authorship and review
 
 Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI; findings verified by the orchestrating agent and fixed by qwen; the first Codex review round reported 7 findings, including deferred DI registration and missing checkpoints, which were fixed in one round of fixes and two correction rounds, followed by a second Codex review reporting 0 findings. The plan was later changed by the cross-plan Codex review of all P4 plans (rounds 5, 2, 0 findings): a "List metadata and time source" decision row was added to section 3 and the section 9 checklist now treats the live check T-P4-18 as optional (passed or recorded as skipped). Nothing is implemented by this plan.
+
+On 2026-10-21 (P4.02 S6) qwen3-coder:30b reconciled this plan with the approved selection contract from the orchestrating agent's change list; the result was reviewed by the OpenAI Codex CLI in the five-angle format (rounds 3, 2, 1, 0 findings; round 3 ran on an unchanged file after an applier failure and repeated a round-2 finding). The orchestrating agent removed an editing artifact and a duplicated status line itself. The cross-plan review of all P4 plans (rounds 4, 3, 1, 1, 0) then added P4.05 to the P4.07 dependencies and named the contributing steps in the T-P4-10 and T-P4-19 rows.

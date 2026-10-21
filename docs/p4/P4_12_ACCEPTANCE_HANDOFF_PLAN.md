@@ -1,12 +1,12 @@
 # P4.12 – Acceptance and P5 Handoff: Implementation Plan
 
-**Status: plan only (2026-10-21); nothing is implemented or verified yet.** Refines the P4.12 row of section 5 and section 9 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 6, 3, 1, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0).
+**Status: plan only (2026-10-21); nothing is implemented or verified yet.** Refines the P4.12 row of section 5 and section 9 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 6, 3, 1, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Reconciled with the approved selection contract (SC-21, SC-22, SC-23) on 2026-10-21 (P4.02 S6). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: A4 limitation example; section 9 handoff criterion. Codex five-angle review rounds: 1, 2, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
 
 ## 1. Goal and Scope
 Goal: turn the READY outcome of P4.11 into an explicit, evidence-based acceptance decision by the user, hand P5 the accepted selection foundation, update the status documents consistently, and complete the phase through the pull-request review and the user's merge into `develop`.
 
 In scope:
-- A1 preconditions; A2 requirement and test evidence matrix T-P4-01 to T-P4-18; A3 selection-contract summary (SC rows, any additive export decisions); A4 limitations and open items with owners; A5 audit decision in `docs/p4/P4_12_ACCEPTANCE.md`; A6 P5 handoff `docs/p4/P5_HANDOFF.md`; A7 user acceptance; A8 status updates after acceptance; A9 ready for review; A10 review; A11 merge.
+- A1 preconditions; A2 requirement and test evidence matrix T-P4-01 to T-P4-20; A3 selection-contract summary (SC rows, any additive export decisions); A4 limitations and open items with owners; A5 audit decision in `docs/p4/P4_12_ACCEPTANCE.md`; A6 P5 handoff `docs/p4/P5_HANDOFF.md`; A7 user acceptance; A8 status updates after acceptance; A9 ready for review; A10 review; A11 merge.
 - No production code, tests, packages or CI changes (review-finding fixes go through the owning step's test-first procedure).
 
 Out of scope:
@@ -47,7 +47,7 @@ Out of scope:
 - Check: final candidate SHA is correct; verification and contract documents reference it
 
 **Action A2: Evidence matrix**
-- Map T-P4-01 to T-P4-18 to requirement IDs
+- Map T-P4-01 to T-P4-20 to requirement IDs
 - Identify test names for each behavior
 - Record Red → Green → Refactor evidence per implementation slice and regression fix; characterization only for identified pre-existing behavior, with its provenance and any approved deviation recorded separately
 - Document run artifacts (CI runs, coverage counters)
@@ -57,15 +57,15 @@ Out of scope:
 - Check: no mandatory row FAILED; every OPEN row cites the recorded user amendment, blocker and owner
 
 **Action A3: Contract summary**
-- List approved SC rows with links to `docs/p4/P4_SELECTION_CONTRACT.md`
-- Confirm export contract v1 unchanged or record additive decisions under C-03/C-105
+- List approved rows SC-01 to SC-23 with links to `docs/p4/P4_SELECTION_CONTRACT.md`.
+- Record additive export decisions C-117 to C-119 (two optional evidence timestamps on `MosmixProductAvailability` and the regenerated v1 schema) under C-03/C-105 and confirm export contract v1 is otherwise unchanged.
 - Roles: qwen drafts; orchestrating agent verifies
 - Output: record section 3 of `docs/p4/P4_12_ACCEPTANCE.md`
 - Check: all SC rows are listed with links; export contract status is correct
 
 **Action A4: Limitations**
 - List inherited P2 limitations
-- Add P4 limitations (e.g., per-location availability `unknown`, live check skipped or performed, hosted container versus target evidence)
+- Add P4 limitations (for example live check skipped or performed, hosted container versus target evidence, the example-CLI exposure of the MOSMIX_S refresh open for P3 under SC-22)
 - Identify open decisions with owners
 - Roles: qwen drafts; orchestrating agent verifies
 - Output: record section 4 of `docs/p4/P4_12_ACCEPTANCE.md`
@@ -86,6 +86,7 @@ Out of scope:
 - Roles: qwen drafts; orchestrating agent verifies
 - Output: create `docs/p4/P5_HANDOFF.md`
 - Check: the handoff links `ISourceTimeNormalizer`, `IObservationDatasetBuilder`, the serializers, `docs/p2/P2_EXPORT_CONTRACT.md`, `docs/p4/P4_SELECTION_CONTRACT.md` and the schema, and lists every P5 obligation above
+- **P4.12 SC-21 obligation**: P5 builds its DWD 10-minute observation parsing on the archive and format handling of `ICdcNowEvidenceReader` (SC-19), and P7 builds its MOSMIX parsing on the secure KMZ and XML handling of `IMosmixLEvidenceReader` (SC-20) and the streaming reader of the MOSMIX_S evidence refresh (SC-22), extending them through shared internal components instead of writing a second parser for the same format; the P4 handoff (P4.12) records this obligation
 
 **Action A7: User acceptance**
 - Present the record and the handoff to the user
@@ -137,12 +138,12 @@ Out of scope:
 ## 6. Tests and Test IDs
 | Step-local case | T-P4 ID | Requirement IDs | Behavior and boundary |
 |---|---|---|---|
-| A2 | T-P4-01 to T-P4-18 | All P4 REQ IDs | Every row PASSED with evidence or OPEN with blocker and owner |
+| A2 | T-P4-01 to T-P4-20 | All P4 REQ IDs | Every row PASSED with evidence or OPEN with blocker and owner |
 | A8 | none | — | Status documents consistent per the AGENTS.md table; README package check |
 
 ## 7. Evidence to Record
 - `docs/p4/P4_12_ACCEPTANCE.md` with:
-  - Evidence matrix (T-P4-01 to T-P4-18)
+  - Evidence matrix (T-P4-01 to T-P4-20)
   - Contract summary (SC rows, export contract status)
   - Limitations and open items
   - Audit decision (ACCEPTED/NOT_READY)
@@ -157,12 +158,15 @@ Out of scope:
   - What P5 owns
   - Working rules
   - Open items
+  - Reuse obligations per SC-21 (P5 builds its DWD 10-minute observation parsing on the archive and format handling of `ICdcNowEvidenceReader`, and P7 builds its MOSMIX parsing on the secure KMZ and XML handling of `IMosmixLEvidenceReader` and the streaming reader of the MOSMIX_S evidence refresh, extending them through shared internal components instead of writing a second parser for the same format)
 
 ## 8. Risks and Limitations
 - (a) Status documents claiming completion before the merge — "complete only after acceptance and merge" wording is checked
 - (b) Review findings fixed without tests — test-first rule enforced
 - (c) Records lost when the branch is deleted after the merge — user decides the home before A11
 - (d) A P4.11 READY on an outdated base — A1 checks the candidate and base again
+- Example CLI exposure of the MOSMIX_S evidence refresh → P3 decision (SC-22)
+- Handoff of the MOSMIX reader reuse to P7 (SC-21)
 
 ## 9. Acceptance Criteria
 - [ ] Final candidate SHA confirmed and verified in documents
@@ -180,3 +184,4 @@ Out of scope:
 - [ ] Pull request merged into `develop` by the user
 - [ ] Post-merge records placed where user decided
 - [ ] Codex review of A8 changes with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
+- [ ] `docs/p4/P5_HANDOFF.md` records both SC-21 reuse obligations: P5 builds on `ICdcNowEvidenceReader` (SC-19); P7 builds on `IMosmixLEvidenceReader` (SC-20) and the streaming reader of the MOSMIX_S refresh (SC-22)

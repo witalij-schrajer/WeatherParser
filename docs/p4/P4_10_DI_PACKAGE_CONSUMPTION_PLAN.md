@@ -1,6 +1,6 @@
 # P4.10 – DI Registration and Package Consumption: Implementation Plan
 
-**Status: plan only (2026-10-21); nothing is implemented or verified yet.** Refines the P4.10 row of section 5 and T-P4-14 of section 6 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 2, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: placeholders in S3/S4 replaced and joined bullets split (qwen).
+**Status: plan only (2026-10-21); nothing is implemented or verified yet.** Refines the P4.10 row of section 5 and T-P4-14 of section 6 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 2, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: placeholders in S3/S4 replaced and joined bullets split (qwen). Reconciled with the approved selection contract (SC-08, SC-12, SC-16, SC-18, SC-22, SC-23) on 2026-10-21 (P4.02 S6). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S1 registration-boundary tests; S2 fixture paragraph and timestamp test (cross-plan); section 6 rows; README timeout wording. Codex five-angle review rounds: 5, 5, 2, 3, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
 
 ## 1. Goal and Scope
 Goal: prove the integrated DI configuration of all P4 services with consumer-supplied endpoints and dependencies — independent configurations, endpoints forwarded unchanged, no global `Uri` registrations, defined failures for missing configuration — and prove independent consumption of the same-run `.nupkg` by the package consumer `tests/WeatherParser.Package.Tests`, including an offline end-to-end selection for both catalogs serialized with the real serializers and validated against the package-delivered schema; document the consumer configuration in README.md.
@@ -8,7 +8,7 @@ Goal: prove the integrated DI configuration of all P4 services with consumer-sup
 In scope:
 - parsing-test DI scenarios (two independent containers with different endpoint options do not share endpoints or state; endpoints reach the sources unchanged; missing endpoint options, missing HTTP dependency, missing time source or logger fail at container validation with an actionable message, C-108; no `Uri` or endpoint options registered globally by `AddWeatherParsing`);
 - package-consumer scenarios (resolve the selectors from the packed library; offline CDC and MOSMIX selection with a consumer-side HTTP double and embedded synthetic fixtures; serialize with the packaged serializers; validate the XML against the schema shipped in the package; empty selection; independent configurations);
-- README consumer section (registration call, endpoint options with placeholder URIs such as `https://example.invalid/...`, HTTP and logging requirements, consumer responsibility for transport settings it owns, notice IDs, no real DWD URLs unless the SC row records them as documented examples).
+- README consumer section (registration call, endpoint options with placeholder URIs such as `https://example.invalid/...`, HTTP and logging requirements, consumer responsibility for transport settings it owns, notice IDs, no real DWD URLs).
 
 Out of scope (owner):
 - CLI and its configuration → P3;
@@ -44,11 +44,17 @@ Out of scope (owner):
 **Red**
 - `TwoContainers_DifferentEndpoints_DoNotShareEndpointsOrState` (requests from each container go only to its own synthetic endpoints)
 - `Endpoints_ReachSourcesUnchanged` (path, query and trailing slash kept)
-- `AddWeatherParsing_RegistersNoGlobalUriOrEndpointOptions` (descriptor inspection of what `AddWeatherParsing` adds)
+- `AddWeatherParsing_RegistersNoGlobalUriEndpointOptionsHttpClientOrTimeProvider` (descriptor inspection of what `AddWeatherParsing` adds: no `Uri`, no `CdcCatalogEndpoints` or `MosmixCatalogEndpoints`, no `HttpClient`, no `TimeProvider`; SC-09, SC-12, SC-13)
 - `MissingEndpointOptions_FailsAtValidationWithActionableMessage`
 - `MissingHttpDependency_FailsAtValidation`
-- `MissingTimeSourceOrLogger_FailsAtValidation` (only for dependencies the SC rows make consumer-supplied)
+- `MissingTimeSourceOrLogger_FailsAtValidation` (`TimeProvider` and logging are consumer-supplied, SC-12, SC-13)
 - `AllP4ServicesResolveFromOneValidatedContainer`
+- `MosmixSEvidenceRefresherAndCache_ResolveFromSameContainer` (both services resolve from the same container as the selectors)
+- `TwoContainers_DifferentEvidenceCacheDirectories_KeepSeparateIndexes` (two containers with different `EvidenceCacheDirectory` values keep separate indexes)
+- `MissingMosmixSEvidenceMaxAge_FailsAtConstructionWithEVIDENCE_CACHE_SETTINGS_INVALID` (a missing or null `MosmixSEvidenceMaxAge` fails at construction with `EVIDENCE-CACHE-SETTINGS-INVALID`)
+- `InvalidSelectionLimit_FailsAtConstructionWithSELECTION_LIMIT_INVALID` (an invalid `MaxEvidenceCandidates` or `SelectionDeadline` fails with `SELECTION-LIMIT-INVALID`)
+- `InvalidDirectoryUri_FailsAtConstructionWithENDPOINT_INVALID` (an invalid directory URI fails with `ENDPOINT-INVALID`)
+- `ConsumerRegistration_CompleteBoundary_BuildsValidatedContainer` (the consumer registers `CdcCatalogEndpoints` with its eight `Uri` properties and the SC-18 limits, `MosmixCatalogEndpoints` with the station catalog, the MOSMIX_L `single_stations/` directory, the SC-18 limits and the SC-22 settings, an `HttpClient`, the BCL `TimeProvider` and logging through `Microsoft.Extensions.Logging.Abstractions` 10.0.13 (SC-08); the container validates, C-108)
 
 Expected failure: these scenarios are new tests over existing registrations; tests that pass on first run are recorded as existing behavior (characterization); a failing test is a DI defect and is fixed test-first in `ServiceCollectionExtensions.cs`.
 
@@ -74,6 +80,11 @@ Expected failure: these scenarios are new tests over existing registrations; tes
 - `PackageSelection_EmptyResult_ValidEmptyLists`
 - `PackageSelection_IndependentConfigurations`
 - `PackageSelection_MissingConfiguration_FailsAtValidation`
+- `PackageSelection_MosmixOffline_WithRefresh_ReturnsEvidenceTimestamps` (the refresh is run first, then the selection reads the index; MOSMIX_S items and MOSMIX_L items with a file carry `evidence_retrieved_at` and `evidence_issued_at`; a MOSMIX_L location whose file answers HTTP 404 is `unavailable` with both members omitted; asserted in the JSON and the schema-validated XML. `unknown` does not occur in this flow (SC-05 option A); its omitted members are covered by the P4.07 export tests)
+- `PackageSelection_MosmixOffline_NoRefresh_ThrowsEvidenceMissing` (selection fails with `MOSMIX-S-EVIDENCE-MISSING`); **asserts zero HTTP interactions before index read**
+- `PackageSelection_MosmixOffline_StaleIndex_WritesNoticeOnce` (selection succeeds; notice is written once, observed through a consumer test logger)
+
+CDC fixtures: the hand-written handler serves the four synthetic station lists and per-station `now` files of the candidate products; one product's file answers HTTP 404, which makes that product absent, not a failure (SC-03). MOSMIX fixtures: a small synthetic MOSMIX_S all-stations KMZ for the refresh and synthetic MOSMIX_L files. Each test uses its own existing temporary cache directory, removed in cleanup.
 
 Setup first: the hand-written handler and valid synthetic fixtures are added before any behavior is evaluated. Expected outcome: P4.09 already provides the behavior, so tests that pass on first run are recorded as characterization; a failing test that reveals a package or API defect is a real Red, fixed test-first by qwen with regression verification.
 
@@ -95,6 +106,20 @@ Setup first: the hand-written handler and valid synthetic fixtures are added bef
 - qwen drafts the README section from the orchestrator's facts (approved SC rows, real type and method names, placeholder URIs);
 - the orchestrating agent checks every name against the code and every statement against the SC rows;
 - then the CONTRIBUTING.md section 4 package check runs on the working tree (entries, README/LICENSE/schema byte-identical, restored hash equal to the packed hash, consumer tests, consumer-lock refresh discarded).
+- README content
+  - Attribution: "Deutscher Wetterdienst (DWD)" with links to the data and CC BY 4.0 licence; consumers republishing must keep attribution (MQTT, file export) (SC-16);
+  - Privacy note: DWD stores requesting IP address for at most 7 days (SC-16);
+  - Retrieval guidance: a selection is a configuration-time operation — run once per station or review, not on schedule; if repeated, at most once per day per search; per-station evidence requests are not for polling, and the library has no scheduler (SC-16);
+  - MOSMIX_S refresh is called by consumer on external schedule (e.g., n8n workflow or cron); not a dependency (SC-22);
+  - Settings: `MosmixSAllStationsUri`, `EvidenceCacheDirectory`, `MosmixSEvidenceMaxAge` (required, no default), and `MosmixSRefreshDeadline` with ranges;
+  - Stale index notice: Warning with age and limit (SC-22);
+  - Missing index failure: `MOSMIX-S-EVIDENCE-MISSING` (SC-22);
+  - `HttpClient` handler settings (redirects, decompression, proxy, header limits) are consumer's responsibility (SC-09);
+  - `HttpClient.Timeout` should be `Timeout.InfiniteTimeSpan` or above the library bound of 30 s (SC-09 recommendation); a shorter client timeout is permitted and its expiry is classified as `CATALOG-TIMEOUT`
+  - SC-17 error and notice IDs:
+    - Exceptions (`ErrorId`): `CoordinateFormatException` `COORDINATE-INVALID`, `SearchParameterException` `SEARCH-PARAMETER-INVALID`, `CatalogFormatException` `CATALOG-FORMAT-INVALID`, `CDC-EVIDENCE-INVALID`, `MOSMIX-EVIDENCE-INVALID`, `CatalogRetrievalException` `CATALOG-RETRIEVAL-FAILED`, `CATALOG-TIMEOUT`, `CATALOG-TOO-LARGE`, `SelectionLimitException` `SELECTION-TOO-MANY-CANDIDATES`, `SELECTION-DEADLINE-EXCEEDED`, `SELECTION-LIMIT-INVALID`, `EvidenceCacheException` `EVIDENCE-CACHE-SETTINGS-INVALID`, `EVIDENCE-CACHE-FAILED`, `MOSMIX-S-REFRESH-DEADLINE-EXCEEDED`, `MOSMIX-S-EVIDENCE-MISSING`, `ParserEndpointValidationException` `ENDPOINT-INVALID` (SC-17);
+    - Notices (log event names): `SELECTION-EMPTY` (Information), `MOSMIX-LOCATION-NO-ALTITUDE` (Warning), `CDC-STATION-NO-ALTITUDE` (Warning), `CATALOG-RECORD-SKIPPED` (Warning), `CDC-STATION-CONFLICT` (Warning), `MOSMIX-S-EVIDENCE-STALE` (Warning) (SC-17);
+  - Placeholder URIs only (`https://example.invalid/...`).
 
 **Green**
 - Not applicable (no code in this slice).
@@ -137,6 +162,9 @@ Setup first: the hand-written handler and valid synthetic fixtures are added bef
 | S1 | T-P4-14 | REQ-014, REQ-016 | Independent containers; endpoints unchanged; no global `Uri`; missing configuration fails at validation; all P4 services resolvable |
 | S2 | T-P4-14 | REQ-013, REQ-016, REQ-083 | Same-run package consumed by version; offline selections for both catalogs; schema from the package; empty result; independent configurations; missing configuration |
 | S2 | T-P4-13 (package part) | REQ-067, REQ-068 | Package-side JSON and XML compared field by field with the selected graph and each other, populated and empty; schema-valid |
+| S1 | T-P4-19 (DI part) | REQ-101, REQ-102, REQ-083 | `IMosmixSEvidenceRefresher` and `IMosmixEvidenceCache` resolve from the selectors' container; separate cache directories keep separate indexes; invalid cache settings fail at construction |
+| S2 | T-P4-19 (consumer part) | REQ-101, REQ-102, REQ-083 | Refresh then selection from the package; `MOSMIX-S-EVIDENCE-MISSING` without a refresh and before any request; `MOSMIX-S-EVIDENCE-STALE` notice once for a stale index |
+| S2 | T-P4-20 (consumer part) | REQ-067, REQ-068, REQ-079 | `evidence_retrieved_at` and `evidence_issued_at` in the package consumer's JSON and schema-validated XML |
 | S1–S2 | T-P4-15 | REQ-085 | Red evidence or recorded characterization per test |
 
 ## 7. Evidence to Record
