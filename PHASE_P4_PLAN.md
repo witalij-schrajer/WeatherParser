@@ -1,6 +1,6 @@
 # WeatherParser – P4 implementation plan
 
-**Status (2026-10-20): P4.01 executed on 2026-10-21 (outcome READY, [record](docs/p4/P4_01_FOUNDATION_CHECK.md)); no production code is implemented yet. P4.02 slices S1 to S5 complete: selection contract SC-01 to SC-23 approved by the user on 2026-10-21 ([contract](docs/p4/P4_SELECTION_CONTRACT.md)); S6 complete on 2026-10-21: this plan and the step plans P4.03 to P4.12 reconciled with it ([P4 verification record](docs/p4/P4_VERIFICATION.md) section 2).**
+**Status (2026-10-20): P4.01 executed on 2026-10-21 (outcome READY, [record](docs/p4/P4_01_FOUNDATION_CHECK.md)); no production code is implemented yet. P4.02 complete on 2026-10-21: selection contract SC-01 to SC-23 approved by the user ([contract](docs/p4/P4_SELECTION_CONTRACT.md)); this plan and the step plans P4.03 to P4.12 reconciled with it (commit `5c7f1f2`, hosted CI run 39676704275 green on all three jobs; [P4 verification record](docs/p4/P4_VERIFICATION.md) section 2). P4.03 is next.**
 Refines the P4 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) using the [P4 handoff](docs/p2/P4_HANDOFF.md); binding rules in [AGENTS.md](AGENTS.md) and [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## 1. First step: check P2 completion and adjust this plan

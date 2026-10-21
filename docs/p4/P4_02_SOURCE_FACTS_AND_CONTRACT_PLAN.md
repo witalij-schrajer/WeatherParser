@@ -1,6 +1,6 @@
 # P4.02 – Source Facts and Selection Contract: Implementation Plan
 
-**Status: complete (2026-10-21): S1 to S5 — selection contract approved by the user on 2026-10-21 ([record](P4_SELECTION_CONTRACT.md)); S6 — phase plan and step plans P4.03 to P4.12 reconciled with it ([verification](P4_VERIFICATION.md) section 2).** Original planning note: plan only on 2026-10-20. Refines section 3 and the P4.02 row of section 5 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 5, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: SC rows for list source literals and the time source (cross-plan review).
+**Status: complete (2026-10-21): S1 to S5 — selection contract approved by the user on 2026-10-21 ([record](P4_SELECTION_CONTRACT.md)); S6 — phase plan and step plans P4.03 to P4.12 reconciled with it ([verification](P4_VERIFICATION.md) section 2); committed in `5c7f1f2`, hosted CI run 39676704275 green.** Original planning note: plan only on 2026-10-20. Refines section 3 and the P4.02 row of section 5 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 5, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: SC rows for list source literals and the time source (cross-plan review).
 
 ## 1. Goal and Scope
 Goal: establish the verified source facts for the CDC station catalog, CDC availability metadata and the MOSMIX location catalog from official DWD sources, and record every selection decision of phase-plan section 3 in a new contract record `docs/p4/P4_SELECTION_CONTRACT.md` with decision IDs `SC-01` onward (Proposed prefix), reviewed by Codex and approved by the user, so that P4.03–P4.10 can start their Red tests.
@@ -107,9 +107,9 @@ Out of scope with owner:
 - (d) qwen may invent formats — every source fact comes from the orchestrator's verified list and is checked line by line.
 
 ## 9. Acceptance Criteria
-- [ ] Every phase-plan section 3 decision has an SC row with value and source.
-- [ ] Every source has URL, date, conditions.
-- [ ] Every decision that blocks P4.03–P4.10 is resolved and approved; any remaining OPEN item is non-blocking and has a named owner, and the steps it would affect are recorded as blocked.
-- [ ] Codex loop ended with 0 findings, or the user decided at round 10, or the user decided after a recorded Codex failure.
-- [ ] User approval recorded.
-- [ ] No code or package added.
+- [x] Every phase-plan section 3 decision has an SC row with value and source.
+- [x] Every source has URL, date, conditions.
+- [x] Every decision that blocks P4.03–P4.10 is resolved and approved; any remaining OPEN item is non-blocking and has a named owner, and the steps it would affect are recorded as blocked.
+- [x] Codex loop ended with 0 findings, or the user decided at round 10, or the user decided after a recorded Codex failure.
+- [x] User approval recorded.
+- [x] No code or package added.
