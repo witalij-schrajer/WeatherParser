@@ -1,6 +1,6 @@
 # P2.12 – P2 Acceptance Record
 
-Status (2026-10-20): audit decision ACCEPTED (section 8); P2 accepted by the user on 2026-10-20 (section 10). P2 is complete only after the user's acceptance (A7) and the merge of pull request #3 into `develop` (A11). Recorded by the orchestrating agent from [P2_VERIFICATION.md](P2_VERIFICATION.md) at document revision `8fd3b15`.
+Status (2026-10-20): audit decision ACCEPTED (section 8); P2 accepted by the user on 2026-10-20 (section 10). P2 is complete: accepted by the user (A7) and pull request #3 merged into `develop` on 2026-10-20 (A11, section 12). Recorded by the orchestrating agent from [P2_VERIFICATION.md](P2_VERIFICATION.md) at document revision `8fd3b15`.
 
 ## 1. Review identity
 
@@ -105,7 +105,7 @@ The accepted public contract is [P2_EXPORT_CONTRACT.md](P2_EXPORT_CONTRACT.md), 
 | Coverage minimum and comparison without bootstrap or bypass | T-P2-27; section 2 |
 | P2 platform behavior on the target | T-P2-28; section 3 |
 | Result record with SHAs, versions, counts, hashes, authorship, limitations | This record and P2_VERIFICATION.md sections 2 to 11 |
-| Pull request ready for review, review resolved, merged by the user | Pending (A9 to A11) |
+| Pull request ready for review, review resolved, merged by the user | Done (A9 to A11, section 12) |
 | P4 receives contracts, helpers and responsibilities | [P4_HANDOFF.md](P4_HANDOFF.md); plans updated after acceptance (A8) |
 
 ## 8. Audit decision
@@ -123,3 +123,11 @@ The evidence matrix rows were formatted by qwen3-coder:30b from the mapping extr
 ## 11. Status updates after acceptance (A8)
 
 On 2026-10-20, after the user's acceptance: AGENTS.md (phase-status line and dated line), README.md (status line, dated line, contract-version sentence), `DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `PHASE_P2_PLAN.md` (status and the section 10 checklist; the pull-request item stays open), the P2.11 plan (completed) and the P2.12 plan (A9 to A11 pending) were updated; qwen drafted the AGENTS.md, README.md and `PHASE_P2_PLAN.md` passages (each verified exact), the orchestrating agent made the remaining status edits. Because README.md is packed, the CONTRIBUTING.md section 4 package check ran on the working tree: package entries as in section 2, `README.md`, `LICENSE` and the schema byte-identical to the working tree, restored hash equal to the packed hash, 18 consumer tests passed; the consumer-lock refresh was discarded.
+
+## 12. Ready for review, review and merge (A9 to A11)
+
+- On 2026-10-20, pull request #3 was marked ready for review; its `ready_for_review` CI run 39495576541 on head commit `eea3803` (`eea38035ac8bc800f70c21e06b1e2722404fc4b8`) succeeded.
+- The review produced no findings (no review comments, no review submissions).
+- On 2026-10-20 at 21:03:47 UTC, the user (`witalij-schrajer`) merged pull request #3 into `develop` (merge commit `74bf625eb4b2fbf49cbce7d1cee42b6302f2e47b`).
+
+These records were written for the first commit of the P4 branch `features/develop/P4` (user decision 2026-10-20), because the P2 branch was deleted after the merge; qwen drafted the status texts, and the orchestrating agent verified the run, review and merge facts with GitHub.
