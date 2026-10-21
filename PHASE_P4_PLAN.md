@@ -1,11 +1,28 @@
 # WeatherParser – P4 implementation plan
 
-**Status (2026-10-20): plan only; nothing is implemented or verified. P2 is complete (merge commit `74bf625`); P4 started on 2026-10-20 on the user's instruction.**
+**Status (2026-10-20): P4.01 executed on 2026-10-21 (outcome READY, [record](docs/p4/P4_01_FOUNDATION_CHECK.md)); no production code is implemented yet.**
 Refines the P4 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) using the [P4 handoff](docs/p2/P4_HANDOFF.md); binding rules in [AGENTS.md](AGENTS.md) and [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## 1. First step: check P2 completion and adjust this plan
 
 P4.01 is always the first execution step: verify P2 acceptance and merge from `docs/p2/P2_12_ACCEPTANCE.md` (sections 10 and 12) and the P4 handoff; extract the integration target SHA, package identity `WeatherParser.Parsing` `0.1.0-initial`, SDK/tool versions, the frozen export contract v1 and limitations; remeasure the native block coverage of the integration target under comparable conditions as the comparison baseline; update this plan with the extracted facts before P4.02. If P2 were incomplete: record the gap, do not implement P4.
+
+### P4.01 extraction (2026-10-21)
+
+Recorded in [P4_01_FOUNDATION_CHECK.md](docs/p4/P4_01_FOUNDATION_CHECK.md); extracted foundation:
+
+| Field | Value | Evidence |
+|---|---|---|
+| Integration target | `b7da8288d8746bc6e034222c0467a8fcebba55b3` (develop head; P2 merge `74bf625` plus an AGENTS.md-only commit) | `git rev-parse origin/develop`, ancestry check |
+| Package identity | `WeatherParser.Parsing` `0.1.0-initial`, unpublished | P4 handoff section 1 |
+| SDK, runtime, coverage tools | SDK 10.0.402 (current servicing release, checked 2026-10-21), runtime 10.0.13, Microsoft.CodeCoverage and dotnet-coverage 18.11.0 | `global.json`, `DEPENDENCIES.md`, official release metadata |
+| Export contract | v1 frozen; namespace `urn:weatherparser:export:v1`; C-01 to C-116; additive optional members only (C-03, C-105) | `docs/p2/P2_EXPORT_CONTRACT.md` |
+| Helpers for P4 | `CdcStationList`, `MosmixLocationList`, `SearchParameters`, `IListEntryOrdering`, `IJsonExportSerializer`, `IXmlExportSerializer`, `AddWeatherParsing`, schema validation settings (C-104) | P4 handoff section 2 |
+| P2 coverage at acceptance | 3035/3037 on Windows and the NanoPi R76S (candidate `bced7be`) | `docs/p2/P2_12_ACCEPTANCE.md` |
+| Remeasured baseline | 3035/3037 native blocks on the integration target; every P4 code change must strictly improve on it | run `artifacts/ci/e5dfbc6-20261021T041105Z/` |
+| Inherited limitations | with owners as listed in the P4.01 record section 4 | `docs/p2/P2_12_ACCEPTANCE.md` section 6 |
+
+No other plan adjustment was needed.
 
 ## 2. Goal, binding scope and exclusions
 
@@ -140,7 +157,7 @@ New records under `docs/p4/`; production code under `src/WeatherParser.Parsing/<
 
 ## 9. P4 acceptance and P5 handoff checklist
 
-- [ ] P4.01 foundation check recorded
+- [x] P4.01 foundation check recorded (2026-10-21, outcome READY)
 - [ ] selection contract approved by the user after Codex review
 - [ ] every mandatory T-P4 row has passing tests and recorded evidence; the optional live check T-P4-18 is either passed or recorded as skipped with its limitation
 - [ ] coordinate, filter, catalog and availability behavior matches REQ-020–024 and REQ-100–102
