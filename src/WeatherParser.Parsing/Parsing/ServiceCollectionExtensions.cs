@@ -28,6 +28,8 @@ public static class ServiceCollectionExtensions
     /// The distance calculator is also registered.
     /// The search-area filter is also registered.
     /// The CDC station-list reader is also registered.
+    /// The CDC evidence reader is also registered.
+    /// The CDC availability deriver is also registered.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -54,6 +56,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDistanceCalculator, DistanceCalculator>();
         services.AddSingleton<ISearchAreaFilter, SearchAreaFilter>();
         services.AddSingleton<ICdcStationCatalogReader, CdcStationCatalogReader>();
+        services.AddSingleton<ICdcNowEvidenceReader, CdcNowEvidenceReader>();
+        services.AddSingleton<ICdcAvailabilityDeriver, CdcAvailabilityDeriver>();
 
         return services;
     }

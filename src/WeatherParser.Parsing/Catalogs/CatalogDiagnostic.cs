@@ -14,4 +14,14 @@ public sealed record CatalogDiagnostic(string Id, string EndpointName, int? Line
     /// Identifier for a skipped catalog record.
     /// </summary>
     public const string RecordSkippedId = "CATALOG-RECORD-SKIPPED";
+
+    /// <summary>
+    /// Identifier for a station conflict across lists.
+    /// </summary>
+    public const string StationConflictId = "CDC-STATION-CONFLICT";
+
+    /// <summary>
+    /// Identifier for a station without altitude.
+    /// </summary>
+    public const string StationNoAltitudeId = "CDC-STATION-NO-ALTITUDE";
 }
