@@ -1,6 +1,6 @@
 # P4.04 – Geodesy and Inclusive Filters: Implementation Plan
 
-**Status: implemented on 2026-10-22 (S0 to S4, records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 4); not yet committed.** Original planning note: plan only on 2026-10-21. Refines the P4.04 row of section 5 and the "Distance and filters" row of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 4, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: Codex-outage acceptance wording and an S3 Green placeholder replaced. The orchestrating agent replaced one decision-row phrase itself after two failed precise briefs; an S3 Green placeholder was later replaced by qwen. Reconciled with the approved selection contract (SC-06, SC-11) on 2026-10-21 (P4.02 S6). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S1 Green formulas (Vincenty and mean radius); section 9 criteria. Codex five-angle review rounds: 3, 2, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
+**Status: complete (2026-10-22): implemented (S0 to S4), committed as `abe6d64`, hosted CI run 39810906820 green; records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 4.** Original planning note: plan only on 2026-10-21. Refines the P4.04 row of section 5 and the "Distance and filters" row of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 4, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: Codex-outage acceptance wording and an S3 Green placeholder replaced. The orchestrating agent replaced one decision-row phrase itself after two failed precise briefs; an S3 Green placeholder was later replaced by qwen. Reconciled with the approved selection contract (SC-06, SC-11) on 2026-10-21 (P4.02 S6). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S1 Green formulas (Vincenty and mean radius); section 9 criteria. Codex five-angle review rounds: 3, 2, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
 
 ## 1. Goal and Scope
 Goal: an injectable distance calculator implementing the geodetic method approved in P4.02 (REQ-022: documented WGS84 method) and an injectable search-area filter that applies both inclusive limits separately — horizontal distance ≤ `max_distance_km` and absolute altitude difference ≤ `max_altitude_difference_m` — and yields `distance_km` and the signed `altitude_difference_m` (candidate altitude minus reference altitude) for a candidate, test-first, registered in `AddWeatherParsing`.
@@ -166,14 +166,14 @@ No Red: review slice. The orchestrating agent runs build and all tests, then the
 - (d) Reference values copied from a model instead of the source — the orchestrating agent verifies each value against the cited publication
 
 ## 9. Acceptance Criteria
-- [ ] Each behavior increment has recorded Red evidence
-- [ ] All T-P4-04 and T-P4-05 cases pass on Windows (ARM64 in P4.11)
-- [ ] Missing altitude never treated as 0
-- [ ] No Euclidean degree distance or 3-D distance
-- [ ] Both services registered and completeness tests green
-- [ ] Build without warnings
-- [ ] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
-- [ ] No catalog, logging or ordering code added
-- [ ] S0 reference values (GeographicLib `GeodSolve`) recorded in `docs/p4/P4_SELECTION_CONTRACT.md` before the S1 Red test
-- [ ] Non-converging pairs return the spherical fallback without an exception (SC-06)
-- [ ] The filter's `SphericalKm` pre-filter with the threshold `max_distance_km` × 1.01 + 1 km computed in `double` is tested on both sides of the threshold (SC-06)
+- [x] Each behavior increment has recorded Red evidence
+- [x] All T-P4-04 and T-P4-05 cases pass on Windows (ARM64 in P4.11)
+- [x] Missing altitude never treated as 0
+- [x] No Euclidean degree distance or 3-D distance
+- [x] Both services registered and completeness tests green
+- [x] Build without warnings
+- [x] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
+- [x] No catalog, logging or ordering code added
+- [x] S0 reference values (GeographicLib `GeodSolve`) recorded in `docs/p4/P4_SELECTION_CONTRACT.md` before the S1 Red test
+- [x] Non-converging pairs return the spherical fallback without an exception (SC-06)
+- [x] The filter's `SphericalKm` pre-filter with the threshold `max_distance_km` × 1.01 + 1 km computed in `double` is tested on both sides of the threshold (SC-06)

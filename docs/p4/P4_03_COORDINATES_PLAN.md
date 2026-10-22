@@ -197,11 +197,11 @@ The orchestrating agent runs build, all tests and the coverage procedure of CONT
 - (d) exception messages echoing raw input could carry control characters into logs — messages describe the reason and sanitize the input.
 
 ## 9. Acceptance Criteria
-- [ ] Each behavior increment has recorded Red evidence with its expected failure; rejection tests that already passed are recorded as existing behavior
-- [ ] All T-P4-01 to T-P4-03 cases pass
-- [ ] No rounding of coordinates or limits
-- [ ] Both services registered and `ServiceRegistrationCompletenessTests` green
-- [ ] Build without warnings
-- [ ] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
-- [ ] No distance, catalog or CLI code added
-- [ ] `ErrorId` values asserted for every failure
+- [x] Each behavior increment has recorded Red evidence with its expected failure; rejection tests that already passed are recorded as existing behavior
+- [x] All T-P4-01 to T-P4-03 cases pass
+- [x] No rounding of coordinates or limits
+- [x] Both services registered and `ServiceRegistrationCompletenessTests` green
+- [x] Build without warnings
+- [x] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
+- [x] No distance, catalog or CLI code added
+- [x] `ErrorId` values asserted for every failure
