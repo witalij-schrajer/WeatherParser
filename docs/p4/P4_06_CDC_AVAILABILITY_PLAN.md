@@ -1,6 +1,6 @@
 # P4.06 – CDC Availability Derivation: Implementation Plan
 
-**Status: implemented on 2026-10-22 (S1 to S4, records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 6); not yet committed.** Original planning note: plan only on 2026-10-21. Reconciled with the approved selection contract (SC-02, SC-03, SC-19, SC-21) on 2026-10-21 (P4.02 S6).** Refines the P4.06 row of section 5 and the "CDC availability" row of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 3, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: Codex-outage acceptance wording. S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: removal of a duplicated S3 slice; S2/S3 test lines and S3 expected failure; section 3 deriver and evidence-reader signatures (orchestrator decision); valid-layouts test; section 9 criterion; one altitude notice per station (cross-plan). Codex five-angle review rounds: 5, 3, 2, 2, 2, 1, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
+**Status: complete (2026-10-22): implemented (S1 to S4), committed as `643475f`, hosted CI run 39840675493 green; records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 6.** Original planning note: plan only on 2026-10-21. Reconciled with the approved selection contract (SC-02, SC-03, SC-19, SC-21) on 2026-10-21 (P4.02 S6).** Refines the P4.06 row of section 5 and the "CDC availability" row of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 3, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: Codex-outage acceptance wording. S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: removal of a duplicated S3 slice; S2/S3 test lines and S3 expected failure; section 3 deriver and evidence-reader signatures (orchestrator decision); valid-layouts test; section 9 criterion; one altitude notice per station (cross-plan). Codex five-angle review rounds: 5, 3, 2, 2, 2, 1, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
 
 ## 1. Goal and Scope
 Goal: an injectable service that derives, per CDC station, the verified `available_measurements` (REQ-052 field names per C-21, for example `temperature_c`) and the station's suitability (active versus inactive) from the `now` files read by the injectable `ICdcNowEvidenceReader` (SC-19), in two stages (SC-03): a pre-filter on the from- and to-dates of the four `now` station lists read by the P4.05 reader `ICdcStationCatalogReader` (no separate metadata reader), followed by usable values in the station's per-station `now` files read by the injectable `ICdcNowEvidenceReader` (SC-19); (REQ-024), test-first with synthetic fixtures.
@@ -232,16 +232,16 @@ Pre-commit coverage (working tree): after build and all tests pass, run the CONT
 - (e) P5 builds its observation parsing on `ICdcNowEvidenceReader` (SC-21); design internals for reuse
 
 ## 9. Acceptance Criteria
-- [ ] Each behavior increment has recorded Red evidence
-- [ ] All T-P4-07 cases pass
-- [ ] No REQ-052 name without approved mapping
-- [ ] No `unknown` or invented vocabulary in `available_measurements`
-- [ ] Missing metadata never yields an empty success, unless all candidate products return HTTP 404 (valid absence of evidence) or all stations are inactive (SC-03)
-- [ ] Inactive stations never marked suitable
-- [ ] Services registered and completeness tests green
-- [ ] Build without warnings
-- [ ] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
-- [ ] No retrieval, filtering, export or logging code added
-- [ ] **Red** test for `CatalogFormatException` / `CATALOG-FORMAT-INVALID` when all records in a catalog are malformed (SC-10)
-- [ ] **Green** rule: `CatalogFormatException` / `CATALOG-FORMAT-INVALID` is thrown if no syntactically valid record remains after skipping malformed ones (SC-10)
-- [ ] **Red** test: valid records that are all inactive or excluded give an empty candidate or availability result with their diagnostics and no exception (SC-10); the empty list and its single `SELECTION-EMPTY` notice are P4.09 work
+- [x] Each behavior increment has recorded Red evidence
+- [x] All T-P4-07 cases pass (the planned "no disk writes" case was not written; deviation recorded in P4_VERIFICATION.md section 6)
+- [x] No REQ-052 name without approved mapping
+- [x] No `unknown` or invented vocabulary in `available_measurements`
+- [x] Missing metadata never yields an empty success, unless all candidate products return HTTP 404 (valid absence of evidence) or all stations are inactive (SC-03)
+- [x] Inactive stations never marked suitable
+- [x] Services registered and completeness tests green
+- [x] Build without warnings
+- [x] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
+- [x] No retrieval, filtering, export or logging code added
+- [x] **Red** test for `CatalogFormatException` / `CATALOG-FORMAT-INVALID` when all records in a catalog are malformed (SC-10)
+- [x] **Green** rule: `CatalogFormatException` / `CATALOG-FORMAT-INVALID` is thrown if no syntactically valid record remains after skipping malformed ones (SC-10)
+- [x] **Red** test: valid records that are all inactive or excluded give an empty candidate or availability result with their diagnostics and no exception (SC-10); the empty list and its single `SELECTION-EMPTY` notice are P4.09 work
