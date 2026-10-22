@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Forecasts;
+using WeatherParser.Parsing.Geography;
 using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Quantities;
 using WeatherParser.Parsing.Serialization;
@@ -21,6 +22,8 @@ public static class ServiceCollectionExtensions
     /// The quantity services (output rounding, pressure conversion, validation, period-rate and wind-speed conversion) are also registered.
     /// The observation dataset builder is also registered.
     /// The forecast run builder is also registered.
+    /// The coordinate parser is also registered.
+    /// The search-parameter factory is also registered.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -42,6 +45,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWindSpeedConverter, WindSpeedConverter>();
         services.AddSingleton<IObservationDatasetBuilder, ObservationDatasetBuilder>();
         services.AddSingleton<IForecastRunBuilder, ForecastRunBuilder>();
+        services.AddSingleton<ICoordinateParser, CoordinateParser>();
+        services.AddSingleton<ISearchParameterFactory, SearchParameterFactory>();
 
         return services;
     }
