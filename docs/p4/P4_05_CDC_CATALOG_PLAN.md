@@ -1,6 +1,6 @@
 # P4.05 – CDC Station Catalog Reader: Implementation Plan
 
-**Status: implemented on 2026-10-22 (S1 to S4, records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 5); not yet committed.** Original planning note: plan only on 2026-10-21. Refines the P4.05 row of section 5 and the "CDC catalog" row of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 6, 3, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Section 9 was lost in a qwen full-file correction, found by the orchestrating agent and restored by qwen (delta review: 0 findings). Reconciled with the approved selection contract (SC-02, SC-10, SC-14, SC-17) on 2026-10-21 (P4.02 S6). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S1 Red list; S3 error IDs and failure-semantics paragraph; goal and scope bullets; section 3/4 reader signature with `endpointName` (orchestrator decision); fixture exemptions; section 6 and 9 rows; altitude diagnostic moved to P4.06 (cross-plan); `CatalogFormatException` and `CatalogDiagnostic` creation (cross-plan). Codex five-angle review rounds: 3, 4, 5, 3, 2, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
+**Status: complete (2026-10-22): implemented (S1 to S4), committed as `0195b4f`, hosted CI run 39828777889 green; records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 5.** Original planning note: plan only on 2026-10-21. Refines the P4.05 row of section 5 and the "CDC catalog" row of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 6, 3, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Section 9 was lost in a qwen full-file correction, found by the orchestrating agent and restored by qwen (delta review: 0 findings). Reconciled with the approved selection contract (SC-02, SC-10, SC-14, SC-17) on 2026-10-21 (P4.02 S6). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S1 Red list; S3 error IDs and failure-semantics paragraph; goal and scope bullets; section 3/4 reader signature with `endpointName` (orchestrator decision); fixture exemptions; section 6 and 9 rows; altitude diagnostic moved to P4.06 (cross-plan); `CatalogFormatException` and `CatalogDiagnostic` creation (cross-plan). Codex five-angle review rounds: 3, 4, 5, 3, 2, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
 
 ## 1. Goal and Scope
 
@@ -220,20 +220,20 @@ Then Codex reviews the uncommitted diff read-only; qwen fixes confirmed findings
 
 ## 9. Acceptance Criteria
 
-- [ ] Each behavior increment has recorded Red evidence
-- [ ] All T-P4-06 cases pass
-- [ ] IDs never numeric
-- [ ] Missing altitude never 0; zero altitude kept
-- [ ] All-invalid input never yields a successful empty catalog
-- [ ] Fixtures synthetic and documented
-- [ ] Reader registered, completeness tests green
-- [ ] Build without warnings
-- [ ] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
-- [ ] No availability, retrieval or export code added
-- [ ] Catalog reader handles one list; cross-list conflicts are not handled by this reader (SC-10)
-- [ ] Malformed records are skipped with `CATALOG-RECORD-SKIPPED` notice (SC-10)
-- [ ] Format failures (`CATALOG-FORMAT-INVALID`) are reported for header/dash line mismatch, empty stream, line longer than 2048 characters, or no syntactically valid record (SC-10)
-- [ ] Duplicate IDs within one file exclude all records with `CATALOG-RECORD-SKIPPED` notice (SC-10)
-- [ ] An empty altitude yields a record with no altitude (never 0) and no reader diagnostic; `CatalogFormatException` and `CatalogDiagnostic` created here for reuse by later steps
-- [ ] If every syntactically valid record is excluded (for example all part of duplicate pairs), the reader returns an empty result with `CATALOG-RECORD-SKIPPED` diagnostics and no exception (SC-10); the selection outcome is P4.09 work
-- [ ] A format failure of the list surfaces as `CatalogFormatException` `CATALOG-FORMAT-INVALID`; how the selection reacts is P4.09 work (SC-10)
+- [x] Each behavior increment has recorded Red evidence
+- [x] All T-P4-06 cases pass
+- [x] IDs never numeric
+- [x] Missing altitude never 0; zero altitude kept
+- [x] All-invalid input never yields a successful empty catalog
+- [x] Fixtures synthetic and documented
+- [x] Reader registered, completeness tests green
+- [x] Build without warnings
+- [x] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
+- [x] No availability, retrieval or export code added
+- [x] Catalog reader handles one list; cross-list conflicts are not handled by this reader (SC-10)
+- [x] Malformed records are skipped with `CATALOG-RECORD-SKIPPED` notice (SC-10)
+- [x] Format failures (`CATALOG-FORMAT-INVALID`) are reported for header/dash line mismatch, empty stream, line longer than 2048 characters, or no syntactically valid record (SC-10)
+- [x] Duplicate IDs within one file exclude all records with `CATALOG-RECORD-SKIPPED` notice (SC-10)
+- [x] An empty altitude yields a record with no altitude (never 0) and no reader diagnostic; `CatalogFormatException` and `CatalogDiagnostic` created here for reuse by later steps
+- [x] If every syntactically valid record is excluded (for example all part of duplicate pairs), the reader returns an empty result with `CATALOG-RECORD-SKIPPED` diagnostics and no exception (SC-10); the selection outcome is P4.09 work
+- [x] A format failure of the list surfaces as `CatalogFormatException` `CATALOG-FORMAT-INVALID`; how the selection reacts is P4.09 work (SC-10)
