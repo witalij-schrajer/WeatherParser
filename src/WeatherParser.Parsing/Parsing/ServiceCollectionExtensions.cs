@@ -24,6 +24,8 @@ public static class ServiceCollectionExtensions
     /// The forecast run builder is also registered.
     /// The coordinate parser is also registered.
     /// The search-parameter factory is also registered.
+    /// The distance calculator is also registered.
+    /// The search-area filter is also registered.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -47,6 +49,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IForecastRunBuilder, ForecastRunBuilder>();
         services.AddSingleton<ICoordinateParser, CoordinateParser>();
         services.AddSingleton<ISearchParameterFactory, SearchParameterFactory>();
+        services.AddSingleton<IDistanceCalculator, DistanceCalculator>();
+        services.AddSingleton<ISearchAreaFilter, SearchAreaFilter>();
 
         return services;
     }
