@@ -30,7 +30,7 @@ public sealed class ParserEndpointValidator : IParserEndpointValidator
             if (!_uriValidator.IsValid(endpoint.Uri))
             {
                 throw new ParserEndpointValidationException(
-                    $"The endpoint '{endpoint.Name}' has an invalid URI '{endpoint.Uri}'.");
+                    $"The endpoint '{endpoint.Name}' has an invalid URI; an absolute HTTP(S) URI is required.");
             }
 
             if (!map.TryAdd(endpoint.Name, endpoint))

@@ -37,6 +37,9 @@ public static class ServiceCollectionExtensions
     /// The MOSMIX_L evidence reader is also registered.
     /// The MOSMIX_S evidence cache is also registered.
     /// The MOSMIX availability resolver is also registered.
+    /// The catalog downloader is also registered; the consumer registers the <see cref="HttpClient"/> and the <see cref="TimeProvider"/>.
+    /// The CDC endpoints validator and the CDC and MOSMIX catalog sources are also registered; the consumer registers <see cref="CdcCatalogEndpoints"/> and <see cref="WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints"/>.
+    /// The MOSMIX_S evidence refresher is also registered; its timing is controlled externally (no scheduler).
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -70,6 +73,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMosmixLEvidenceReader, MosmixLEvidenceReader>();
         services.AddSingleton<IMosmixEvidenceCache, FileSystemMosmixEvidenceCache>();
         services.AddSingleton<IMosmixAvailabilityResolver, MosmixAvailabilityResolver>();
+        services.AddSingleton<ICatalogDownloader, CatalogDownloader>();
+        services.AddSingleton<ICdcCatalogEndpointsValidator, CdcCatalogEndpointsValidator>();
+        services.AddSingleton<ICdcCatalogSource, CdcCatalogSource>();
+        services.AddSingleton<IMosmixCatalogSource, MosmixCatalogSource>();
+        services.AddSingleton<IMosmixSEvidenceRefresher, MosmixSEvidenceRefresher>();
 
         return services;
     }
