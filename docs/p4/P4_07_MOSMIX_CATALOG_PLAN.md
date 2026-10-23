@@ -1,6 +1,6 @@
 # P4.07 – MOSMIX Location Catalog and Product Availability: Implementation Plan
 
-**Status: implemented on 2026-10-23 (S0 to S7, records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 7).** Original planning note: plan only on 2026-10-21. Reconciled with the approved selection contract (SC-04, SC-05, SC-08, SC-20, SC-22, SC-23) on 2026-10-21 (P4.02 S6).** Refines the P4.07 row of section 5 and the "MOSMIX catalog" and "MOSMIX availability" rows of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 4, 2, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: exclusion diagnostics marked as already logged (cross-plan review). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: merge of a duplicated S3 slice; S2 lower elevation bound (twice, after qwen regressions) and negative-value tests; S0 commands; S4 issue-time, namespace, ignored-element, exact-limit and all-missing tests; S1 injectable options validator (orchestrator decision); section 3 stale-notice row; section 4 artifacts and exception creation; section 6 and 9 mappings; S6 resolver without logging. Codex five-angle review rounds: 10, 9, 8, 4, 4, 4, 2, 2, 1, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
+**Status: complete (2026-10-23): implemented (S0 to S7), committed as `0f29842`, hosted CI run 39905420541 green; records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 7.** Original planning note: plan only on 2026-10-21. Reconciled with the approved selection contract (SC-04, SC-05, SC-08, SC-20, SC-22, SC-23) on 2026-10-21 (P4.02 S6).** Refines the P4.07 row of section 5 and the "MOSMIX catalog" and "MOSMIX availability" rows of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 4, 2, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: exclusion diagnostics marked as already logged (cross-plan review). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: merge of a duplicated S3 slice; S2 lower elevation bound (twice, after qwen regressions) and negative-value tests; S0 commands; S4 issue-time, namespace, ignored-element, exact-limit and all-missing tests; S1 injectable options validator (orchestrator decision); section 3 stale-notice row; section 4 artifacts and exception creation; section 6 and 9 mappings; S6 resolver without logging. Codex five-angle review rounds: 10, 9, 8, 4, 4, 4, 2, 2, 1, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
 
 ## 1. Goal and Scope
 
@@ -390,24 +390,24 @@ Pre-commit coverage on the working tree per CONTRIBUTING.md section 5 (changed-f
 
 ## 9. Acceptance Criteria
 
-- [ ] Each behavior increment has recorded Red evidence
-- [ ] All T-P4-08, T-P4-09 and T-P4-20 cases pass
-- [ ] IDs never numeric or mapped to CDC
-- [ ] Missing altitude never 0
-- [ ] Exactly one availability item per product, `unknown` explicit, elements only when `available`
-- [ ] No fallback between products or catalogs
-- [ ] Services registered and completeness tests green
-- [ ] Build without warnings
-- [ ] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
-- [ ] No retrieval, distance or altitude-difference filtering, list assembly or forecast parsing code added (only the missing-altitude exclusion of S2)
-- [ ] MOSMIX_L evidence reader (S4) enforces every SC-20 rule, each tested on both sides
-- [ ] MOSMIX_S index store (S5) round-trips the SC-22 index, returns "missing" for every SC-22 case and replaces the index atomically
-- [ ] Resolver (S6) applies SC-05 option A and SC-22: stale index still used, no resolver logging, evidence timestamps set exactly when evidence was used; the missing-index failure and the single `MOSMIX-S-EVIDENCE-STALE` notice are P4.09 work
-- [ ] Export members C-117 to C-119 added, schema regenerated and validated (S0)
-- [ ] Logging package and DI version raise of SC-08 recorded in `DEPENDENCIES.md`
-- [ ] Cache read tests verify that unusable indexes result in "missing" return, not exceptions; resolver tests verify `MOSMIX-S-EVIDENCE-MISSING` is thrown
-- [ ] T-P4-15 applies to S4 (MOSMIX_L evidence reader behavior)
-- [ ] All T-P4-19 cases of S5 (index store) pass; the refresh part of T-P4-19 is P4.08
-- [ ] All SC-05 and SC-22 decisions are reflected in the implementation and tests
-- [ ] Evidence cache traceability includes all relevant SC-22 index fields and download/issue times
-- [ ] The test matrix covers all slices with applicable behavior tests, including S0–S6
+- [x] Each behavior increment has recorded Red evidence
+- [x] All T-P4-08, T-P4-09 and T-P4-20 cases pass (the exact-limit archive case is split into 1 MiB compressed and 16 MiB uncompressed; recorded in P4_VERIFICATION.md section 7)
+- [x] IDs never numeric or mapped to CDC
+- [x] Missing altitude never 0
+- [x] Exactly one availability item per product, `unknown` explicit, elements only when `available`
+- [x] No fallback between products or catalogs
+- [x] Services registered and completeness tests green
+- [x] Build without warnings
+- [x] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
+- [x] No retrieval, distance or altitude-difference filtering, list assembly or forecast parsing code added (only the missing-altitude exclusion of S2)
+- [x] MOSMIX_L evidence reader (S4) enforces every SC-20 rule, each tested on both sides
+- [x] MOSMIX_S index store (S5) round-trips the SC-22 index, returns "missing" for every SC-22 case and replaces the index atomically
+- [x] Resolver (S6) applies SC-05 option A and SC-22: stale index still used, no resolver logging, evidence timestamps set exactly when evidence was used; the missing-index failure and the single `MOSMIX-S-EVIDENCE-STALE` notice are P4.09 work
+- [x] Export members C-117 to C-119 added, schema regenerated and validated (S0)
+- [x] Logging package and DI version raise of SC-08 recorded in `DEPENDENCIES.md`
+- [x] Cache read tests verify that unusable indexes result in "missing" return, not exceptions; resolver tests verify `MOSMIX-S-EVIDENCE-MISSING` is thrown
+- [x] T-P4-15 applies to S4 (MOSMIX_L evidence reader behavior)
+- [x] All T-P4-19 cases of S5 (index store) pass; the refresh part of T-P4-19 is P4.08 (no write test for the nesting depth, which the typed model cannot exceed; recorded in P4_VERIFICATION.md section 7)
+- [x] All SC-05 and SC-22 decisions are reflected in the implementation and tests
+- [x] Evidence cache traceability includes all relevant SC-22 index fields and download/issue times
+- [x] The test matrix covers all slices with applicable behavior tests, including S0–S6
