@@ -4,11 +4,11 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
 using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Exceptions;
 
@@ -25,6 +25,9 @@ public sealed class MosmixSEvidenceRefresher : IMosmixSEvidenceRefresher
     private const string EndpointName = "MosmixSAllStationsUri";
     private const int MaxPlacemarks = 20000;
     private const int MaxForecastsPerPlacemark = 200;
+    private const int MaxShortTextLength = 256;
+    private const int MaxTokenLength = 17;
+    private const int MaxDepth = 32;
 
     private static readonly Regex IssueTimePattern = new(@"\A[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.([0-9]{1,3}))?Z\z", RegexOptions.CultureInvariant);
     private static readonly Regex IdPattern = new(@"\A[A-Z0-9]{4,5}\z", RegexOptions.CultureInvariant);
@@ -127,8 +130,6 @@ public sealed class MosmixSEvidenceRefresher : IMosmixSEvidenceRefresher
     private (DateTime IssuedAt, Dictionary<string, IReadOnlyList<string>> Locations) Parse(byte[] bytes, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        XNamespace kml = KmlNamespace;
-        XNamespace dwd = DwdNamespace;
         using var archive = OpenArchive(bytes);
         List<ZipArchiveEntry> members;
         try
@@ -149,7 +150,8 @@ public sealed class MosmixSEvidenceRefresher : IMosmixSEvidenceRefresher
         {
             using var member = members[0].Open();
             using var counting = new CountingStream(member, _maxMemberBytes, cancellationToken);
-            using var reader = XmlReader.Create(counting, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, IgnoreWhitespace = true, IgnoreComments = true });
+            using var guarded = new MarkupGuardStream(counting);
+            using var reader = XmlReader.Create(guarded, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, IgnoreWhitespace = true, IgnoreComments = true, IgnoreProcessingInstructions = true, NameTable = new BoundedNameTable() });
             reader.MoveToContent();
             if (reader.LocalName != "kml" || reader.NamespaceURI != KmlNamespace)
             {
@@ -162,7 +164,7 @@ public sealed class MosmixSEvidenceRefresher : IMosmixSEvidenceRefresher
             var definitions = 0;
             var locations = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
             reader.ReadStartElement();
-            while (reader.NodeType == XmlNodeType.Element)
+            while (MoveToChildElement(reader))
             {
                 if (reader.LocalName != "Document" || reader.NamespaceURI != KmlNamespace)
                 {
@@ -183,33 +185,21 @@ public sealed class MosmixSEvidenceRefresher : IMosmixSEvidenceRefresher
                 }
 
                 reader.ReadStartElement();
-                while (reader.NodeType == XmlNodeType.Element)
+                while (MoveToChildElement(reader))
                 {
                     if (reader.NamespaceURI == KmlNamespace && reader.LocalName == "ExtendedData")
                     {
-                        var extendedData = (XElement)XNode.ReadFrom(reader);
-                        foreach (var definition in extendedData.Elements(dwd + "ProductDefinition"))
-                        {
-                            definitions++;
-                            if (definitions > 1)
-                            {
-                                throw Invalid("dwd:ProductDefinition must occur exactly once");
-                            }
-
-                            (var issued, timeSteps) = ReadProductDefinition(definition, dwd);
-                            issuedAt = issued;
-                        }
+                        ReadDocumentExtendedData(reader, ref definitions, ref issuedAt, ref timeSteps);
                     }
                     else if (reader.NamespaceURI == KmlNamespace && reader.LocalName == "Placemark")
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        var placemark = (XElement)XNode.ReadFrom(reader);
                         if (issuedAt is null)
                         {
                             throw Invalid("a placemark must not appear before the product definition");
                         }
 
-                        var (id, available) = ReadPlacemark(placemark, timeSteps, kml, dwd);
+                        var (id, available) = ReadPlacemark(reader, timeSteps);
                         if (!locations.TryAdd(id, available))
                         {
                             throw Invalid($"the placemark ID {id} occurs more than once");
@@ -274,33 +264,177 @@ public sealed class MosmixSEvidenceRefresher : IMosmixSEvidenceRefresher
         }
     }
 
-    private static XElement Single(XElement parent, XName name, string path)
+    // Reads the text of the current element without materializing more than maxLength characters (SC-22: never hold a large subtree in memory).
+    // The reader is positioned on the start tag and ends after the end tag; child elements are not allowed.
+    private static string ReadBoundedText(XmlReader reader, int maxLength, string path, bool trim = false)
     {
-        var elements = parent.Elements(name).ToList();
-        if (elements.Count != 1)
+        if (reader.IsEmptyElement)
         {
-            throw Invalid(path + " must occur exactly once");
+            reader.Read();
+            return string.Empty;
         }
 
-        return elements[0];
+        var text = new StringBuilder();
+        var buffer = new char[maxLength + 1];
+        reader.Read();
+        var pendingWhitespace = false;
+        while (reader.NodeType != XmlNodeType.EndElement)
+        {
+            if (reader.NodeType is not (XmlNodeType.Text or XmlNodeType.CDATA or XmlNodeType.Whitespace or XmlNodeType.SignificantWhitespace))
+            {
+                throw Invalid(path + " must contain only text");
+            }
+
+            int read;
+            while ((read = reader.ReadValueChunk(buffer, 0, buffer.Length)) > 0)
+            {
+                if (trim)
+                {
+                    for (var i = 0; i < read; i++)
+                    {
+                        var c = buffer[i];
+                        if (char.IsWhiteSpace(c))
+                        {
+                            pendingWhitespace = text.Length > 0;
+                        }
+                        else
+                        {
+                            if (pendingWhitespace)
+                            {
+                                text.Append(' ');
+                                pendingWhitespace = false;
+                            }
+
+                            text.Append(c);
+                        }
+
+                        if (text.Length > maxLength)
+                        {
+                            throw Invalid(path + " is too long");
+                        }
+                    }
+                }
+                else
+                {
+                    text.Append(buffer, 0, read);
+                    if (text.Length > maxLength)
+                    {
+                        throw Invalid(path + " is too long");
+                    }
+                }
+            }
+
+            reader.Read();
+        }
+
+        reader.Read();
+        var result = text.ToString();
+        return trim ? result.Trim() : result;
     }
 
-    private static (DateTime IssuedAt, int TimeSteps) ReadProductDefinition(XElement definition, XNamespace dwd)
+    private static void ReadDocumentExtendedData(XmlReader reader, ref int definitions, ref DateTime? issuedAt, ref int timeSteps)
     {
-        if (Single(definition, dwd + "ProductID", "dwd:ProductID").Value != "MOSMIX")
+        if (reader.IsEmptyElement)
+        {
+            reader.Read();
+            return;
+        }
+
+        reader.ReadStartElement();
+        while (MoveToChildElement(reader))
+        {
+            if (reader.NamespaceURI == DwdNamespace && reader.LocalName == "ProductDefinition")
+            {
+                definitions++;
+                if (definitions > 1)
+                {
+                    throw Invalid("dwd:ProductDefinition must occur exactly once");
+                }
+
+                (var issued, timeSteps) = ReadProductDefinition(reader);
+                issuedAt = issued;
+            }
+            else
+            {
+                reader.Skip();
+            }
+        }
+
+        reader.ReadEndElement();
+    }
+
+    private static (DateTime IssuedAt, int TimeSteps) ReadProductDefinition(XmlReader reader)
+    {
+        string? productId = null;
+        string? issueTime = null;
+        var productIds = 0;
+        var issueTimes = 0;
+        var stepLists = 0;
+        var steps = 0;
+        if (reader.IsEmptyElement)
+        {
+            reader.Read();
+        }
+        else
+        {
+            reader.ReadStartElement();
+            while (MoveToChildElement(reader))
+            {
+                if (reader.NamespaceURI != DwdNamespace)
+                {
+                    reader.Skip();
+                }
+                else if (reader.LocalName == "ProductID")
+                {
+                    productIds++;
+                    productId = ReadBoundedText(reader, MaxShortTextLength, "dwd:ProductID", trim: false);
+                }
+                else if (reader.LocalName == "IssueTime")
+                {
+                    issueTimes++;
+                    issueTime = ReadBoundedText(reader, MaxShortTextLength, "dwd:IssueTime", trim: false);
+                }
+                else if (reader.LocalName == "ForecastTimeSteps")
+                {
+                    stepLists++;
+                    steps = CountTimeSteps(reader);
+                }
+                else
+                {
+                    reader.Skip();
+                }
+            }
+
+            reader.ReadEndElement();
+        }
+
+        if (productIds != 1)
+        {
+            throw Invalid("dwd:ProductID must occur exactly once");
+        }
+
+        if (productId != "MOSMIX")
         {
             throw Invalid("dwd:ProductID must be MOSMIX");
         }
 
-        var issueTime = Single(definition, dwd + "IssueTime", "dwd:IssueTime").Value;
-        var match = IssueTimePattern.Match(issueTime);
+        if (issueTimes != 1)
+        {
+            throw Invalid("dwd:IssueTime must occur exactly once");
+        }
+
+        var match = IssueTimePattern.Match(issueTime!);
         if (!match.Success || (match.Groups[2].Success && match.Groups[2].Value.Any(c => c != '0'))
-            || !DateTime.TryParseExact(issueTime[..19], "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var parsed))
+            || !DateTime.TryParseExact(issueTime![..19], "yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var parsed))
         {
             throw Invalid("dwd:IssueTime is not a valid UTC time with a zero fractional part");
         }
 
-        var steps = Single(definition, dwd + "ForecastTimeSteps", "dwd:ForecastTimeSteps").Elements(dwd + "TimeStep").Count();
+        if (stepLists != 1)
+        {
+            throw Invalid("dwd:ForecastTimeSteps must occur exactly once");
+        }
+
         if (steps < 1)
         {
             throw Invalid("dwd:ForecastTimeSteps must contain at least one dwd:TimeStep");
@@ -309,69 +443,264 @@ public sealed class MosmixSEvidenceRefresher : IMosmixSEvidenceRefresher
         return (DateTime.SpecifyKind(parsed, DateTimeKind.Utc), steps);
     }
 
-    private static (string Id, IReadOnlyList<string> Available) ReadPlacemark(XElement placemark, int timeSteps, XNamespace kml, XNamespace dwd)
+    private static int CountTimeSteps(XmlReader reader)
     {
-        var id = Single(placemark, kml + "name", "kml:name").Value.Trim();
-        if (!IdPattern.IsMatch(id))
+        var steps = 0;
+        if (reader.IsEmptyElement)
+        {
+            reader.Read();
+            return steps;
+        }
+
+        reader.ReadStartElement();
+        while (MoveToChildElement(reader))
+        {
+            if (reader.NamespaceURI == DwdNamespace && reader.LocalName == "TimeStep")
+            {
+                steps++;
+            }
+
+            reader.Skip();
+        }
+
+        reader.ReadEndElement();
+        return steps;
+    }
+
+    private static (string Id, IReadOnlyList<string> Available) ReadPlacemark(XmlReader reader, int timeSteps)
+    {
+        string? id = null;
+        var nameCount = 0;
+        var extendedDataCount = 0;
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        var available = new List<string>();
+        var forecasts = 0;
+        if (reader.IsEmptyElement)
+        {
+            reader.Read();
+        }
+        else
+        {
+            reader.ReadStartElement();
+            while (MoveToChildElement(reader))
+            {
+                if (reader.NamespaceURI == KmlNamespace && reader.LocalName == "name")
+                {
+                    nameCount++;
+                    id = ReadBoundedText(reader, MaxShortTextLength, "kml:name", trim: true).Trim();
+                }
+                else if (reader.NamespaceURI == KmlNamespace && reader.LocalName == "ExtendedData")
+                {
+                    extendedDataCount++;
+                    if (extendedDataCount > 1)
+                    {
+                        throw Invalid("kml:Placemark/kml:ExtendedData must occur at most once");
+                    }
+
+                    forecasts = ReadPlacemarkForecasts(reader, timeSteps, names, available);
+                }
+                else
+                {
+                    reader.Skip();
+                }
+            }
+
+            reader.ReadEndElement();
+        }
+
+        if (nameCount != 1)
+        {
+            throw Invalid("kml:name must occur exactly once");
+        }
+
+        if (!IdPattern.IsMatch(id!))
         {
             throw Invalid("a placemark ID does not match ^[A-Z0-9]{4,5}$");
         }
 
-        var extendedData = placemark.Elements(kml + "ExtendedData").ToList();
-        if (extendedData.Count > 1)
+        available.Sort(StringComparer.Ordinal);
+        return (id!, available);
+    }
+
+    private static int ReadPlacemarkForecasts(XmlReader reader, int timeSteps, HashSet<string> names, List<string> available)
+    {
+        var forecasts = 0;
+        if (reader.IsEmptyElement)
         {
-            throw Invalid("kml:Placemark/kml:ExtendedData must occur at most once");
+            reader.Read();
+            return forecasts;
         }
 
-        var forecasts = extendedData.Count == 0 ? new List<XElement>() : extendedData[0].Elements(dwd + "Forecast").ToList();
-        if (forecasts.Count > MaxForecastsPerPlacemark)
+        reader.ReadStartElement();
+        while (MoveToChildElement(reader))
         {
-            throw Invalid($"the placemark {id} has more than 200 forecasts");
-        }
+            if (reader.NamespaceURI != DwdNamespace || reader.LocalName != "Forecast")
+            {
+                reader.Skip();
+                continue;
+            }
 
-        var names = new HashSet<string>(StringComparer.Ordinal);
-        var available = new List<string>();
-        foreach (var forecast in forecasts)
-        {
-            var name = (string?)forecast.Attribute(dwd + "elementName");
+            forecasts++;
+            if (forecasts > MaxForecastsPerPlacemark)
+            {
+                throw Invalid("a placemark has more than 200 forecasts");
+            }
+
+            var name = reader.GetAttribute("elementName", DwdNamespace);
             if (name is null || !NamePattern.IsMatch(name) || !names.Add(name))
             {
-                throw Invalid($"a forecast element name of placemark {id} is missing, invalid or duplicated");
+                throw Invalid("a forecast element name is missing, invalid or duplicated");
             }
 
-            var tokens = Single(forecast, dwd + "value", "dwd:value").Value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-            if (tokens.Length != timeSteps)
-            {
-                throw Invalid($"the series {name} of placemark {id} does not have one token per time step");
-            }
-
-            var hasValue = false;
-            foreach (var token in tokens)
-            {
-                if (token == "-")
-                {
-                    continue;
-                }
-
-                if (!TokenPattern.IsMatch(token))
-                {
-                    throw Invalid($"the series {name} of placemark {id} contains an invalid token");
-                }
-
-                hasValue = true;
-            }
-
-            if (hasValue)
+            if (ReadForecastValue(reader, timeSteps, name))
             {
                 available.Add(name);
             }
         }
 
-        available.Sort(StringComparer.Ordinal);
-        return (id, available);
+        reader.ReadEndElement();
+        return forecasts;
+    }
+
+    // Reads one dwd:Forecast: exactly one dwd:value whose whitespace-separated tokens are scanned incrementally (at most MaxTokenLength characters per token,
+    // at most timeSteps tokens); returns true when the series has at least one numeric value.
+    private static bool ReadForecastValue(XmlReader reader, int timeSteps, string name)
+    {
+        var values = 0;
+        var hasValue = false;
+        if (reader.IsEmptyElement)
+        {
+            reader.Read();
+        }
+        else
+        {
+            reader.ReadStartElement();
+            while (MoveToChildElement(reader))
+            {
+                if (reader.NamespaceURI != DwdNamespace || reader.LocalName != "value")
+                {
+                    reader.Skip();
+                    continue;
+                }
+
+                values++;
+                if (values > 1)
+                {
+                    throw Invalid("dwd:value must occur exactly once");
+                }
+
+                hasValue = ScanTokens(reader, timeSteps, name);
+            }
+
+            reader.ReadEndElement();
+        }
+
+        if (values != 1)
+        {
+            throw Invalid("dwd:value must occur exactly once");
+        }
+
+        return hasValue;
+    }
+
+    private static bool ScanTokens(XmlReader reader, int timeSteps, string name)
+    {
+        var tokens = 0;
+        var hasValue = false;
+        var token = new StringBuilder(MaxTokenLength);
+        var buffer = new char[4096];
+
+        void Complete()
+        {
+            if (token.Length == 0)
+            {
+                return;
+            }
+
+            tokens++;
+            if (tokens > timeSteps)
+            {
+                throw Invalid($"the series {name} does not have one token per time step");
+            }
+
+            var text = token.ToString();
+            token.Clear();
+            if (text == "-")
+            {
+                return;
+            }
+
+            if (!TokenPattern.IsMatch(text))
+            {
+                throw Invalid($"the series {name} contains an invalid token");
+            }
+
+            hasValue = true;
+        }
+
+        if (reader.IsEmptyElement)
+        {
+            reader.Read();
+        }
+        else
+        {
+            reader.Read();
+            while (reader.NodeType != XmlNodeType.EndElement)
+            {
+                if (reader.NodeType is not (XmlNodeType.Text or XmlNodeType.CDATA or XmlNodeType.Whitespace or XmlNodeType.SignificantWhitespace))
+                {
+                    throw Invalid("dwd:value must contain only text");
+                }
+
+                int read;
+                while ((read = reader.ReadValueChunk(buffer, 0, buffer.Length)) > 0)
+                {
+                    for (var i = 0; i < read; i++)
+                    {
+                        if (char.IsWhiteSpace(buffer[i]))
+                        {
+                            Complete();
+                        }
+                        else
+                        {
+                            token.Append(buffer[i]);
+                            if (token.Length > MaxTokenLength)
+                            {
+                                throw Invalid($"the series {name} contains an invalid token");
+                            }
+                        }
+                    }
+                }
+
+                reader.Read();
+            }
+
+            reader.Read();
+        }
+
+        Complete();
+        if (tokens != timeSteps)
+        {
+            throw Invalid($"the series {name} does not have one token per time step");
+        }
+
+        return hasValue;
     }
 
     private static CatalogFormatException Invalid(string reason) => new(CatalogFormatException.MosmixEvidenceInvalidErrorId, $"The MOSMIX_S all-stations file is invalid: {reason} (contracts SC-20, SC-22).");
+
+    // Moves to the next child element of the current container; text, whitespace (also significant whitespace under xml:space="preserve")
+    // and other non-element children are ignored as XElement.Elements() ignored them. Returns false at the container's end tag.
+    private static bool MoveToChildElement(XmlReader reader)
+    {
+        // XmlNodeType.None (end of input) also ends the loop; XmlReader has already thrown for an unclosed container by then.
+        while (reader.NodeType is not (XmlNodeType.Element or XmlNodeType.EndElement or XmlNodeType.None))
+        {
+            reader.Read();
+        }
+
+        return reader.NodeType == XmlNodeType.Element;
+    }
 
     private sealed class CountingStream : ReadOnlyStreamBase
     {
@@ -398,6 +727,254 @@ public sealed class MosmixSEvidenceRefresher : IMosmixSEvidenceRefresher
             }
 
             return read;
+        }
+    }
+
+    // Bounds the length of every markup construct (a tag with its attributes, a CDATA section, a comment, a processing instruction or a declaration)
+    // in the unpacked member before XmlReader materializes it, so no single XML token can allocate more than MaxMarkupBytes (SC-22 streaming bound).
+    // Text content stays unbounded here; the parser reads it in chunks. '<', '>', quotes, '!', '?', '-' and ']' are single bytes in UTF-8 and ISO-8859-1.
+    private sealed class MarkupGuardStream : ReadOnlyStreamBase
+    {
+        private const int MaxMarkupBytes = 1048576;
+        private const int Text = 0;
+        private const int AfterOpen = 1;
+        private const int AfterBang = 2;
+        private const int AfterBangDash = 3;
+        private const int Tag = 4;
+        private const int Cdata = 5;
+        private const int Comment = 6;
+        private const int Instruction = 7;
+
+        private readonly Stream _inner;
+        private int _state = Text;
+        private long _length;
+        private byte _quote;
+        private int _closing;
+        private int _prefixState;
+        private int _bomBytes;
+        private int _depth;
+        private bool _endTag;
+        private byte _previous;
+
+        public MarkupGuardStream(Stream inner)
+        {
+            _inner = inner;
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            var read = _inner.Read(buffer, offset, count);
+            for (var i = offset; i < offset + read; i++)
+            {
+                Observe(buffer[i]);
+            }
+
+            return read;
+        }
+
+        private static ReadOnlySpan<byte> Utf8Bom => new byte[] { 0xEF, 0xBB, 0xBF };
+
+        private void Observe(byte value)
+        {
+            if (_prefixState == 0)
+            {
+                // Optional UTF-8 byte order mark, then optional ASCII whitespace, then '<'.
+                if (_bomBytes < 3 && value == Utf8Bom[_bomBytes] && (_bomBytes > 0 || _length == 0))
+                {
+                    _bomBytes++;
+                    return;
+                }
+
+                if (value is (byte)' ' or (byte)'\t' or (byte)'\r' or (byte)'\n')
+                {
+                    return;
+                }
+
+                if (value != (byte)'<' || (_bomBytes is not (0 or 3)))
+                {
+                    throw Invalid("the .kml member must be encoded in UTF-8 or ISO-8859-1");
+                }
+
+                _prefixState = 1;
+                _state = AfterOpen;
+                _length = 1;
+                _endTag = false;
+                _previous = 0;
+                return;
+            }
+            else if (_state == Text)
+            {
+                if (value == (byte)'<')
+                {
+                    _state = AfterOpen;
+                    _length = 1;
+                    _endTag = false;
+                    _previous = 0;
+                }
+
+                return;
+            }
+
+            _length++;
+            if (_length > MaxMarkupBytes)
+            {
+                throw Invalid("a tag, CDATA section, comment or processing instruction exceeds 1 MiB");
+            }
+
+            switch (_state)
+            {
+                case AfterOpen:
+                    if (value == 0)
+                    {
+                        throw Invalid("the .kml member must be encoded in UTF-8 or ISO-8859-1");
+                    }
+                    _endTag = value == (byte)'/';
+                    _state = value switch
+                    {
+                        (byte)'!' => AfterBang,
+                        (byte)'?' => Instruction,
+                        _ => Tag,
+                    };
+                    ObserveTag(value);
+                    break;
+                case AfterBang:
+                    _state = value switch
+                    {
+                        (byte)'-' => AfterBangDash,
+                        (byte)'[' => Cdata,
+                        _ => Tag,
+                    };
+                    _closing = 0;
+                    ObserveTag(value);
+                    break;
+                case AfterBangDash:
+                    _state = value == (byte)'-' ? Comment : Tag;
+                    _closing = 0;
+                    ObserveTag(value);
+                    break;
+                case Tag:
+                    ObserveTag(value);
+                    break;
+                case Cdata:
+                    ObserveTerminator(value, (byte)']');
+                    break;
+                case Comment:
+                    ObserveTerminator(value, (byte)'-');
+                    break;
+                default:
+                    // Instruction: ends at "?>".
+                    if (value == (byte)'>' && _closing == 1)
+                    {
+                        _state = Text;
+                    }
+
+                    _closing = value == (byte)'?' ? 1 : 0;
+                    break;
+            }
+        }
+
+        private void ObserveTag(byte value)
+        {
+            if (_state != Tag)
+            {
+                return;
+            }
+
+            if (_quote != 0)
+            {
+                if (value == _quote)
+                {
+                    _quote = 0;
+                }
+            }
+            else if (value == (byte)'"' || value == (byte)'\'')
+            {
+                _quote = value;
+            }
+            else if (value == (byte)'>')
+            {
+                // Element depth (SC-22 streaming bound): a start tag opens a level, an end tag closes one, a self-closing tag ("/>") neither.
+                if (_endTag)
+                {
+                    _depth--;
+                }
+                else if (_previous != (byte)'/')
+                {
+                    _depth++;
+                    if (_depth > MaxDepth)
+                    {
+                        throw Invalid($"the KML is nested deeper than {MaxDepth} elements");
+                    }
+                }
+
+                _state = Text;
+            }
+            else
+            {
+                _previous = value;
+            }
+        }
+
+        // CDATA ends at "]]>", a comment at "-->": two marker bytes followed by '>'.
+        private void ObserveTerminator(byte value, byte marker)
+        {
+            if (value == (byte)'>' && _closing >= 2)
+            {
+                _state = Text;
+                _closing = 0;
+            }
+            else if (value == marker)
+            {
+                _closing = Math.Min(_closing + 1, 2);
+            }
+            else
+            {
+                _closing = 0;
+            }
+        }
+    }
+
+    // Bounds the total length of all distinct names the reader interns (element, attribute and prefix names and namespace URIs, also of skipped elements),
+    // so that many distinct names cannot accumulate beyond the streaming memory bound (SC-22).
+    private sealed class BoundedNameTable : XmlNameTable
+    {
+        private const int MaxNameCharacters = 1048576;
+        private readonly NameTable _inner = new();
+        private long _characters;
+
+        public override string Add(char[] key, int start, int len)
+        {
+            if (Get(key, start, len) is { } existing)
+            {
+                return existing;
+            }
+
+            Count(len);
+            return _inner.Add(key, start, len);
+        }
+
+        public override string Add(string key)
+        {
+            if (Get(key) is { } existing)
+            {
+                return existing;
+            }
+
+            Count(key.Length);
+            return _inner.Add(key);
+        }
+
+        public override string? Get(char[] key, int start, int len) => _inner.Get(key, start, len);
+
+        public override string? Get(string value) => _inner.Get(value);
+
+        private void Count(int length)
+        {
+            _characters += length;
+            if (_characters > MaxNameCharacters)
+            {
+                throw Invalid("the distinct XML names exceed 1048576 characters");
+            }
         }
     }
 }

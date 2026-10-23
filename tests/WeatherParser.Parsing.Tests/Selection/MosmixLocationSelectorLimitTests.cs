@@ -348,7 +348,8 @@ public sealed class MosmixLocationSelectorLimitTests
         var result = await _subject.SelectAsync(MosmixSelectionTestData.Parameters(), caller.Token);
 
         // Assert
-        cacheToken.Should().Be(caller.Token);
+        cacheToken.Should().NotBe(caller.Token);
+        cacheToken.CanBeCanceled.Should().BeTrue();
         catalogToken.Should().Be(caller.Token);
         mosmixLToken.Should().Be(caller.Token);
         mosmixLDeadline.Should().Be(catalogDeadline);
@@ -573,5 +574,42 @@ public sealed class MosmixLocationSelectorLimitTests
         (await act.Should().ThrowAsync<SelectionLimitException>())
             .Which.ErrorId.Should().Be(SelectionLimitException.DeadlineExceededErrorId);
         _logger.Count("SELECTION-EMPTY").Should().Be(0);
+    }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task SelectAsync_DeadlineExpiresWhileIndexReadWaits_FailsWithSelectionDeadlineExceeded()
+    {
+        _cache.Setup(c => c.ReadAsync(It.IsAny<CancellationToken>()))
+            .Returns(async (CancellationToken token) =>
+            {
+                await Task.Delay(Timeout.Infinite, token);
+                return (MosmixSEvidenceIndex?)null;
+            });
+
+        var selection = _subject.SelectAsync(MosmixSelectionTestData.Parameters(), CancellationToken.None);
+        _clock.Advance(TimeSpan.FromSeconds(120));
+
+        (await FluentActions.Awaiting(() => selection).Should().ThrowAsync<SelectionLimitException>())
+            .Which.ErrorId.Should().Be(SelectionLimitException.DeadlineExceededErrorId);
+    }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task SelectAsync_CallerCancelsWhileIndexReadWaits_ThrowsOperationCanceledExceptionWithCallerToken()
+    {
+        using var caller = new CancellationTokenSource();
+        _cache.Setup(c => c.ReadAsync(It.IsAny<CancellationToken>()))
+            .Returns(async (CancellationToken token) =>
+            {
+                await Task.Delay(Timeout.Infinite, token);
+                return (MosmixSEvidenceIndex?)null;
+            });
+
+        var selection = _subject.SelectAsync(MosmixSelectionTestData.Parameters(), caller.Token);
+        caller.Cancel();
+
+        (await FluentActions.Awaiting(() => selection).Should().ThrowAsync<OperationCanceledException>())
+            .Which.CancellationToken.Should().Be(caller.Token);
     }
 }

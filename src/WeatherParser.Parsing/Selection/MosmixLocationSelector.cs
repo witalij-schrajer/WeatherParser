@@ -73,7 +73,21 @@ public sealed class MosmixLocationSelector : IMosmixLocationSelector
 
         try
         {
-            var index = await _evidenceCache.ReadAsync(cancellationToken);
+            // The index read is bounded by the selection deadline too (SC-18); a caller cancellation keeps the caller's token (SC-09 precedence).
+            MosmixSEvidenceIndex? index;
+            var indexRead = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
+            try
+            {
+                index = await _evidenceCache.ReadAsync(indexRead.Token);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw new OperationCanceledException("The MOSMIX location selection was cancelled by the caller.", cancellationToken);
+            }
+            finally
+            {
+                indexRead.Dispose();
+            }
             SelectionSupport.ThrowIfCancelledOrDeadline(cancellationToken, deadline, Selection);
             if (index is null)
             {

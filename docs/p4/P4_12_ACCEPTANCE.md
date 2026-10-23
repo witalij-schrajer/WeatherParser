@@ -1,6 +1,6 @@
 # P4.12 – P4 Acceptance Record
 
-**Status (2026-10-23): evidence audit ACCEPTED (section 5); awaiting the user's acceptance decision (section 6). No phase-status document is changed before that decision.** Plan: [P4_12_ACCEPTANCE_HANDOFF_PLAN.md](P4_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
+**Status (2026-10-24): the evidence audit (section 5) accepted candidate `98122e5`. The A10 review fixes (section 8.1) make a new implementation candidate, so the P4.11 S1–S4 rerun and the refresh of A2, A5 and A6 are pending. Then comes the user's acceptance decision (section 6). No phase-status document is changed before that decision.** Plan: [P4_12_ACCEPTANCE_HANDOFF_PLAN.md](P4_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
@@ -75,7 +75,7 @@ No row is FAILED or OPEN; no acceptance criterion was amended.
 
 ## 5. Audit decision (A5)
 
-**ACCEPTED** (orchestrating agent's evidence audit, 2026-10-23): every T-P4 row is PASSED with tests and run evidence for candidate `98122e5`; P4.11 reported READY with no open defect; the coverage gate passed with 6484/6487 against 3035/3037 on Windows (Windows packed SHA-512 `7P7sYMqKWtEJXRIUZUYeASFJAZFhtd1rnrwgzOqSrmY/3kb9j+tYGx0b3txYLpnDgbuWHeoWw1S+BGbZoz21VA==`) and on the NanoPi R76S (packed SHA-512 `hKlt6WlOi/PQwjoQtGl6TxYF8zU+8ZcCkLsAHmvtwSmKau6ml2/WWOrzWx+pCpF7qutWuqzhwuglNFZe9H5ttw==`), hosted CI run 40023445539 is green with the SHA pair verified; test counts per platform: Parsing 1609 passed (1610 with the skipped live test), Coverage 99, Coverage.Runner 56, SchemaGeneration 46, package consumer 31; every contract decision is approved; each limitation has an owner. This audit decision is not the user's acceptance.
+**ACCEPTED** (orchestrating agent's evidence audit, 2026-10-23): every T-P4 row is PASSED with tests and run evidence for candidate `98122e5`; P4.11 reported READY with no open defect; the coverage gate passed with 6484/6487 against 3035/3037 on Windows (Windows packed SHA-512 `7P7sYMqKWtEJXRIUZUYeASFJAZFhtd1rnrwgzOqSrmY/3kb9j+tYGx0b3txYLpnDgbuWHeoWw1S+BGbZoz21VA==`) and on the NanoPi R76S (packed SHA-512 `hKlt6WlOi/PQwjoQtGl6TxYF8zU+8ZcCkLsAHmvtwSmKau6ml2/WWOrzWx+pCpF7qutWuqzhwuglNFZe9H5ttw==`), hosted CI run 40023445539 is green with the SHA pair verified; test counts per platform: Parsing 1609 passed (1610 with the skipped live test), Coverage 99, Coverage.Runner 56, SchemaGeneration 46, package consumer 31; every contract decision is approved; each limitation has an owner. This audit decision is not the user's acceptance. It applies to candidate `98122e5` only. The A10 review fixes (section 8.1) need a refreshed audit on the new candidate.
 
 ## 6. User decision (A7)
 
@@ -87,7 +87,48 @@ Pending.
 
 ## 8. Ready for review, review and merge (A9 to A11)
 
-Pending.
+A9 (ready for review) and A11 (merge) are pending.
+
+### 8.1 A10 review round 1 (draft PR #5, 2026-10-23 to 2026-10-24)
+
+The review of head `c864650` raised three inline comments. All three were confirmed and fixed test-first. The fixes change production code, so they make a **new implementation candidate**: the fix commit that adds this section. Under A10 this needs a P4.11 S1–S4 rerun on that commit and refreshed A2, A5 and A6 before the user's acceptance decision. All three are still pending. The P4.11 live check (SC-16) stays a single run; the rerun records how it handles that.
+
+| Comment | Finding | Fix | Red evidence |
+|---|---|---|---|
+| 4364483129 [Major] | `XNode.ReadFrom` materialized each placemark (and the product definition) before any bound applied (SC-20, SC-22) | `MosmixSEvidenceRefresher` parses the member as a forward-only stream. Text is read in bounded chunks (`kml:name`, `dwd:ProductID`, `dwd:IssueTime` at most 256 characters; forecast tokens at most 17 characters, scanned incrementally). A byte-level markup guard bounds every tag, CDATA section, comment and processing instruction to 1 MiB and the element nesting to 32. It accepts only UTF-8 (optional byte order mark) or ISO-8859-1 members that start with markup. A bounded name table limits the distinct XML names to 1,048,576 characters. Non-element children of containers and processing instructions are ignored, as `XElement.Elements()` and `XElement.Value` did | `MosmixSEvidenceRefresherMemoryBoundTests`: 836 MB and about 300 MB allocated against the 64 MiB bound before the fix; further cases from the Codex rounds below |
+| 4364483133 [Major] | `SelectionDeadline` did not cover the evidence-index read (SC-18) | `MosmixLocationSelector` passes a token linked from the caller's token and the deadline to `ReadAsync`. Caller cancellation keeps precedence (SC-09) | `SelectAsync_DeadlineExpiresWhileIndexReadWaits_FailsWithSelectionDeadlineExceeded` hung until its 10 s test timeout |
+| 4364483136 [Minor] | Replacing the index failed while a reader held it open | Readers open with `FileShare.Read \| FileShare.Delete`. An existing index is replaced with `File.Replace`, a first index is moved into place. `FileShare.Delete` alone, as suggested, was not enough: `File.Move(overwrite: true)` was still denied on Windows (.NET 10.0.13 probe) | `FileSystemMosmixEvidenceCacheConcurrencyTests`: `EVIDENCE-CACHE-FAILED` before the fix |
+
+Codex reviewed the fix diff (five-angle audit) in seven rounds. Each confirmed finding got a Red test before the fix.
+
+| Round | Findings | Disposition |
+|---|---|---|
+| 1 | CDATA materialized whole; `kml:name` bounded before trimming | Confirmed, fixed (markup guard; trim-aware bounded reader) |
+| 2 | Internal whitespace deleted beyond the text bound; UTF-16 members bypass the byte guard; distinct names accumulate in the name table | Confirmed, fixed (whitespace runs kept as one space; encoding start check; bounded name table) |
+| — | Own finding: the member's first construct was not bounded | Confirmed, fixed (`OversizedFirstConstructWithoutDeclaration_RejectedByTheMarkupBound`) |
+| 3 | Unbounded nesting depth inside skipped subtrees | Confirmed, fixed (depth 32 accepted, 33 rejected) |
+| 4 | Processing instructions rejected (compatibility regression) | Confirmed, fixed (`IgnoreProcessingInstructions`) |
+| 5 | Significant whitespace (`xml:space="preserve"`) and text between container children rejected | Confirmed, fixed (`MoveToChildElement`; 50 MB text between children stays below 64 MiB) |
+| 6, 7 | 0 | — |
+
+The orchestrating agent also found that its local pre-commit coverage script had measured stale Release binaries after Debug-only builds. The script now builds Release first. The fresh measurement exposed one unreachable block in `MoveToChildElement`, which was removed.
+
+Evidence on the working tree that this commit records (Windows, SDK 10.0.303):
+- `WeatherParser.Ci.slnf` build: 0 warnings.
+- Parsing tests: 1662 passed, 1 skipped (the guarded live check).
+- Pre-commit coverage gate: block coverage 6811/6814 against baseline 3035/3037 at `b7da828`, exit 0 (`evaluate.json` SHA-256 `2c995e7e6352f7cc37f9c45398100c0b11db5171eb270196c7d147a23f55e881`). The only uncovered library blocks are the three known ones: the `ParserEndpointValidator` constructor (2) and `FileSystemMosmixEvidenceCache.DeleteTemporaryFile` (1).
+- Local package check: packed files identical, restored hash equals packed hash, package consumer 31 passed; the consumer lock was not committed.
+
+Hosted CI for the fix commit and the P4.11 rerun are not yet recorded.
+
+Authorship of the fix round:
+- qwen3-coder:30b generated the tests and most production changes.
+- The orchestrating agent made these changes by hand, each after failed briefs or as a mechanical edit:
+  - restored dropped `using` directives;
+  - moved the `pendingWhitespace` declaration;
+  - removed an unused field and an always-true condition from the markup guard;
+  - added the one-property `IgnoreProcessingInstructions` setting;
+  - wrote this record.
 
 ## 9. Authorship
 

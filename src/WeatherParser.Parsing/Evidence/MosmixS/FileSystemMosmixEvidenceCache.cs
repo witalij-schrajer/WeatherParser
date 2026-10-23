@@ -56,7 +56,7 @@ public sealed class FileSystemMosmixEvidenceCache : IMosmixEvidenceCache
         byte[] bytes;
         try
         {
-            await using var stream = new FileStream(_indexPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true);
+            await using var stream = OpenIndexForRead(_indexPath);
             if (stream.Length > MaxIndexBytes)
             {
                 return null;
@@ -79,6 +79,12 @@ public sealed class FileSystemMosmixEvidenceCache : IMosmixEvidenceCache
             return null;
         }
     }
+
+    /// <summary>Opens the index file for reading with the cache's sharing mode (test seam for concurrent replacement).</summary>
+    /// <remarks>
+    /// Readers allow deletion so that <see cref="WriteAsync"/> can atomically replace the index while a reader still reads its old snapshot (SC-22).
+    /// </remarks>
+    internal static FileStream OpenIndexForRead(string path) => new(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, 4096, useAsync: true);
 
     private MosmixSEvidenceIndex? Parse(byte[] bytes)
     {
@@ -350,7 +356,17 @@ public sealed class FileSystemMosmixEvidenceCache : IMosmixEvidenceCache
         try
         {
             await File.WriteAllBytesAsync(temporaryPath, bytes, cancellationToken);
-            File.Move(temporaryPath, _indexPath, overwrite: true);
+
+            // Atomic replacement (SC-22): File.Replace also succeeds while readers hold the old index open with FileShare.Delete;
+            // the first index of a source key has nothing to replace and is moved into place.
+            if (File.Exists(_indexPath))
+            {
+                File.Replace(temporaryPath, _indexPath, destinationBackupFileName: null);
+            }
+            else
+            {
+                File.Move(temporaryPath, _indexPath);
+            }
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
