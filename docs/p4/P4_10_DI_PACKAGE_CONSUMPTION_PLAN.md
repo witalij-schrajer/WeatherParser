@@ -1,6 +1,6 @@
 # P4.10 – DI Registration and Package Consumption: Implementation Plan
 
-**Status: implemented on 2026-10-23 (S1 to S4, records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 10).** Original planning note: plan only on 2026-10-21. Refines the P4.10 row of section 5 and T-P4-14 of section 6 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 2, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: placeholders in S3/S4 replaced and joined bullets split (qwen). Reconciled with the approved selection contract (SC-08, SC-12, SC-16, SC-18, SC-22, SC-23) on 2026-10-21 (P4.02 S6). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S1 registration-boundary tests; S2 fixture paragraph and timestamp test (cross-plan); section 6 rows; README timeout wording. Codex five-angle review rounds: 5, 5, 2, 3, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
+**Status: complete (2026-10-23): implemented (S1 to S4), committed as `2f85c2f`, `ci-local.ps1` on that commit and hosted CI run 40019053309 green; records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 10.** Original planning note: plan only on 2026-10-21. Refines the P4.10 row of section 5 and T-P4-14 of section 6 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 2, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: placeholders in S3/S4 replaced and joined bullets split (qwen). Reconciled with the approved selection contract (SC-08, SC-12, SC-16, SC-18, SC-22, SC-23) on 2026-10-21 (P4.02 S6). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S1 registration-boundary tests; S2 fixture paragraph and timestamp test (cross-plan); section 6 rows; README timeout wording. Codex five-angle review rounds: 5, 5, 2, 3, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
 
 ## 1. Goal and Scope
 Goal: prove the integrated DI configuration of all P4 services with consumer-supplied endpoints and dependencies — independent configurations, endpoints forwarded unchanged, no global `Uri` registrations, defined failures for missing configuration — and prove independent consumption of the same-run `.nupkg` by the package consumer `tests/WeatherParser.Package.Tests`, including an offline end-to-end selection for both catalogs serialized with the real serializers and validated against the package-delivered schema; document the consumer configuration in README.md.
@@ -182,13 +182,13 @@ Setup first: the hand-written handler and valid synthetic fixtures are added bef
 - (d) Committed consumer lock with a same-run hash — the refresh is discarded and only structural changes are committed.
 
 ## 9. Acceptance Criteria
-- [ ] All T-P4-14 cases pass in the parsing tests and the package consumer
-- [ ] Endpoints forwarded unchanged and never registered globally
-- [ ] Missing configuration fails at validation
-- [ ] Both selections run offline from the same-run package and validate against the packaged schema
-- [ ] Package-side JSON and XML of populated and empty lists match the selected graph field by field
-- [ ] README section accurate with placeholders and package check passed
-- [ ] C-116 evidence recorded from the committed run
-- [ ] Build without warnings
-- [ ] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
-- [ ] No CLI or live-retrieval code added
+- [x] All T-P4-14 cases pass in the parsing tests and the package consumer
+- [x] Endpoints forwarded unchanged and never registered globally
+- [x] Missing configuration fails at validation
+- [x] Both selections run offline from the same-run package and validate against the packaged schema
+- [x] Package-side JSON and XML of populated and empty lists match the selected graph field by field
+- [x] README section accurate with placeholders and package check passed
+- [x] C-116 evidence recorded from the committed run
+- [x] Build without warnings
+- [x] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
+- [x] No CLI or live-retrieval code added
