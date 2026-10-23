@@ -1,6 +1,6 @@
 # P4.09 – Selection Services and List Assembly: Implementation Plan
 
-**Status: implemented on 2026-10-23 (S1 to S4, records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 9).** Original planning note: plan only on 2026-10-21. **Reconciled with the approved selection contract (SC-11, SC-13, SC-17, SC-18, SC-22, SC-23) on 2026-10-21 (P4.02 S6).** Refines the P4.09 row of section 5 and the "Lists" and "Exports" rows of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 3, 1, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: availability deriver and resolver invoked by the selectors and diagnostics logging (cross-plan review); the orchestrating agent split one joined bullet line and replaced one test line itself after failed qwen attempts. S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S1/S2 expected failures and registration tests; CDC clock lines and the MOSMIX completion-time test; section 6 cross-references; composed-pipeline fixture; MOSMIX_L 404 instead of `unknown` (cross-plan). Codex five-angle review rounds: 8, 6, 6, 3, 2, 2, 1, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
+**Status: complete (2026-10-23): implemented (S1 to S4), committed as `f22bc7a`, hosted CI run 40010632025 green; records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 9.** Original planning note: plan only on 2026-10-21. **Reconciled with the approved selection contract (SC-11, SC-13, SC-17, SC-18, SC-22, SC-23) on 2026-10-21 (P4.02 S6).** Refines the P4.09 row of section 5 and the "Lists" and "Exports" rows of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 3, 1, 1, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: availability deriver and resolver invoked by the selectors and diagnostics logging (cross-plan review); the orchestrating agent split one joined bullet line and replaced one test line itself after failed qwen attempts. S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S1/S2 expected failures and registration tests; CDC clock lines and the MOSMIX completion-time test; section 6 cross-references; composed-pipeline fixture; MOSMIX_L 404 instead of `unknown` (cross-plan). Codex five-angle review rounds: 8, 6, 6, 3, 2, 2, 1, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
 
 ## 1. Goal and Scope
 Goal: two injectable selection services — one for CDC stations, one for MOSMIX locations — that take validated `SearchParameters` (P4.03), obtain the catalog data through the P4.08 sources, evaluate every candidate with `ISearchAreaFilter` (P4.04), build the P2 list roots `CdcStationList` and `MosmixLocationList` with all required members, order entries through `IListEntryOrdering`, write the empty-result notice through the approved logging abstraction, and are proven with the real serializers and the v1 output schema.
@@ -256,14 +256,14 @@ Pre-commit coverage on the working tree per CONTRIBUTING.md section 5 (changed-f
 - (e) CDC/MOSMIX cross-use — separate constructors without the other catalog's dependencies
 
 ## 9. Acceptance Criteria
-- [ ] Each behavior increment has recorded Red evidence
-- [ ] All T-P4-11 to T-P4-13 cases pass
-- [ ] Empty selections are valid lists with exactly one empty-result notice (approved notice ID) and no substitute; exclusion notices are written once per excluded location and never duplicated
-- [ ] Failures never yield lists
-- [ ] Documents equivalent and schema-valid in both formats
-- [ ] No export contract change
-- [ ] Selectors registered, DI fixtures updated, completeness tests green
-- [ ] Package-consumer tests pass against the packed library
-- [ ] Build without warnings
-- [ ] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
-- [ ] No CLI, file output or MQTT code added
+- [x] Each behavior increment has recorded Red evidence (the S3 contract and composed-pipeline tests are characterization tests recorded as existing behaviour, as section 5 S3 allows)
+- [x] All T-P4-11 to T-P4-13 cases pass
+- [x] Empty selections are valid lists with exactly one empty-result notice (approved notice ID) and no substitute; exclusion notices are written once per excluded location and never duplicated
+- [x] Failures never yield lists
+- [x] Documents equivalent and schema-valid in both formats
+- [x] No export contract change
+- [x] Selectors registered, DI fixtures updated, completeness tests green
+- [x] Package-consumer tests pass against the packed library
+- [x] Build without warnings
+- [x] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
+- [x] No CLI, file output or MQTT code added
