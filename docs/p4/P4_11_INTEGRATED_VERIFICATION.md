@@ -1,6 +1,6 @@
 # P4.11 – Integrated Coverage and Platform Verification: Record
 
-**Status (2026-10-23): S0 complete (live-check runner, test code only); S1 to S5 pending on the candidate that contains S0.**
+**Status (2026-10-23): S0 to S5 executed on candidate `98122e5`; outcome READY for P4.12 (section 8); records review and the evidence-checkpoint commit pending.**
 
 Plan: [P4_11_INTEGRATED_VERIFICATION_PLAN.md](P4_11_INTEGRATED_VERIFICATION_PLAN.md).
 
@@ -29,6 +29,91 @@ Plan: [P4_11_INTEGRATED_VERIFICATION_PLAN.md](P4_11_INTEGRATED_VERIFICATION_PLAN
 - **Checks**: `dotnet build WeatherParser.Ci.slnf -c Release --no-incremental` 0 warnings; Parsing 1609 pass and 1 skipped (live test), SchemaGeneration 46, Coverage 99, Coverage.Runner 56; pre-commit coverage gate before the round-1 fixes 6484/6487 above 3035/3037, exit 0 (test code is excluded from the block metric).
 - **Authorship**: qwen3-coder:30b generated the runner, the tests and this record text from the orchestrating agent's briefs; the orchestrating agent wrote the briefs, ran every build, test, gate and review, reviewed each diff and added three missing `using` directives and fixed one typo (`EvidenceCacheCacheException`) by hand.
 
-## 3. S1 to S5
+## 3. Candidate and integration target
 
-Pending; recorded after the S0 commit.
+- Candidate (implementation candidate containing S0): `98122e560370e9de781bd4e0e3ebe0aca270e3d8` (`98122e5`), draft PR #5, branch features/develop/P4.
+- Integration target: PR base develop = `b7da8288d8746bc6e034222c0467a8fcebba55b3` (`gh pr view 5` baseRefOid and `git rev-parse origin/develop`, 2026-10-23). Local `develop` (74bf625) differs and was not used.
+
+## 4. S1 Windows local CI
+
+- `pwsh ./scripts/ci-local.ps1 -Commit 98122e560370e9de781bd4e0e3ebe0aca270e3d8 -TargetRef b7da8288d8746bc6e034222c0467a8fcebba55b3 -RunSettings coverage.runsettings`, exit 0, 2026-10-23T20:59:49Z to 21:00:42Z (53 s), run directory artifacts/ci/98122e5-20261023T205949Z (gitignored); commits.json: commit `98122e5...`, targetCommit `b7da828...`, mode two-pass, exitCode 0.
+- Tests: Parsing 1610 total, 1609 passed, 0 failed (1 skipped: the live test); Coverage.Runner 56/56; Coverage 99/99; SchemaGeneration 46/46; Package consumer 31/31; target pass Parsing 880/880.
+- Gate: passed; Comparability, Measurement 6484/6487, Minimum (>= 80 %), Baseline 3035/3037, Comparison (6484/6487 = 99.95 % exceeds 3035/3037 = 99.93 %) all true; gate-result.json SHA-256 `79ed1e5bf910f26c28e3757502ce95047a3131946d7da8bd19275a259220b5fb`.
+- C-116: WeatherParser.Parsing 0.1.0-initial; packed SHA-512 `7P7sYMqKWtEJXRIUZUYeASFJAZFhtd1rnrwgzOqSrmY/3kb9j+tYGx0b3txYLpnDgbuWHeoWw1S+BGbZoz21VA==` (package-hash.txt, recomputed equal); entries _rels/.rels, WeatherParser.Parsing.nuspec, LICENSE, README.md, lib/net10.0/WeatherParser.Parsing.dll, schemas/export/v1/weatherparser-export-v1.xsd, [Content_Types].xml, package/services/metadata/core-properties/nuget.psmdcp; consumer lock: only the WeatherParser.Parsing contentHash line rewritten to the packed hash, locked restore succeeded, 31/31.
+
+## 5. S2 Hosted CI
+
+- Run 40023445539 on `98122e560370e9de781bd4e0e3ebe0aca270e3d8` (pull_request): completed success; jobs ubuntu-x64, windows-x64, debian13-arm64 success.
+- Artifacts downloaded with `gh run download 40023445539` (ci-windows-x64 id 12532245700, 1663381 B; ci-ubuntu-x64 id 12531452964, 1617662 B; ci-debian13-arm64 id 12530809186, 1614416 B); each commits.json: commit `98122e5...`, targetCommit `b7da828...`, exitCode 0, mode two-pass (SHA pair verified).
+- Each job: Parsing 1610/1609 passed (live test skipped), Coverage.Runner 56, Coverage 99, SchemaGeneration 46, Package 31/31, target Parsing 880/880; gate passed with 6484/6487 (3 not covered); consumer lock: contentHash line rewritten (one line); run durations 01:10 (arm64), 01:38 (ubuntu), 02:11 (windows).
+- C-116 per job (packed SHA-512 = recomputed from the artifact's nupkg; entries the expected 8): debian13-arm64 `U0xMLKODMABR9tsdP6mO+Kc8yFvsqhuH0lXqY6aQiu1kepsF7eCT4F6Xt0QGlsDjLnD0ymej6XqSoh4yoQK9yA==`; ubuntu-x64 `C+xIuFjKo+V/5JlPSOCuLSi0cBNFJaWNmeVwbXphnwX3m6jcfYlE9i4GknMQpkWmTzsEw/QGiniDpHbZEe/GLA==`; windows-x64 `geB3EFHxS/WoVJLf/j+i4SBm3sUs4VeLSHVxH2Sv0RDIhAz4wCuuubazy6rgIN/G8tz5ET0flAixOCwxlx2zvQ==`. The hashes differ between jobs and from the local run because each job packs its own build (the package is not byte-reproducible across builds); within each run the restored hash equals the packed hash.
+
+## 6. S3 NanoPi R76S (Debian 13 ARM64)
+
+- Bundle: `git bundle create weatherparser.bundle features/develop/P4 p411-target` (p411-target = temporary local branch at b7da828, deleted after bundling, because local develop 74bf625 differs from the PR base); heads `98122e5` refs/heads/features/develop/P4 and `b7da828` refs/heads/p411-target; 1232656 B, SHA-256 `e5d106971d0dab451f1a43cef78537d82fd5204dd31bc78679ddabdb16313ea2`, equal on both sides after scp.
+- Target: `ssh R76S`, aarch64, Debian GNU/Linux 13 (trixie); working directory ~/weatherparser-p411; script = CONTRIBUTING.md section 7 (clone bundle, detach origin/features/develop/P4, ci-commit and ci-target branches, `bash scripts/prepare-debian-arm64.sh > env.sh`, `. ./env.sh`, `pwsh ./scripts/ci-local.ps1 -Commit ci-commit -TargetRef ci-target -RunSettings coverage.runsettings`); ci-commit=`98122e5...`, ci-target=`b7da828...`; prepare exit 0: .NET SDK 10.0.402 and PowerShell 7.6.7 already installed (nothing installed), runtime Microsoft.NETCore.App 10.0.13, ICU libicuuc.so.76; ci-local exit 0, run `98122e5-20261023T210033Z`, 4 min 25 s; copied back with scp to artifacts/ci/arm64-98122e5-20261023T210033Z (gitignored); working directory removed afterwards (older directories weatherparser-p211 and weatherparser-p211b left untouched).
+- dotnet info: OS Platform Linux, OS Version 13, RID linux-arm64, Architecture arm64.
+- Results: commits.json commit `98122e5`, targetCommit `b7da828`, exitCode 0, two-pass; Parsing 1610 total / 1609 passed / 0 failed (live test not executed), Coverage.Runner 56, Coverage 99, SchemaGeneration 46, Package 31/31, target Parsing 880/880; gate passed, Comparability/Measurement/Minimum/Baseline/Comparison true, 6484/6487 above 3035/3037; gate-result.json SHA-256 `fc76812305d2055440f77956f27f305b80bcb648b2346aa30ea62c039c471b26`; packed SHA-512 `hKlt6WlOi/PQwjoQtGl6TxYF8zU+8ZcCkLsAHmvtwSmKau6ml2/WWOrzWx+pCpF7qutWuqzhwuglNFZe9H5ttw==`; consumer lock contentHash line rewritten (one line).
+- Comparison with Windows S1: same 1610 Parsing test results; the 40 differing TRX test names differ only in the decimal separator of data-row display names (German Windows culture "0,1" vs "0.1"); after normalizing it 0 differences; every result Passed except the live test (NotExecuted) on both; 20 geodesy-related results (names matching Distance, SearchArea, Geodes...) all passed on ARM64 within their test tolerances; identical block counters 6484/6487 and baseline 3035/3037. gate-result.json and package hashes differ between platforms (separate builds and environment fields), as expected.
+
+## 7. S4 Live check
+
+- Command: `$env:WEATHERPARSER_LIVE_CHECK='1'; dotnet test tests/WeatherParser.Parsing.Tests -c Release --no-build --filter "FullyQualifiedName~LiveCheck_DwdSources_OnlyWhenExplicitlyEnabled"` (variable removed afterwards), working tree clean at `98122e5`, build 0 warnings; started 2026-10-23T21:01:15Z, test duration 14 s, passed; output C:\Users\<user>\AppData\Local\Temp\wp-live-check-20261023T210116Z (outside the repository).
+- Requests 14 of budget 56; all HTTP 200, no redirect; declared Content-Length equal to bytes read for every request:
+  MOSMIX_S all-stations `37470861`; MOSMIX catalog `299502`; MOSMIX_L `10536` `18239`, `N1012` `17814`, `L585` `18112`, `L684` `18135`, `L582` `18157`; CDC lists tu `466155`, ff `277779`, rr `1377975`, sd `66357`; now files nieder_01526 `710`, TU_01526 `1522`, nieder_03911 `689`.
+- Station lists and catalog sizes equal the source-register sizes of 2026-10-21 (466155, 277779, 1377975, 66357, 299502).
+- MOSMIX_S index downloaded_at `2026-10-23T21:01:23`, issued_at `2026-10-23T20:00:00`.
+- CDC: retrieved_at `2026-10-23T21:01:29`, 2 stations: 01526 Fulda-Horas 2.66 km (humidity_percent, rain_rate_mm_h, temperature_c), 03911 Petersberg-Marbach 8.16 km (rain_rate_mm_h); CDC candidates 2.
+- MOSMIX: retrieved_at `2026-10-23T21:01:28`, 5 locations (candidates 5): L585 FULDA 1.87 km, 10536 FULDA 2.13 km, L582 PETERSBERG-MARBACH 7.86 km, L684 THALAUBACH 13.90 km, N1012 KALBACH 14.86 km; each MOSMIX_S available (40 elements, evidence_retrieved_at `21:01:23`, issued `20:00:00`) and MOSMIX_L available (110 elements, evidence_retrieved_at `21:01:29`, issued `15:00:00`).
+- Schema events: 0 (CDC), 0 (MOSMIX). Documents: cdc.json `672 B`, cdc.xml `1234 B`, mosmix.json `8005 B`, mosmix.xml `22000 B`.
+- Notices: one CATALOG-RECORD-SKIPPED (catalog line 1530, station 37531, minutes above 59) = the GORI record documented in the contract section 3.2; no other notice; no format deviation found.
+- one run, not repeated (SC-16)
+
+## 8. S5 T-P4 audit, defects and outcome
+
+Intro sentence: "Every row is mapped to its passing tests and recorded evidence. Platform evidence for every row: the S1 Windows run, the S2 hosted run 40023445539 and the S3 NanoPi run on `98122e5`, each with 1609 Parsing tests passed (the live test not executed), 31 package-consumer tests passed and the gate passed with 6484/6487 blocks. Step evidence is in [P4_VERIFICATION.md](P4_VERIFICATION.md)."
+
+| T-P4 ID | Owning steps | Tests | Step evidence | Result |
+|---------|--------------|-------|---------------|--------|
+| T-P4-01 | P4.03 | `CoordinateParserTests` | section 3, `a3b79d7`, CI 39737759157 | Passed |
+| T-P4-02 | P4.03 | `CoordinateParserDmsTests` | section 3, `a3b79d7`, CI 39737759157 | Passed |
+| T-P4-03 | P4.03, P4.09 | `SearchParameterFactoryTests`; parameter tests of `CdcStationSelectorLimitTests` and `MosmixLocationSelectorLimitTests` | sections 3 and 9 | Passed |
+| T-P4-04 | P4.04 | `DistanceCalculatorTests` (converging Vincenty reference pairs within 1 mm, spherical calculations and the near-antipodal fallback within 0.6 %, SC-06; also passed on the NanoPi, S3) | section 4, `abe6d64`, CI 39810906820 | Passed |
+| T-P4-05 | P4.04 | `SearchAreaFilterTests`, `SearchAreaFilterCompositionTests` | section 4 | Passed |
+| T-P4-06 | P4.05 | `CdcStationCatalogReaderTests`, `CdcStationCatalogReaderMalformedTests`, `CdcStationCatalogReaderBoundaryTests` | section 5, `0195b4f`, CI 39828777889 | Passed |
+| T-P4-07 | P4.06 | `CdcAvailabilityDeriverSelectCandidatesTests`, `CdcAvailabilityDeriverDeriveTests`, `CdcNowEvidenceReaderTests` | section 6, `643475f`, CI 39840675493 | Passed |
+| T-P4-08 | P4.07 | `MosmixLocationCatalogReaderTests`, `...LineTests`, `...MalformedTests`, `...NegativeBoundsTests`, `...NormalizationTests` | section 7, `0f29842`, CI 39905420541 | Passed |
+| T-P4-09 | P4.07, P4.09 | `MosmixAvailabilityResolverTests`, the five `MosmixLEvidenceReader*Tests`, the four `FileSystemMosmixEvidenceCache*Tests`, `MosmixLocationListContractTests` (explicit `unknown`), `MosmixLocationSelectorTests` | sections 7 and 9 | Passed |
+| T-P4-10 | P4.07, P4.08 | `MosmixCatalogEndpointsValidatorTests`, `CdcCatalogEndpointsValidatorTests`, `CatalogSourceConstructionTests`, `CatalogServiceArgumentTests`, the six `CatalogDownloader*Tests` | sections 7 and 8, `97ced0b`, CI 39982260348 | Passed |
+| T-P4-11 | P4.09 | `CdcStationSelectorTests`, `CdcStationSelectorLimitTests`, `ComposedCdcPipelineTests` | section 9, `f22bc7a`, CI 40010632025 | Passed |
+| T-P4-12 | P4.09 | `MosmixLocationSelectorTests`, `MosmixLocationSelectorLimitTests`, `ComposedMosmixPipelineTests` | section 9 | Passed |
+| T-P4-13 | P4.09, P4.10 | `SelectionExportContractTests`; package side `PackageSelectionEquivalenceTests` | sections 9 and 10 | Passed |
+| T-P4-14 | P4.10, P4.11 | `SelectionDependencyInjectionTests`, `SelectionDependencyInjectionRoutingTests`, `PackageSelectionTests`, `PackageMosmixEvidenceTests`, `PackageSelectionEquivalenceTests`; C-116 package evidence from the committed runs | section 10 (`2f85c2f`, CI 40019053309, `ci-local.ps1` on `2f85c2f`); this record sections 4 to 6 | Passed |
+| T-P4-15 | P4.03 to P4.10, P4.11 S0 | Red, Green and Refactor recorded per slice, including first-run characterization tests recorded as existing behaviour | sections 3 to 10; this record section 2 | Passed |
+| T-P4-16 | P4.11 | Coverage gate: 6484/6487 (99.95 %) against the integration-target baseline 3035/3037 (99.93 %) remeasured in the same run; minimum 80 %; strict improvement (baseline below 100 %); unrounded native counters; comparable collection settings | this record sections 4 to 6 | Passed |
+| T-P4-17 | P4.11 | All P4 tests and the gate on the NanoPi R76S, separate from Windows; identical results after decimal-separator normalization of display names | this record section 6 | Passed |
+| T-P4-18 | P4.11 | `LiveCheck_DwdSources_OnlyWhenExplicitlyEnabled` with the offline `LiveCheckRunnerTests` and `LiveCheckRunnerFailureTests` | this record sections 2 and 7 | Passed (one run) |
+| T-P4-19 | P4.07 to P4.10 | the four `FileSystemMosmixEvidenceCache*Tests`, the six `MosmixSEvidenceRefresher*Tests`, the index tests of `MosmixLocationSelectorTests` and `MosmixLocationSelectorLimitTests`, `ComposedMosmixPipelineTests`, `PackageMosmixEvidenceTests`, the index cases of `LiveCheckRunnerTests` | sections 7 to 10 | Passed |
+| T-P4-20 | P4.07, P4.10 | `MosmixEvidenceTimestampTests`, `MosmixEvidenceTimestampWireTests`, `SchemaRefinementTests` (schema generator), `PackageEvidenceTimestampTests`, `PackageMosmixEvidenceTests` | sections 7 and 10 | Passed |
+
+### Defects
+
+- No open defect. No production defect was found in P4.11; production code is unchanged since P4.09.
+- The three Codex findings of S0 concerned the new test-only live-check runner and were fixed test-first before the candidate was committed (section 2).
+
+### Observations (not defects)
+
+- The local `develop` branch (`74bf625`) differs from the PR base `b7da828`; the PR base was used throughout.
+- The packed package is not byte-reproducible across builds: each run's packed SHA-512 differs, while within every run the restored hash equals the packed hash (C-116).
+- The live MOSMIX catalog still contains the GORI record with a minute part of 60, skipped with one `CATALOG-RECORD-SKIPPED` notice as the contract documents (section 3.2 of the selection contract).
+
+### Outcome
+
+- **READY** for P4.12: every mandatory T-P4 row passes on Windows and on the NanoPi R76S, the coverage gate passed, hosted CI is green for the candidate and no defect is open; the optional live check ran once within the SC-09, SC-16 and SC-22 conditions.
+- Open limitations (not passes): release hardware acceptance stays with P9 (REQ-084); the live check is a single snapshot of 2026-10-23 and is not repeated (SC-16); the hosted `debian13-arm64` container is not counted as target evidence; DI under load, CLI, MQTT and live retrieval in normal operation are later phases.
+- The P4 acceptance decision belongs to the user in P4.12.
+
+### Authorship and review
+
+- Authorship of this evidence checkpoint (sections 3 to 8 of this record, the P4 section of `docs/COMPATIBILITY.md`): the orchestrating agent ran every command, extracted every value and wrote the facts lists and the T-P4 mapping; qwen3-coder:30b drafted the prose of sections 3 to 8 and the COMPATIBILITY.md section from them (a second qwen request added the missing Limits bullet); the orchestrating agent reviewed every value against the run directories and artifacts and wrote the status lines, section 11 of `P4_VERIFICATION.md` and the review-driven corrections (tolerance wording, this statement) itself.
+- Codex records review: round 1, 2 findings (P3), both confirmed and fixed: the geodesy tolerance stated too broadly as 1 mm (now 1 mm for converging Vincenty pairs and 0.6 % for spherical calculations and the near-antipodal fallback), and the missing authorship statement of this checkpoint. Round 2: 0 findings.

@@ -30,9 +30,22 @@ Candidate `bced7be380c3e637fdd042c4165cd074e25f25a6` against PR base `64e460b475
 | Windows x64 (developer machine), SDK 10.0.402, runtime 10.0.13 | Local two-pass `ci-local.ps1` | Exit 0; tests 880, 99, 56, 43, consumer 18; block coverage 3035/3037 against baseline 54/56; gate passed |
 | NanoPi R76S, Debian 13 (trixie), `linux-arm64`, SDK 10.0.402, runtime 10.0.13, ICU 76, tzdata `2025b-4+deb13u1` | Class B target run (CONTRIBUTING.md section 7) | Exit 0; same tests and gate result; serializers, `Europe/Berlin` handling, `en-US`/`de-DE` culture checks with ICU data (system locale only `C.utf8`), schema regeneration byte-identical to Windows, package consumer with schema delivery; all standard test projects also pass in a network namespace with loopback only |
 | GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 39493310294) | All jobs succeeded; recorded separately and not counted as target evidence |
+
+## P4 scope (P4.11, 2026-10-23)
+
+Candidate `98122e560370e9de781bd4e0e3ebe0aca270e3d8` against PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`; details in the [P4.11 record](p4/P4_11_INTEGRATED_VERIFICATION.md).
+
+| Platform | Evidence class | Result |
+|---|---|---|
+| Windows x64 (developer machine), SDK 10.0.402, runtime 10.0.13 | Local two-pass `ci-local.ps1` | Exit 0; tests 1609 passed (live test not executed), 99, 56, 46, consumer 31; block coverage 6484/6487 against baseline 3035/3037; gate passed |
+| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, SDK 10.0.402, runtime 10.0.13, ICU 76 | Class B target run (CONTRIBUTING.md section 7) | Exit 0; same tests, outcomes and gate result as Windows (geodesy reference distances within their test tolerances: 1 mm for converging Vincenty pairs, 0.6 % for spherical calculations and the near-antipodal fallback (SC-06)) |
+| GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40023445539) | All jobs succeeded; recorded separately and not counted as target evidence |
+| Windows x64 (developer machine), live DWD sources | Explicitly enabled live check (`WEATHERPARSER_LIVE_CHECK=1`), one run | 14 requests of a budget of 56, all HTTP 200; both documents schema-valid; recorded as a snapshot of 2026-10-23, not repeated |
+
 ## Limits
 
 - Class B proves the package foundation on ARM64 at P1 scope only, not release readiness (P9).
 - P2 scope (serializers, output schema, time-zone handling, DI and package consumption) is verified on the target by P2.11 (section below); DI under load, CLI, MQTT and network sources are not yet covered (later phases).
+- P4 scope (coordinates, geodesy, CDC and MOSMIX catalogs and availability, the retrieval boundary with mocked HTTP, the MOSMIX_S evidence cache, selection services, DI and package consumption) is verified on the target by P4.11; live retrieval was checked once on Windows only, not on the target; CLI and MQTT are not yet covered (later phases).
 - Windows-versus-ARM64 block counters are descriptive only, gating always uses a baseline measured on the same platform.
 - Emulation or x64 results never count as ARM64 evidence.
