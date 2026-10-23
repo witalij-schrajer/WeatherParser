@@ -22,7 +22,7 @@ public sealed class PackageSchemaDeliveryTests
     [TestInitialize]
     public void TestInitialize()
     {
-        _provider = new ServiceCollection().AddWeatherParsing().BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+        _provider = new ServiceCollection().AddWeatherParsing().AddTestConsumerServices().BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         _xml = _provider.GetRequiredService<IXmlExportSerializer>();
     }
 

@@ -139,7 +139,7 @@ public sealed class ExportSchemaRefiner : IExportSchemaRefiner
         if (utcProperty is null)
             return false;
 
-        if (utcProperty.PropertyType != typeof(DateTime))
+        if (utcProperty.PropertyType != typeof(DateTime) && utcProperty.PropertyType != typeof(DateTime?))
             return false;
 
         if (utcProperty.GetCustomAttribute<JsonIgnoreAttribute>() is null)

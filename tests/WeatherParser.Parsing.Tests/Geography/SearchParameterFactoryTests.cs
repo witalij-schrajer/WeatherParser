@@ -133,7 +133,7 @@ public sealed class SearchParameterFactoryTests
     public void AddWeatherParsing_ResolvesSearchParameterFactory()
     {
         using var provider = new ServiceCollection()
-            .AddWeatherParsing()
+            .AddWeatherParsing().AddTestConsumerServices()
             .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
         var actual = provider.GetRequiredService<ISearchParameterFactory>();

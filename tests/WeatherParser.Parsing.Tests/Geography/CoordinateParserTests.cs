@@ -192,7 +192,7 @@ public sealed class CoordinateParserTests
     public void AddWeatherParsing_ResolvesCoordinateParser()
     {
         using var provider = new ServiceCollection()
-            .AddWeatherParsing()
+            .AddWeatherParsing().AddTestConsumerServices()
             .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
         var actual = provider.GetRequiredService<ICoordinateParser>();

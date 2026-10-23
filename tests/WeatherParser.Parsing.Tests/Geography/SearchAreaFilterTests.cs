@@ -327,7 +327,7 @@ public sealed class SearchAreaFilterTests
     [TestMethod]
     public void AddWeatherParsing_ResolvesSearchAreaFilter()
     {
-        using var provider = new ServiceCollection().AddWeatherParsing().BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+        using var provider = new ServiceCollection().AddWeatherParsing().AddTestConsumerServices().BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         var result = provider.GetRequiredService<ISearchAreaFilter>();
 
         result.Should().BeOfType<SearchAreaFilter>();

@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using WeatherParser.Parsing.Catalogs;
+using WeatherParser.Parsing.Evidence.MosmixL;
+using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Forecasts;
 using WeatherParser.Parsing.Geography;
@@ -30,6 +32,11 @@ public static class ServiceCollectionExtensions
     /// The CDC station-list reader is also registered.
     /// The CDC evidence reader is also registered.
     /// The CDC availability deriver is also registered.
+    /// The MOSMIX station-catalog reader is also registered.
+    /// The MOSMIX catalog endpoints validator is also registered.
+    /// The MOSMIX_L evidence reader is also registered.
+    /// The MOSMIX_S evidence cache is also registered.
+    /// The MOSMIX availability resolver is also registered.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -58,6 +65,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICdcStationCatalogReader, CdcStationCatalogReader>();
         services.AddSingleton<ICdcNowEvidenceReader, CdcNowEvidenceReader>();
         services.AddSingleton<ICdcAvailabilityDeriver, CdcAvailabilityDeriver>();
+        services.AddSingleton<IMosmixLocationCatalogReader, MosmixLocationCatalogReader>();
+        services.AddSingleton<IMosmixCatalogEndpointsValidator, MosmixCatalogEndpointsValidator>();
+        services.AddSingleton<IMosmixLEvidenceReader, MosmixLEvidenceReader>();
+        services.AddSingleton<IMosmixEvidenceCache, FileSystemMosmixEvidenceCache>();
+        services.AddSingleton<IMosmixAvailabilityResolver, MosmixAvailabilityResolver>();
 
         return services;
     }

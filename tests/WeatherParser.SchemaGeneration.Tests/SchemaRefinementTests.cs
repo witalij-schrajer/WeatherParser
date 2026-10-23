@@ -97,4 +97,20 @@ public sealed class SchemaRefinementTests
 
         _root.Descendants(Xs + "element").Where(e => e.Attribute("fixed") != null || e.Attribute("default") != null).Should().BeEmpty();
     }
+
+    [DataRow("MosmixProductAvailability", "evidence_retrieved_at")]
+    [DataRow("MosmixProductAvailability", "evidence_issued_at")]
+    [TestMethod]
+    public void Generate_OptionalEvidenceTimestampsUseUtcTimestampAndAreOptional(string complexType, string element)
+    {
+        Element(complexType, element).Attribute("type")!.Value.Should().Be("tns:UtcTimestamp");
+        Element(complexType, element).Attribute("minOccurs")!.Value.Should().Be("0");
+    }
+
+    [TestMethod]
+    public void Generate_EvidenceTimestampsAppendedAfterAvailableForecastElements()
+    {
+        var elements = ComplexType("MosmixProductAvailability").Descendants(Xs + "sequence").First().Elements(Xs + "element").Select(e => (string?)e.Attribute("name"));
+        elements.Should().Equal("product", "availability", "available_forecast_elements", "evidence_retrieved_at", "evidence_issued_at");
+    }
 }

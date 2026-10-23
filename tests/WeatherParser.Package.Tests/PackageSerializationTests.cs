@@ -20,7 +20,7 @@ public sealed class PackageSerializationTests
     [TestInitialize]
     public void TestInitialize()
     {
-        _provider = new ServiceCollection().AddWeatherParsing().BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+        _provider = new ServiceCollection().AddWeatherParsing().AddTestConsumerServices().BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         _json = _provider.GetRequiredService<IJsonExportSerializer>();
         _xml = _provider.GetRequiredService<IXmlExportSerializer>();
     }

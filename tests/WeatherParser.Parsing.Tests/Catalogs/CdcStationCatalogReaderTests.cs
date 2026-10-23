@@ -311,7 +311,7 @@ public sealed class CdcStationCatalogReaderTests
     [TestMethod]
     public async Task AddWeatherParsing_ResolvesCdcStationCatalogReader()
     {
-        var services = new ServiceCollection().AddWeatherParsing();
+        var services = new ServiceCollection().AddWeatherParsing().AddTestConsumerServices();
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         var reader = provider.GetRequiredService<ICdcStationCatalogReader>();
         reader.Should().BeOfType<CdcStationCatalogReader>();

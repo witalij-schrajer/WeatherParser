@@ -281,7 +281,7 @@ public sealed class CdcAvailabilityDeriverSelectCandidatesTests
     public void AddWeatherParsing_ResolvesCdcAvailabilityDeriver()
     {
         using var provider = new ServiceCollection()
-            .AddWeatherParsing()
+            .AddWeatherParsing().AddTestConsumerServices()
             .BuildServiceProvider(true);
 
         var deriver = provider.GetRequiredService<ICdcAvailabilityDeriver>();

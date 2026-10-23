@@ -128,7 +128,7 @@ public sealed class DistanceCalculatorTests
     public void AddWeatherParsing_ResolvesDistanceCalculator()
     {
         using var provider = new ServiceCollection()
-            .AddWeatherParsing()
+            .AddWeatherParsing().AddTestConsumerServices()
             .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
         var actual = provider.GetRequiredService<IDistanceCalculator>();

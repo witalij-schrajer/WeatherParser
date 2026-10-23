@@ -24,4 +24,14 @@ public sealed record CatalogDiagnostic(string Id, string EndpointName, int? Line
     /// Identifier for a station without altitude.
     /// </summary>
     public const string StationNoAltitudeId = "CDC-STATION-NO-ALTITUDE";
+
+    /// <summary>
+    /// Identifier for a MOSMIX location without elevation, excluded from the selectable locations, SC-04, SC-17.
+    /// </summary>
+    public const string MosmixLocationNoAltitudeId = "MOSMIX-LOCATION-NO-ALTITUDE";
+
+    /// <summary>
+    /// True when the reader has already written this diagnostic as a log notice, so the selection does not log it again, SC-08.
+    /// </summary>
+    public bool AlreadyLogged { get; init; }
 }

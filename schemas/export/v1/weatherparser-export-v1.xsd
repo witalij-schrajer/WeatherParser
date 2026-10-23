@@ -246,6 +246,8 @@
       <xs:element minOccurs="1" maxOccurs="1" name="product" type="tns:MosmixProduct" />
       <xs:element minOccurs="1" maxOccurs="1" name="availability" type="tns:AvailabilityState" />
       <xs:element minOccurs="1" maxOccurs="1" name="available_forecast_elements" type="tns:ArrayOfString1" />
+      <xs:element minOccurs="0" maxOccurs="1" name="evidence_retrieved_at" type="tns:UtcTimestamp" />
+      <xs:element minOccurs="0" maxOccurs="1" name="evidence_issued_at" type="tns:UtcTimestamp" />
     </xs:sequence>
   </xs:complexType>
   <xs:simpleType name="AvailabilityState">

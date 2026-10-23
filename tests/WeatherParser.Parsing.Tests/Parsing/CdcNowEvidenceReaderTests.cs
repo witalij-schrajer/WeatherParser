@@ -363,7 +363,7 @@ public sealed class CdcNowEvidenceReaderTests
     public async Task AddWeatherParsing_ResolvesCdcNowEvidenceReader()
     {
         var services = new ServiceCollection();
-        services.AddWeatherParsing();
+        services.AddWeatherParsing().AddTestConsumerServices();
         using var provider = services.BuildServiceProvider(validateScopes: true);
         var reader = provider.GetRequiredService<ICdcNowEvidenceReader>();
         reader.Should().BeOfType<CdcNowEvidenceReader>();

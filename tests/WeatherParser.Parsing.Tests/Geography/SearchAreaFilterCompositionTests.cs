@@ -16,7 +16,7 @@ public sealed class SearchAreaFilterCompositionTests
     [TestInitialize]
     public void TestInitialize()
     {
-        _provider = new ServiceCollection().AddWeatherParsing().BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+        _provider = new ServiceCollection().AddWeatherParsing().AddTestConsumerServices().BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         _calculator = _provider.GetRequiredService<IDistanceCalculator>();
         _subject = _provider.GetRequiredService<ISearchAreaFilter>();
     }
