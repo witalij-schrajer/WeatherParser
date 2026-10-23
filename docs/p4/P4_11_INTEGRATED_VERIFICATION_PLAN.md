@@ -1,6 +1,6 @@
 # P4.11 – Integrated Coverage and Platform Verification: Implementation Plan
 
-**Status: executed (2026-10-23): S0 to S5 on candidate `98122e5`, outcome READY (record [P4_11_INTEGRATED_VERIFICATION.md](P4_11_INTEGRATED_VERIFICATION.md)); evidence-checkpoint commit and its CI pending.** Original planning note: plan only on 2026-10-21. **Reconciled with the approved selection contract (SC-15, SC-18, SC-22) on 2026-10-21 (P4.02 S6).** Refines the P4.11 row of section 5 and section 7 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 4, 1, 2, 2, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: removal of invented S5 content (fabricated per-ID results). Codex five-angle review rounds: 2, 2, 2, 2, 2, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
+**Status: complete (2026-10-23): S0 to S5 on candidate `98122e5`, outcome READY; evidence checkpoint `807d29a`, hosted CI run 40026481905 green (record [P4_11_INTEGRATED_VERIFICATION.md](P4_11_INTEGRATED_VERIFICATION.md)).** Original planning note: plan only on 2026-10-21. **Reconciled with the approved selection contract (SC-15, SC-18, SC-22) on 2026-10-21 (P4.02 S6).** Refines the P4.11 row of section 5 and section 7 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 4, 1, 2, 2, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: removal of invented S5 content (fabricated per-ID results). Codex five-angle review rounds: 2, 2, 2, 2, 2, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
 
 ## 1. Goal and Scope
 Goal: verify one committed P4 candidate as a whole — Windows local CI with the native coverage gate against the then-current integration target, hosted CI of the pushed candidate, the same candidate on the NanoPi R76S (Debian 13 ARM64) with the owner's recorded authorization, and an optional, explicitly enabled live catalog check — and conclude READY or NOT_READY for P4.12.
@@ -181,13 +181,13 @@ If a defect is discovered after live verification (SC-16), restart mandatory off
 - (e) Missing NanoPi authorization — named blocker, no claim of ARM64 success
 
 ## 9. Acceptance Criteria
-- [ ] Candidate and integration target recorded
-- [ ] Windows gate passed with recorded counters
-- [ ] Hosted CI green for the candidate with verified `commits.json` SHA pair and recorded C-116 package evidence
-- [ ] NanoPi run recorded with authorization; without it the outcome is NOT_READY (a blocker acknowledgment is not a pass)
-- [ ] Live check run within conditions or recorded as skipped (SC-15)
-- [ ] Every T-P4 row audited
-- [ ] No open defect
-- [ ] Outcome recorded
-- [ ] Codex review of the records with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
-- [ ] No production code changed in this step
+- [x] Candidate and integration target recorded
+- [x] Windows gate passed with recorded counters
+- [x] Hosted CI green for the candidate with verified `commits.json` SHA pair and recorded C-116 package evidence
+- [x] NanoPi run recorded with authorization; without it the outcome is NOT_READY (a blocker acknowledgment is not a pass)
+- [x] Live check run within conditions or recorded as skipped (SC-15)
+- [x] Every T-P4 row audited
+- [x] No open defect
+- [x] Outcome recorded
+- [x] Codex review of the records with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
+- [x] No production code changed in this step

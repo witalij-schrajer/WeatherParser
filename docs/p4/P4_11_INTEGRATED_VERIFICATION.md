@@ -1,6 +1,6 @@
 # P4.11 – Integrated Coverage and Platform Verification: Record
 
-**Status (2026-10-23): S0 to S5 executed on candidate `98122e5`; outcome READY for P4.12 (section 8); records review and the evidence-checkpoint commit pending.**
+**Status (2026-10-23): complete. S0 to S5 executed on candidate `98122e5`; outcome READY for P4.12 (section 8); evidence checkpoint `807d29a`, hosted CI run 40026481905 green.**
 
 Plan: [P4_11_INTEGRATED_VERIFICATION_PLAN.md](P4_11_INTEGRATED_VERIFICATION_PLAN.md).
 
@@ -117,3 +117,4 @@ Intro sentence: "Every row is mapped to its passing tests and recorded evidence.
 
 - Authorship of this evidence checkpoint (sections 3 to 8 of this record, the P4 section of `docs/COMPATIBILITY.md`): the orchestrating agent ran every command, extracted every value and wrote the facts lists and the T-P4 mapping; qwen3-coder:30b drafted the prose of sections 3 to 8 and the COMPATIBILITY.md section from them (a second qwen request added the missing Limits bullet); the orchestrating agent reviewed every value against the run directories and artifacts and wrote the status lines, section 11 of `P4_VERIFICATION.md` and the review-driven corrections (tolerance wording, this statement) itself.
 - Codex records review: round 1, 2 findings (P3), both confirmed and fixed: the geodesy tolerance stated too broadly as 1 mm (now 1 mm for converging Vincenty pairs and 0.6 % for spherical calculations and the near-antipodal fallback), and the missing authorship statement of this checkpoint. Round 2: 0 findings.
+- Evidence checkpoint: the records were committed as `807d29a` on the user's request (2026-10-23) and pushed to draft pull request #5 (documentation only; the implementation evidence of candidate `98122e5` stays valid, plan section 3); hosted CI run 40026481905 on `807d29a` succeeded on all three jobs (ubuntu-x64, windows-x64, debian13-arm64) under the full-PR gate, the coverage gate included; on debian13-arm64 the Parsing tests passed 1609 of 1610 (live test not executed), SchemaGeneration 46/46, Coverage 99/99, Coverage.Runner 56/56 and the package consumer 31/31. P4.11 is complete.
