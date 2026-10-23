@@ -8,6 +8,7 @@ using WeatherParser.Parsing.Geography;
 using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Quantities;
 using WeatherParser.Parsing.Serialization;
+using WeatherParser.Parsing.Selection;
 using WeatherParser.Parsing.Time;
 
 namespace WeatherParser.Parsing.Parsing;
@@ -78,6 +79,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICdcCatalogSource, CdcCatalogSource>();
         services.AddSingleton<IMosmixCatalogSource, MosmixCatalogSource>();
         services.AddSingleton<IMosmixSEvidenceRefresher, MosmixSEvidenceRefresher>();
+        services.AddSingleton<ICdcStationSelector, CdcStationSelector>();
+        services.AddSingleton<IMosmixLocationSelector, MosmixLocationSelector>();
 
         return services;
     }

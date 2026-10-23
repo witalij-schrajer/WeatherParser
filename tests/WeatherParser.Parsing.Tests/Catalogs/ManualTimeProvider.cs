@@ -10,7 +10,13 @@ internal sealed class ManualTimeProvider : TimeProvider
         _now = start;
     }
 
-    public override DateTimeOffset GetUtcNow() => _now;
+    public int GetUtcNowCalls { get; private set; }
+
+    public override DateTimeOffset GetUtcNow()
+    {
+        ++GetUtcNowCalls;
+        return _now;
+    }
 
     public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
     {
