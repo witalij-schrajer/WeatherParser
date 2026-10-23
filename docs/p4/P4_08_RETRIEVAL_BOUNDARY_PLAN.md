@@ -1,6 +1,6 @@
 # P4.08 – Catalog Retrieval Boundary: Implementation Plan
 
-**Status: implemented on 2026-10-23 (S1 to S6, records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 8).** Original planning note: plan only on 2026-10-21. Refines the P4.08 row of section 5 and the "Retrieval" row of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 6, 3, 2, 2, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: source results with diagnostics, no derivation (cross-plan review). The orchestrating agent restored six S3 tests from the previous version and inserted the package-preparation paragraph itself after failed qwen corrections. Reconciled with the approved selection contract (SC-09, SC-12, SC-17, SC-18, SC-22) on 2026-10-21 (P4.02 S6). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S4 source composition and CDC file names; artifact paths; removal of package preparation; section 9 criteria; the `CatalogRequest` downloader call (orchestrator decision); precedence tests; `TimeProvider` registration with the refresher (cross-plan). Codex five-angle review rounds: 8, 7, 6, 4, 3, 1, 1, 1, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
+**Status: complete (2026-10-23): implemented (S1 to S6), committed as `97ced0b`, hosted CI run 39982260348 green; records in [P4_VERIFICATION.md](P4_VERIFICATION.md) section 8.** Original planning note: plan only on 2026-10-21. Refines the P4.08 row of section 5 and the "Retrieval" row of section 4 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief; reviewed read-only by the OpenAI Codex CLI (rounds: 6, 3, 2, 2, 0); every finding was verified by the orchestrating agent and fixed by qwen unless stated otherwise; a cross-plan Codex review of all P4 plans ended with 0 findings (rounds: 5, 2, 0). Later: source results with diagnostics, no derivation (cross-plan review). The orchestrating agent restored six S3 tests from the previous version and inserted the package-preparation paragraph itself after failed qwen corrections. Reconciled with the approved selection contract (SC-09, SC-12, SC-17, SC-18, SC-22) on 2026-10-21 (P4.02 S6). S6 record (2026-10-21): qwen reconciled this plan from the orchestrating agent's change list and fixed the confirmed review findings section by section; the orchestrating agent edited these parts itself after failed qwen attempts, for regressions or for recorded design decisions: S4 source composition and CDC file names; artifact paths; removal of package preparation; section 9 criteria; the `CatalogRequest` downloader call (orchestrator decision); precedence tests; `TimeProvider` registration with the refresher (cross-plan). Codex five-angle review rounds: 8, 7, 6, 4, 3, 1, 1, 1, 0 findings; cross-plan five-angle review of all P4 plans: rounds 4, 3, 1, 1, 0 findings.
 
 ## 1. Goal and Scope
 
@@ -321,23 +321,23 @@ Pre-commit coverage on the working tree per CONTRIBUTING.md section 5 (changed-f
 
 ## 9. Acceptance Criteria
 
-- [ ] Each behavior increment has recorded Red evidence
-- [ ] All T-P4-10 cases pass offline (all HTTP through the mocked handler)
-- [ ] No built-in, fallback or global URIs; endpoints validated at construction without retrieval
-- [ ] Timeout bound enforced while waiting for headers and while reading the body; body size bound enforced by `Content-Length` and streamed bytes; response-header size limit as the retrieval-boundary SC row decides (consumer responsibility for transport settings, documented in README.md); caller cancellation and timeout distinguishable
-- [ ] Diagnostics never contain credentials or query values (validation and retrieval)
-- [ ] Response and stream disposed after the reader on every path
-- [ ] Failures never produce empty successful catalogs
-- [ ] Sources registered with consumer endpoint options; existing DI fixtures updated; completeness tests green
-- [ ] Package changes (if any) consistent with the AGENTS.md table
-- [ ] Build without warnings
-- [ ] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
-- [ ] No selection, list assembly or CLI code added
-- [ ] Injected `HttpClient` used unchanged; test proving this requirement
-- [ ] T-P4-19 requirements mapped to REQ-101/102/083 and P4.08 portion explicitly required in acceptance
-- [ ] MOSMIX_S refresh operation completes within `MosmixSRefreshDeadline`
-- [ ] The refresh writes the index only through the P4.07 `IMosmixEvidenceCache`; stale and missing index handling in selections is P4.09 work
-- [ ] The refresh stream-parses the all-stations file under the SC-20 rules with the SC-22 replacements (1 to 20000 placemarks, unique IDs `^[A-Z0-9]{4,5}$`, at most 200 forecasts per placemark with names `^[A-Za-z0-9_]{1,16}$`, member at most 2 GiB, 64 MiB download), each bound tested on both sides
-- [ ] Any refresh failure throws its SC-17 error ID and leaves the previous index unchanged
-- [ ] A non-writable cache directory makes the refresh fail with `EVIDENCE-CACHE-FAILED`
-- [ ] Prerequisites from P4.07 (`MosmixCatalogEndpoints`, `IMosmixEvidenceCache`, SC-20 reader internals) reused unchanged
+- [x] Each behavior increment has recorded Red evidence
+- [x] All T-P4-10 cases pass offline (all HTTP through the mocked handler)
+- [x] No built-in, fallback or global URIs; endpoints validated at construction without retrieval
+- [x] Timeout bound enforced while waiting for headers and while reading the body; body size bound enforced by `Content-Length` and streamed bytes; response-header size limit as the retrieval-boundary SC row decides (consumer responsibility for transport settings, documented in README.md); caller cancellation and timeout distinguishable (the README documentation of the consumer's transport settings is P4.10 work)
+- [x] Diagnostics never contain credentials or query values (validation and retrieval)
+- [x] Response and stream disposed after the reader on every path
+- [x] Failures never produce empty successful catalogs
+- [x] Sources registered with consumer endpoint options; existing DI fixtures updated; completeness tests green
+- [x] Package changes (if any) consistent with the AGENTS.md table
+- [x] Build without warnings
+- [x] Codex review with 0 open findings, or a recorded Codex unavailability or failure reported to the user (AGENTS.md)
+- [x] No selection, list assembly or CLI code added
+- [x] Injected `HttpClient` used unchanged; test proving this requirement
+- [x] T-P4-19 requirements mapped to REQ-101/102/083 and P4.08 portion explicitly required in acceptance
+- [x] MOSMIX_S refresh operation completes within `MosmixSRefreshDeadline`
+- [x] The refresh writes the index only through the P4.07 `IMosmixEvidenceCache`; stale and missing index handling in selections is P4.09 work
+- [x] The refresh stream-parses the all-stations file under the SC-20 rules with the SC-22 replacements (1 to 20000 placemarks, unique IDs `^[A-Z0-9]{4,5}$`, at most 200 forecasts per placemark with names `^[A-Za-z0-9_]{1,16}$`, member at most 2 GiB, 64 MiB download), each bound tested on both sides (the 2 GiB bound through the internal test seam; the 64 MiB bound is enforced and tested generically by the downloader's size-bound tests)
+- [x] Any refresh failure throws its SC-17 error ID and leaves the previous index unchanged
+- [x] A non-writable cache directory makes the refresh fail with `EVIDENCE-CACHE-FAILED`
+- [x] Prerequisites from P4.07 (`MosmixCatalogEndpoints`, `IMosmixEvidenceCache`, SC-20 reader internals) reused unchanged
