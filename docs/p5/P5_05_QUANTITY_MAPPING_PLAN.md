@@ -1,6 +1,6 @@
 # P5.05 – Quantity Mapping, Units, Periods and Quality: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines the P5.05 row of section 5 and the rows "Values", "Units and periods" and "Times" of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-04, OC-05 (`RWS_10` option A), OC-06 (option B) and OC-07; calm rule and the `DD_10` = 0 test fixed, `RWS_10` period stated as nominal. Refines the P5.05 row of section 5 and the rows "Values", "Units and periods" and "Times" of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: an injectable mapper that turns the rows of a station's product archives (P5.04 `CdcNowEvidence`, all columns and `QN`) into `ObservationReading` items for the P2 builder: one reading per SC-03 quantity from the most recent usable row of its column (OC-04), with the verified unit, pressure reference, averaging period, missing-marker handling, calm-wind rule and `QN` quality (OC-05 to OC-07), and the row's `MESS_DATUM` normalized to UTC through `ISourceTimeNormalizer`.
@@ -16,7 +16,7 @@ Out of scope with owner: reading archives → P5.04; retrieval → P5.06; range 
 |---|---|---|---|---|
 | Interface and type names | `IDwdObservationMapper`/`DwdObservationMapper`, folder `Observations/Dwd/` / other | Proposed names | Orchestrator, recorded | S1 |
 | Usability for "latest usable row" | SC-03 rule (parsed, not −999, accepted by `IQuantityValidator`) / parsed and not −999 only | SC-03 rule (OC-04): the latest row the validator accepts; when no row is accepted, the latest non-missing value is passed on so that the builder records its rejection reason (C-42, C-59) | User (OC-04) | S1, S2 |
-| Calm-wind rule | omit `DD_10` when `FF_10` of the same row is 0 / export as delivered | Per OC-06 | User (OC-06) | S4 |
+| Calm-wind rule | omit `DD_10` when `FF_10` of the same row is 0 or `DD_10` is 0 (option B) / only when `FF_10` is 0 (option A) / export as delivered (option C) | Option B, approved 2026-10-24 | User (OC-06) | S4 |
 | Quality form | plain `QN` string (C-53) | Per OC-07 | User (OC-07) | S4 |
 | Energy unit conversion | × 10000 in the mapper before `RadiationEnergy` / a new converter service | In the mapper as an exact `decimal` factor (C-45 expects J/m²); documented in the contract | Orchestrator, recorded (OC-05) | S3 |
 
@@ -102,7 +102,7 @@ Expected failure: `Map_MinusNineNineNine_IsMissing`, `Map_MinusNineNineNineWithD
 Expected failure: the period tests of wind speed, wind direction, precipitation and radiation and `Map_RadiationEnergy_ConvertsJoulePerSquareCentimetreToSquareMetre` fail against the S2 implementation (no period, factor 1); `Map_Temperature_NoPeriod`, `Map_Humidity_NoPeriod`, `Map_Pressure_NoPeriod` and `Map_RadiationEnergyZero_IsZeroNotMissing` are expected to pass on first run and are recorded as existing behavior.
 
 **Green**
-- `AveragingPeriod(measuredAt.AddMinutes(-10), measuredAt)` for the four period columns; exact factor `10000m`.
+- `AveragingPeriod(measuredAt.AddMinutes(-10), measuredAt)` for the four period columns; exact factor `10000m`; for `RWS_10` this is the nominal source interval without any instrument correction (OC-05 option A).
 
 **Refactor**
 - as in S1.
@@ -115,16 +115,18 @@ Expected failure: the period tests of wind speed, wind direction, precipitation 
 
 ### S4 Calm wind and quality
 **Red**
-- `Map_CalmWind_DirectionOmittedPerContract` (`FF_10` `0.0`, `DD_10` `0` in the same row → direction reading per OC-06; the test asserts the approved variant)
+- `Map_CalmWind_DirectionOmittedPerContract` (`FF_10` `0.0` and `DD_10` `180` in the same row → no direction reading from that row; an earlier row with `FF_10` above 0 supplies the direction)
+- `Map_DirectionZero_OmittedAsNoReliableDirection` (`FF_10` `3.0`, `DD_10` `0` → no direction reading from that row, OC-06 option B)
+- `Map_MissingSpeed_DoesNotSuppressDirection` (`FF_10` `-999`, `DD_10` `270` → direction reading kept, OC-06)
 - `Map_WindWithSpeed_DirectionKept`
 - `Map_Direction360_PassedThroughForC43` (normalization is the validator's)
 - `Map_QualityFromChosenRow` (`QN` `2` of the chosen row, not of the latest row)
-- `Map_QualityFormPerContract` (plain string or token per OC-07)
+- `Map_QualityFormPerContract` (the unchanged trimmed `QN` token, for example `"2"`, OC-07)
 
-Expected failure: `Map_CalmWind_DirectionOmittedPerContract` fails against the S3 implementation (the direction is exported for a calm row), and `Map_QualityFromChosenRow` and `Map_QualityFormPerContract` fail (no `Quality` set); `Map_WindWithSpeed_DirectionKept` and `Map_Direction360_PassedThroughForC43` pass on first run and are recorded as existing behavior.
+Expected failure: `Map_CalmWind_DirectionOmittedPerContract` and `Map_DirectionZero_OmittedAsNoReliableDirection` fail against the S3 implementation (the direction is exported for a calm row and for `DD_10` = 0), and `Map_QualityFromChosenRow` and `Map_QualityFormPerContract` fail (no `Quality` set); `Map_WindWithSpeed_DirectionKept`, `Map_Direction360_PassedThroughForC43` and `Map_MissingSpeed_DoesNotSuppressDirection` pass on first run and are recorded as existing behavior.
 
 **Green**
-- calm rule per OC-06 using the same row's `FF_10` token; `Quality` from `QualityLevel`.
+- calm rule per OC-06 option B using the same row's `FF_10` token (numerically 0) and the `DD_10` token (numerically 0); a skipped calm or zero-direction row lets the next older row supply the direction; `Quality` from `QualityLevel`.
 
 **Refactor**
 - as in S1.
@@ -175,7 +177,7 @@ Expected failure: none; S1 already delegates every time to the normalizer per ch
 |---|---|---|---|
 | S2 | T-P5-04 | REQ-032, REQ-053 | −999 in every spelling missing; zeros usable; only-missing column → null value for the builder's `Missing` reason; all-rejected column → latest non-missing value for the builder's `OutOfRange` reason; non-finite tokens excluded by the SC-19 grammar (builder coverage from P2) |
 | S1 | T-P5-05 | REQ-052, REQ-054 | Kinds, hPa with `Sensor` reference, m/s unit flag; both pressure outputs and rounding are the builder's (verified on the wire in P5.08) |
-| S3 | T-P5-06 | REQ-055 | Periods on wind, precipitation and radiation; none on instantaneous quantities; J/cm² → J/m² |
+| S3 | T-P5-06 | REQ-055 | Periods on wind, precipitation and radiation; none on `TT_10` (instantaneous) and on `RF_10` and `PP_10` (no period documented); J/cm² → J/m² |
 | S4 | T-P5-07 | REQ-053 | Calm wind per OC-06; never an invented north |
 | S4 | T-P5-08 | REQ-032 | `QN` of the chosen row as `quality` per OC-07 |
 | S1, S5 | T-P5-09 | REQ-043, REQ-051, REQ-056 | Latest usable row per column; per-column UTC times preserved; no retrieval time |
@@ -190,7 +192,8 @@ Expected failure: none; S1 already delegates every time to the normalizer per ch
 ## 8. Risks and Limitations
 - (a) Choosing the latest validator-accepted row per column can combine readings of different times — intended (REQ-056), each reading carries its own time
 - (b) `GS_10` unit stated as J/cm² by the DWD description — verified in P5.02; a wrong factor would be a contract defect, not a mapper defect
-- (c) Calm-wind semantics of DWD not documented — the OC-06 decision is recorded with the observed sample behavior
+- (c) Calm-wind semantics of DWD not documented — OC-06 option B (approved 2026-10-24) is a recorded project assumption; no calm row was observed on 2026-10-24, so the rule is tested with synthetic rows only
+- (d) Instrument-dependent precipitation time stamp (Pluvio Ott about 5 minutes late) — not corrected (OC-05 option A); a limitation for README (P5.09) and the P5 acceptance (P5.11)
 - (d) The validator's acceptance depends on C-42 ranges — a range change is a P2 contract decision
 
 ## 9. Acceptance Criteria

@@ -1,23 +1,23 @@
 # P5.03 – Station Resolution: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines the P5.03 row of section 5 and the "Station resolution" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-01, OC-02 (option A) and OC-10; conflict variant A kept, variant B removed. Refines the P5.03 row of section 5 and the "Station resolution" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: an injectable resolver that validates one station ID (OC-01), finds the station in the four CDC station lists supplied by the caller (OC-02), assembles the `ObservationLocation` (name with umlauts, coordinates, altitude or none, ID with leading zeros) and names the products whose lists contain the station — without any HTTP request and before any `now` archive is touched.
-In scope: ID grammar check as the first action, exposed as ValidateId so that the parser (P5.07) rejects an invalid ID before any request; lookup over `CdcProductList` records in the product order `tu`, `ff`, `rr`, `sd`; location assembly; product set; cross-list conflict handling per OC-02; failures `STATION-ID-INVALID` and `STATION-UNKNOWN` through `DwdStationException` (Proposed); registration in `AddWeatherParsing`.
+In scope: ID grammar check as the first action, exposed as ValidateId so that the parser (P5.07) rejects an invalid ID before any request; lookup over `CdcProductList` records in the product order `tu`, `ff`, `rr`, `sd`; location assembly; product set; cross-list conflict handling per OC-02; failures `STATION-ID-INVALID` and `STATION-UNKNOWN` (and `STATION-METADATA-CONFLICT`, S3) through `DwdStationException` (approved, OC-10); registration in `AddWeatherParsing`.
 Out of scope with owner: reading the lists and archives over HTTP → P5.06; row parsing → P5.04; quantity mapping → P5.05; dataset assembly and logging of diagnostics → P5.07; `StationID` versus configured reference station → P3.
 
 ## 2. Preconditions and Inputs
-- P5.02 approved OC-01, OC-02 and OC-10; the open conflict-handling option of OC-02 decided.
+- P5.02 approved OC-01, OC-02 and OC-10 on 2026-10-24; OC-02 conflict handling decided as option A (fail with `STATION-METADATA-CONFLICT`).
 - Existing types: `CdcProductList`, `CdcStationCatalog`, `CdcStationRecord`, `CatalogDiagnostic` (P4), `ObservationLocation` (P2).
 
 ## 3. Decisions Required
 | Decision | Options | Recommended | Decided by | Blocks |
 |---|---|---|---|---|
 | Interface and types | `IDwdStationResolver`/`DwdStationResolver` with `string ValidateId(string stationId)` (grammar check only, returns the validated ID, used by the parser before any request) and `DwdResolvedStation Resolve(string stationId, IReadOnlyList<CdcProductList> lists)` (calls `ValidateId` first); result `DwdResolvedStation` (`StationId`, `Location` as `ObservationLocation`, `ProductCodes` in product order, `Diagnostics`) / other names | Proposed names; synchronous because no I/O happens | Orchestrator, recorded (OC-08 names the parser only) | S1 |
-| Conflict handling | fail with `STATION-CONFLICT` (Proposed additional ID) / use the first list in product order and emit `CDC-STATION-CONFLICT` | Per OC-02 as approved; both test variants are planned, the approved one is kept | User (OC-02) | S3 |
+| Conflict handling | fail with `STATION-METADATA-CONFLICT` after the `CDC-STATION-CONFLICT` diagnostic (approved, OC-02 option A) / use the first list in product order and emit `CDC-STATION-CONFLICT` (rejected) | Option A, approved 2026-10-24 (OC-02); only its tests are planned | User (OC-02) | S3 |
 | Folder | `src/WeatherParser.Parsing/Observations/Dwd/`, namespace `WeatherParser.Parsing.Observations.Dwd` / other | Proposed (phase plan section 8) | Orchestrator, recorded | S1 |
-| Exception type | `DwdStationException` with `ErrorId` `STATION-ID-INVALID`, `STATION-UNKNOWN` (pattern of `SelectionLimitException`) / reuse of an existing type | New type (OC-10) | User (OC-10) | S1 |
+| Exception type | `DwdStationException` with `ErrorId` `STATION-ID-INVALID`, `STATION-UNKNOWN`, `STATION-METADATA-CONFLICT` (pattern of `SelectionLimitException`; the conflict case also carries the `CDC-STATION-CONFLICT` `CatalogDiagnostic` in an additive `Diagnostic` property so that the parser can log it, P5.07) / reuse of an existing type | New type (OC-10, approved) | User (OC-10) | S1 |
 
 ## 4. Artifacts
 | Path | Action | Content |
@@ -37,6 +37,7 @@ Out of scope with owner: reading the lists and archives over HTTP → P5.06; row
 **Red**
 - `ValidateId_FiveAsciiDigits_ReturnsId`
 - `ValidateId_InvalidInputs_ThrowStationIdInvalid` (the same inputs as the `Resolve_*` grammar cases)
+- `ValidateId_Null_ThrowsStationIdInvalid` (OC-01: `null` is an invalid ID, `DwdStationException` `STATION-ID-INVALID`, not `ArgumentNullException`)
 - `Resolve_FiveAsciiDigits_Accepted`
 - `Resolve_EmptyId_ThrowsStationIdInvalid`
 - `Resolve_WhitespaceId_ThrowsStationIdInvalid`
@@ -78,10 +79,10 @@ Expected failure: `NotImplementedException` from the stub; the completeness test
 - `Resolve_StationInAllFourLists_ReturnsFourProducts`
 - `Resolve_CoordinatesExactDecimal` (no rounding)
 
-Expected failure: S1 implementation throws `STATION-UNKNOWN` for every ID or returns no location.
+Expected failure: the lookup and metadata tests (`Resolve_StationInOneList_ReturnsLocationFromThatList` to `Resolve_CoordinatesExactDecimal`) fail against the S1 implementation, which throws `STATION-UNKNOWN` for every valid ID or returns no location; `Resolve_UnknownId_ThrowsStationUnknown` passes on first run against that implementation and is recorded as existing behavior, not as Red evidence.
 
 **Green**
-- ordinal lookup by `StationId` in each `list.Catalog.Records`; `ObservationLocation` with `StationId`, `Name`, `Latitude`, `Longitude`, `AltitudeM`; product codes in the canonical order `tu`, `ff`, `rr`, `sd` regardless of the order of the supplied lists, filtered to those containing the station; the first-list conflict precedence of OC-02 (if approved) uses the same canonical order.
+- ordinal lookup by `StationId` in each `list.Catalog.Records`; `ObservationLocation` with `StationId`, `Name`, `Latitude`, `Longitude`, `AltitudeM`; product codes in the canonical order `tu`, `ff`, `rr`, `sd` regardless of the order of the supplied lists, filtered to those containing the station.
 
 **Refactor**
 - as in S1.
@@ -95,10 +96,10 @@ Expected failure: S1 implementation throws `STATION-UNKNOWN` for every ID or ret
 ### S3 Cross-list conflicts
 **Red**
 - `Resolve_IdenticalRecordsInSeveralLists_NoDiagnostic`
-- variant A (fail): `Resolve_ConflictingRecords_ThrowsStationConflict`
-- variant B (first list): `Resolve_ConflictingRecords_UsesFirstListAndReportsConflict` (`CDC-STATION-CONFLICT` diagnostic with both endpoint names; `Resolve_ConflictingRecordsShuffledLists_PrecedenceByCanonicalOrder` proves that the chosen record follows the canonical product order, not the input order); only the variant approved in OC-02 is kept, the other is deleted before Green
+- `Resolve_ConflictingRecords_ThrowsStationMetadataConflict` (OC-02 option A: `DwdStationException` `STATION-METADATA-CONFLICT` whose `Diagnostic` is the `CDC-STATION-CONFLICT` `CatalogDiagnostic` naming both endpoint names, for a differing name, latitude, longitude or altitude, including altitude present in one list and absent in the other)
+- `Resolve_ConflictingRecordsShuffledLists_SameFailure` (the failure does not depend on the input order of the lists)
 
-Expected failure: S2 implementation returns the first record silently.
+Expected failure: `Resolve_ConflictingRecords_ThrowsStationMetadataConflict` and `Resolve_ConflictingRecordsShuffledLists_SameFailure` fail against the S2 implementation, which returns the first record silently; `Resolve_IdenticalRecordsInSeveralLists_NoDiagnostic` passes on first run against it and is recorded as existing behavior, not as Red evidence.
 
 **Green**
 - comparison of name, coordinates and altitude across the lists; behavior per OC-02.
@@ -141,7 +142,7 @@ Expected failure: S2 implementation returns the first record silently.
 ## 8. Risks and Limitations
 - (a) The lists change format — the resolver consumes P4 records only; format handling stays in `ICdcStationCatalogReader`
 - (b) A station in a list without a `now` archive (observed on 2026-10-21) — handled by P5.06 as a missing product, not here
-- (c) Conflict policy undecided — both variants planned; implementation waits for OC-02
+- (c) Conflict policy decided on 2026-10-24 (OC-02 option A); 0 conflicts were observed on 2026-10-21 and 2026-10-24, so the failure path is tested with synthetic lists only
 
 ## 9. Acceptance Criteria
 - [ ] Each behavior increment has recorded Red evidence

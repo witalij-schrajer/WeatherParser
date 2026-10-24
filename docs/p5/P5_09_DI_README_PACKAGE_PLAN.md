@@ -1,6 +1,6 @@
 # P5.09 – DI Registration, README and Package Consumption: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines the P5.09 row of section 5 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-05 (`RWS_10` limitation text), OC-07, OC-09, OC-10 and OC-12 (option A: every 10 minutes). Refines the P5.09 row of section 5 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: prove the integrated DI configuration of the observation parser with consumer-registered options, document the library feature for consumers in README.md (registration, attribution, IP note, retrieval guidance, error and notice IDs, quality-code meaning), and prove same-run package consumption of the parser from the independent consumer project.
@@ -15,7 +15,7 @@ Out of scope with owner: CLI configuration and `--ParseDWD` execution → P3; MQ
 | Decision | Options | Recommended | Decided by | Blocks |
 |---|---|---|---|---|
 | README placement | new top-level section "DWD observations (library)" after "Station and location selection (library)" / subsection of the existing one | New section with the same subsections (consumer registration, retrieval guidance, error and notice IDs) | Orchestrator, recorded | S3 |
-| Retrieval guidance text | per OC-12 (at most one parse per station per hour, external scheduling, no polling) | As approved in OC-12 | User (OC-12) | S3 |
+| Retrieval guidance text | per OC-12 option A: at most one parse per station every 10 minutes, a project recommendation and not a provider rule; external scheduling; DWD updates the `now/` data at a frequency of "< 1 h"; quality control of `now` data is not yet completed and values may change; plus the OC-05 limitation that the `RWS_10` time stamp is instrument dependent (Pluvio Ott about 5 minutes late) and is not corrected | As approved in OC-12 and OC-05 | User (OC-12, OC-05) | S3 |
 | Quality-code documentation | README explains `quality` values `1`, `2`, `3` with the DWD meanings / link only | Explain the three levels and link the DWD descriptions | Orchestrator, recorded (OC-07) | S3 |
 
 ## 4. Artifacts
@@ -78,7 +78,7 @@ Expected failure: none is designated as Red; the same-run `.nupkg` is packed and
 - No Red: documentation.
 
 **Green**
-- new README section with a consumer registration example that extends the complete P4 registration (both endpoint option classes, `HttpClient`, `TimeProvider`, logging) by `DwdObservationOptions` (default 120 s and the approved OC-09 range of `ObservationDeadline` with the rejected values, as the SC-18 passage does for `SelectionDeadline`), the OC-12 retrieval guidance, the CC BY 4.0 attribution "Deutscher Wetterdienst (DWD)" with links, the IP-retention note, the error and notice IDs `STATION-ID-INVALID`, `STATION-UNKNOWN`, `OBSERVATION-DEADLINE-EXCEEDED`, `OBSERVATION-LIMIT-INVALID`, `OBSERVATION-PRODUCT-MISSING`, `OBSERVATION-READING-OMITTED`, the `quality` levels, and the feature-status change (library implemented, CLI planned); README package check.
+- new README section with a consumer registration example that extends the complete P4 registration (both endpoint option classes, `HttpClient`, `TimeProvider`, logging) by `DwdObservationOptions` (default 120 s and the approved OC-09 range of `ObservationDeadline` with the rejected values, as the SC-18 passage does for `SelectionDeadline`), the OC-12 retrieval guidance, the CC BY 4.0 attribution "Deutscher Wetterdienst (DWD)" with links, the IP-retention note, the error and notice IDs `STATION-ID-INVALID`, `STATION-UNKNOWN`, `STATION-METADATA-CONFLICT` (OC-02: the station's list records differ, so the location cannot be stated), `OBSERVATION-DEADLINE-EXCEEDED`, `OBSERVATION-LIMIT-INVALID`, `OBSERVATION-PRODUCT-MISSING`, `OBSERVATION-READING-OMITTED`, the `quality` levels, and the feature-status change (library implemented, CLI planned); README package check.
 
 **Refactor**
 - none.
@@ -117,7 +117,7 @@ Expected failure: none is designated as Red; the same-run `.nupkg` is packed and
 ## 8. Risks and Limitations
 - (a) The README grows long — the new section mirrors the P4.10 structure; no duplication of the P4 transport text (link instead)
 - (b) Package tests depend on the same-run `.nupkg` — hashes recorded per run (C-116)
-- (c) Guidance "once per hour" is a project recommendation, not a provider guarantee — stated as such (SC-16 pattern)
+- (c) Guidance "at most once per station every 10 minutes" (OC-12 option A) is a project recommendation, not a provider guarantee — stated as such (SC-16 pattern)
 
 ## 9. Acceptance Criteria
 - [ ] All T-P5-13 and T-P5-14 cases pass; first-run results recorded

@@ -1,6 +1,6 @@
 # P5.08 – Export Equivalence and Schema Validation: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines the P5.08 row of section 5 and the "Export" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-05, OC-06 (option B) and OC-07; the calm-wind input follows option B. Refines the P5.08 row of section 5 and the "Export" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: prove that the `ObservationDataset` produced by the P5 pipeline serializes through both real serializers to equivalent, schema-valid documents that carry the UTC forms, omitted members, periods, quality strings, pressure reference and rounded values the contract requires, without any further retrieval.

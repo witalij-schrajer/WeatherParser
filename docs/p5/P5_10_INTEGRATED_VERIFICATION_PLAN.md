@@ -1,6 +1,6 @@
 # P5.10 – Integrated Coverage and Platform Verification: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines the P5.10 row of section 5 and section 7 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-11 and OC-13; no change of content. Refines the P5.10 row of section 5 and section 7 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: verify the committed P5 implementation candidate as a whole on Windows, in hosted CI and on the NanoPi R76S, optionally run one explicitly enabled live parse of one real station, audit every T-P5 row against tests and recorded evidence, and declare READY or NOT_READY for P5.11.

@@ -1,10 +1,10 @@
 # P5.07 – Parser Service and Dataset Assembly: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines the P5.07 row of section 5 and the rows "Dataset" and "Logging" of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-02 (option A), OC-03, OC-04, OC-08, OC-10 and OC-11; conflict failure test added. Refines the P5.07 row of section 5 and the rows "Dataset" and "Logging" of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
-Goal: the public observation parser `IDwdObservationParser`/`DwdObservationParser` (OC-08, Proposed) that, for one station ID, validates the ID before any request, reads the lists and resolves the station, retrieves the station's product archives, maps the rows and builds the `ObservationDataset` through `IObservationDatasetBuilder` with provider `dwd`, `retrieved_at` from the consumer's `TimeProvider`, every notice and omission logged with a stable ID, and failure precedence caller cancellation > observation deadline > request timeout.
-In scope: `Task<ObservationDataset> ParseAsync(string stationId, CancellationToken cancellationToken)`; the sequence: reference instant read once from `TimeProvider` and truncated to whole seconds (SC-13 analog) → deadline token from `DwdObservationOptions.ObservationDeadline` (finite by the OC-09 range validated in P5.06, so the timer delay is always valid) → ID grammar through `IDwdStationResolver.ValidateId(string stationId)` (Proposed addition to the P5.03 interface, see decisions) → `IDwdObservationSource.ReadStationListsAsync` → `IDwdStationResolver.Resolve` → `IDwdObservationSource.ReadArchivesAsync` for the station's products → `IDwdObservationMapper.Map` → `IObservationDatasetBuilder.Build` with `ObservationInput { Provider = "dwd", Location, RetrievedAtUtc, Readings }`; notices `OBSERVATION-PRODUCT-MISSING` (per 404), `OBSERVATION-READING-OMITTED` (kind and reason per `OmittedReading`), list diagnostics (`CATALOG-RECORD-SKIPPED`, `CDC-STATION-CONFLICT`) not yet logged; domain failures propagate with their `ErrorId` (`DwdStationException`, `CatalogRetrievalException`, `CatalogFormatException`, `ObservationLimitException`); the builder's `ObservationDatasetRejectedException` (C-60, no `ErrorId`, unchanged), `OperationCanceledException` and argument exceptions propagate as they are; registration.
+Goal: the public observation parser `IDwdObservationParser`/`DwdObservationParser` (OC-08, approved) that, for one station ID, validates the ID before any request, reads the lists and resolves the station, retrieves the station's product archives, maps the rows and builds the `ObservationDataset` through `IObservationDatasetBuilder` with provider `dwd`, `retrieved_at` from the consumer's `TimeProvider`, every notice and omission logged with a stable ID, and failure precedence caller cancellation > observation deadline > request timeout.
+In scope: `Task<ObservationDataset> ParseAsync(string stationId, CancellationToken cancellationToken)`; the sequence: reference instant read once from `TimeProvider` and truncated to whole seconds (SC-13 analog) → deadline token from `DwdObservationOptions.ObservationDeadline` (finite by the OC-09 range validated in P5.06, so the timer delay is always valid) → ID grammar through `IDwdStationResolver.ValidateId(string stationId)` (part of the P5.03 interface, see decisions) → `IDwdObservationSource.ReadStationListsAsync` → `IDwdStationResolver.Resolve` → `IDwdObservationSource.ReadArchivesAsync` for the station's products → `IDwdObservationMapper.Map` → `IObservationDatasetBuilder.Build` with `ObservationInput { Provider = "dwd", Location, RetrievedAtUtc, Readings }`; notices `OBSERVATION-PRODUCT-MISSING` (per 404), `OBSERVATION-READING-OMITTED` (kind and reason per `OmittedReading`), list diagnostics (`CATALOG-RECORD-SKIPPED`, `CDC-STATION-CONFLICT`) not yet logged; domain failures propagate with their `ErrorId` (`DwdStationException`, `CatalogRetrievalException`, `CatalogFormatException`, `ObservationLimitException`); the builder's `ObservationDatasetRejectedException` (C-60, no `ErrorId`, unchanged), `OperationCanceledException` and argument exceptions propagate as they are; registration.
 Out of scope with owner: `StationID` versus configured station, exit codes, stdout → P3; serialization → P5.08 (the parser returns the entity); README → P5.09; MQTT → P8.
 
 ## 2. Preconditions and Inputs
@@ -18,17 +18,17 @@ Out of scope with owner: `StationID` versus configured station, exit codes, stdo
 | Logging shape | structured `ILogger<DwdObservationParser>` events named by the notice ID with station ID, product code, kind and reason as properties / a result type with notices | Logging (OC-08); event names from a `DwdObservationNoticeIds` constants class (Proposed) | User (OC-08) | S4 |
 | `retrieved_at` | reference instant before the first request, whole seconds / completion time | Before the first request, truncated (SC-13 analog) | Orchestrator, recorded (OC-04) | S1 |
 | Missing-product behavior | notice and continue / fail | Notice and continue (OC-03); a station whose every product is missing ends in `ObservationDatasetRejectedException` through the builder (no readings) | User (OC-03) | S2 |
-| Omission diagnostics on rejection | additive `OmittedReadings` property on `ObservationDatasetRejectedException` (P2 library type, not an export-contract change) / parsing the exception message / duplicating the builder's validation | The additive property, Proposed to the user in P5.02 as an OC-10 addendum, so that the parser logs every omitted kind and reason before the rejection propagates | User (OC-10) | S4 |
+| Omission diagnostics on rejection | additive `OmittedReadings` property on `ObservationDatasetRejectedException` (P2 library type, not an export-contract change) / parsing the exception message / duplicating the builder's validation | The additive property, approved in OC-10 on 2026-10-24 and required, so that the parser logs every omitted kind and reason before the rejection propagates | User (OC-10) | S4 |
 
 ## 4. Artifacts
 | Path | Action | Content |
 |---|---|---|
 | `src/WeatherParser.Parsing/Observations/Dwd/IDwdObservationParser.cs` | Create | Public interface |
-| `src/WeatherParser.Parsing/Observations/Dwd/DwdObservationParser.cs` | Create | Proposed implementation with `DwdObservationOptions`, `IDwdStationResolver`, `IDwdObservationSource`, `IDwdObservationMapper`, `IObservationDatasetBuilder`, `TimeProvider`, `ILogger<DwdObservationParser>` by constructor |
+| `src/WeatherParser.Parsing/Observations/Dwd/DwdObservationParser.cs` | Create | Implementation (OC-08) with `DwdObservationOptions`, `IDwdStationResolver`, `IDwdObservationSource`, `IDwdObservationMapper`, `IObservationDatasetBuilder`, `TimeProvider`, `ILogger<DwdObservationParser>` by constructor |
 | `src/WeatherParser.Parsing/Observations/Dwd/DwdObservationNoticeIds.cs` | Create | Constants `OBSERVATION-PRODUCT-MISSING`, `OBSERVATION-READING-OMITTED` |
-| `src/WeatherParser.Parsing/Observations/ObservationDatasetRejectedException.cs` | Change | Additive `OmittedReadings` property (if OC-10 approves it); test-first in this step |
-| `src/WeatherParser.Parsing/Observations/ObservationDatasetBuilder.cs` | Change | Populates the proposed `OmittedReadings` of the exception at the rejection site (C-60); constructor, message and every existing builder test unchanged |
-| `src/WeatherParser.Parsing/Observations/Dwd/IDwdStationResolver.cs` | Change | Additive `ValidateId` (if OC decides so in P5.02; otherwise the P5.03 plan already contains it) |
+| `src/WeatherParser.Parsing/Observations/ObservationDatasetRejectedException.cs` | Change | Additive `OmittedReadings` property (approved in OC-10, required); test-first in this step |
+| `src/WeatherParser.Parsing/Observations/ObservationDatasetBuilder.cs` | Change | Populates the approved `OmittedReadings` of the exception at the rejection site (C-60); constructor, message and every existing builder test unchanged |
+| `src/WeatherParser.Parsing/Observations/Dwd/IDwdStationResolver.cs` | Change only if needed | `ValidateId` is already part of the P5.03 interface; this step changes the file only if P5.03 deviated from its plan |
 | `src/WeatherParser.Parsing/Parsing/ServiceCollectionExtensions.cs` | Change | Singleton registration |
 | `tests/WeatherParser.Parsing.Tests/Observations/Dwd/DwdObservationParserTests.cs` | Create | Sequence, dataset, notices with strict mocks and a fake `TimeProvider` |
 | `tests/WeatherParser.Parsing.Tests/Observations/Dwd/DwdObservationParserFailureTests.cs` | Create | Failure order, precedence, rejection |
@@ -44,7 +44,7 @@ Out of scope with owner: `StationID` versus configured station, exit codes, stdo
 - `ParseAsync_RequestsOnlyResolvedProducts`
 - `ParseAsync_SourceIsDwdColonStationId` (through the real builder: `dwd:00044`)
 - `ParseAsync_DatasetMeasuredAtIsLatestReading` (real builder, C-55)
-- `ParseAsync_NullStationId_ThrowsArgumentNullException`
+- `ParseAsync_NullStationId_ThrowsStationIdInvalidBeforeAnySourceCall` (OC-01: the resolver's `ValidateId` raises `DwdStationException` `STATION-ID-INVALID` for `null`; it propagates unchanged; strict source mock without setups)
 - `AddWeatherParsing_ResolvesDwdObservationParser`
 - `ServiceRegistrationCompletenessTests` red before registration
 Expected failure: the parser tests fail with `NotImplementedException` from the stub; `AddWeatherParsing_ResolvesDwdObservationParser` fails with the container's resolution `InvalidOperationException` and `ServiceRegistrationCompletenessTests` with its missing-registration assertion.
@@ -65,13 +65,14 @@ qwen generates the tests first, then the minimal implementation and the refactor
 **Red**
 - `ParseAsync_InvalidId_ThrowsBeforeAnySourceCall` (strict source mock without setups)
 - `ParseAsync_UnknownStation_ThrowsBeforeAnyArchiveRequest`
+- `ParseAsync_ConflictingStation_ThrowsMetadataConflictBeforeAnyArchiveRequest` (OC-02 option A: `STATION-METADATA-CONFLICT` propagates unchanged, no archive request; the logging of its diagnostic is S4)
 - `ParseAsync_MissingProduct_LogsNoticeAndContinues` (`OBSERVATION-PRODUCT-MISSING` with station and product)
 - `ParseAsync_AllProductsMissing_ThrowsObservationDatasetRejected` (through the real builder; nothing logged as success)
 - `ParseAsync_RetrievalFailure_Propagates` (`CatalogRetrievalException` unchanged)
 - `ParseAsync_FormatFailure_Propagates` (`CDC-EVIDENCE-INVALID`)
 - `ParseAsync_NoUsableReading_ThrowsObservationDatasetRejected`
 - `ParseAsync_NeverUsesAnotherStationsData` (the resolver result's ID is the only ID passed to the source)
-Expected failure: `ParseAsync_MissingProduct_LogsNoticeAndContinues` fails (the S1 implementation logs nothing) and `ParseAsync_AllProductsMissing_ThrowsObservationDatasetRejected` fails if the S1 implementation does not pass an empty reading list to the builder; `ParseAsync_InvalidId_ThrowsBeforeAnySourceCall`, `ParseAsync_UnknownStation_ThrowsBeforeAnyArchiveRequest`, `ParseAsync_RetrievalFailure_Propagates`, `ParseAsync_FormatFailure_Propagates`, `ParseAsync_NoUsableReading_ThrowsObservationDatasetRejected` and `ParseAsync_NeverUsesAnotherStationsData` are expected to pass on first run against the S1 sequence and are recorded as existing behavior; S1 is never weakened to manufacture failures.
+Expected failure: `ParseAsync_MissingProduct_LogsNoticeAndContinues` fails (the S1 implementation logs nothing) and `ParseAsync_AllProductsMissing_ThrowsObservationDatasetRejected` fails if the S1 implementation does not pass an empty reading list to the builder; `ParseAsync_InvalidId_ThrowsBeforeAnySourceCall`, `ParseAsync_UnknownStation_ThrowsBeforeAnyArchiveRequest`, `ParseAsync_ConflictingStation_ThrowsMetadataConflictBeforeAnyArchiveRequest`, `ParseAsync_RetrievalFailure_Propagates`, `ParseAsync_FormatFailure_Propagates`, `ParseAsync_NoUsableReading_ThrowsObservationDatasetRejected` and `ParseAsync_NeverUsesAnotherStationsData` are expected to pass on first run against the S1 sequence and are recorded as existing behavior; S1 is never weakened to manufacture failures.
 
 **Green**
 Order and propagation as specified; the `OBSERVATION-PRODUCT-MISSING` notice logged per missing product (the remaining logging comes in S4).
@@ -115,14 +116,15 @@ As in S1.
 - `ParseAsync_LogsOmittedReadingsWithKindAndReason` (`OBSERVATION-READING-OMITTED`, Warning)
 - `ParseAsync_RejectedDataset_LogsEveryOmissionBeforeThrowing` (real builder, every reading missing: the omitted kinds and reasons are logged, then `ObservationDatasetRejectedException` propagates)
 - `ParseAsync_LogsMissingProductAsWarning`
-- `ParseAsync_LogsListDiagnosticsNotYetLogged` (`CATALOG-RECORD-SKIPPED`, `CDC-STATION-CONFLICT` once; `AlreadyLogged` respected)
+- `ParseAsync_LogsListDiagnosticsNotYetLogged` (`CATALOG-RECORD-SKIPPED` once; `AlreadyLogged` respected)
+- `ParseAsync_ConflictingStation_LogsConflictDiagnosticBeforeFailure` (the `Diagnostic` of the `STATION-METADATA-CONFLICT` exception logged once as `CDC-STATION-CONFLICT` with both endpoint names, then the exception propagates unchanged)
 - `ParseAsync_LogEntriesCarryStationIdAndUtc`
 - `ParseAsync_SuccessLogsNoValues` (no measurement values in log messages)
 - `ParseAsync_NothingLoggedOnInvalidId`
-Expected failure: `ParseAsync_LogsOmittedReadingsWithKindAndReason`, `ParseAsync_LogsListDiagnosticsNotYetLogged`, `ParseAsync_LogEntriesCarryStationIdAndUtc` and `ParseAsync_RejectedDataset_LogsEveryOmissionBeforeThrowing` fail against the S3 implementation (no omission and diagnostic logging, no structured properties, the exception not yet populated by the builder); `ParseAsync_LogsMissingProductAsWarning` (logged since S2), `ParseAsync_SuccessLogsNoValues` and `ParseAsync_NothingLoggedOnInvalidId` pass on first run and are recorded as existing behavior.
+Expected failure: `ParseAsync_LogsOmittedReadingsWithKindAndReason`, `ParseAsync_LogsListDiagnosticsNotYetLogged`, `ParseAsync_ConflictingStation_LogsConflictDiagnosticBeforeFailure`, `ParseAsync_LogEntriesCarryStationIdAndUtc` and `ParseAsync_RejectedDataset_LogsEveryOmissionBeforeThrowing` fail against the S3 implementation (no omission and diagnostic logging, no structured properties, the exception not yet populated by the builder); `ParseAsync_LogsMissingProductAsWarning` (logged since S2), `ParseAsync_SuccessLogsNoValues` and `ParseAsync_NothingLoggedOnInvalidId` pass on first run and are recorded as existing behavior.
 
 **Green**
-Structured events with the notice ID as event name and the properties of section 1; the builder populates the proposed `OmittedReadings` of `ObservationDatasetRejectedException` from its collected omissions before throwing (OC-10), so the parser logs them before the rejection propagates.
+Structured events with the notice ID as event name and the properties of section 1; the builder populates the approved `OmittedReadings` of `ObservationDatasetRejectedException` from its collected omissions before throwing (OC-10), so the parser logs them before the rejection propagates.
 
 **Refactor**
 As in S1.

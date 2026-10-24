@@ -1,6 +1,6 @@
 # P5.04 – Observation File Reading: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines the P5.04 row of section 5 and the "File reading" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-07 and OC-14; no change of content. Refines the P5.04 row of section 5 and the "File reading" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: extend the shared `ICdcNowEvidenceReader` component additively (OC-14, SC-21) so that every row exposes its `QN` quality level and the raw tokens of all data columns of the four products, while the SC-19 bounds, grammar and failure semantics and every P4 caller stay unchanged.
