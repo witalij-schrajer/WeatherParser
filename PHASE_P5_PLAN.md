@@ -1,10 +1,23 @@
 # Phase P5 – DWD Observations: Implementation Plan
 
-**Status: planning complete (2026-10-24, record in section 10); P5 started on 2026-10-24 on the user's instruction (branch `features/develop/P5` from `develop` `1e604dc`); P5.01 (foundation check) is in progress ([record](docs/p5/P5_01_FOUNDATION_CHECK.md)); nothing is implemented or verified yet.** This plan refines the P5 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P5 handoff](docs/p4/P5_HANDOFF.md).
+**Status: planning complete (2026-10-24, record in section 10); P5 started on 2026-10-24 on the user's instruction (branch `features/develop/P5` from `develop` `1e604dc`); P5.01 (foundation check) executed with outcome READY ([record](docs/p5/P5_01_FOUNDATION_CHECK.md)), its checkpoint commit pending; no production code or test is implemented yet.** This plan refines the P5 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P5 handoff](docs/p4/P5_HANDOFF.md).
 
 ## 1. First step: check P4 completion and adjust this plan
 
 P5.01 is always the first execution step: verify the P4 acceptance and merge from `docs/p4/P4_12_ACCEPTANCE.md` (sections 6 and 8.3) and the P5 handoff; extract the integration target SHA `95bcb1e3287cae275323cc3bf202337de1942d88`, the package identity `WeatherParser.Parsing` `0.1.0-initial`, the SDK and tool versions, the frozen export contract v1 (C-01 to C-119), the selection contract (SC-01 to SC-23) and the inherited limitations with their owners; check the SDK servicing status; remeasure the native block coverage of the integration target (expected 6811/6814) with `ci-local.ps1` on the first committed revision of the P5 branch; record everything in `docs/p5/P5_01_FOUNDATION_CHECK.md`; adjust this plan where the extraction contradicts it. P5.01 adds a table "P5.01 extraction" to this section when it runs.
+
+P5.01 extraction (2026-10-24, [record](docs/p5/P5_01_FOUNDATION_CHECK.md)):
+
+| Field | Value |
+| --- | --- |
+| Integration target | `1e604dc7b3f17826d19207cbec9a699e40e5a30f` (`develop` head at branch creation; P4 merge `95bcb1e` plus the documentation-only pull request #6; no production change since `95bcb1e`) |
+| Package identity | `WeatherParser.Parsing` `0.1.0-initial`, unpublished |
+| SDK / runtime | SDK 10.0.402 (latest 10.0 SDK on 2026-10-24), runtime 10.0.13 |
+| Coverage tools | Microsoft.CodeCoverage 18.11.0, dotnet-coverage 18.11.0 |
+| Contracts | Export contract v1 C-01 to C-119 (frozen; additive optional members only, C-03); selection contract SC-01 to SC-23 |
+| Baseline | 6811/6814 native blocks of `WeatherParser.Parsing.dll`, remeasured for target `1e604dc` on the seed commit `483f6d5` (`ci-local.ps1` exit 0); valid while the pull-request base and `coverage.runsettings` are unchanged |
+| Branch and pull request | `features/develop/P5`, draft pull request #7 into `develop` |
+| Adjustment | The integration target is `1e604dc` instead of `95bcb1e`; no other plan change |
 
 ## 2. Goal, binding scope and exclusions
 
