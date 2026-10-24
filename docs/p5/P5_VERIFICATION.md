@@ -1,6 +1,6 @@
 # P5 Verification Record
 
-**Status (2026-10-24): P5.01 complete, outcome READY ([record](P5_01_FOUNDATION_CHECK.md), checkpoint `ca76114`); P5.02 complete (contract approved 2026-10-24, checkpoint `248d270`, review fix `485d492`); P5.03 complete (section 3).**
+**Status (2026-10-24): P5.01 complete, outcome READY ([record](P5_01_FOUNDATION_CHECK.md), checkpoint `ca76114`); P5.02 complete (contract approved 2026-10-24, checkpoint `248d270`, review fix `485d492`); P5.03 complete (`c01d0fa`, section 3); P5.04 complete (section 4).**
 
 Collects the evidence of every P5 step as required by [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md) section 7; model output is never evidence; only runs executed by the orchestrating agent count.
 
@@ -42,3 +42,13 @@ Collects the evidence of every P5 step as required by [PHASE_P5_PLAN.md](../../P
 - S3 Red: 7 failures (the conflict tests); `Resolve_IdenticalRecordsInSeveralLists_NoConflict` passed on first run (existing behavior); Green with the brace style fix: 1712 of 1713; Release build with 0 warnings.
 - S4 pre-commit coverage gate (results directory `TestResults/p502-precommit-20261024T210946Z/`, target `1e604dc` measured in a separate worktree): all five rules passed; 6946/6949 blocks, strictly above the baseline 6811/6814 (135 new blocks, all covered; the 3 uncovered blocks are the known P4 ones); `evaluate.json` SHA-256 `ba8d6e1e7017d4801315f140fb2ba0744e0ede4e26bc9a36c52dfc93c49c32f4`.
 - Codex five-angle review of the step diff (`codex_r1.md`, kept outside the repository): 0 findings.
+
+## 4. P5.04 – Observation file reading
+
+- Scope: additive `CdcNowEvidenceRow.QualityLevel` (trimmed `QN` token, default empty so every P4 construction compiles) and every data column of the header in `Values` as a raw trimmed token; validation still only for the product's used columns; SC-19 bounds, grammar and failures unchanged; no new service, no registration change (OC-07, OC-14, SC-19, SC-21).
+- Authorship: qwen3-coder:30b generated the additive member, the test-builder helper `CdcNowArchiveBuilder.RowWithQn`, every test and both implementation slices (including the documentation of `ICdcNowEvidenceReader` and `CdcNowEvidenceRow`) from the orchestrating agent's briefs; no correction by the orchestrating agent was needed.
+- S1 Red (2026-10-24): `ReadAsync_ExposesQualityLevelPerRow` and `ReadAsync_QualityLevelKeptAsString` failed (empty `QualityLevel`); `ReadAsync_InvalidQualityLevel_StillCdcEvidenceInvalid` (`A`, `1234`) and `CdcNowEvidenceRow_DefaultConstruction_CompilesWithoutQualityLevel` passed on first run (existing behavior). Green: Parsing 1717 of 1718.
+- S2 Red: `ReadAsync_TuArchive_ExposesAllFiveColumns`, `ReadAsync_RrArchive_ExposesThreeColumns`, `ReadAsync_SdArchive_ExposesFourColumns` and `ReadAsync_IgnoredColumnWithArbitraryToken_NotValidated` failed (the last on its exposure assertion; the plan predicted it as existing behavior and is corrected, see below); `ReadAsync_FfArchive_ExposesBothColumns`, `ReadAsync_UsedColumnInvalidToken_StillCdcEvidenceInvalid`, `ReadAsync_MissingUsedColumn_StillCdcEvidenceInvalid` and `ReadAsync_TokensAreTrimmed` passed on first run (existing behavior). Green: 1725 of 1726, Release build with 0 warnings.
+- S3 regression: the reader, deriver and selector tests (128) passed, including the P4 boundary tests at and above the 1 MiB uncompressed, 1 MiB compressed and 2000-row bounds.
+- Pre-commit coverage gate (results directory `TestResults/p502-precommit-20261024T212022Z/`, target `1e604dc`): all five rules passed; 6947/6950 blocks, strictly above the baseline 6811/6814; `evaluate.json` SHA-256 `57bf5868eeef0b9a3b8506204c00213123fba210bc1513e93f3f041a9072938e`.
+- Codex five-angle review (`p504_codex_r1.md`, kept outside the repository): 1 finding [P3], confirmed: the plan's S2 expected-failure text classified the ignored-column test as existing behavior; corrected in the plan and recorded above. No code finding.
