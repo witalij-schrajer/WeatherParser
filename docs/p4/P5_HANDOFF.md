@@ -1,10 +1,10 @@
 # P5 Handoff – DWD Observations
 
-Status: prepared with the P4.12 acceptance record on 2026-10-23 and refreshed on 2026-10-24 for the new candidate `b6bc47f` after the A10 review fixes; in effect once P4 is accepted and merged ([P4.12 acceptance record](P4_12_ACCEPTANCE.md)); P5 starts only on a separate instruction of the user.
+Status: prepared with the P4.12 acceptance record on 2026-10-23 and refreshed on 2026-10-24 for the new candidate `b6bc47f` after the A10 review fixes; in effect since P4 was accepted (2026-10-24) and pull request #5 was merged into `develop` (2026-10-24, merge commit `95bcb1e`) ([P4.12 acceptance record](P4_12_ACCEPTANCE.md)); P5 starts only on a separate instruction of the user.
 
 ## 1. Accepted foundation
 
-- Verified implementation candidate `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` on branch `features/develop/P4`, pull request #5 into `develop` (ready for review) (PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`); P4.11 outcome READY after the rerun on this candidate ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md) section 9). The P5 integration target is the merge commit of pull request #5, recorded after the merge.
+- Verified implementation candidate `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` on branch `features/develop/P4`, pull request #5 into `develop` (merged on 2026-10-24) (PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`); P4.11 outcome READY after the rerun on this candidate ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md) section 9). The P5 integration target is the merge commit of pull request #5 on `develop`: `95bcb1e3287cae275323cc3bf202337de1942d88` (2026-10-24).
 - Package `WeatherParser.Parsing` `0.1.0-initial` (not published); contents `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, [`schemas/export/v1/weatherparser-export-v1.xsd`](../../schemas/export/v1/weatherparser-export-v1.xsd).
 - Native block coverage of `WeatherParser.Parsing.dll`: 6811/6814 (99.96 %) on Windows and on the NanoPi R76S; the next PR's gate compares against the then-remeasured base.
 - Contracts: export contract v1 [P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md) (C-01 to C-119; v1 frozen, only additive optional members, C-03, C-105) and the selection contract [P4_SELECTION_CONTRACT.md](P4_SELECTION_CONTRACT.md) (SC-01 to SC-23); output schema [`schemas/export/v1/weatherparser-export-v1.xsd`](../../schemas/export/v1/weatherparser-export-v1.xsd).

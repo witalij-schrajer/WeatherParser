@@ -1,6 +1,6 @@
 # P4.12 – P4 Acceptance Record
 
-**Status (2026-10-24): the evidence audit (section 5) accepts the new implementation candidate `b6bc47f`, which carries the A10 review fixes (section 8.1). P4.11 S1 to S3 were rerun on it with outcome READY, and S4 was not repeated (SC-16). A2, A5 and the P5 handoff (A6) are refreshed. P4 was accepted by the user on 2026-10-24 (section 6), and the status documents are updated (section 7). P4 is complete once the user merges pull request #5 into `develop`.** Plan: [P4_12_ACCEPTANCE_HANDOFF_PLAN.md](P4_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
+**Status (2026-10-24): the evidence audit (section 5) accepts the new implementation candidate `b6bc47f`, which carries the A10 review fixes (section 8.1). P4.11 S1 to S3 were rerun on it with outcome READY, and S4 was not repeated (SC-16). A2, A5 and the P5 handoff (A6) are refreshed. P4 was accepted by the user on 2026-10-24 (section 6), and the status documents are updated (section 7). P4 is complete: pull request #5 merged into `develop` on 2026-10-24 (merge commit `95bcb1e`, section 8.3).** Plan: [P4_12_ACCEPTANCE_HANDOFF_PLAN.md](P4_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
@@ -110,7 +110,7 @@ Status passages updated on 2026-10-24:
 - `P4_VERIFICATION.md`: status line and section 12.
 - `P4_12_ACCEPTANCE_HANDOFF_PLAN.md`: status line.
 
-Every passage says that P4 is complete only once the user merges pull request #5 into `develop`.
+Every passage says that P4 is complete only once the user merges pull request #5 into `develop`. After the merge the passages were changed to "P4 complete" (section 8.3).
 
 Checks on the working tree (HEAD `13ca95e` plus these changes; Windows, SDK 10.0.402):
 - README package check (CONTRIBUTING.md section 4): README.md, LICENSE and the export schema are identical in the package, the restored hash equals the packed hash, and the package consumer passed 31/31. The consumer lock was not committed.
@@ -177,6 +177,15 @@ Evidence on the working tree that `b6bc47f` records (Windows, SDK 10.0.402):
 
 Hosted CI run 40041773136 on `b6bc47f` succeeded on all three jobs (P4.11 record section 9). Replies to the three comments were posted on 2026-10-23 between 23:49:28Z and 23:49:31Z (UTC). A check one hour later found no new comments or reviews.
 
+Authorship of the fix round:
+- qwen3-coder:30b generated the tests and most production changes.
+- The orchestrating agent made these changes by hand, each after failed briefs or as a mechanical edit:
+  - restored dropped `using` directives;
+  - moved the `pendingWhitespace` declaration;
+  - removed an unused field and an always-true condition from the markup guard;
+  - added the one-property `IgnoreProcessingInstructions` setting;
+  - wrote this record.
+
 ### 8.2 A10 review round 2 (head `13ca95e`, 2026-10-24)
 
 - Source: the reviewer's result, which the user posted in chat on 2026-10-24. It is not posted on GitHub. The three comments of section 8.1 were raised in review 5634766709 on `c864650` (2026-10-23T21:43:03Z); the only later GitHub review objects are the empty wrappers of the three replies, on `b6bc47f`.
@@ -186,14 +195,14 @@ Hosted CI run 40041773136 on `b6bc47f` succeeded on all three jobs (P4.11 record
 - The pending run, 40059685762 on `13ca95e` (pull_request), succeeded on windows-x64, ubuntu-x64 and debian13-arm64.
 - The check "all review comments resolved or answered; review approval recorded" (A10) is met for this round.
 
-Authorship of the fix round:
-- qwen3-coder:30b generated the tests and most production changes.
-- The orchestrating agent made these changes by hand, each after failed briefs or as a mechanical edit:
-  - restored dropped `using` directives;
-  - moved the `pendingWhitespace` declaration;
-  - removed an unused field and an always-true condition from the markup guard;
-  - added the one-property `IgnoreProcessingInstructions` setting;
-  - wrote this record.
+### 8.3 A11 merge and post-merge checkpoint (2026-10-24)
+
+- Merge: the user merged pull request #5 into `develop` on 2026-10-24T04:09:56Z (`gh pr view 5`: state MERGED, merged by witalij-schrajer). Merge commit `95bcb1e3287cae275323cc3bf202337de1942d88`, head `337a47ab8f2031d4396c818830ec2727d0c3ff49`, base before the merge `b7da828`; `git rev-parse origin/develop` equals the merge commit.
+- Final head CI: run 40060895171 on `337a47a` (pull_request) succeeded on windows-x64, ubuntu-x64 and debian13-arm64. Run 40060809682 on `7cfc87b` was cancelled by the workflow's `cancel-in-progress` concurrency when `337a47a` was pushed; `7cfc87b` is covered by the `ci-local.ps1` run of section 7 and by run 40060895171 on its successor. The workflow has no `push` trigger, so no run exists for the merge commit itself.
+- Home of the post-merge records (plan section 3, decided by the user on 2026-10-24): a separate documentation pull request from branch `features/develop/P4-post-merge` into `develop`; P5 starts only on a separate instruction.
+- Post-merge updates: phase status "P4 complete" in `AGENTS.md`, `README.md`, `DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `PHASE_P4_PLAN.md` (status and the last checklist item), the selection contract, `P4_VERIFICATION.md` and the P4.12 plan; the P5 handoff integration target is the merge commit `95bcb1e`.
+- P4 is complete (A7 and A11).
+- Authorship: the orchestrating agent wrote this checkpoint (plan role for A11: orchestrating agent). It also moved the "Authorship of the fix round" block, which the section 8.2 insertion had left below 8.2, back to the end of section 8.1. Checks: the README package check passed on the working tree (README.md, LICENSE and the export schema identical in the package, consumer 31/31). Codex five-angle review of this checkpoint: round 1, 0 findings.
 
 ## 9. Authorship
 
