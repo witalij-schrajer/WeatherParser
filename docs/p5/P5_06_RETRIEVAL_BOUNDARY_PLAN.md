@@ -4,7 +4,7 @@
 
 ## 1. Goal and Scope
 Goal: an injectable observation source that reads the four CDC station lists and the resolved station's product archives through the P4 `ICatalogDownloader` under the observation deadline (OC-09, OC-11), with HTTP 404 as a controlled missing product (OC-03), the SC-09 bounds and no retries, and the additive `CatalogDeadlineKind.Observation` whose expiry is reported as `OBSERVATION-DEADLINE-EXCEEDED` while the P4 selection behavior stays unchanged.
-In scope: `DwdObservationOptions` (`ObservationDeadline`, default 120 s; Proposed) validated at construction; `CatalogDeadlineKind.Observation` and its mapping in `CatalogDownloader` to `ObservationLimitException` `OBSERVATION-DEADLINE-EXCEEDED` (Proposed); `IDwdObservationSource`/`DwdObservationSource` (Proposed) with `Task<IReadOnlyList<CdcProductList>> ReadStationListsAsync(CancellationToken deadline, CancellationToken cancellationToken)` and `Task<IReadOnlyDictionary<string, CdcNowEvidence?>> ReadArchivesAsync(string stationId, IReadOnlyList<string> productCodes, CancellationToken deadline, CancellationToken cancellationToken)` (a null value = HTTP 404); URI composition shared with the P4 source through a public injectable composer `ICdcRequestComposer`/`CdcRequestComposer` (Proposed; public declarations, because `CdcCatalogSource` is public and the architecture test `NonVisibleInterfaces_AreOnlyTheEntityValidationHook` permits no other non-visible interface; no duplicated composition rules); at most 4 parallel archive requests; registration.
+In scope: `DwdObservationOptions` (`ObservationDeadline`, default 120 s, permitted greater than zero and at most 1 hour (the SC-18 range); `Timeout.InfiniteTimeSpan`, zero, negative values, values above the maximum and `TimeSpan.MaxValue` throw `OBSERVATION-LIMIT-INVALID` at construction, before any timer is created or any request made (a `CancellationTokenSource` delay above about 49.7 days throws `ArgumentOutOfRangeException` and an infinite delay never fires; both reproduced on .NET 10 on 2026-10-24); Proposed); `CatalogDeadlineKind.Observation` and its mapping in `CatalogDownloader` to `ObservationLimitException` `OBSERVATION-DEADLINE-EXCEEDED` (Proposed); `IDwdObservationSource`/`DwdObservationSource` (Proposed) with `Task<IReadOnlyList<CdcProductList>> ReadStationListsAsync(CancellationToken deadline, CancellationToken cancellationToken)` and `Task<IReadOnlyDictionary<string, CdcNowEvidence?>> ReadArchivesAsync(string stationId, IReadOnlyList<string> productCodes, CancellationToken deadline, CancellationToken cancellationToken)` (a null value = HTTP 404); URI composition shared with the P4 source through a public injectable composer `ICdcRequestComposer`/`CdcRequestComposer` (Proposed; public declarations, because `CdcCatalogSource` is public and the architecture test `NonVisibleInterfaces_AreOnlyTheEntityValidationHook` permits no other non-visible interface; no duplicated composition rules); at most 4 parallel archive requests; registration.
 Out of scope with owner: ID validation and lookup → P5.03; row parsing → P5.04; mapping → P5.05; orchestration, `TimeProvider` and logging → P5.07; a `DwdObservationOptions` validator interface if the user prefers one over construction-time checks → OC-09.
 
 ## 2. Preconditions and Inputs
@@ -15,6 +15,7 @@ Out of scope with owner: ID validation and lookup → P5.03; row parsing → P5.
 | Decision | Options | Recommended | Decided by | Blocks |
 |---|---|---|---|---|
 | Options validation | checks in the `DwdObservationSource` constructor raising `ObservationLimitException` `OBSERVATION-LIMIT-INVALID` (Proposed additional ID) / a separate validator interface | Constructor checks with the new ID (pattern of `SELECTION-LIMIT-INVALID`); the ID is added to OC-10 for approval | User (OC-09, OC-10) | S1 |
+| Deadline range | the SC-18 range (greater than zero, at most 1 hour) / another finite maximum | The SC-18 range, so that the P5.07 deadline timer always receives a valid finite delay; approved in OC-09 before S1 starts and recorded identically in `PHASE_P5_PLAN.md` section 3 and `P5_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md` | User (OC-09) | S1 |
 | Deadline mapping | additive enum member and `CatalogDownloader` mapping / exception translation in the source | Additive member mapped in `CatalogDownloader`; `Selection` and `Refresh` behavior unchanged and covered by the existing tests | Orchestrator, recorded (OC-09) | S1 |
 | Shared URI composition | injectable `ICdcRequestComposer`/`CdcRequestComposer` (Proposed) used by `CdcCatalogSource` and `DwdObservationSource`, registered in `AddWeatherParsing` / duplicated code | The injectable service, extracted from `CdcCatalogSource` test-first (REQ-078, C-107); the P4 tests stay green with the composer added to the `CdcCatalogSource` constructor and to the test fixtures | Orchestrator, recorded (SC-21) | S2, S3 |
 | Bounds | `ListOrCatalogMaxBytes` for lists, `PerStationFileMaxBytes` for archives (SC-09) / other | SC-09 constants | User (approved SC-09) | S2, S3 |
@@ -39,10 +40,17 @@ Out of scope with owner: ID validation and lookup → P5.03; row parsing → P5.
 
 ## 5. Procedure
 ### S1 Options and deadline kind
+OC-09 must have approved the finite permitted range of `ObservationDeadline` before S1 starts (recommended: greater than zero and at most 1 hour, as SC-18). The constructor rejects zero, negative values, `Timeout.InfiniteTimeSpan`, values above the approved maximum and `TimeSpan.MaxValue` with `OBSERVATION-LIMIT-INVALID` before creating a timer or making a request; the message names the option and the permitted range.
+
 **Red**
 - `DwdObservationOptions_DefaultDeadline_Is120Seconds`
 - `DwdObservationSource_ZeroDeadline_ThrowsLimitInvalid`
 - `DwdObservationSource_NegativeDeadline_ThrowsLimitInvalid`
+- `DwdObservationSource_InfiniteDeadline_ThrowsLimitInvalid`
+- `DwdObservationSource_SmallestPositiveDeadline_IsAccepted` (one tick)
+- `DwdObservationSource_DeadlineAtApprovedMaximum_IsAccepted`
+- `DwdObservationSource_DeadlineOneTickAboveApprovedMaximum_ThrowsLimitInvalid`
+- `DwdObservationSource_MaxValueDeadline_ThrowsLimitInvalid`
 - `DwdObservationSource_NullOptions_ThrowsArgumentNullException`
 - `DwdObservationSource_InvalidEndpoints_ThrowsEndpointInvalidAtConstruction` (through the injected `ICdcCatalogEndpointsValidator`; `ENDPOINT-INVALID`; no downloader call)
 - `DwdObservationSource_Construction_MakesNoRequest`
@@ -55,7 +63,7 @@ Out of scope with owner: ID validation and lookup → P5.03; row parsing → P5.
 Expected failure: the enum member and exception type do not exist (compile error recorded as the Red observation); the stub throws `NotImplementedException`.
 
 **Green**
-- options class, exception type, enum member, downloader mapping, constructor validation of the options and of `CdcCatalogEndpoints` through the injected `ICdcCatalogEndpointsValidator` (SC-12), registration.
+- options class, exception type, enum member, downloader mapping, constructor validation of the options against the approved range (both bounds inclusive on the accepted side) and of `CdcCatalogEndpoints` through the injected `ICdcCatalogEndpointsValidator` (SC-12), registration.
 
 **Refactor**
 - remove duplication with all tests green.
@@ -133,7 +141,7 @@ Expected failure: `NotImplementedException`.
 ## 6. Tests and Test IDs
 | Step-local case | T-P5 ID | Requirement IDs | Behavior and boundary |
 |---|---|---|---|
-| S1 | T-P5-10 | REQ-063 | Options validated at construction; `Observation` deadline kind mapped to `OBSERVATION-DEADLINE-EXCEEDED`; `Selection` unchanged; caller cancellation precedence |
+| S1 | T-P5-10 | REQ-063 | Options validated at construction against the approved finite range (both boundaries, one tick above, infinite, `TimeSpan.MaxValue`); `Observation` deadline kind mapped to `OBSERVATION-DEADLINE-EXCEEDED`; `Selection` unchanged; caller cancellation precedence |
 | S2, S3 | T-P5-10 | REQ-014, REQ-063 | Consumer endpoints only; SC-09 bounds; no retries; 404 → null; other failures propagate; at most eight requests, 4 in parallel; deadline during lists and archives |
 | S1 | T-P5-13 (partial) | REQ-016, REQ-078 | Source behind its interface; registration; completeness test green |
 | S1–S3 | T-P5-15 | REQ-085 | Recorded Red → Green → Refactor evidence |
@@ -152,6 +160,7 @@ Expected failure: `NotImplementedException`.
 - [ ] Each behavior increment has recorded Red evidence
 - [ ] All T-P5-10 cases of this step pass; P4 downloader and source tests unchanged and green
 - [ ] No built-in or fallback URL; all URIs from `CdcCatalogEndpoints`
+- [ ] `ObservationDeadline` outside the approved range (including infinite and `TimeSpan.MaxValue`) fails construction with `OBSERVATION-LIMIT-INVALID`; both accepted boundaries construct
 - [ ] An archive 404 never fails the parse; a station-list 404 and every other domain failure propagate with their `ErrorId`; caller cancellation (`OperationCanceledException`) and argument exceptions propagate unchanged
 - [ ] Source registered; completeness and no-shared-state tests green
 - [ ] Build without warnings; pre-commit coverage gate passed

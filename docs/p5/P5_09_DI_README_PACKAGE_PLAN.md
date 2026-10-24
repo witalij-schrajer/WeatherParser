@@ -78,7 +78,7 @@ Expected failure: none is designated as Red; the same-run `.nupkg` is packed and
 - No Red: documentation.
 
 **Green**
-- new README section with a consumer registration example that extends the complete P4 registration (both endpoint option classes, `HttpClient`, `TimeProvider`, logging) by `DwdObservationOptions`, the OC-12 retrieval guidance, the CC BY 4.0 attribution "Deutscher Wetterdienst (DWD)" with links, the IP-retention note, the error and notice IDs `STATION-ID-INVALID`, `STATION-UNKNOWN`, `OBSERVATION-DEADLINE-EXCEEDED`, `OBSERVATION-LIMIT-INVALID`, `OBSERVATION-PRODUCT-MISSING`, `OBSERVATION-READING-OMITTED`, the `quality` levels, and the feature-status change (library implemented, CLI planned); README package check.
+- new README section with a consumer registration example that extends the complete P4 registration (both endpoint option classes, `HttpClient`, `TimeProvider`, logging) by `DwdObservationOptions` (default 120 s and the approved OC-09 range of `ObservationDeadline` with the rejected values, as the SC-18 passage does for `SelectionDeadline`), the OC-12 retrieval guidance, the CC BY 4.0 attribution "Deutscher Wetterdienst (DWD)" with links, the IP-retention note, the error and notice IDs `STATION-ID-INVALID`, `STATION-UNKNOWN`, `OBSERVATION-DEADLINE-EXCEEDED`, `OBSERVATION-LIMIT-INVALID`, `OBSERVATION-PRODUCT-MISSING`, `OBSERVATION-READING-OMITTED`, the `quality` levels, and the feature-status change (library implemented, CLI planned); README package check.
 
 **Refactor**
 - none.
