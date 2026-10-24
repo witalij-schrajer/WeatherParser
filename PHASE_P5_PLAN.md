@@ -125,7 +125,7 @@ Step plans are stored as `docs/p5/P5_NN_<SHORT_NAME>_PLAN.md`; each is written b
 | T-P5-04 | REQ-032, REQ-053 | Missing marker −999 in every spelling omitted; genuine zeros kept; non-finite and out-of-range values omitted with their reason (C-42) | P5.05 |
 | T-P5-05 | REQ-052, REQ-054, REQ-057 | Units: °C, %, hPa with the `sensor` reference and both pressure outputs from one original, m/s → km/h, degrees; rounding only on the wire | P5.05 (mapping), P5.08 (wire) |
 | T-P5-06 | REQ-055 | `RWS_10` and `GS_10` carry the 10-minute period and convert only with it; J/cm² → J/m² before C-45; `FF_10` and `DD_10` carry the same period without conversion; every period exported with start and end through both serializers | P5.05, P5.08 |
-| T-P5-07 | REQ-053 | Calm wind: direction omitted when `FF_10` is 0 or `DD_10` is 0 (OC-06); never an invented north | P5.05 (mapping), P5.08 (wire) |
+| T-P5-07 | REQ-053 | Calm wind: direction omitted when `FF_10` is 0 or `DD_10` is 0 (OC-06); never an invented north; when every non-missing direction row is excluded, no direction is exported and exactly one `OBSERVATION-READING-OMITTED` with the actual reason is logged, on success and before a rejection | P5.05 (mapping), P5.07 (logging, composed), P5.08 (wire) |
 | T-P5-08 | REQ-032 | `QN` mapped to `quality` as the unchanged trimmed token (OC-07) for every exported value | P5.05 (mapping), P5.08 (wire) |
 | T-P5-09 | REQ-043, REQ-051, REQ-056 | Latest usable value per quantity with its own UTC `measured_at` in the `YYYY-MM-DDTHH:mm:ss` form; differing times per quantity preserved; no freshness filter; retrieval time never substituted | P5.05, P5.07 |
 | T-P5-10 | REQ-014, REQ-063 | Retrieval: consumer endpoints validated at construction; bounded size and timeout; no retries; 404 → missing-product notice; other failures fail the parse; deadline expiry during list and during archive retrieval → `OBSERVATION-DEADLINE-EXCEEDED` (never `SELECTION-DEADLINE-EXCEEDED`), caller cancellation taking precedence; at most eight requests | P5.06, P5.07 |
@@ -137,7 +137,7 @@ Step plans are stored as `docs/p5/P5_NN_<SHORT_NAME>_PLAN.md`; each is written b
 | T-P5-16 | REQ-086 | Native block coverage ≥ 80 % and strict improvement against the remeasured integration target | P5.10 |
 | T-P5-17 | REQ-017, REQ-084 | P5 behavior on the NanoPi R76S, separate from Windows | P5.10 |
 | T-P5-18 | REQ-083, REQ-092 | Optional live parse of one station, explicitly enabled, recorded separately | P5.10 |
-| T-P5-19 | REQ-044, REQ-072 | Diagnostics: missing products, omitted readings (kind and reason), station conflicts and skipped records logged with stable IDs, UTC and the station ID; format deviations surface as failures, never as substituted values; no secrets in logs | P5.07 |
+| T-P5-19 | REQ-044, REQ-072 | Diagnostics: missing products, omitted readings (kind and reason, from the builder and from the mapper's OC-06 omissions), station conflicts and skipped records logged with stable IDs, UTC and the station ID; format deviations surface as failures, never as substituted values; no secrets in logs | P5.07 |
 
 ## 7. Execution verification and evidence
 
