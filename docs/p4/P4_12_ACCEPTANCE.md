@@ -7,7 +7,7 @@
 | Item | Value |
 |---|---|
 | Implementation candidate | `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` (`b6bc47f`), branch `features/develop/P4`: the A10 review fixes (section 8.1). It replaces the first candidate `98122e5`, whose evidence was the basis of the first version of this record |
-| Pull request | #5 into `develop`, draft |
+| Pull request | #5 into `develop`; marked ready for review by the user on 2026-10-23T21:40:30Z (section 8) |
 | Integration target | PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`; checked again on 2026-10-24 (`gh pr view 5` `baseRefOid` and `git rev-parse origin/develop` after `git fetch`): unchanged since the P4.11 verification |
 | Head at the time of this record | `b6bc47f89147c05bf04e06cf0f87c1497bc651f3`; the documentation commit carrying this refresh changes no production code, tests, build, CI, package or schema files |
 | P4.11 outcome | READY for `98122e5` ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md) section 8) and, after the rerun of S1 to S3, for `b6bc47f` (section 9); S4 not repeated (SC-16) |
@@ -130,13 +130,22 @@ Authorship:
 - qwen3-coder:30b drafted the status passages from the agent's facts. Two defective blocks were corrected by a second qwen request: one replaced the P2 sentence of `PHASE_P1_PLAN.md` instead of keeping it, and one combined non-adjacent parts of a line.
 - The agent wrote sections 6, 7 and 8.2 and section 12 of `P4_VERIFICATION.md`, fixed a link wording in the `P4_VERIFICATION.md` status line and an unbalanced bold marker in this record's status line, and ran every check.
 
-The checkpoint commit, the `ci-local.ps1` run on that committed revision and the push follow on the user's request of 2026-10-24. Their results and the `ready_for_review` CI run (A9) are recorded in the post-merge checkpoint (A11).
+Checkpoint, on the user's request of 2026-10-24:
+- Commit: `7cfc87ba7d24a244bf63d44b2b5db73bbab69d0d`.
+- `pwsh ./scripts/ci-local.ps1 -Commit 7cfc87ba7d24a244bf63d44b2b5db73bbab69d0d -TargetRef b7da8288d8746bc6e034222c0467a8fcebba55b3 -RunSettings coverage.runsettings`:
+  - exit 0, 2026-10-24T04:02:05Z to 04:02:58Z, run directory artifacts/ci/7cfc87b-20261024T040206Z (gitignored);
+  - commits.json: commit `7cfc87b...`, targetCommit `b7da828...`, two-pass;
+  - Parsing 1662 of 1663 passed (live test not executed), SchemaGeneration 46, Coverage 99, Coverage.Runner 56, package consumer 31;
+  - gate passed with 6811/6814 (gate-result.json SHA-256 `2c995e7e6352f7cc37f9c45398100c0b11db5171eb270196c7d147a23f55e881`);
+  - packed SHA-512 `W1rhtMzEvyjCL/bYpAeuJ/uiSPzgkrinb3QZRp3tM3ya9Aou6kUhchLmFAFK87ae3KbkgUU5sOndBK0Yu/z2hQ==`; consumer lock contentHash line rewritten (one line).
+- Pushed to pull request #5.
+- This record's corrections of the ready-for-review statements (section 8, A9) follow in a second documentation commit. Its hosted CI run and the merge go into the post-merge checkpoint (A11).
 
 ## 8. Ready for review, review and merge (A9 to A11)
 
-A9 (ready for review) follows the A8 status commit; A11 (merge) is the user's.
+A9 (ready for review): the user marked pull request #5 ready for review on 2026-10-23T21:40:30Z (GitHub timeline event `ready_for_review`), before the A10 review. That was earlier than the plan's default timing (after A8, plan section 3), by the user's own action. The `ready_for_review` CI run is 40028480931 on head `c864650` (created 2026-10-23T21:40:31Z), which succeeded. When `gh pr ready 5` was run on 2026-10-24 after the A8 push, GitHub reported the pull request as already ready for review. Every later push ran CI again (`synchronize`). A11 (merge) is the user's.
 
-### 8.1 A10 review round 1 (draft PR #5, 2026-10-23 to 2026-10-24)
+### 8.1 A10 review round 1 (PR #5, 2026-10-23 to 2026-10-24)
 
 The review of head `c864650` raised three inline comments. All three were confirmed and fixed test-first. The fixes change production code, so they make a **new implementation candidate**: the fix commit that adds this section. That commit is `b6bc47f`. Under A10 it needed a P4.11 S1–S4 rerun and refreshed A2, A5 and A6 before the user's acceptance decision. All three were done on 2026-10-24 (P4.11 record section 9; sections 2 and 5 of this record; the P5 handoff). The P4.11 live check (SC-16) stays a single run on `98122e5`.
 

@@ -155,4 +155,4 @@ Plan reviews: the phase plan and the twelve step plans were reviewed by Codex un
 - A10 review round 2: the review of `13ca95e` found nothing; CI run 40059685762 on it succeeded (acceptance record section 8.2).
 - A7: P4 accepted by the user on 2026-10-24 on candidate `b6bc47f` (acceptance record section 6).
 - A8: status documents updated; README package check, build, tests and pre-commit coverage passed (6811/6814 above 3035/3037). Codex reviewed the A8 changes in three rounds: round 1 found 2 minor issues, both confirmed and fixed by qwen; rounds 2 and 3 found nothing (acceptance record section 7).
-- Open: A9 (ready for review) and A11 (merge by the user, post-merge checkpoint). P4 is complete only once the user merges pull request #5 into `develop`.
+- A9: pull request #5 was marked ready for review by the user on 2026-10-23T21:40:30Z; `ready_for_review` CI run 40028480931 on `c864650` succeeded (acceptance record section 8). Open: A11 (merge by the user, post-merge checkpoint). P4 is complete only once the user merges pull request #5 into `develop`.

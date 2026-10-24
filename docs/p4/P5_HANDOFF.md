@@ -4,7 +4,7 @@ Status: prepared with the P4.12 acceptance record on 2026-10-23 and refreshed on
 
 ## 1. Accepted foundation
 
-- Verified implementation candidate `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` on branch `features/develop/P4`, draft pull request #5 into `develop` (PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`); P4.11 outcome READY after the rerun on this candidate ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md) section 9). The P5 integration target is the merge commit of pull request #5, recorded after the merge.
+- Verified implementation candidate `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` on branch `features/develop/P4`, pull request #5 into `develop` (ready for review) (PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`); P4.11 outcome READY after the rerun on this candidate ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md) section 9). The P5 integration target is the merge commit of pull request #5, recorded after the merge.
 - Package `WeatherParser.Parsing` `0.1.0-initial` (not published); contents `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, [`schemas/export/v1/weatherparser-export-v1.xsd`](../../schemas/export/v1/weatherparser-export-v1.xsd).
 - Native block coverage of `WeatherParser.Parsing.dll`: 6811/6814 (99.96 %) on Windows and on the NanoPi R76S; the next PR's gate compares against the then-remeasured base.
 - Contracts: export contract v1 [P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md) (C-01 to C-119; v1 frozen, only additive optional members, C-03, C-105) and the selection contract [P4_SELECTION_CONTRACT.md](P4_SELECTION_CONTRACT.md) (SC-01 to SC-23); output schema [`schemas/export/v1/weatherparser-export-v1.xsd`](../../schemas/export/v1/weatherparser-export-v1.xsd).
