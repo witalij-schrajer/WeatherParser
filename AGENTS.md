@@ -1,6 +1,6 @@
 # WeatherParser rules
 
-**Phase status (2026-10-20): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)). P2 (export entities, serialization, output schemas) accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)); it is complete: pull request #3 merged into `develop` on 2026-10-20 (merge commit `74bf625`). P4 started on 2026-10-20 on the user's instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)).**
+**Phase status (2026-10-24): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)). P2 (export entities, serialization, output schemas) accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)); it is complete: pull request #3 merged into `develop` on 2026-10-20 (merge commit `74bf625`). P4 started on 2026-10-20 on the user's instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)). P4 (station and location selection) accepted by the user on 2026-10-24 on candidate `b6bc47f` ([P4 acceptance record](docs/p4/P4_12_ACCEPTANCE.md)); it is complete once the user merges pull request #5 into `develop`; P5 starts only on a separate instruction ([P5 handoff](docs/p4/P5_HANDOFF.md)).**
 
 These rules apply throughout the repository. Current explicit user instructions take precedence. Binding requirements are in [REQUIREMENTS.md](REQUIREMENTS.md); project status and usage are in [README.md](README.md).
 
@@ -223,6 +223,8 @@ These are documentation decisions; they do not generate application code yet.
 **2026-10-19: P1 accepted by the user (see the [P1 acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)). P2 is next and starts only on a separate instruction.**
 
 **2026-10-20: P2 accepted by the user (see the [P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)); complete: pull request #3 merged into `develop` on 2026-10-20 (merge commit `74bf625`). P4 started on 2026-10-20 on the user's instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)).**
+
+**2026-10-24: P4 accepted by the user on candidate `b6bc47f` ([P4 acceptance record](docs/p4/P4_12_ACCEPTANCE.md)); it is complete once the user merges pull request #5 into `develop`; P5 starts only on a separate instruction ([P5 handoff](docs/p4/P5_HANDOFF.md)).**
 
 Sequence with unchanged phase IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Complete and accept the entire library first, including station selection, DWD/OsthessenWetter/MOSMIX_S/MOSMIX_L parsers, output entities, JSON/XML, XSDs, MQTT serializer and DI. Then begin P3 with the CLI usage example, configuration and example broker transport. Public release remains P9.
 

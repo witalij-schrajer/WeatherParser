@@ -1,6 +1,6 @@
 # P4 Verification Record
 
-**Status (2026-10-21): P4.01 complete (READY; Codex review rounds 5, 4, 1, 0 findings, record section 11); P4.02 complete: slices S1 to S5 (selection contract approved by the user on 2026-10-21) and S6 (plan reconciliation, 2026-10-21); P4.03 complete (`a3b79d7`, CI green, section 3); P4.04 complete (`abe6d64`, CI green, section 4); P4.05 complete (`0195b4f`, CI green, section 5); P4.06 complete (`643475f`, CI green, section 6); P4.07 complete (`0f29842`, CI green, section 7); P4.08 complete (`97ced0b`, CI green, section 8); P4.09 complete (`f22bc7a`, CI green, section 9); P4.10 complete (`2f85c2f`, CI green, section 10); P4.11 complete, outcome READY (`98122e5`, evidence `807d29a`, CI green, section 11).**
+**Status (2026-10-24): P4.01 complete (READY; Codex review rounds 5, 4, 1, 0 findings, record section 11); P4.02 complete: slices S1 to S5 (selection contract approved by the user on 2026-10-21) and S6 (plan reconciliation, 2026-10-21); P4.03 complete (`a3b79d7`, CI green, section 3); P4.04 complete (`abe6d64`, CI green, section 4); P4.05 complete (`0195b4f`, CI green, section 5); P4.06 complete (`643475f`, CI green, section 6); P4.07 complete (`0f29842`, CI green, section 7); P4.08 complete (`97ced0b`, CI green, section 8); P4.09 complete (`f22bc7a`, CI green, section 9); P4.10 complete (`2f85c2f`, CI green, section 10); P4.11 complete, outcome READY (`98122e5`, evidence `807d29a`, CI green, section 11), rerun on `b6bc47f` after the A10 review fixes with outcome READY (CI green, section 11); P4.12: P4 accepted by the user on 2026-10-24 ([acceptance record](P4_12_ACCEPTANCE.md); this record section 12).**
 
 Collects the evidence of every P4 step as required by [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md) section 7; model output is never evidence; only runs executed by the orchestrating agent count.
 
@@ -146,3 +146,13 @@ Plan reviews: the phase plan and the twelve step plans were reviewed by Codex un
   - NanoPi R76S: exit 0, with the same tests, outcomes and gate result.
   - The live check was not repeated (SC-16). Offline, the new MOSMIX_S parser builds the same index from a stored real file as `98122e5`.
   - Outcome: READY for the P4.12 refresh.
+
+## 12. P4.12 – Acceptance and P5 handoff
+
+- Record: [P4_12_ACCEPTANCE.md](P4_12_ACCEPTANCE.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
+- A1 to A6 (2026-10-23): evidence matrix, contract summary, limitations with owners, audit decision and P5 handoff, committed as `c864650`.
+- A10 review round 1 (2026-10-23): three comments on `c864650`, fixed test-first in `b6bc47f`. Codex reviewed the fixes in seven rounds with 2, 3, 1, 1, 1, 0 and 0 findings, plus one own finding. P4.11 S1 to S3 were rerun on `b6bc47f`, S4 not repeated, and A2, A5 and A6 refreshed (`13ca95e`). Details: acceptance record section 8.1, P4.11 record section 9.
+- A10 review round 2: the review of `13ca95e` found nothing; CI run 40059685762 on it succeeded (acceptance record section 8.2).
+- A7: P4 accepted by the user on 2026-10-24 on candidate `b6bc47f` (acceptance record section 6).
+- A8: status documents updated; README package check, build, tests and pre-commit coverage passed (6811/6814 above 3035/3037). Codex reviewed the A8 changes in three rounds: round 1 found 2 minor issues, both confirmed and fixed by qwen; rounds 2 and 3 found nothing (acceptance record section 7).
+- Open: A9 (ready for review) and A11 (merge by the user, post-merge checkpoint). P4 is complete only once the user merges pull request #5 into `develop`.

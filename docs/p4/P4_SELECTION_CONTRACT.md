@@ -1,6 +1,6 @@
 # WeatherParser Selection Contract (P4)
 
-**Status (2026-10-21): approved by the user on 2026-10-21 (section 1): SC-01 to SC-23, SC-05 with MOSMIX_L option A, `MosmixSEvidenceMaxAge` without default; C-117 to C-119 recorded in the P2 export contract. Implementation follows the reconciled step plans (P4.02 S6). Nothing is implemented.**
+**Status (2026-10-24): approved by the user on 2026-10-21 (section 1): SC-01 to SC-23, SC-05 with MOSMIX_L option A, `MosmixSEvidenceMaxAge` without default; C-117 to C-119 recorded in the P2 export contract. Implemented in P4.03 to P4.10 and verified on candidate `b6bc47f` ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md) section 9); P4 accepted by the user on 2026-10-24 ([acceptance record](P4_12_ACCEPTANCE.md)).**
 
 This record holds the selection decisions of phase P4 ([phase plan](../../PHASE_P4_PLAN.md) section 3, [P4.02 plan](P4_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md)); export contract v1 in [P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md) stays unchanged except for the two additive optional members proposed in SC-23 (C-03, C-105). Source facts were researched by the orchestrating agent on 2026-10-21 from the official DWD sources listed in section 2; the inspected files are not committed (REQ-083).
 

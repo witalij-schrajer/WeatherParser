@@ -1,6 +1,6 @@
 # P4.12 – P4 Acceptance Record
 
-**Status (2026-10-24): the evidence audit (section 5) accepts the new implementation candidate `b6bc47f`, which carries the A10 review fixes (section 8.1). P4.11 S1 to S3 were rerun on it with outcome READY, and S4 was not repeated (SC-16). A2, A5 and the P5 handoff (A6) are refreshed. The user's acceptance decision (section 6) is pending; no phase-status document is changed before it.** Plan: [P4_12_ACCEPTANCE_HANDOFF_PLAN.md](P4_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
+**Status (2026-10-24): the evidence audit (section 5) accepts the new implementation candidate `b6bc47f`, which carries the A10 review fixes (section 8.1). P4.11 S1 to S3 were rerun on it with outcome READY, and S4 was not repeated (SC-16). A2, A5 and the P5 handoff (A6) are refreshed. P4 was accepted by the user on 2026-10-24 (section 6), and the status documents are updated (section 7). P4 is complete once the user merges pull request #5 into `develop`.** Plan: [P4_12_ACCEPTANCE_HANDOFF_PLAN.md](P4_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
@@ -93,15 +93,48 @@ This audit decision is not the user's acceptance. The first audit (2026-10-23) a
 
 ## 6. User decision (A7)
 
-Pending.
+**P4 accepted by the user on 2026-10-24 on candidate `b6bc47f89147c05bf04e06cf0f87c1497bc651f3`.**
+
+The user's message in chat (2026-10-24): "I accept P4 on candidate b6bc47f. Record the acceptance (A7), update the status documents (A8) and record the review outcome; then mark PR #5 ready for review (A9)."
+
+The acceptance follows the refreshed evidence audit (section 5) and the review outcome of section 8.2. It amends no acceptance criterion; the limitations of section 4 stay open with their owners. Under the PR workflow, P4 is complete only once the user merges pull request #5 into `develop` (A11).
 
 ## 7. Status updates after acceptance (A8)
 
-Pending.
+Status passages updated on 2026-10-24:
+- `AGENTS.md`: status line and a dated line.
+- `README.md`: status line and a dated line.
+- `DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`: status note.
+- `PHASE_P4_PLAN.md`: status line, and the section 9 checklist ticked except the pull-request and merge item.
+- `P4_SELECTION_CONTRACT.md`: status line with the verification reference to `b6bc47f`.
+- `P4_VERIFICATION.md`: status line and section 12.
+- `P4_12_ACCEPTANCE_HANDOFF_PLAN.md`: status line.
+
+Every passage says that P4 is complete only once the user merges pull request #5 into `develop`.
+
+Checks on the working tree (HEAD `13ca95e` plus these changes; Windows, SDK 10.0.402):
+- README package check (CONTRIBUTING.md section 4): README.md, LICENSE and the export schema are identical in the package, the restored hash equals the packed hash, and the package consumer passed 31/31. The consumer lock was not committed.
+- `dotnet build WeatherParser.Ci.slnf -c Release --no-incremental`: 0 warnings, 0 errors.
+- `dotnet test WeatherParser.Ci.slnf -c Release --no-build`: Parsing 1662 passed (1 skipped: the live test), SchemaGeneration 46, Coverage 99, Coverage.Runner 56.
+- Pre-commit coverage (CONTRIBUTING.md section 5, full P4 diff against `b7da828`): 6811/6814 above 3035/3037, exit 0 (`evaluate.json` SHA-256 `2c995e7e6352f7cc37f9c45398100c0b11db5171eb270196c7d147a23f55e881`).
+
+Codex five-angle review of the uncommitted record, handoff and status changes:
+- Round 1: 2 findings (P3), both confirmed and fixed by qwen:
+  - the review provenance in section 8.2 (the comments came from review 5634766709 on `c864650`, not from a review on `b6bc47f`);
+  - the status date of `P4_VERIFICATION.md`.
+- Own finding, fixed in the same request: section 8.1 dated the replies 2026-10-24 instead of 2026-10-23 (UTC).
+- Round 2: 0 findings.
+- Round 3, after this section and `P4_VERIFICATION.md` section 12 were written: 0 findings.
+
+Authorship:
+- qwen3-coder:30b drafted the status passages from the agent's facts. Two defective blocks were corrected by a second qwen request: one replaced the P2 sentence of `PHASE_P1_PLAN.md` instead of keeping it, and one combined non-adjacent parts of a line.
+- The agent wrote sections 6, 7 and 8.2 and section 12 of `P4_VERIFICATION.md`, fixed a link wording in the `P4_VERIFICATION.md` status line and an unbalanced bold marker in this record's status line, and ran every check.
+
+The checkpoint commit, the `ci-local.ps1` run on that committed revision and the push follow on the user's request of 2026-10-24. Their results and the `ready_for_review` CI run (A9) are recorded in the post-merge checkpoint (A11).
 
 ## 8. Ready for review, review and merge (A9 to A11)
 
-A9 (ready for review) and A11 (merge) are pending.
+A9 (ready for review) follows the A8 status commit; A11 (merge) is the user's.
 
 ### 8.1 A10 review round 1 (draft PR #5, 2026-10-23 to 2026-10-24)
 
@@ -133,7 +166,16 @@ Evidence on the working tree that `b6bc47f` records (Windows, SDK 10.0.402):
 - Pre-commit coverage gate: block coverage 6811/6814 against baseline 3035/3037 at `b7da828`, exit 0 (`evaluate.json` SHA-256 `2c995e7e6352f7cc37f9c45398100c0b11db5171eb270196c7d147a23f55e881`). The only uncovered library blocks are the three known ones: the `ParserEndpointValidator` constructor (2) and `FileSystemMosmixEvidenceCache.DeleteTemporaryFile` (1).
 - Local package check: packed files identical, restored hash equals packed hash, package consumer 31 passed; the consumer lock was not committed.
 
-Hosted CI run 40041773136 on `b6bc47f` succeeded on all three jobs (P4.11 record section 9). Replies to the three comments were posted on 2026-10-24. A check one hour later found no new comments or reviews.
+Hosted CI run 40041773136 on `b6bc47f` succeeded on all three jobs (P4.11 record section 9). Replies to the three comments were posted on 2026-10-23 between 23:49:28Z and 23:49:31Z (UTC). A check one hour later found no new comments or reviews.
+
+### 8.2 A10 review round 2 (head `13ca95e`, 2026-10-24)
+
+- Source: the reviewer's result, which the user posted in chat on 2026-10-24. It is not posted on GitHub. The three comments of section 8.1 were raised in review 5634766709 on `c864650` (2026-10-23T21:43:03Z); the only later GitHub review objects are the empty wrappers of the three replies, on `b6bc47f`.
+- Scope: pull request #5 at `13ca95e`, the documentation checkpoint of the refresh, reviewed from all five angles.
+- Findings: Critical none, Major none, Minor none. All three earlier issues are fixed and resolved. Since the previous review only five documentation files changed, and their verification records match the reviewed implementation.
+- Verdict: ready to merge from a code-review perspective, pending the CI run of the head. The reviewer did not rerun tests locally and judged the hardware evidence from the committed records.
+- The pending run, 40059685762 on `13ca95e` (pull_request), succeeded on windows-x64, ubuntu-x64 and debian13-arm64.
+- The check "all review comments resolved or answered; review approval recorded" (A10) is met for this round.
 
 Authorship of the fix round:
 - qwen3-coder:30b generated the tests and most production changes.

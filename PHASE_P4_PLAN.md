@@ -1,6 +1,6 @@
 # WeatherParser – P4 implementation plan
 
-**Status (2026-10-20): P4.01 executed on 2026-10-21 (outcome READY, [record](docs/p4/P4_01_FOUNDATION_CHECK.md)); P4.02 complete on 2026-10-21: selection contract SC-01 to SC-23 approved by the user ([contract](docs/p4/P4_SELECTION_CONTRACT.md)); this plan and the step plans P4.03 to P4.12 reconciled with it (commit `5c7f1f2`, hosted CI run 39676704275 green on all three jobs; [P4 verification record](docs/p4/P4_VERIFICATION.md) section 2). P4.03 (coordinate parsing and search parameters) complete: `a3b79d7`, hosted CI run 39737759157 green ([verification](docs/p4/P4_VERIFICATION.md) section 3). P4.04 (geodesy and inclusive filters) complete: `abe6d64`, hosted CI run 39810906820 green (section 4). P4.05 (CDC station-list reader) complete: `0195b4f`, hosted CI run 39828777889 green (section 5). P4.06 (CDC availability derivation) complete: `643475f`, hosted CI run 39840675493 green (section 6). P4.07 (MOSMIX catalog and availability) complete: `0f29842`, hosted CI run 39905420541 green (section 7). P4.08 (catalog retrieval boundary) complete: `97ced0b`, hosted CI run 39982260348 green (section 8). P4.09 (selection services) complete: `f22bc7a`, hosted CI run 40010632025 green (section 9). P4.10 (DI registration and package consumption) complete: `2f85c2f`, hosted CI run 40019053309 green (section 10). P4.11 (integrated verification) complete on `98122e5`: outcome READY, evidence checkpoint `807d29a`, hosted CI run 40026481905 green ([record](docs/p4/P4_11_INTEGRATED_VERIFICATION.md)). P4.12 (acceptance and handoff) is next.**
+**Status (2026-10-24): P4.01 executed on 2026-10-21 (outcome READY, [record](docs/p4/P4_01_FOUNDATION_CHECK.md)); P4.02 complete on 2026-10-21: selection contract SC-01 to SC-23 approved by the user ([contract](docs/p4/P4_SELECTION_CONTRACT.md)); this plan and the step plans P4.03 to P4.12 reconciled with it (commit `5c7f1f2`, hosted CI run 39676704275 green on all three jobs; [P4 verification record](docs/p4/P4_VERIFICATION.md) section 2). P4.03 (coordinate parsing and search parameters) complete: `a3b79d7`, hosted CI run 39737759157 green ([verification](docs/p4/P4_VERIFICATION.md) section 3). P4.04 (geodesy and inclusive filters) complete: `abe6d64`, hosted CI run 39810906820 green (section 4). P4.05 (CDC station-list reader) complete: `0195b4f`, hosted CI run 39828777889 green (section 5). P4.06 (CDC availability derivation) complete: `643475f`, hosted CI run 39840675493 green (section 6). P4.07 (MOSMIX catalog and availability) complete: `0f29842`, hosted CI run 39905420541 green (section 7). P4.08 (catalog retrieval boundary) complete: `97ced0b`, hosted CI run 39982260348 green (section 8). P4.09 (selection services) complete: `f22bc7a`, hosted CI run 40010632025 green (section 9). P4.10 (DI registration and package consumption) complete: `2f85c2f`, hosted CI run 40019053309 green (section 10). P4.11 (integrated verification) complete on `98122e5`: outcome READY, evidence checkpoint `807d29a`, hosted CI run 40026481905 green ([record](docs/p4/P4_11_INTEGRATED_VERIFICATION.md)). P4.11 rerun on `b6bc47f` after the A10 review fixes: outcome READY, hosted CI run 40041773136 green ([record](docs/p4/P4_11_INTEGRATED_VERIFICATION.md) section 9). P4.12 (acceptance and handoff): P4 accepted by the user on 2026-10-24 on candidate `b6bc47f` ([acceptance record](docs/p4/P4_12_ACCEPTANCE.md), [P5 handoff](docs/p4/P5_HANDOFF.md)); P4 is complete once the user merges pull request #5 into `develop`.**
 Refines the P4 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) using the [P4 handoff](docs/p2/P4_HANDOFF.md); binding rules in [AGENTS.md](AGENTS.md) and [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## 1. First step: check P2 completion and adjust this plan
@@ -166,18 +166,18 @@ New records under `docs/p4/`; production code under `src/WeatherParser.Parsing/<
 
 - [x] P4.01 foundation check recorded (2026-10-21, outcome READY)
 - [x] selection contract approved by the user after Codex review
-- [ ] every mandatory T-P4 row has passing tests and recorded evidence; the optional live check T-P4-18 is either passed or recorded as skipped with its limitation
-- [ ] coordinate, filter, catalog and availability behavior matches REQ-020–024 and REQ-100–102
-- [ ] both list roots serialize equivalently and validate against the v1 schema
-- [ ] no export contract change without a recorded additive decision
-- [ ] DI and same-run package consumption proven
-- [ ] coverage gate passed on Windows and the NanoPi R76S, platform outcomes separate
-- [ ] limitations with owners
-- [ ] user acceptance recorded
-- [ ] status documents consistent
+- [x] every mandatory T-P4 row has passing tests and recorded evidence; the optional live check T-P4-18 is either passed or recorded as skipped with its limitation
+- [x] coordinate, filter, catalog and availability behavior matches REQ-020–024 and REQ-100–102
+- [x] both list roots serialize equivalently and validate against the v1 schema
+- [x] no export contract change without a recorded additive decision
+- [x] DI and same-run package consumption proven
+- [x] coverage gate passed on Windows and the NanoPi R76S, platform outcomes separate
+- [x] limitations with owners
+- [x] user acceptance recorded
+- [x] status documents consistent
 - [ ] pull request ready for review, review findings resolved test-first, merged into `develop` by the user
-- [ ] P5 handoff written
-- [ ] P5 handoff records the SC-21 reuse obligations for P5 and P7
+- [x] P5 handoff written
+- [x] P5 handoff records the SC-21 reuse obligations for P5 and P7
 
 ## 10. Plan authorship and review
 
