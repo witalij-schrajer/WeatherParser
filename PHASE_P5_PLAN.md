@@ -1,6 +1,6 @@
 # Phase P5 – DWD Observations: Implementation Plan
 
-**Status: planning complete (2026-10-24, record in section 10); nothing is implemented or verified yet.** P5 starts only on the user's separate instruction; this plan refines the P5 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P5 handoff](docs/p4/P5_HANDOFF.md).
+**Status: planning complete (2026-10-24, record in section 10); P5 started on 2026-10-24 on the user's instruction (branch `features/develop/P5` from `develop` `1e604dc`); P5.01 (foundation check) is in progress ([record](docs/p5/P5_01_FOUNDATION_CHECK.md)); nothing is implemented or verified yet.** This plan refines the P5 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P5 handoff](docs/p4/P5_HANDOFF.md).
 
 ## 1. First step: check P4 completion and adjust this plan
 
