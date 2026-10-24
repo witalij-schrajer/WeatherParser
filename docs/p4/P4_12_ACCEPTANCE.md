@@ -203,6 +203,14 @@ Authorship of the fix round:
 - Post-merge updates: phase status "P4 complete" in `AGENTS.md`, `README.md`, `DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `PHASE_P4_PLAN.md` (status and the last checklist item), the selection contract, `P4_VERIFICATION.md` and the P4.12 plan; the P5 handoff integration target is the merge commit `95bcb1e`.
 - P4 is complete (A7 and A11).
 - Authorship: the orchestrating agent wrote this checkpoint (plan role for A11: orchestrating agent). It also moved the "Authorship of the fix round" block, which the section 8.2 insertion had left below 8.2, back to the end of section 8.1. Checks: the README package check passed on the working tree (README.md, LICENSE and the export schema identical in the package, consumer 31/31). Codex five-angle review of this checkpoint: round 1, 0 findings.
+- Checkpoint commit `38bd19860ba862dc5eb84132f8df0de2ec8037d7`, made on the user's request of 2026-10-24.
+- `pwsh ./scripts/ci-local.ps1 -Commit 38bd19860ba862dc5eb84132f8df0de2ec8037d7 -TargetRef 95bcb1e3287cae275323cc3bf202337de1942d88 -RunSettings coverage.runsettings`:
+  - exit 0, 2026-10-24T04:14:29Z to 04:15:26Z, run directory artifacts/ci/38bd198-20261024T041429Z (gitignored);
+  - commits.json: commit `38bd198...`, targetCommit `95bcb1e...`, two-pass;
+  - Parsing 1662 of 1663 passed (live test not executed), SchemaGeneration 46, Coverage 99, Coverage.Runner 56, package consumer 31; target pass Parsing 1662 of 1663;
+  - gate passed with all five rules true: 6811/6814 is at or above the merged-`develop` baseline 6811/6814 (documentation-only change, equal coverage allowed); gate-result.json SHA-256 `1b780e0423f1b781e33a70d4874da4fed0670531e5090a0a6cf8a575c8c1b3f4`;
+  - packed SHA-512 `F6/Kpn5FBrEBVAnK/Q0v08jEuJsyUHlPkpOgUtWcTWGzA0TpaBZyfBRKl8ilXDHUxaubbL5Nc4t2F9tnCTwCpQ==`; consumer lock contentHash line rewritten (one line).
+- This result is recorded in a second documentation commit on the same branch. The hosted CI run of the documentation pull request and its merge by the user stay outside this record.
 
 ## 9. Authorship
 
