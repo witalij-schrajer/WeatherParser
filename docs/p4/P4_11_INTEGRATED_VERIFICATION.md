@@ -1,6 +1,6 @@
 # P4.11 – Integrated Coverage and Platform Verification: Record
 
-**Status (2026-10-23): complete. S0 to S5 executed on candidate `98122e5`; outcome READY for P4.12 (section 8); evidence checkpoint `807d29a`, hosted CI run 40026481905 green.**
+**Status (2026-10-24): complete. S0 to S5 executed on candidate `98122e5` (outcome READY, section 8). The A10 review fixes made `b6bc47f` the new implementation candidate; S1 to S3 were rerun on it with outcome READY, S4 not repeated (section 9). Evidence checkpoint `807d29a`, hosted CI run 40026481905 green.**
 
 Plan: [P4_11_INTEGRATED_VERIFICATION_PLAN.md](P4_11_INTEGRATED_VERIFICATION_PLAN.md).
 
@@ -118,3 +118,44 @@ Intro sentence: "Every row is mapped to its passing tests and recorded evidence.
 - Authorship of this evidence checkpoint (sections 3 to 8 of this record, the P4 section of `docs/COMPATIBILITY.md`): the orchestrating agent ran every command, extracted every value and wrote the facts lists and the T-P4 mapping; qwen3-coder:30b drafted the prose of sections 3 to 8 and the COMPATIBILITY.md section from them (a second qwen request added the missing Limits bullet); the orchestrating agent reviewed every value against the run directories and artifacts and wrote the status lines, section 11 of `P4_VERIFICATION.md` and the review-driven corrections (tolerance wording, this statement) itself.
 - Codex records review: round 1, 2 findings (P3), both confirmed and fixed: the geodesy tolerance stated too broadly as 1 mm (now 1 mm for converging Vincenty pairs and 0.6 % for spherical calculations and the near-antipodal fallback), and the missing authorship statement of this checkpoint. Round 2: 0 findings.
 - Evidence checkpoint: the records were committed as `807d29a` on the user's request (2026-10-23) and pushed to draft pull request #5 (documentation only; the implementation evidence of candidate `98122e5` stays valid, plan section 3); hosted CI run 40026481905 on `807d29a` succeeded on all three jobs (ubuntu-x64, windows-x64, debian13-arm64) under the full-PR gate, the coverage gate included; on debian13-arm64 the Parsing tests passed 1609 of 1610 (live test not executed), SchemaGeneration 46/46, Coverage 99/99, Coverage.Runner 56/56 and the package consumer 31/31. P4.11 is complete.
+
+## 9. Rerun on candidate b6bc47f (A10 review round 1, 2026-10-24)
+
+### Reason
+- The review of PR #5 (A10, P4.12 plan) raised three comments; their test-first fixes (record: `P4_12_ACCEPTANCE.md` section 8.1) changed production code in `MosmixSEvidenceRefresher`, `MosmixLocationSelector` and `FileSystemMosmixEvidenceCache`, so commit `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` (`b6bc47f`) is a new implementation candidate and the A10 rule requires S1 to S4 again (plan section 5, last paragraph: offline and platform verification restart, another live execution is skipped under SC-16).
+- Integration target unchanged: PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3` (`gh pr view 5` baseRefOid and `git rev-parse origin/develop` after `git fetch`, 2026-10-24).
+
+### S1 Windows local CI
+- `pwsh ./scripts/ci-local.ps1 -Commit b6bc47f89147c05bf04e06cf0f87c1497bc651f3 -TargetRef b7da8288d8746bc6e034222c0467a8fcebba55b3 -RunSettings coverage.runsettings`, exit 0, 2026-10-24T03:15:37Z to 03:16:35Z (run 56 s), run directory artifacts/ci/b6bc47f-20261024T031537Z (gitignored); commits.json: commit `b6bc47f...`, targetCommit `b7da828...`, mode two-pass, exitCode 0; build warnings 0.
+- Tests: Parsing 1663 total, 1662 passed, 0 failed (1 not executed: the live test); Coverage.Runner 56/56; Coverage 99/99; SchemaGeneration 46/46; Package consumer 31/31; target pass Parsing 880/880.
+- Gate: passed; Comparability, Measurement 6811/6814, Minimum (>= 80 %), Baseline 3035/3037, Comparison (6811/6814 = 99.96 % exceeds 3035/3037 = 99.93 %) all true; the three uncovered blocks are the known ones (`ParserEndpointValidator` constructor 2, `FileSystemMosmixEvidenceCache.DeleteTemporaryFile` 1); gate-result.json SHA-256 `2c995e7e6352f7cc37f9c45398100c0b11db5171eb270196c7d147a23f55e881`.
+- C-116: WeatherParser.Parsing 0.1.0-initial; packed SHA-512 `dCCn3uSuMMvrF1eT6hAudmi8isancaeohI9aDhsT4fj6Ya5RBz28cdDG11LRLuXDYCoOt/YezbVFvFD6plAsTQ==` (package-hash.txt, recomputed equal); the same 8 entries as section 4; consumer lock: only the WeatherParser.Parsing contentHash line rewritten (one line), locked restore succeeded, 31/31.
+
+### S2 Hosted CI
+- Run 40041773136 on `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` (pull_request, created 2026-10-23T23:49:16Z): completed success; jobs ubuntu-x64, windows-x64, debian13-arm64 success.
+- Artifacts downloaded with `gh run download 40041773136` (ci-windows-x64 id 12539692071, 1697248 B; ci-ubuntu-x64 id 12539573017, 1651920 B; ci-debian13-arm64 id 12539143975, 1650214 B); each commits.json: commit `b6bc47f...`, targetCommit `b7da828...`, exitCode 0, mode two-pass (SHA pair verified).
+- Each job: Parsing 1662 of 1663 passed (live test not executed), Coverage.Runner 56, Coverage 99, SchemaGeneration 46, Package 31/31, target Parsing 880/880; gate passed with 6811/6814, all five rules true; consumer lock: contentHash line rewritten (one line); run durations 01:15 (arm64), 01:49 (ubuntu), 02:24 (windows).
+- C-116 per job (packed SHA-512 = recomputed from the artifact's nupkg; 8 entries): debian13-arm64 `N3sR1unaXl3k8+hozHaLIBwNMAkfbcVJFd7fJHo1N4KGCqKe72QEdXxoulqJ2b0JalUKVQW81DmFEQtVia5pzw==`; ubuntu-x64 `6npTRl/d8Nbsk0vlkYiVfPpH4NK5QAGVHVPfeE5taf7u4vzjgb7cf1vYGzq3Vg8baEsQmu8IHdTcaagWBVageQ==`; windows-x64 `Ty3aCkjnVvCoQs1tzoUDsNxauD3JP5COmXq8PG18B036gKW1P3OTkJmupl9d0Xtty96jWFZJmhqN16mqvFOcmg==`; as in section 5 the hashes differ between builds.
+
+### S3 NanoPi R76S (Debian 13 ARM64)
+- Authorization: the user's instruction of 2026-10-24 to rerun P4.11 S1 to S4 on `b6bc47f`, under the terms recorded in section 1.
+- Bundle: `git bundle create weatherparser.bundle features/develop/P4 p411-target` (p411-target = temporary local branch at b7da828, deleted after bundling); heads `b6bc47f` refs/heads/features/develop/P4 and `b7da828` refs/heads/p411-target; 1269277 B, SHA-256 `948ac2bea057586b4594269ed8b7f35f57c1782eabc9e3e13e74416df4ea96d5`, equal on both sides after scp.
+- Target: `ssh R76S`, aarch64, Debian GNU/Linux 13 (trixie); working directory ~/weatherparser-p411r; same script as section 6; ci-commit=`b6bc47f...`, ci-target=`b7da828...`; prepare exit 0: .NET SDK 10.0.402 and PowerShell 7.6.7 already installed (nothing installed), runtime Microsoft.NETCore.App 10.0.13, ICU libicuuc.so.76; ci-local exit 0, run `b6bc47f-20261024T031752Z`, 4 min 44 s (2026-10-24T03:17:49Z to 03:22:37Z); copied back with scp to artifacts/ci/arm64-b6bc47f-20261024T031752Z (gitignored); working directory removed afterwards (weatherparser-p211 and weatherparser-p211b left untouched).
+- dotnet info: OS Platform Linux, OS Version 13, RID linux-arm64, Architecture arm64.
+- Results: commits.json commit `b6bc47f`, targetCommit `b7da828`, exitCode 0, two-pass; Parsing 1663 total / 1662 passed / 0 failed (live test not executed), Coverage.Runner 56, Coverage 99, SchemaGeneration 46, Package 31/31, target Parsing 880/880; build warnings 0; gate passed, all five rules true, 6811/6814 above 3035/3037; gate-result.json SHA-256 `43b22ca5f5762ff5df597adebdb66ffaaf29a0e49ac3016b59a3e9d555fbd5d6`; packed SHA-512 `ccLueUXv0KDJf0rBASUzSnWEgGfGi/pE3Bes2eDeFUvUeYF2Hpq3+ddgHyVWINK8EPgy/A9gK5cRYXPQHr7KMQ==` (recomputed equal, 8 entries); consumer lock contentHash line rewritten (one line).
+- Comparison with the S1 rerun: 1663 Parsing results on both; 40 differing TRX entries differ only in the decimal separator of data-row display names; after normalizing it 0 differences; every result Passed except the live test (NotExecuted) on both; 20 geodesy-related results (names matching Distance, SearchArea, Geodes) all passed on ARM64 within their test tolerances; identical block counters 6811/6814 and baseline 3035/3037.
+
+### S4 Live check
+- Not repeated (SC-16: one run, not repeated; plan section 5, last paragraph). The single live run of section 7 was on candidate `98122e5`; the refresher it exercised changed with `b6bc47f`. This is recorded as an open limitation, not as a live pass of `b6bc47f`.
+
+### Offline check of the new MOSMIX_S parser against a stored real file
+- Input: the real MOSMIX_S all-stations file stored during the P4.02 source-fact check (stored as `S_latest.kmz`, downloaded 2026-10-21, 37475070 B, SHA-256 `3195d0074e10f14409d2aa2a69c658384e48cbabb1bf237acfa3589a72f410a2`, kept outside the repository).
+- Method: a throwaway console probe outside the repository composed `AddWeatherParsing` with an `HttpClient` whose handler served the stored file for every request, ran one `IMosmixSEvidenceRefresher.RefreshAsync` into a temporary cache directory and read the index back through `IMosmixEvidenceCache`; run once with the library built from `98122e5` and once with the library built from `b6bc47f`.
+- Result, identical for both: issued_at `2026-10-21T03:00:00`, 5648 locations, 205719 element entries, at most 40 elements per location, SHA-256 of the canonical index listing (locations in ordinal order with their element names) `2675461f543391c9b98a7cfac31df18820789a177c8e00d079ea6fab96e7d9d2`; refresh 5.4 s (`98122e5`) and 5.6 s (`b6bc47f`); cumulative managed allocation during the refresh 6610 MiB (`98122e5`) and 3540 MiB (`b6bc47f`) (cumulative, not peak memory).
+
+### Outcome
+- **READY** for the P4.12 refresh: every mandatory T-P4 row passes on Windows and on the NanoPi R76S for `b6bc47f`, the coverage gate passed, hosted CI run 40041773136 is green with the verified SHA pair and no defect is open; the live-check row T-P4-18 rests on the single run of section 7 on `98122e5` (SC-16), supplemented by the offline check above.
+
+### Authorship
+- The orchestrating agent ran every command, extracted every value and checked them against the run directories and artifacts; qwen3-coder:30b drafted this section from the agent's facts list (a first request that rewrote the whole record hit the output limit and was discarded); the orchestrating agent appended the section, wrote the status line and corrected the input file name of the offline check.
+- Codex five-angle review of the records refresh (this section, the P4.12 acceptance record, the P5 handoff, COMPATIBILITY.md, P4_VERIFICATION.md section 11): round 1, 0 findings.

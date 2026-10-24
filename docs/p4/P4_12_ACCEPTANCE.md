@@ -1,22 +1,27 @@
 # P4.12 – P4 Acceptance Record
 
-**Status (2026-10-24): the evidence audit (section 5) accepted candidate `98122e5`. The A10 review fixes (section 8.1) make a new implementation candidate, so the P4.11 S1–S4 rerun and the refresh of A2, A5 and A6 are pending. Then comes the user's acceptance decision (section 6). No phase-status document is changed before that decision.** Plan: [P4_12_ACCEPTANCE_HANDOFF_PLAN.md](P4_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
+**Status (2026-10-24): the evidence audit (section 5) accepts the new implementation candidate `b6bc47f`, which carries the A10 review fixes (section 8.1). P4.11 S1 to S3 were rerun on it with outcome READY, and S4 was not repeated (SC-16). A2, A5 and the P5 handoff (A6) are refreshed. The user's acceptance decision (section 6) is pending; no phase-status document is changed before it.** Plan: [P4_12_ACCEPTANCE_HANDOFF_PLAN.md](P4_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
 | Item | Value |
 |---|---|
-| Implementation candidate | `98122e560370e9de781bd4e0e3ebe0aca270e3d8` (`98122e5`), branch `features/develop/P4` |
+| Implementation candidate | `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` (`b6bc47f`), branch `features/develop/P4`: the A10 review fixes (section 8.1). It replaces the first candidate `98122e5`, whose evidence was the basis of the first version of this record |
 | Pull request | #5 into `develop`, draft |
-| Integration target | PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`; checked again on 2026-10-23 (`gh pr view 5` `baseRefOid` and `git rev-parse origin/develop`): unchanged since the P4.11 verification, so no rerun is needed |
-| Head at the time of this record | `e98b85c094f3bc0224bd91e3f7d45c754028d84c` (P4.11 completion record; documentation commits after the candidate do not change production code, tests, build, CI, package or schema files) |
-| P4.11 outcome | READY ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md) section 8) |
+| Integration target | PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`; checked again on 2026-10-24 (`gh pr view 5` `baseRefOid` and `git rev-parse origin/develop` after `git fetch`): unchanged since the P4.11 verification |
+| Head at the time of this record | `b6bc47f89147c05bf04e06cf0f87c1497bc651f3`; the documentation commit carrying this refresh changes no production code, tests, build, CI, package or schema files |
+| P4.11 outcome | READY for `98122e5` ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md) section 8) and, after the rerun of S1 to S3, for `b6bc47f` (section 9); S4 not repeated (SC-16) |
 | Package | `WeatherParser.Parsing` `0.1.0-initial`, not published |
 | References | [P4_VERIFICATION.md](P4_VERIFICATION.md) section 11 and the P4.11 record name the candidate; the selection contract gains a verification reference to it with the A8 status updates |
 
 ## 2. Requirement and test evidence matrix (A2, T-P4-01 – T-P4-20)
 
-Platform evidence for every row: the P4.11 runs on candidate `98122e5` — Windows `ci-local.ps1` (exit 0), hosted CI run 40023445539 (three jobs green, SHA pair verified) and the NanoPi R76S run (exit 0) — each with 1609 Parsing tests passed (the live test not executed in standard runs), 31 package-consumer tests passed and the gate passed with 6484/6487 blocks. "Red" names the step whose record holds the Red → Green → Refactor evidence; "characterization" marks tests that passed on their first run over existing behavior, recorded in the step record with their provenance.
+Platform evidence for every row comes from the P4.11 rerun on candidate `b6bc47f` ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md) section 9):
+- Windows `ci-local.ps1`: exit 0.
+- Hosted CI run 40041773136: three jobs green, SHA pair verified.
+- NanoPi R76S run: exit 0.
+
+Each run passed 1662 Parsing tests (the live test is not executed in standard runs) and 31 package-consumer tests, and its gate passed with 6811/6814 blocks. The first runs on `98122e5` (record sections 4 to 6) had the same outcomes with 1609 Parsing tests and 6484/6487 blocks. The only exception is T-P4-18, whose single live run was on `98122e5` (see the row). "Red" names the step whose record holds the Red → Green → Refactor evidence; "characterization" marks tests that passed on their first run over existing behavior, recorded in the step record with their provenance.
 
 | T-P4 ID | Requirements | Tests | TDD evidence | Status |
 |---|---|---|---|---|
@@ -28,17 +33,17 @@ Platform evidence for every row: the P4.11 runs on candidate `98122e5` — Windo
 | T-P4-06 | REQ-023, REQ-024, REQ-083 | `CdcStationCatalogReaderTests`, `CdcStationCatalogReaderMalformedTests`, `CdcStationCatalogReaderBoundaryTests` | Red; the 7 missing-value and boundary tests and further tests characterization, P4.05 (section 5) | PASSED |
 | T-P4-07 | REQ-024 | `CdcAvailabilityDeriverSelectCandidatesTests`, `CdcAvailabilityDeriverDeriveTests`, `CdcNowEvidenceReaderTests` | Red, with recorded characterization, P4.06 (section 6) | PASSED |
 | T-P4-08 | REQ-100 to REQ-102, REQ-082 | `MosmixLocationCatalogReaderTests`, `...LineTests`, `...MalformedTests`, `...NegativeBoundsTests`, `...NormalizationTests` | Red; zero and negative altitude normalization characterization, P4.07 (section 7) | PASSED |
-| T-P4-09 | REQ-101, REQ-102 | `MosmixAvailabilityResolverTests`, the five `MosmixLEvidenceReader*Tests`, the four `FileSystemMosmixEvidenceCache*Tests`, `MosmixLocationListContractTests` (explicit `unknown`), `MosmixLocationSelectorTests` | Red, with recorded characterization, P4.07 and P4.09 (sections 7 and 9) | PASSED |
+| T-P4-09 | REQ-101, REQ-102 | `MosmixAvailabilityResolverTests`, the five `MosmixLEvidenceReader*Tests`, the five `FileSystemMosmixEvidenceCache*Tests`, `MosmixLocationListContractTests` (explicit `unknown`), `MosmixLocationSelectorTests` | Red, with recorded characterization, P4.07 and P4.09 (sections 7 and 9) | PASSED |
 | T-P4-10 | REQ-014, REQ-102 | `MosmixCatalogEndpointsValidatorTests`, `CdcCatalogEndpointsValidatorTests`, `CatalogSourceConstructionTests`, `CatalogServiceArgumentTests`, the six `CatalogDownloader*Tests` | Red, with recorded characterization (4 S2 failure cases in P4.08), P4.07 and P4.08 (sections 7 and 8) | PASSED |
 | T-P4-11 | REQ-023, REQ-068 | `CdcStationSelectorTests`, `CdcStationSelectorLimitTests`, `ComposedCdcPipelineTests` | Red, P4.09 (section 9); the composed test is characterization | PASSED |
-| T-P4-12 | REQ-101, REQ-068 | `MosmixLocationSelectorTests`, `MosmixLocationSelectorLimitTests`, `ComposedMosmixPipelineTests` | Red, P4.09 (section 9); the composed tests are characterization | PASSED |
+| T-P4-12 | REQ-101, REQ-068 | `MosmixLocationSelectorTests`, `MosmixLocationSelectorLimitTests` (including the A10 deadline and caller-cancellation cases of the index read), `ComposedMosmixPipelineTests` | Red, P4.09 (section 9) and A10 (this record, section 8.1); the composed tests are characterization | PASSED |
 | T-P4-13 | REQ-067, REQ-068, REQ-082 | `SelectionExportContractTests`; package side `PackageSelectionEquivalenceTests` | Characterization, P4.09 S3 and P4.10 (sections 9 and 10) | PASSED |
 | T-P4-14 | REQ-013, REQ-014, REQ-016 | `SelectionDependencyInjectionTests`, `SelectionDependencyInjectionRoutingTests`, `PackageSelectionTests`, `PackageMosmixEvidenceTests`, `PackageSelectionEquivalenceTests`; C-116 package evidence of the committed runs | Characterization, P4.10 (section 10; no DI, package or API defect found) | PASSED |
 | T-P4-15 | REQ-085 | Red, Green and Refactor recorded per slice in P4.03 to P4.10 and P4.11 S0; characterization recorded with provenance | Sections 3 to 10; P4.11 record section 2 | PASSED |
-| T-P4-16 | REQ-086 | Coverage gate: 6484/6487 (99.95 %) against the remeasured integration-target baseline 3035/3037 (99.93 %); minimum 80 %; strict improvement; unrounded native counters; comparable collection settings | P4.11 record sections 4 to 6 | PASSED |
-| T-P4-17 | REQ-017, REQ-084 | All P4 tests and the gate on the NanoPi R76S, separate from Windows, identical outcomes | P4.11 record section 6 (user authorization 2026-10-23) | PASSED |
-| T-P4-18 | REQ-083, REQ-092 | `LiveCheck_DwdSources_OnlyWhenExplicitlyEnabled` with `LiveCheckRunnerTests`, `LiveCheckRunnerFailureTests` | Red, P4.11 S0; one explicitly enabled live run (P4.11 record sections 2 and 7) | PASSED (optional row, run once) |
-| T-P4-19 | REQ-101, REQ-102, REQ-083 | The four `FileSystemMosmixEvidenceCache*Tests`, the six `MosmixSEvidenceRefresher*Tests`, the index tests of the MOSMIX selector tests, `ComposedMosmixPipelineTests`, `PackageMosmixEvidenceTests`, the index cases of `LiveCheckRunnerTests` | Red, P4.07 and P4.08; selector and consumer parts P4.09 and P4.10 (sections 7 to 10) | PASSED |
+| T-P4-16 | REQ-086 | Coverage gate: 6811/6814 (99.96 %) against the remeasured integration-target baseline 3035/3037 (99.93 %); minimum 80 %; strict improvement; unrounded native counters; comparable collection settings | P4.11 record section 9 (first candidate: sections 4 to 6) | PASSED |
+| T-P4-17 | REQ-017, REQ-084 | All P4 tests and the gate on the NanoPi R76S, separate from Windows, identical outcomes | P4.11 record section 9 (user instruction 2026-10-24), first candidate section 6 (user authorization 2026-10-23) | PASSED |
+| T-P4-18 | REQ-083, REQ-092 | `LiveCheck_DwdSources_OnlyWhenExplicitlyEnabled` with `LiveCheckRunnerTests`, `LiveCheckRunnerFailureTests` | Red, P4.11 S0; one explicitly enabled live run on `98122e5` (P4.11 record sections 2 and 7). Not repeated for `b6bc47f` (SC-16). The changed MOSMIX_S parser built the same index offline from a stored real DWD file (record section 9) | PASSED (optional row, run once on `98122e5`) |
+| T-P4-19 | REQ-101, REQ-102, REQ-083 | The five `FileSystemMosmixEvidenceCache*Tests`, the eight `MosmixSEvidenceRefresher*Tests`, the index tests of the MOSMIX selector tests, `ComposedMosmixPipelineTests`, `PackageMosmixEvidenceTests`, the index cases of `LiveCheckRunnerTests` | Red, P4.07 and P4.08; selector and consumer parts P4.09 and P4.10 (sections 7 to 10); streaming bounds, concurrency and index-read deadline A10 (this record, section 8.1) | PASSED |
 | T-P4-20 | REQ-067, REQ-068, REQ-079 | `MosmixEvidenceTimestampTests`, `MosmixEvidenceTimestampWireTests`, `SchemaRefinementTests` (schema generator), `PackageEvidenceTimestampTests`, `PackageMosmixEvidenceTests` | Red, P4.07; consumer part P4.10 (sections 7 and 10) | PASSED |
 
 Characterization evidence recorded in the step records (tests that passed on their first run over behavior that already existed, with their provenance): P4.03 — the three `CoordinateFormatExceptionTests` and the three `SearchParameterExceptionTests` (types complete in the scaffold) and 12 coordinate rejection tests (section 3); P4.04 — `Evaluate_WithRealCalculator_LimitsAroundReturnedDistance` (section 4); P4.05 — the six `CatalogFormatExceptionTests`, the 7 missing-value and boundary tests of S2, 16 further reader tests and the header/dash-line length test (section 5); P4.06 — the coverage-gap tests for bounds, malformed headers and rows and argument checks added in S4 (section 6); P4.07 — the zero and negative altitude normalization tests, `Read_LeavesTheCallersStreamOpenOnSuccessAndOnFailure` and the review-added token-count and negative-coordinate tests (section 7); P4.08 — four S2 failure cases (section 8); P4.09 — the composed pipeline and S3 export contract tests (section 9); P4.10 — all DI and package scenarios (section 10); P4.11 S0 — the budget-handler and redirect tests (P4.11 record section 2).
@@ -58,7 +63,7 @@ No row is FAILED or OPEN; no acceptance criterion was amended.
 | Reader reuse: P5 builds on `ICdcNowEvidenceReader` (SC-19); P7 builds on `IMosmixLEvidenceReader` (SC-20) and the streaming reader of the MOSMIX_S refresh (SC-22) | P5, P7 (SC-21) |
 | MOSMIX element verification, freshness per product, full MOSMIX parsing (SC-20 checks only structure, identity and element presence) | P7 |
 | Example-CLI exposure of the MOSMIX_S evidence refresh (needs a requirement change and a CLI contract decision) | User, P3 (SC-22) |
-| The live check is a single snapshot of 2026-10-23 on Windows, not on the target, and is not repeated | Recorded limitation (SC-16) |
+| The live check is a single snapshot of 2026-10-23 on Windows, not on the target, and is not repeated. It ran on candidate `98122e5`, so the A10 changes to the MOSMIX_S refresher and the index read have no live run. The refresher change is covered offline against a stored real DWD file (P4.11 record section 9) | Recorded limitation (SC-16) |
 | Hosted `debian13-arm64` is a container; target evidence exists only for the NanoPi R76S; release hardware acceptance | P9 (REQ-084) |
 | The packed package is not byte-reproducible across builds; C-116 compares packed and restored hashes within one run | Recorded; revisit with publication (P9) if required |
 | Several rows rely on characterization evidence over existing behavior (section 2) | Recorded; no rework planned |
@@ -75,7 +80,16 @@ No row is FAILED or OPEN; no acceptance criterion was amended.
 
 ## 5. Audit decision (A5)
 
-**ACCEPTED** (orchestrating agent's evidence audit, 2026-10-23): every T-P4 row is PASSED with tests and run evidence for candidate `98122e5`; P4.11 reported READY with no open defect; the coverage gate passed with 6484/6487 against 3035/3037 on Windows (Windows packed SHA-512 `7P7sYMqKWtEJXRIUZUYeASFJAZFhtd1rnrwgzOqSrmY/3kb9j+tYGx0b3txYLpnDgbuWHeoWw1S+BGbZoz21VA==`) and on the NanoPi R76S (packed SHA-512 `hKlt6WlOi/PQwjoQtGl6TxYF8zU+8ZcCkLsAHmvtwSmKau6ml2/WWOrzWx+pCpF7qutWuqzhwuglNFZe9H5ttw==`), hosted CI run 40023445539 is green with the SHA pair verified; test counts per platform: Parsing 1609 passed (1610 with the skipped live test), Coverage 99, Coverage.Runner 56, SchemaGeneration 46, package consumer 31; every contract decision is approved; each limitation has an owner. This audit decision is not the user's acceptance. It applies to candidate `98122e5` only. The A10 review fixes (section 8.1) need a refreshed audit on the new candidate.
+**ACCEPTED** (orchestrating agent's evidence audit, refreshed 2026-10-24 for candidate `b6bc47f`):
+- Every T-P4 row is PASSED with tests and run evidence for `b6bc47f`. The exception is T-P4-18, the optional live row, whose single run was on `98122e5` (SC-16; offline supplement in P4.11 record section 9).
+- The P4.11 rerun reported READY with no open defect.
+- The coverage gate passed with 6811/6814 against 3035/3037 on Windows (packed SHA-512 `dCCn3uSuMMvrF1eT6hAudmi8isancaeohI9aDhsT4fj6Ya5RBz28cdDG11LRLuXDYCoOt/YezbVFvFD6plAsTQ==`) and on the NanoPi R76S (packed SHA-512 `ccLueUXv0KDJf0rBASUzSnWEgGfGi/pE3Bes2eDeFUvUeYF2Hpq3+ddgHyVWINK8EPgy/A9gK5cRYXPQHr7KMQ==`).
+- Hosted CI run 40041773136 is green with the SHA pair verified.
+- Test counts per platform: Parsing 1662 passed (1663 with the skipped live test), Coverage 99, Coverage.Runner 56, SchemaGeneration 46, package consumer 31.
+- All three A10 review comments are fixed and answered (section 8.1).
+- Every contract decision is approved, and each limitation has an owner.
+
+This audit decision is not the user's acceptance. The first audit (2026-10-23) accepted candidate `98122e5` with 6484/6487 blocks and hosted CI run 40023445539; this refresh supersedes it.
 
 ## 6. User decision (A7)
 
@@ -91,7 +105,7 @@ A9 (ready for review) and A11 (merge) are pending.
 
 ### 8.1 A10 review round 1 (draft PR #5, 2026-10-23 to 2026-10-24)
 
-The review of head `c864650` raised three inline comments. All three were confirmed and fixed test-first. The fixes change production code, so they make a **new implementation candidate**: the fix commit that adds this section. Under A10 this needs a P4.11 S1–S4 rerun on that commit and refreshed A2, A5 and A6 before the user's acceptance decision. All three are still pending. The P4.11 live check (SC-16) stays a single run; the rerun records how it handles that.
+The review of head `c864650` raised three inline comments. All three were confirmed and fixed test-first. The fixes change production code, so they make a **new implementation candidate**: the fix commit that adds this section. That commit is `b6bc47f`. Under A10 it needed a P4.11 S1–S4 rerun and refreshed A2, A5 and A6 before the user's acceptance decision. All three were done on 2026-10-24 (P4.11 record section 9; sections 2 and 5 of this record; the P5 handoff). The P4.11 live check (SC-16) stays a single run on `98122e5`.
 
 | Comment | Finding | Fix | Red evidence |
 |---|---|---|---|
@@ -113,13 +127,13 @@ Codex reviewed the fix diff (five-angle audit) in seven rounds. Each confirmed f
 
 The orchestrating agent also found that its local pre-commit coverage script had measured stale Release binaries after Debug-only builds. The script now builds Release first. The fresh measurement exposed one unreachable block in `MoveToChildElement`, which was removed.
 
-Evidence on the working tree that this commit records (Windows, SDK 10.0.303):
+Evidence on the working tree that `b6bc47f` records (Windows, SDK 10.0.402):
 - `WeatherParser.Ci.slnf` build: 0 warnings.
 - Parsing tests: 1662 passed, 1 skipped (the guarded live check).
 - Pre-commit coverage gate: block coverage 6811/6814 against baseline 3035/3037 at `b7da828`, exit 0 (`evaluate.json` SHA-256 `2c995e7e6352f7cc37f9c45398100c0b11db5171eb270196c7d147a23f55e881`). The only uncovered library blocks are the three known ones: the `ParserEndpointValidator` constructor (2) and `FileSystemMosmixEvidenceCache.DeleteTemporaryFile` (1).
 - Local package check: packed files identical, restored hash equals packed hash, package consumer 31 passed; the consumer lock was not committed.
 
-Hosted CI for the fix commit and the P4.11 rerun are not yet recorded.
+Hosted CI run 40041773136 on `b6bc47f` succeeded on all three jobs (P4.11 record section 9). Replies to the three comments were posted on 2026-10-24. A check one hour later found no new comments or reviews.
 
 Authorship of the fix round:
 - qwen3-coder:30b generated the tests and most production changes.
@@ -131,5 +145,12 @@ Authorship of the fix round:
   - wrote this record.
 
 ## 9. Authorship
+
+Refresh of 2026-10-24 (A10):
+- The orchestrating agent ran the P4.11 rerun, extracted every value and wrote the refreshed sections 1, 2, 4, 5 and 8.1 of this record.
+- qwen3-coder:30b drafted section 9 of the P4.11 record from the agent's facts.
+- The agent updated by hand the value lines of the P5 handoff and its paragraph on the streaming-reader bounds, `docs/COMPATIBILITY.md` and `P4_VERIFICATION.md` section 11. These are value updates and evidence statements, which AGENTS.md lets the orchestrating agent write.
+- The agent also corrected the SDK version in section 8.1 (10.0.402, not 10.0.303).
+- Codex reviewed the refresh (five-angle audit, read-only): round 1, 0 findings.
 
 The orchestrating agent wrote this record from its verified evidence (step records, P4.11 runs and artifacts, the T-P4 mapping); qwen3-coder:30b drafted the [P5 handoff](P5_HANDOFF.md) from the orchestrating agent's facts, which the agent checked against the code (every cited type name) and the plans. Codex review of the draft: round 1, 4 findings, all confirmed and fixed — inherited P2 limitations now carried forward item by item with owners (record and handoff), characterization evidence named per step in the matrix (agent), API and schema links in the handoff (qwen added them; the agent corrected the Markdown syntax) and the coverage rule stated as the ratio rule of REQ-086 (the agent, after qwen did not apply it). Round 2: 0 findings.

@@ -1,12 +1,12 @@
 # P5 Handoff – DWD Observations
 
-Status: prepared with the P4.12 acceptance record on 2026-10-23; in effect once P4 is accepted and merged ([P4.12 acceptance record](P4_12_ACCEPTANCE.md)); P5 starts only on a separate instruction of the user.
+Status: prepared with the P4.12 acceptance record on 2026-10-23 and refreshed on 2026-10-24 for the new candidate `b6bc47f` after the A10 review fixes; in effect once P4 is accepted and merged ([P4.12 acceptance record](P4_12_ACCEPTANCE.md)); P5 starts only on a separate instruction of the user.
 
 ## 1. Accepted foundation
 
-- Verified implementation candidate `98122e560370e9de781bd4e0e3ebe0aca270e3d8` on branch `features/develop/P4`, draft pull request #5 into `develop` (PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`); P4.11 outcome READY ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md)). The P5 integration target is the merge commit of pull request #5, recorded after the merge.
+- Verified implementation candidate `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` on branch `features/develop/P4`, draft pull request #5 into `develop` (PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`); P4.11 outcome READY after the rerun on this candidate ([P4.11 record](P4_11_INTEGRATED_VERIFICATION.md) section 9). The P5 integration target is the merge commit of pull request #5, recorded after the merge.
 - Package `WeatherParser.Parsing` `0.1.0-initial` (not published); contents `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, [`schemas/export/v1/weatherparser-export-v1.xsd`](../../schemas/export/v1/weatherparser-export-v1.xsd).
-- Native block coverage of `WeatherParser.Parsing.dll`: 6484/6487 (99.95 %) on Windows and on the NanoPi R76S; the next PR's gate compares against the then-remeasured base.
+- Native block coverage of `WeatherParser.Parsing.dll`: 6811/6814 (99.96 %) on Windows and on the NanoPi R76S; the next PR's gate compares against the then-remeasured base.
 - Contracts: export contract v1 [P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md) (C-01 to C-119; v1 frozen, only additive optional members, C-03, C-105) and the selection contract [P4_SELECTION_CONTRACT.md](P4_SELECTION_CONTRACT.md) (SC-01 to SC-23); output schema [`schemas/export/v1/weatherparser-export-v1.xsd`](../../schemas/export/v1/weatherparser-export-v1.xsd).
 - Evidence: [P4_VERIFICATION.md](P4_VERIFICATION.md); platform summary [COMPATIBILITY.md](../COMPATIBILITY.md).
 
@@ -31,7 +31,13 @@ Status: prepared with the P4.12 acceptance record on 2026-10-23; in effect once 
 ## 4. Reuse obligations (SC-21)
 
 - P5 builds its DWD 10-minute observation parsing on the archive and format handling of `ICdcNowEvidenceReader` (SC-19), extending it through shared internal components instead of writing a second parser for the same format.
-- P7 builds its MOSMIX parsing on the secure KMZ and XML handling of `IMosmixLEvidenceReader` (SC-20) and the streaming reader of the MOSMIX_S evidence refresh (SC-22), extending them through shared internal components instead of writing a second parser for the same format.
+- P7 builds its MOSMIX parsing on the secure KMZ and XML handling of `IMosmixLEvidenceReader` (SC-20) and the streaming reader of the MOSMIX_S evidence refresh (SC-22), extending them through shared internal components instead of writing a second parser for the same format. The streaming reader keeps its bounds:
+  - forward-only reading with bounded texts and tokens;
+  - a byte-level guard of 1 MiB per markup construct and a nesting depth of 32;
+  - UTF-8 or ISO-8859-1 members only;
+  - a bounded name table.
+
+  As `XElement` did, it ignores processing instructions and non-element children of containers (P4.12 acceptance record, section 8.1).
 
 ## 5. Responsibilities of later phases
 
@@ -42,7 +48,7 @@ Status: prepared with the P4.12 acceptance record on 2026-10-23; in effect once 
 - qwen3-coder:30b generates through `/api/chat` with real API references and a file allowlist; the orchestrating agent plans, reviews, runs builds, tests and coverage and records authorship (AGENTS.md).
 - Contract decisions are reviewed by the OpenAI Codex CLI before the user approves them; implementations get a five-angle Codex review after the agent's own checks.
 - Test-first with recorded Red evidence; MSTest, Moq (strict, `VerifyAll()` in `[TestCleanup]`), FluentAssertions; standard tests offline; live checks only explicitly enabled (the P4 live-check runner in `tests/WeatherParser.Parsing.Tests/Live/` shows the pattern).
-- The coverage gate compares unrounded native block-coverage ratios (REQ-086): below a 100 % baseline every code PR must strictly improve the ratio against the remeasured target. At the end of P4 only three blocks of `WeatherParser.Parsing.dll` are uncovered (6484/6487), so new code needs tests for every block, including constructor argument checks.
+- The coverage gate compares unrounded native block-coverage ratios (REQ-086): below a 100 % baseline every code PR must strictly improve the ratio against the remeasured target. At the end of P4 only three blocks of `WeatherParser.Parsing.dll` are uncovered (6811/6814), so new code needs tests for every block, including constructor argument checks.
 - Draft PR early, CI on every push, Auto-fix on, ready for review at phase end, the user merges.
 
 ## 7. Open items and limitations

@@ -134,9 +134,15 @@ Plan reviews: the phase plan and the twelve step plans were reviewed by Codex un
 
 ## 11. P4.11 – Integrated coverage and platform verification
 
-- Record: [P4_11_INTEGRATED_VERIFICATION.md](P4_11_INTEGRATED_VERIFICATION.md) (decisions, S0 live-check runner, candidate, S1 to S4 runs, T-P4 audit, defects, outcome); platform summary in [COMPATIBILITY.md](../COMPATIBILITY.md#p4-scope-p411-2026-10-23).
+- Record: [P4_11_INTEGRATED_VERIFICATION.md](P4_11_INTEGRATED_VERIFICATION.md) (decisions, S0 live-check runner, candidate, S1 to S4 runs, T-P4 audit, defects, outcome); platform summary in [COMPATIBILITY.md](../COMPATIBILITY.md#p4-scope-p411-rerun-2026-10-24).
 - S0: test-only live-check runner committed as `98122e5` (opt-in `WEATHERPARSER_LIVE_CHECK=1`, request budget 56, no automatic redirects); Red 26 failures on the stub; Codex rounds 3 and 0 findings.
 - Candidate `98122e560370e9de781bd4e0e3ebe0aca270e3d8` against PR base `b7da8288d8746bc6e034222c0467a8fcebba55b3`: Windows `ci-local.ps1` exit 0 (1609 Parsing tests passed, live test not executed; package consumer 31; gate 6484/6487 above 3035/3037); hosted CI run 40023445539 green on all three jobs with the SHA pair verified in each `commits.json`; NanoPi R76S (Debian 13 ARM64, user authorization 2026-10-23) exit 0 with the same tests, outcomes and gate result; one live check against the DWD sources (14 requests of 56, all HTTP 200, both documents schema-valid).
 - T-P4-01 to T-P4-20 audited, all passed; no open defect; no production change since P4.09; outcome READY for P4.12 (acceptance decision by the user).
 - Authorship: the orchestrating agent ran and extracted all evidence, mapped the T-P4 rows and wrote this section; qwen3-coder:30b drafted the prose of the P4.11 record sections 3 to 8 and of the COMPATIBILITY.md section; details in the record.
 - Evidence checkpoint: the records were committed as `807d29a` on the user's request (2026-10-23) and pushed to draft pull request #5 (documentation only; the implementation evidence of candidate `98122e5` stays valid, plan section 3); hosted CI run 40026481905 on `807d29a` succeeded on all three jobs (ubuntu-x64, windows-x64, debian13-arm64) under the full-PR gate, the coverage gate included; on debian13-arm64 the Parsing tests passed 1609 of 1610 (live test not executed), SchemaGeneration 46/46, Coverage 99/99, Coverage.Runner 56/56 and the package consumer 31/31. P4.11 is complete.
+- Rerun on candidate `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` (2026-10-24). The A10 review fixes changed production code (P4.12 acceptance record, section 8.1), so S1 to S3 were rerun on the new candidate (record section 9):
+  - Windows `ci-local.ps1`: exit 0; 1662 Parsing tests passed (live test not executed); package consumer 31; gate 6811/6814 above 3035/3037.
+  - Hosted CI run 40041773136: green on all three jobs, with the SHA pair verified in each `commits.json`.
+  - NanoPi R76S: exit 0, with the same tests, outcomes and gate result.
+  - The live check was not repeated (SC-16). Offline, the new MOSMIX_S parser builds the same index from a stored real file as `98122e5`.
+  - Outcome: READY for the P4.12 refresh.
