@@ -10,6 +10,18 @@ namespace WeatherParser.Parsing.Catalogs;
 public interface ICdcCatalogEndpointsValidator
 {
     /// <summary>
+    /// Validates only the eight station-list and now-directory URIs, without the selection limits, which do not apply to DWD observations (contract OC-09, SC-12).
+    /// </summary>
+    /// <param name="options">The options to validate.</param>
+    /// <exception cref="ParserEndpointValidationException">
+    /// Thrown when a station list or directory URI is invalid.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when options is null.
+    /// </exception>
+    void ValidateEndpoints(CdcCatalogEndpoints options);
+
+    /// <summary>
     /// Validates the specified CDC catalog endpoints options.
     /// </summary>
     /// <param name="options">The options to validate.</param>

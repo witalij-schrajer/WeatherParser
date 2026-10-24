@@ -16,6 +16,7 @@ using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Selection;
 using WeatherParser.Parsing.Serialization;
+using WeatherParser.Parsing.Observations.Dwd;
 
 namespace WeatherParser.Package.Tests;
 
@@ -105,7 +106,8 @@ internal sealed class ConsumerSelectionHost : IDisposable
             .AddSingleton(new HttpClient(Handler))
             .AddSingleton<TimeProvider>(Clock)
             .AddSingleton(Cdc)
-            .AddSingleton(Mosmix);
+            .AddSingleton(Mosmix)
+            .AddSingleton(new DwdObservationOptions());
     }
 
     public void ArrangeCdc()

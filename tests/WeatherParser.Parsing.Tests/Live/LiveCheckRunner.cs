@@ -15,6 +15,7 @@ using WeatherParser.Parsing.Selection;
 using WeatherParser.Parsing.Serialization;
 using WeatherParser.Parsing.Tests.Schemas;
 using WeatherParser.Parsing.Tests.Selection;
+using WeatherParser.Parsing.Observations.Dwd;
 
 namespace WeatherParser.Parsing.Tests.Live;
 
@@ -52,6 +53,7 @@ internal static class LiveCheckRunner
         services.AddSingleton<TimeProvider>(clock);
         services.AddSingleton(settings.Cdc);
         services.AddSingleton(settings.Mosmix);
+        services.AddSingleton(new DwdObservationOptions());
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 

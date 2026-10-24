@@ -22,25 +22,29 @@ public sealed class CatalogServiceArgumentTests
         var listReader = new Mock<ICdcStationCatalogReader>().Object;
         var evidenceReader = new Mock<ICdcNowEvidenceReader>().Object;
 
-        FluentActions.Invoking(() => new CdcCatalogSource(null!, validator, downloader, listReader, evidenceReader))
+        FluentActions.Invoking(() => new CdcCatalogSource(null!, validator, downloader, listReader, evidenceReader, new CdcRequestComposer()))
             .Should().Throw<ArgumentNullException>()
             .Which.ParamName.Should().Be("options");
 
-        FluentActions.Invoking(() => new CdcCatalogSource(options, null!, downloader, listReader, evidenceReader))
+        FluentActions.Invoking(() => new CdcCatalogSource(options, null!, downloader, listReader, evidenceReader, new CdcRequestComposer()))
             .Should().Throw<ArgumentNullException>()
             .Which.ParamName.Should().Be("validator");
 
-        FluentActions.Invoking(() => new CdcCatalogSource(options, validator, null!, listReader, evidenceReader))
+        FluentActions.Invoking(() => new CdcCatalogSource(options, validator, null!, listReader, evidenceReader, new CdcRequestComposer()))
             .Should().Throw<ArgumentNullException>()
             .Which.ParamName.Should().Be("downloader");
 
-        FluentActions.Invoking(() => new CdcCatalogSource(options, validator, downloader, null!, evidenceReader))
+        FluentActions.Invoking(() => new CdcCatalogSource(options, validator, downloader, null!, evidenceReader, new CdcRequestComposer()))
             .Should().Throw<ArgumentNullException>()
             .Which.ParamName.Should().Be("listReader");
 
-        FluentActions.Invoking(() => new CdcCatalogSource(options, validator, downloader, listReader, null!))
+        FluentActions.Invoking(() => new CdcCatalogSource(options, validator, downloader, listReader, null!, new CdcRequestComposer()))
             .Should().Throw<ArgumentNullException>()
             .Which.ParamName.Should().Be("evidenceReader");
+
+        FluentActions.Invoking(() => new CdcCatalogSource(options, validator, downloader, listReader, evidenceReader, null!))
+            .Should().Throw<ArgumentNullException>()
+            .Which.ParamName.Should().Be("composer");
     }
 
     [TestMethod]
@@ -134,7 +138,7 @@ public sealed class CatalogServiceArgumentTests
         var downloader = new Mock<ICatalogDownloader>().Object;
         var listReader = new Mock<ICdcStationCatalogReader>().Object;
         var evidenceReader = new Mock<ICdcNowEvidenceReader>().Object;
-        var source = new CdcCatalogSource(options, validator, downloader, listReader, evidenceReader);
+        var source = new CdcCatalogSource(options, validator, downloader, listReader, evidenceReader, new CdcRequestComposer());
 
         (await FluentActions.Awaiting(() => source.ReadEvidenceAsync(new[] { new CdcEvidenceKey("00044", "tu"), new CdcEvidenceKey("00044", "tu") }, CancellationToken.None, CancellationToken.None)).Should().ThrowAsync<ArgumentException>())
             .Which.Message.Should().Contain("00044/tu");
@@ -158,7 +162,7 @@ public sealed class CatalogServiceArgumentTests
         var downloader = new Mock<ICatalogDownloader>().Object;
         var listReader = new Mock<ICdcStationCatalogReader>().Object;
         var evidenceReader = new Mock<ICdcNowEvidenceReader>().Object;
-        var source = new CdcCatalogSource(options, validator, downloader, listReader, evidenceReader);
+        var source = new CdcCatalogSource(options, validator, downloader, listReader, evidenceReader, new CdcRequestComposer());
 
         (await FluentActions.Awaiting(() => source.ReadEvidenceAsync(null!, CancellationToken.None, CancellationToken.None)).Should().ThrowAsync<ArgumentNullException>())
             .Which.ParamName.Should().Be("keys");

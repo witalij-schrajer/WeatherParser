@@ -69,7 +69,7 @@ public sealed class CatalogSourceConstructionTests
         var options = ValidCdcOptions();
         options.AirTemperatureStationList = new Uri("list.txt", UriKind.Relative);
 
-        Action act = () => new CdcCatalogSource(options, _cdcValidator, downloader.Object, listReader.Object, evidenceReader.Object);
+        Action act = () => new CdcCatalogSource(options, _cdcValidator, downloader.Object, listReader.Object, evidenceReader.Object, new CdcRequestComposer());
         act.Should().Throw<ParserEndpointValidationException>().Which.ErrorId.Should().Be("ENDPOINT-INVALID");
     }
 
@@ -83,7 +83,7 @@ public sealed class CatalogSourceConstructionTests
         var options = ValidCdcOptions();
         options.SolarNowDirectory = null;
 
-        Action act = () => new CdcCatalogSource(options, _cdcValidator, downloader.Object, listReader.Object, evidenceReader.Object);
+        Action act = () => new CdcCatalogSource(options, _cdcValidator, downloader.Object, listReader.Object, evidenceReader.Object, new CdcRequestComposer());
         act.Should().Throw<ParserEndpointValidationException>().Which.ErrorId.Should().Be("ENDPOINT-INVALID");
     }
 
@@ -97,7 +97,7 @@ public sealed class CatalogSourceConstructionTests
         var options = ValidCdcOptions();
         options.MaxEvidenceCandidates = 0;
 
-        Action act = () => new CdcCatalogSource(options, _cdcValidator, downloader.Object, listReader.Object, evidenceReader.Object);
+        Action act = () => new CdcCatalogSource(options, _cdcValidator, downloader.Object, listReader.Object, evidenceReader.Object, new CdcRequestComposer());
         act.Should().Throw<SelectionLimitException>().Which.ErrorId.Should().Be("SELECTION-LIMIT-INVALID");
     }
 
@@ -138,7 +138,7 @@ public sealed class CatalogSourceConstructionTests
 
         var options = ValidCdcOptions();
 
-        Action act = () => new CdcCatalogSource(options, _cdcValidator, downloader.Object, listReader.Object, evidenceReader.Object);
+        Action act = () => new CdcCatalogSource(options, _cdcValidator, downloader.Object, listReader.Object, evidenceReader.Object, new CdcRequestComposer());
         act.Should().NotThrow();
     }
 

@@ -44,6 +44,8 @@ public static class ServiceCollectionExtensions
     /// The MOSMIX_S evidence refresher is also registered; its timing is controlled externally (no scheduler).
     /// The DWD station resolver is also registered.
     /// The DWD observation mapper is also registered.
+    /// The DWD observation source is also registered; the consumer registers <see cref="DwdObservationOptions"/>.
+    /// The CDC request composer is also registered.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -79,6 +81,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMosmixAvailabilityResolver, MosmixAvailabilityResolver>();
         services.AddSingleton<ICatalogDownloader, CatalogDownloader>();
         services.AddSingleton<ICdcCatalogEndpointsValidator, CdcCatalogEndpointsValidator>();
+        services.AddSingleton<ICdcRequestComposer, CdcRequestComposer>();
         services.AddSingleton<ICdcCatalogSource, CdcCatalogSource>();
         services.AddSingleton<IMosmixCatalogSource, MosmixCatalogSource>();
         services.AddSingleton<IMosmixSEvidenceRefresher, MosmixSEvidenceRefresher>();
@@ -86,6 +89,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMosmixLocationSelector, MosmixLocationSelector>();
         services.AddSingleton<IDwdStationResolver, DwdStationResolver>();
         services.AddSingleton<IDwdObservationMapper, DwdObservationMapper>();
+        services.AddSingleton<IDwdObservationSource, DwdObservationSource>();
 
         return services;
     }

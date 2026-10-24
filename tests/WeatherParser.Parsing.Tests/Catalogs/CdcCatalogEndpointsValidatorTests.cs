@@ -168,4 +168,45 @@ public sealed class CdcCatalogEndpointsValidatorTests
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         provider.GetRequiredService<ICdcCatalogEndpointsValidator>().Should().BeOfType<CdcCatalogEndpointsValidator>();
     }
+
+    [TestMethod]
+    public void ValidateEndpoints_ValidEndpoints_Accepted()
+    {
+        FluentActions.Invoking(() => _subject.ValidateEndpoints(Valid())).Should().NotThrow();
+    }
+
+    [TestMethod]
+    public void ValidateEndpoints_IgnoresSelectionLimits()
+    {
+        var options = ValidWith(o => { o.MaxEvidenceCandidates = 0; o.SelectionDeadline = TimeSpan.Zero; });
+        FluentActions.Invoking(() => _subject.ValidateEndpoints(options)).Should().NotThrow();
+        FluentActions.Invoking(() => _subject.Validate(options)).Should().Throw<SelectionLimitException>().Which.ErrorId.Should().Be(SelectionLimitException.LimitInvalidErrorId);
+    }
+
+    [TestMethod]
+    public void ValidateEndpoints_RelativeUri_ThrowsEndpointInvalid()
+    {
+        var options = ValidWith(o => o.AirTemperatureStationList = new Uri("list.txt", UriKind.Relative));
+        FluentActions.Invoking(() => _subject.ValidateEndpoints(options)).Should().Throw<ParserEndpointValidationException>().Which.ErrorId.Should().Be("ENDPOINT-INVALID");
+    }
+
+    [TestMethod]
+    public void ValidateEndpoints_MissingEndpoint_ThrowsEndpointInvalid()
+    {
+        var options = ValidWith(o => o.SolarNowDirectory = null);
+        FluentActions.Invoking(() => _subject.ValidateEndpoints(options)).Should().Throw<ParserEndpointValidationException>();
+    }
+
+    [TestMethod]
+    public void ValidateEndpoints_DirectoryWithoutTrailingSlash_ThrowsEndpointInvalid()
+    {
+        var options = ValidWith(o => o.WindNowDirectory = new Uri("https://example.org/cdc/wind/now"));
+        FluentActions.Invoking(() => _subject.ValidateEndpoints(options)).Should().Throw<ParserEndpointValidationException>();
+    }
+
+    [TestMethod]
+    public void ValidateEndpoints_Null_ThrowsArgumentNullException()
+    {
+        FluentActions.Invoking(() => _subject.ValidateEndpoints(null!)).Should().Throw<ArgumentNullException>();
+    }
 }

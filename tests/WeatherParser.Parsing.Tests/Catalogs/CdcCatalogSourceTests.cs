@@ -51,7 +51,8 @@ public sealed class CdcCatalogSourceTests
             new CdcCatalogEndpointsValidator(new ParserEndpointValidator(new EndpointUriValidator())),
             _downloader.Object,
             _lists.Object,
-            _evidence.Object);
+            _evidence.Object,
+            new CdcRequestComposer());
     }
 
     [TestCleanup]

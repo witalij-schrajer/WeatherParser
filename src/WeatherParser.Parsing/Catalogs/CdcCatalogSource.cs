@@ -19,6 +19,7 @@ public sealed class CdcCatalogSource : ICdcCatalogSource
     private readonly ICatalogDownloader _downloader;
     private readonly ICdcStationCatalogReader _listReader;
     private readonly ICdcNowEvidenceReader _evidenceReader;
+    private readonly ICdcRequestComposer _composer;
     private const int MaxParallelRequests = 4;
 
     /// <summary>
@@ -29,18 +30,21 @@ public sealed class CdcCatalogSource : ICdcCatalogSource
     /// <param name="downloader">The catalog downloader to use.</param>
     /// <param name="listReader">The station list reader to use.</param>
     /// <param name="evidenceReader">The evidence reader to use.</param>
+    /// <param name="composer">The CDC request composer to use.</param>
     public CdcCatalogSource(
         CdcCatalogEndpoints options,
         ICdcCatalogEndpointsValidator validator,
         ICatalogDownloader downloader,
         ICdcStationCatalogReader listReader,
-        ICdcNowEvidenceReader evidenceReader)
+        ICdcNowEvidenceReader evidenceReader,
+        ICdcRequestComposer composer)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _downloader = downloader ?? throw new ArgumentNullException(nameof(downloader));
         _listReader = listReader ?? throw new ArgumentNullException(nameof(listReader));
         _evidenceReader = evidenceReader ?? throw new ArgumentNullException(nameof(evidenceReader));
+        _composer = composer ?? throw new ArgumentNullException(nameof(composer));
         validator.Validate(options);
     }
 
@@ -48,17 +52,11 @@ public sealed class CdcCatalogSource : ICdcCatalogSource
     public async Task<IReadOnlyList<CdcProductList>> ReadStationListsAsync(CancellationToken selectionDeadline, CancellationToken cancellationToken)
     {
         var lists = new List<CdcProductList>();
-        foreach (var (code, name, uri) in new[]
+        foreach (var target in _composer.StationLists(_options))
         {
-            ("tu", "AirTemperatureStationList", _options.AirTemperatureStationList!),
-            ("ff", "WindStationList", _options.WindStationList!),
-            ("rr", "PrecipitationStationList", _options.PrecipitationStationList!),
-            ("sd", "SolarStationList", _options.SolarStationList!),
-        })
-        {
-            var request = new CatalogRequest(name, uri, CatalogRequest.ListOrCatalogMaxBytes, false, selectionDeadline, CatalogDeadlineKind.Selection);
-            var catalog = await _downloader.DownloadAsync(request, (stream, token) => _listReader.ReadAsync(stream, name, token), cancellationToken);
-            lists.Add(new CdcProductList(code, name, catalog!));
+            var request = new CatalogRequest(target.EndpointName, target.Uri, CatalogRequest.ListOrCatalogMaxBytes, false, selectionDeadline, CatalogDeadlineKind.Selection);
+            var catalog = await _downloader.DownloadAsync(request, (stream, token) => _listReader.ReadAsync(stream, target.EndpointName, token), cancellationToken);
+            lists.Add(new CdcProductList(target.ProductCode, target.EndpointName, catalog!));
         }
 
         return lists;
@@ -77,16 +75,8 @@ public sealed class CdcCatalogSource : ICdcCatalogSource
                 throw new ArgumentException($"The evidence key {key.StationId}/{key.ProductCode} occurs more than once.", nameof(keys));
             }
 
-            var (name, directory, prefix) = key.ProductCode switch
-            {
-                "tu" => ("AirTemperatureNowDirectory", _options.AirTemperatureNowDirectory!, "10minutenwerte_TU_"),
-                "ff" => ("WindNowDirectory", _options.WindNowDirectory!, "10minutenwerte_wind_"),
-                "rr" => ("PrecipitationNowDirectory", _options.PrecipitationNowDirectory!, "10minutenwerte_nieder_"),
-                "sd" => ("SolarNowDirectory", _options.SolarNowDirectory!, "10minutenwerte_SOLAR_"),
-                _ => throw new ArgumentException($"Unknown product code '{key.ProductCode}'; expected tu, ff, rr or sd.", nameof(keys)),
-            };
-            var uri = new Uri(directory, prefix + Uri.EscapeDataString(key.StationId) + "_now.zip");
-            requests.Add((key, new CatalogRequest(name, uri, CatalogRequest.PerStationFileMaxBytes, true, selectionDeadline, CatalogDeadlineKind.Selection)));
+            var target = _composer.Archive(_options, key.StationId, key.ProductCode);
+            requests.Add((key, new CatalogRequest(target.EndpointName, target.Uri, CatalogRequest.PerStationFileMaxBytes, true, selectionDeadline, CatalogDeadlineKind.Selection)));
         }
 
         var results = new Dictionary<CdcEvidenceKey, CdcNowEvidence?>();
