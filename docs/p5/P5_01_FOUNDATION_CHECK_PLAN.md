@@ -33,7 +33,7 @@ Out of scope with owner: source-fact verification and the observation contract â
 - No Red: no behavior change.
 
 **Roles**
-- qwen drafts the record text from the agent's facts; the orchestrating agent confirms acceptance and merge, checks `git merge-base --is-ancestor 95bcb1e origin/develop`, lists `git log --oneline 95bcb1e..origin/develop` and classifies each commit (documentation-only or not).
+- the orchestrating agent writes the record text, confirms acceptance and merge, checks `git merge-base --is-ancestor 95bcb1e origin/develop`, lists `git log --oneline 95bcb1e..origin/develop` and classifies each commit (documentation-only or not).
 
 **Check**
 - read `docs/p4/P4_12_ACCEPTANCE.md` sections 6 and 8.3, `docs/p4/P5_HANDOFF.md`, `docs/p4/P4_VERIFICATION.md` section 12 and the `PHASE_P4_PLAN.md` status; confirm the pull request #6 state; record every commit since `95bcb1e`.
@@ -43,7 +43,7 @@ Out of scope with owner: source-fact verification and the observation contract â
 - No Red: no behavior change.
 
 **Roles**
-- qwen drafts the extraction table; the orchestrating agent fills every value from the named sources and checks the SDK servicing status against the official .NET release metadata (URL and date recorded).
+- the orchestrating agent writes the extraction table and fills every value from the named sources and checks the SDK servicing status against the official .NET release metadata (URL and date recorded).
 
 **Check**
 - fields integration target, package identity, SDK and runtime versions, coverage tools, export contract version and decision range, selection contract range, helpers P5 reuses (P5 handoff sections 2 to 4), P4 coverage at acceptance, inherited limitations with owners.
@@ -53,7 +53,7 @@ Out of scope with owner: source-fact verification and the observation contract â
 - No Red: no behavior change.
 
 **Roles**
-- qwen drafts the status passages, the commit message and the pull-request description; the orchestrating agent runs the README package check, `git` and `gh` commands on the user's instruction and records the results.
+- the orchestrating agent writes the status passages, the commit message and the pull-request description and runs the README package check, `git` and `gh` commands on the user's instruction and records the results.
 
 **Check**
 - branch `features/develop/P5` from `origin/develop`; README package check (CONTRIBUTING.md section 4); commit 1 = the "P5 started" status passages and the P5.01 record draft; push; `gh pr create --draft --base develop`; Auto-fix on; the pull-request number and the `pull_request` CI run recorded.
@@ -63,7 +63,7 @@ Out of scope with owner: source-fact verification and the observation contract â
 - No Red: no behavior change.
 
 **Roles**
-- the orchestrating agent runs the command and extracts the counters; qwen drafts the record text from them.
+- the orchestrating agent runs the command, extracts the counters and writes the record text from them.
 
 **Check**
 - `pwsh ./scripts/ci-local.ps1 -Commit <commit-1-sha> -TargetRef <integration-target-sha> -RunSettings coverage.runsettings`; the candidate is documentation-only, so equal block coverage passes (CONTRIBUTING.md section 5); record both block counters, the gate result and its SHA-256, the package hash and the test counts; the baseline counters are the comparison value for the P5 code steps only while the pull-request base equals the recorded integration target and the collection settings are unchanged; the orchestrating agent checks both before every reuse and remeasures the target when either changed (also in P5.10).
@@ -73,7 +73,7 @@ Out of scope with owner: source-fact verification and the observation contract â
 - No Red: no behavior change.
 
 **Roles**
-- qwen drafts the `PHASE_P5_PLAN.md` section 1 extraction table, the adjustments and the records; the orchestrating agent verifies every value; Codex reviews the uncommitted changes read-only; qwen fixes confirmed findings; checkpoint commit when the user requests it; push; hosted CI run recorded.
+- the orchestrating agent writes the `PHASE_P5_PLAN.md` section 1 extraction table, the adjustments and the records and verifies every value; Codex reviews the uncommitted changes read-only; the orchestrating agent fixes confirmed findings; checkpoint commit when the user requests it; push; hosted CI run recorded.
 
 **Check**
 - `PHASE_P5_PLAN.md` section 1 updated; outcome READY when every field is resolved, the baseline run passed and every commit between the P4 merge `95bcb1e` and the recorded integration target is classified and no production change among them is unexplained, otherwise NOT_READY with the open items.

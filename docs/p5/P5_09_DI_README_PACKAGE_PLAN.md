@@ -84,7 +84,7 @@ Expected failure: none is designated as Red; the same-run `.nupkg` is packed and
 - none.
 
 **Roles**
-- qwen drafts the README text from the orchestrating agent's facts; the orchestrating agent verifies every ID, URL and example against the code and the contract, runs the package check (README.md identical in the package) and records it.
+- the orchestrating agent writes the README text, verifies every ID, URL and example against the code and the contract, runs the package check (README.md identical in the package) and records it.
 
 **Check**
 - CONTRIBUTING.md section 4 package check on the working tree; `dotnet build WeatherParser.Ci.slnf -c Release --no-restore`.
@@ -97,7 +97,7 @@ Expected failure: none is designated as Red; the same-run `.nupkg` is packed and
 - build, all tests, pre-commit coverage with the changed-file list from `git diff --name-only <integration-target-sha>` plus `git ls-files --others --exclude-standard`, native block counters, baseline and gate result.
 
 **Roles**
-- the orchestrating agent runs the checks; Codex reviews the uncommitted diff read-only (including the README text); qwen fixes confirmed findings; checkpoint commit when the user requests it; push; hosted CI run recorded; the README package check is repeated on the committed revision through `ci-local.ps1`.
+- the orchestrating agent runs the checks; Codex reviews the uncommitted diff read-only (including the README text); confirmed findings in code and tests are fixed by qwen, in the README text by the orchestrating agent; checkpoint commit when the user requests it; push; hosted CI run recorded; the README package check is repeated on the committed revision through `ci-local.ps1`.
 
 **Check**
 - pre-commit coverage (CONTRIBUTING.md section 5); Codex review; `pwsh ./scripts/ci-local.ps1 -Commit <sha> -TargetRef <integration-target-sha> -RunSettings coverage.runsettings` after the commit; commit and CI run recorded in `docs/p5/P5_VERIFICATION.md`.

@@ -56,7 +56,7 @@ qwen generates the tests and the extension; the orchestrating agent reviews, run
 No Red: verification run.
 
 **Roles**
-The orchestrating agent records the candidate SHA, the pull request number and the integration-target SHA (`gh pr view` base and `git rev-parse origin/develop`), runs the command and extracts every value; qwen drafts the record prose from the extracted values.
+The orchestrating agent records the candidate SHA, the pull request number and the integration-target SHA (`gh pr view` base and `git rev-parse origin/develop`), runs the command, extracts every value and writes the record prose from them.
 
 **Check**
 `pwsh ./scripts/ci-local.ps1 -Commit <candidate-sha> -TargetRef <integration-target-sha> -RunSettings coverage.runsettings`; record exit code, run directory, test counts per project, native covered/total blocks for candidate and target, gate rules, gate-result SHA-256, package identity, packed and restored SHA-512, entries and consumer-lock comparison (C-116).
@@ -86,7 +86,7 @@ CONTRIBUTING.md section 7 for the candidate and the integration target (bundle w
 No Red: verification run.
 
 **Roles**
-As in S1; qwen drafts the live record from the extracted values; Codex reviews it read-only.
+As in S1; the orchestrating agent writes the live record from the extracted values; Codex reviews it read-only.
 
 **Check**
 Only if enabled by the user and REQ-092 conditions are recorded (P5.02); run the committed runner's observation entry once, with `WEATHERPARSER_LIVE_CHECK=1` and the observation mode variable, filtered to the observation live test, on the committed candidate (build 0 warnings); record date, endpoints by name, request count against the budget of 8, HTTP statuses, declared lengths and bytes read, 404 products, the dataset's `retrieved_at`, per-quantity `measured_at` and the exported quantities, XML validation against the v1 schema, JSON parsing and the JSON ↔ XML equivalence check of P5.08 (no JSON schema exists), and any format deviation versus the contract facts (a deviation is a finding for P5.02, not a silent adaptation); one run, not repeated (SC-16 pattern).
@@ -96,7 +96,7 @@ Only if enabled by the user and REQ-092 conditions are recorded (P5.02); run the
 No Red: audit.
 
 **Roles**
-The orchestrating agent maps every T-P5-01 to T-P5-19 row to its tests and evidence, lists defects with owner and disposition and records the outcome; qwen drafts the record prose; Codex reviews the uncommitted records read-only; qwen fixes confirmed findings; checkpoint commit when the user requests it; push; hosted CI run of the checkpoint recorded.
+The orchestrating agent maps every T-P5-01 to T-P5-19 row to its tests and evidence, lists defects with owner and disposition, records the outcome and writes the record prose; Codex reviews the uncommitted records read-only; the orchestrating agent fixes confirmed findings; checkpoint commit when the user requests it; push; hosted CI run of the checkpoint recorded.
 
 **Check**
 Outcome READY only when every mandatory row passes on Windows and the NanoPi (or an explicitly approved, recorded amendment of the phase acceptance criteria changes what READY requires, with missing evidence listed as open and never reported as passed), the coverage gate passed, hosted CI is green and no defect is open; otherwise NOT_READY with the missing items; a defect is fixed test-first by qwen in the owning step and S1 to S4 restart on the new candidate (another live execution skipped, disposition recorded).
@@ -113,7 +113,7 @@ Outcome READY only when every mandatory row passes on Windows and the NanoPi (or
 ## 7. Evidence to Record
 - Every command with exit code, run directories, run IDs, SHAs, counters, gate results and hashes
 - NanoPi authorization wording and date; live-parse enabling wording and date; live data (if run)
-- T-P5 audit table; defects and dispositions; Codex review rounds; authorship (orchestrator runs and extraction, qwen drafts)
+- T-P5 audit table; defects and dispositions; Codex review rounds; authorship (orchestrating agent: runs, extraction and record text)
 
 ## 8. Risks and Limitations
 - (a) The integration target moves during verification — S1 uses the PR base at run time and records it; a later base change requires a rerun

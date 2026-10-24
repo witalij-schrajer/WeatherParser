@@ -43,7 +43,7 @@ Out of scope with owner: P6 work → P6 (starts only on the user's instruction);
 - No Red: records.
 
 **Roles**
-- the orchestrating agent maps every T-P5-01 to T-P5-19 row to tests, step records and run IDs with status PASSED or OPEN and names characterization evidence with provenance; qwen drafts the prose; Codex reviews the record read-only.
+- the orchestrating agent maps every T-P5-01 to T-P5-19 row to tests, step records and run IDs with status PASSED or OPEN and names characterization evidence with provenance and writes the prose; Codex reviews the record read-only.
 
 **Check**
 - every mandatory row PASSED with tests and evidence; an OPEN mandatory row cites a specific user-approved amendment of the acceptance criteria, the blocker and the owner, otherwise the audit outcome is NOT ACCEPTED and A7 onward do not start; an optional T-P5-18 skip is recorded separately with its limitation; no row reported as passed without evidence.
@@ -53,7 +53,7 @@ Out of scope with owner: P6 work → P6 (starts only on the user's instruction);
 - No Red: records.
 
 **Roles**
-- the orchestrating agent lists the approved OC rows with links and the export-contract status (unchanged or additive decisions), and every limitation with its owner (including inherited P2 and P4 limitations carried forward item by item); qwen drafts the prose.
+- the orchestrating agent lists the approved OC rows with links and the export-contract status (unchanged or additive decisions), and every limitation with its owner (including inherited P2 and P4 limitations carried forward item by item) and writes the prose.
 
 **Check**
 - every OC row listed; every limitation has an owner.
@@ -63,7 +63,7 @@ Out of scope with owner: P6 work → P6 (starts only on the user's instruction);
 - No Red: records.
 
 **Roles**
-- the orchestrating agent records the audit decision (ACCEPTED or NOT ACCEPTED with the missing items; never the user's acceptance); qwen drafts `docs/p5/P6_HANDOFF.md` from the agent's facts (what P5 provides: `IDwdObservationParser` and its services, the observation contract, the extended evidence reader; P6 responsibilities per DEVELOPMENT_PLAN.md; reuse obligations; working rules; open items); the agent checks every cited type name against the code; Codex reviews the record and the handoff read-only; qwen fixes confirmed findings.
+- the orchestrating agent records the audit decision (ACCEPTED or NOT ACCEPTED with the missing items; never the user's acceptance) and writes `docs/p5/P6_HANDOFF.md` (what P5 provides: `IDwdObservationParser` and its services, the observation contract, the extended evidence reader; P6 responsibilities per DEVELOPMENT_PLAN.md; reuse obligations; working rules; open items); the agent checks every cited type name against the code; Codex reviews the record and the handoff read-only; the orchestrating agent fixes confirmed findings.
 
 **Check**
 - audit decision recorded; after NOT ACCEPTED the actions A7 to A11 wait until the gaps are closed or the criteria are amended with the user's approval; handoff complete; Codex rounds recorded.
@@ -83,7 +83,7 @@ Out of scope with owner: P6 work → P6 (starts only on the user's instruction);
 - No Red: documentation.
 
 **Roles**
-- qwen drafts the status passages; the orchestrating agent verifies them, runs the README package check (CONTRIBUTING.md section 4), build, all tests and the pre-commit coverage on the working tree for the full P5 diff; Codex reviews the uncommitted changes read-only; qwen fixes confirmed findings; checkpoint commit when the user requests it; `ci-local.ps1` on the committed revision; push.
+- the orchestrating agent writes the status passages, runs the README package check (CONTRIBUTING.md section 4), build, all tests and the pre-commit coverage on the working tree for the full P5 diff; Codex reviews the uncommitted changes read-only; the orchestrating agent fixes confirmed findings; checkpoint commit when the user requests it; `ci-local.ps1` on the committed revision; push.
 
 **Check**
 - package check passed; committed-revision run passed; all status documents consistent (AGENTS.md table).
@@ -103,7 +103,7 @@ Out of scope with owner: P6 work → P6 (starts only on the user's instruction);
 - No Red: process.
 
 **Roles**
-- review comments are analysed and confirmed findings fixed test-first by qwen in the owning scope, verified, committed on request and pushed; a fix that changes production code, tests, build, CI, package or schema files creates a new implementation candidate: P5.10 S1 to S4 rerun, A2, A5 and A6 refreshed, renewed user acceptance (A7) whenever the acceptance basis changed, that is accepted behavior, evidence, contract claims, limitations or acceptance criteria (editorial-only corrections excepted, as in P4.12 A10); before the merge the current pull-request base is compared with the base of the recorded verification; if `develop` advanced, the affected P5.10 verification and audit are rerun against the new base.
+- review comments are analysed and confirmed findings fixed in the owning scope (code, tests, scripts and data test-first by qwen; documentation by the orchestrating agent), verified, committed on request and pushed; a fix that changes production code, tests, build, CI, package or schema files creates a new implementation candidate: P5.10 S1 to S4 rerun, A2, A5 and A6 refreshed, renewed user acceptance (A7) whenever the acceptance basis changed, that is accepted behavior, evidence, contract claims, limitations or acceptance criteria (editorial-only corrections excepted, as in P4.12 A10); before the merge the current pull-request base is compared with the base of the recorded verification; if `develop` advanced, the affected P5.10 verification and audit are rerun against the new base.
 
 **Check**
 - all review comments resolved or answered; review approval recorded; all hosted jobs pass for the final head and base pair.

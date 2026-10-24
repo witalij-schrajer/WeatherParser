@@ -45,7 +45,7 @@ Out of scope with owner: any production code, fixture or test → P5.03 onwards;
 - No Red: research.
 
 **Roles**
-- the orchestrating agent downloads and checks the sources and records URL, date, size and SHA-256; qwen drafts the facts text from the agent's extraction.
+- the orchestrating agent downloads and checks the sources and records URL, date, size and SHA-256 and writes the facts text from its extraction.
 
 **Check**
 - for each product: description PDF (units, `QN` levels, missing value, time base), directory listing (archive name pattern, count), one sample archive (member name, header, columns, row count, `STATIONS_ID` form, `MESS_DATUM` form); 404 behavior for a station without a file; compare with the P4 facts of 2026-10-21 and record every difference.
@@ -55,7 +55,7 @@ Out of scope with owner: any production code, fixture or test → P5.03 onwards;
 - No Red: documentation.
 
 **Roles**
-- qwen drafts `docs/p5/P5_OBSERVATION_CONTRACT.md` from the agent's brief (phase plan section 3 rows, S1 facts); the orchestrating agent checks every ID, literal and reference.
+- the orchestrating agent writes `docs/p5/P5_OBSERVATION_CONTRACT.md` (phase plan section 3 rows, S1 facts) and checks every ID, literal and reference against the sources and the code.
 
 **Check**
 - fourteen OC rows with options, recommendation, decider and status "Proposed"; the not-exported columns listed (`TM5_10`, `TD_10`, `RWS_DAU_10`, `RWS_IND_10`, `DS_10`, `SD_10`, `LS_10`); unit conversion `GS_10` J/cm² × 10000 = J/m² stated with its source; attribution and IP note (REQ-092).
@@ -65,7 +65,7 @@ Out of scope with owner: any production code, fixture or test → P5.03 onwards;
 - No Red: review.
 
 **Roles**
-- Codex reviews the draft read-only (five-angle format); the orchestrating agent verifies each finding; qwen fixes confirmed findings; up to 10 rounds; every round's output and finding count recorded in the contract (AGENTS.md "Contract decisions").
+- Codex reviews the draft read-only (five-angle format); the orchestrating agent verifies each finding and fixes confirmed findings; up to 10 rounds; every round's output and finding count recorded in the contract (AGENTS.md "Contract decisions").
 
 **Check**
 - rounds and counts recorded; remaining findings after round 10 reported to the user with the agent's check of each.
@@ -85,7 +85,7 @@ Out of scope with owner: any production code, fixture or test → P5.03 onwards;
 - No Red: documentation.
 
 **Roles**
-- qwen reconciles `docs/p5/P5_03_*` to `P5_11_*` and `PHASE_P5_PLAN.md` section 3 from the agent's change list (targeted edits, one plan per request); the orchestrating agent checks the structure of every plan (nine headings, tables intact) and the diff; Codex reviews the reconciled plans read-only; qwen fixes confirmed findings.
+- the orchestrating agent reconciles `docs/p5/P5_03_*` to `P5_11_*` and `PHASE_P5_PLAN.md` section 3 from its change list (targeted edits) and checks the structure of every plan (nine headings, tables intact) and the diff; Codex reviews the reconciled plans read-only; the orchestrating agent fixes confirmed findings.
 
 **Check**
 - every plan names the approved OC IDs it implements; no plan contradicts the contract; headings complete.
@@ -95,7 +95,7 @@ Out of scope with owner: any production code, fixture or test → P5.03 onwards;
 - No Red: records.
 
 **Roles**
-- qwen drafts the P5.02 section of `docs/p5/P5_VERIFICATION.md`; the orchestrating agent verifies; checkpoint commit when the user requests it; push; hosted CI run recorded.
+- the orchestrating agent writes the P5.02 section of `docs/p5/P5_VERIFICATION.md`; checkpoint commit when the user requests it; push; hosted CI run recorded.
 
 **Check**
 - on the complete step diff: `dotnet build WeatherParser.Ci.slnf -c Release --no-restore`, the Parsing tests and the pre-commit coverage gate under the documentation-only rule (CONTRIBUTING.md section 5); orchestrator review of the complete diff; read-only Codex review of the complete diff with recorded dispositions; then the checkpoint commit on the user's request, push, hosted CI run recorded.

@@ -45,7 +45,7 @@ Status: prepared with the P4.12 acceptance record on 2026-10-23 and refreshed on
 
 ## 6. Working rules
 
-- qwen3-coder:30b generates through `/api/chat` with real API references and a file allowlist; the orchestrating agent plans, reviews, runs builds, tests and coverage and records authorship (AGENTS.md).
+- qwen3-coder:30b generates code, tests, scripts and data through `/api/chat` with real API references and a file allowlist; the orchestrating agent plans, writes all documentation (user decision dated 2026-10-24), reviews, runs builds, tests and coverage and records authorship (AGENTS.md).
 - Contract decisions are reviewed by the OpenAI Codex CLI before the user approves them; implementations get a five-angle Codex review after the agent's own checks.
 - Test-first with recorded Red evidence; MSTest, Moq (strict, `VerifyAll()` in `[TestCleanup]`), FluentAssertions; standard tests offline; live checks only explicitly enabled (the P4 live-check runner in `tests/WeatherParser.Parsing.Tests/Live/` shows the pattern).
 - The coverage gate compares unrounded native block-coverage ratios (REQ-086): below a 100 % baseline every code PR must strictly improve the ratio against the remeasured target. At the end of P4 only three blocks of `WeatherParser.Parsing.dll` are uncovered (6811/6814), so new code needs tests for every block, including constructor argument checks.
