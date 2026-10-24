@@ -43,6 +43,7 @@ public static class ServiceCollectionExtensions
     /// The CDC endpoints validator and the CDC and MOSMIX catalog sources are also registered; the consumer registers <see cref="CdcCatalogEndpoints"/> and <see cref="WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints"/>.
     /// The MOSMIX_S evidence refresher is also registered; its timing is controlled externally (no scheduler).
     /// The DWD station resolver is also registered.
+    /// The DWD observation mapper is also registered.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -84,6 +85,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICdcStationSelector, CdcStationSelector>();
         services.AddSingleton<IMosmixLocationSelector, MosmixLocationSelector>();
         services.AddSingleton<IDwdStationResolver, DwdStationResolver>();
+        services.AddSingleton<IDwdObservationMapper, DwdObservationMapper>();
 
         return services;
     }
