@@ -19,7 +19,7 @@ public sealed class ServiceRegistrationCompletenessTests
     [TestMethod]
     public void AddWeatherParsing_RegistersEveryVisibleServiceInterfaceAsSingletonOfItsOnlyImplementation()
     {
-        var services = new ServiceCollection().AddWeatherParsing();
+        var services = new ServiceCollection().AddWeatherParsing().AddTestConsumerServices();
         using var provider = BuildValidated(services);
 
         var interfaces = Library.GetTypes()

@@ -71,7 +71,7 @@ public sealed class ServiceCollectionExtensionsTests
     [TestMethod]
     public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesExportSerializers()
     {
-        _services.AddWeatherParsing();
+        _services.AddWeatherParsing().AddTestConsumerServices();
 
         using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
@@ -100,7 +100,7 @@ public sealed class ServiceCollectionExtensionsTests
     [TestMethod]
     public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesListEntryOrdering()
     {
-        _services.AddWeatherParsing();
+        _services.AddWeatherParsing().AddTestConsumerServices();
 
         using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         provider.GetRequiredService<IListEntryOrdering>().Should().BeOfType<ListEntryOrdering>();
@@ -109,7 +109,7 @@ public sealed class ServiceCollectionExtensionsTests
     [TestMethod]
     public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesTimeServices()
     {
-        _services.AddWeatherParsing();
+        _services.AddWeatherParsing().AddTestConsumerServices();
 
         using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         provider.GetRequiredService<ITimeZoneResolver>().Should().BeOfType<TimeZoneResolver>();
@@ -119,7 +119,7 @@ public sealed class ServiceCollectionExtensionsTests
     [TestMethod]
     public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesQuantityServices()
     {
-        _services.AddWeatherParsing();
+        _services.AddWeatherParsing().AddTestConsumerServices();
 
         using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         provider.GetRequiredService<IOutputRounding>().Should().BeOfType<OutputRounding>();
@@ -164,7 +164,7 @@ public sealed class ServiceCollectionExtensionsTests
     [TestMethod]
     public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesObservationDatasetBuilder()
     {
-        _services.AddWeatherParsing();
+        _services.AddWeatherParsing().AddTestConsumerServices();
 
         using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         provider.GetRequiredService<IObservationDatasetBuilder>().Should().BeOfType<ObservationDatasetBuilder>();
@@ -182,7 +182,7 @@ public sealed class ServiceCollectionExtensionsTests
     [TestMethod]
     public void AddWeatherParsing_WithoutFurtherRegistration_ResolvesForecastRunBuilder()
     {
-        _services.AddWeatherParsing();
+        _services.AddWeatherParsing().AddTestConsumerServices();
 
         using var provider = _services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         provider.GetRequiredService<IForecastRunBuilder>().Should().BeOfType<ForecastRunBuilder>();

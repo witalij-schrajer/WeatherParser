@@ -1,6 +1,6 @@
 # P2.12 – Acceptance and P4 Handoff: Implementation Plan
 
-**Status: in progress (2026-10-20): A1 to A8 done, P2 accepted by the user on 2026-10-20 ([acceptance record](P2_12_ACCEPTANCE.md)); A9 to A11 (ready for review, review, merge) pending.** Original planning note: this document started as a plan on 2026-10-20. This plan refines the P2.12 row of section 5 and section 10 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (no-TDD statement, section 6 sentence, after-acceptance artifact rows); the orchestrating agent split the section 1 scope lines into lists and restored path backticks after qwen repeatedly left them as prose. Extended on 2026-10-20 at the user's request with the pull-request completion steps A9–A11 (draft → ready for review, review, merge into develop): drafted by qwen; the orchestrating agent inserted the two section 3 decision rows qwen omitted and fixed one typo.
+**Status: completed (2026-10-20): A1 to A11 done; P2 accepted by the user and pull request #3 merged into `develop` on 2026-10-20 (merge commit `74bf625`, [acceptance record](P2_12_ACCEPTANCE.md)).** Original planning note: this document started as a plan on 2026-10-20. This plan refines the P2.12 row of section 5 and section 10 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md). Drafted by the local qwen3-coder:30b model from the orchestrating agent's brief and corrected by qwen in one review round (no-TDD statement, section 6 sentence, after-acceptance artifact rows); the orchestrating agent split the section 1 scope lines into lists and restored path backticks after qwen repeatedly left them as prose. Extended on 2026-10-20 at the user's request with the pull-request completion steps A9–A11 (draft → ready for review, review, merge into develop): drafted by qwen; the orchestrating agent inserted the two section 3 decision rows qwen omitted and fixed one typo.
 
 ## 1. Goal and Scope
 Goal: turn the P2.11 evidence into an auditable acceptance package — the requirement/test evidence matrix, the contract and version decisions, limitations and open items, the orchestrator's audit decision and the user's explicit acceptance decision — and hand P4 (and the later provider phases) the accepted contracts and their responsibilities; mark P2 complete only after the user accepts.
@@ -133,12 +133,12 @@ P2.12 adds no tests; step A2 produces the full T-P2-01 to T-P2-28 evidence matri
 - Merge before acceptance — A11 follows A7 and A9–A10; merging is the user's decision.
 
 ## 9. Acceptance Criteria
-- [ ] Matrix complete for T-P2-01 to T-P2-28  
-- [ ] Contract decisions and limitations recorded with owners  
-- [ ] Audit decision recorded  
-- [ ] P4 handoff written  
-- [ ] User decision recorded with date and wording  
-- [ ] Status documents consistent after acceptance  
-- [ ] Nothing pushed or published without separate authorization
-- [ ] Pull request #3 marked ready for review after A8 and its CI passed
-- [ ] Review findings resolved and recorded; pull request #3 merged into develop by the user or on the user's explicit instruction
+- [x] Matrix complete for T-P2-01 to T-P2-28  
+- [x] Contract decisions and limitations recorded with owners  
+- [x] Audit decision recorded  
+- [x] P4 handoff written  
+- [x] User decision recorded with date and wording  
+- [x] Status documents consistent after acceptance  
+- [x] Nothing pushed or published without separate authorization
+- [x] Pull request #3 marked ready for review after A8 and its CI passed
+- [x] Review findings resolved and recorded; pull request #3 merged into develop by the user or on the user's explicit instruction

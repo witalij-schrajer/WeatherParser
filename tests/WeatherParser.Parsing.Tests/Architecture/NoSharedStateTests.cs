@@ -37,7 +37,7 @@ public sealed class NoSharedStateTests
         typeof(Regex)
     };
 
-    private static ServiceProvider BuildValidated() => new ServiceCollection().AddWeatherParsing().BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+    private static ServiceProvider BuildValidated() => new ServiceCollection().AddWeatherParsing().AddTestConsumerServices().BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
     [TestMethod]
     public void TwoContainers_ProduceIndependentInstances()

@@ -119,6 +119,11 @@ public sealed class MosmixLocationList : IExportRootValidation
                     if (availability.AvailableForecastElements.Count != 0)
                         throw Violation("available_forecast_elements must be empty unless availability is available (contract C-23)");
                 }
+
+                if (availability.EvidenceRetrievedAtUtc.HasValue != availability.EvidenceIssuedAtUtc.HasValue)
+                {
+                    throw Violation("evidence_retrieved_at and evidence_issued_at must both be present or both be absent (contract C-118)");
+                }
             }
         }
     }

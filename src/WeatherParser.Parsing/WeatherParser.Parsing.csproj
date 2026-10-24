@@ -14,6 +14,11 @@
     <None Include="../../schemas/export/v1/weatherparser-export-v1.xsd" Pack="true" PackagePath="schemas/export/v1/" Visible="false" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Test seam for bounds that cannot be exercised at full size in unit tests (P4.08: the 2 GiB MOSMIX_S member bound). -->
+    <InternalsVisibleTo Include="WeatherParser.Parsing.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 </Project>

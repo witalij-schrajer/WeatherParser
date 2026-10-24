@@ -1,10 +1,10 @@
 # P4 Handoff – Station and Location Selection
 
-Status: prepared with the P2.12 acceptance record on 2026-10-20; it takes effect when P2 is accepted ([P2.12 acceptance record](P2_12_ACCEPTANCE.md)). P4 starts only on a separate instruction.
+Status: prepared with the P2.12 acceptance record on 2026-10-20; in effect since P2 was accepted and merged ([P2.12 acceptance record](P2_12_ACCEPTANCE.md)); P4 started on 2026-10-20 on the user's instruction.
 
 ## 1. Accepted foundation
 
-- Verified candidate `bced7be380c3e637fdd042c4165cd074e25f25a6` on branch `features/develop/P2`, draft pull request #3 into `develop` (PR base `64e460b475b4a29b9e3ddd331394076e53982d9e`); P2 is complete only after acceptance and the merge into `develop`, whose head then becomes the P4 integration target.
+- Verified candidate `bced7be380c3e637fdd042c4165cd074e25f25a6` on branch `features/develop/P2`, draft pull request #3 into `develop` (PR base `64e460b475b4a29b9e3ddd331394076e53982d9e`); P2 is complete: pull request #3 was merged into `develop` on 2026-10-20; the P4 integration target is the merge commit `74bf625eb4b2fbf49cbce7d1cee42b6302f2e47b`.
 - Package `WeatherParser.Parsing` `0.1.0-initial` (not published); it contains `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE` and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`.
 - Native block coverage of `WeatherParser.Parsing.dll`: 3035/3037 (99.93 %) on Windows and on the NanoPi R76S; the next PR's gate compares against the then-remeasured base.
 - Contract: [P2_EXPORT_CONTRACT.md](P2_EXPORT_CONTRACT.md) (C-01 to C-116), namespace `urn:weatherparser:export:v1`, `schema_version` `"1"`; v1 freezes at P2 acceptance; afterwards only additive optional members (C-03, C-105).

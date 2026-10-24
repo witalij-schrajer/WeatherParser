@@ -1,6 +1,6 @@
 # WeatherParser
 
-**Phase status (2026-10-20): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); P2 (export contract) accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)), complete after the merge of pull request #3 into `develop`; P4 starts only on a separate instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)). The SDK is pinned ([DEPENDENCIES.md](DEPENDENCIES.md)); P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; P1.11 developer instructions ([CONTRIBUTING.md](CONTRIBUTING.md)) are accepted.**
+**Phase status (2026-10-24): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); P2 (export contract) accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)), complete (pull request #3 merged into `develop` on 2026-10-20, merge commit `74bf625`); P4 started on 2026-10-20 ([P4 handoff](docs/p2/P4_HANDOFF.md)) and was accepted by the user on 2026-10-24 on candidate `b6bc47f` ([P4 acceptance record](docs/p4/P4_12_ACCEPTANCE.md)); it is complete once the user merges pull request #5 into `develop`; P5 starts only on a separate instruction ([P5 handoff](docs/p4/P5_HANDOFF.md)). The SDK is pinned ([DEPENDENCIES.md](DEPENDENCIES.md)); P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; P1.11 developer instructions ([CONTRIBUTING.md](CONTRIBUTING.md)) are accepted.**
 
 WeatherParser is primarily a planned C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts. The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
@@ -23,7 +23,7 @@ English is the sole maintained language for project documentation and instructio
 
 ## Project status
 
-As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md); its version 1 is frozen since the P2 acceptance on 2026-10-20 (only additive optional changes, C-03). Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). **Weather-source parsers, MQTT and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. No public package publication is claimed.
+As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md); its version 1 is frozen since the P2 acceptance on 2026-10-20 (only additive optional changes, C-03). Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). Since P4.09 (2026-10-23) it also selects CDC stations and MOSMIX forecast locations around a reference point (see [Station and location selection](#station-and-location-selection-library)). **Weather-source parsers, MQTT and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. No public package publication is claimed.
 
 ## Workflow role and execution
 
@@ -142,6 +142,84 @@ Source, checked 2026-10-14: [DWD procedure description, section 2.1.3/table 2.1]
 
 See the [development plan](DEVELOPMENT_PLAN.md) for phases, dependencies and acceptance gates. The [P1 detailed plan](PHASE_P1_PLAN.md) breaks the first implementation phase into work packages and tests. See [REQUIREMENTS.md](REQUIREMENTS.md) for detailed requirements and acceptance criteria, and [AGENTS.md](AGENTS.md) for contributor rules. Developer procedures (restore, build, tests, pack, coverage, local CI, Debian/ARM64) are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Station and location selection (library)
+
+The library selects CDC 10-minute stations (`ICdcStationSelector`) and MOSMIX forecast locations (`IMosmixLocationSelector`) around a reference point. `SelectAsync(SearchParameters parameters, CancellationToken cancellationToken)` returns a `CdcStationList` or `MosmixLocationList` (export roots of contract v1, serializable with `IJsonExportSerializer` / `IXmlExportSerializer`). Search parameters come from `ISearchParameterFactory.Create(latitude, longitude, altitudeM, maxDistanceKm, maxAltitudeDifferenceM)`; coordinate strings (decimal degrees or degrees, minutes and seconds with hemisphere) are parsed by `ICoordinateParser`.
+
+### Consumer registration
+
+```csharp
+services.AddWeatherParsing();
+services.AddLogging();                       // or any ILogger<T> registration
+services.AddSingleton(new HttpClient { Timeout = Timeout.InfiniteTimeSpan });
+services.AddSingleton(TimeProvider.System);
+services.AddSingleton(new CdcCatalogEndpoints
+{
+    AirTemperatureStationList = new Uri("https://example.invalid/cdc/air_temperature/now/stations.txt"),
+    AirTemperatureNowDirectory = new Uri("https://example.invalid/cdc/air_temperature/now/"),
+    WindStationList = new Uri("https://example.invalid/cdc/wind/now/stations.txt"),
+    WindNowDirectory = new Uri("https://example.invalid/cdc/wind/now/"),
+    PrecipitationStationList = new Uri("https://example.invalid/cdc/precipitation/now/stations.txt"),
+    PrecipitationNowDirectory = new Uri("https://example.invalid/cdc/precipitation/now/"),
+    SolarStationList = new Uri("https://example.invalid/cdc/solar/now/stations.txt"),
+    SolarNowDirectory = new Uri("https://example.invalid/cdc/solar/now/"),
+});
+services.AddSingleton(new MosmixCatalogEndpoints
+{
+    CatalogUri = new Uri("https://example.invalid/mosmix/stations.cfg"),
+    MosmixLSingleStationsDirectory = new Uri("https://example.invalid/mosmix/single_stations/"),
+    MosmixSAllStationsUri = new Uri("https://example.invalid/mosmix/MOSMIX_S_LATEST_240.kmz"),
+    EvidenceCacheDirectory = "/var/lib/weatherparser/evidence",
+    MosmixSEvidenceMaxAge = TimeSpan.FromHours(6),
+});
+```
+
+- `AddWeatherParsing` registers every library service as a singleton but no `Uri`, endpoint options, `HttpClient`, `TimeProvider` or logger; the consumer supplies them and a missing registration fails at container validation (`ValidateOnBuild`).
+- `services.AddLogging()` needs the `Microsoft.Extensions.Logging` package in the consuming application; the library itself depends only on `Microsoft.Extensions.Logging.Abstractions`.
+- List and catalog endpoints are absolute HTTP(S) URIs used unchanged (a query is allowed); directory endpoints must end with `/` and have no query or fragment, otherwise `ENDPOINT-INVALID` at construction; per-station file names are appended to the directory.
+- Limits per catalog: `MaxEvidenceCandidates` (default 100, 1 to 10000) and `SelectionDeadline` (default 120 s, greater than zero and at most 1 hour), validated at construction (`SELECTION-LIMIT-INVALID`); more candidates inside the search area than `MaxEvidenceCandidates` fail with `SELECTION-TOO-MANY-CANDIDATES` before any per-station request.
+
+### HTTP transport
+
+- The library makes one GET per file, no retries, bounded to 30 s per request and to 8 MiB per list or catalog, 1 MiB per per-station file and 64 MiB for the MOSMIX_S all-stations file.
+- Handler settings (redirects, decompression, proxy, header limits) are the consumer's responsibility.
+- Set `HttpClient.Timeout` to `Timeout.InfiniteTimeSpan` or above 30 s — a shorter client timeout is permitted and its expiry is reported as `CATALOG-TIMEOUT`.
+
+### MOSMIX_S evidence cache
+
+- MOSMIX_S availability comes from a stored index that `IMosmixSEvidenceRefresher.RefreshAsync(CancellationToken)` builds from the all-stations file.
+- The consumer calls the refresh on its own external schedule (for example a cron job or an n8n workflow; neither is a dependency, the library has no scheduler).
+- Settings `MosmixSAllStationsUri` (absolute HTTP(S) file URI), `EvidenceCacheDirectory` (absolute local path of a directory used only by the cache), `MosmixSEvidenceMaxAge` (required, no default, 1 minute to 365 days) and `MosmixSRefreshDeadline` (default 10 minutes, greater than zero and at most 1 hour); a missing or out-of-range setting fails at construction with `EVIDENCE-CACHE-SETTINGS-INVALID`, without file-system access.
+- The directory must exist and be writable: a missing or non-writable directory is detected only when used, by the refresh as `EVIDENCE-CACHE-FAILED` and by a selection as a missing index (`MOSMIX-S-EVIDENCE-MISSING`).
+- A selection without a usable index fails with `MOSMIX-S-EVIDENCE-MISSING` before any request.
+- An index older than `MosmixSEvidenceMaxAge` is still used and one `MOSMIX-S-EVIDENCE-STALE` warning names its age and the limit.
+- MOSMIX_L files are fetched per location inside the search area, HTTP 404 meaning `unavailable`.
+
+### Error and notice IDs
+
+Exceptions (`ErrorId`):
+- `CoordinateFormatException` `COORDINATE-INVALID`
+- `SearchParameterException` `SEARCH-PARAMETER-INVALID`
+- `CatalogFormatException` `CATALOG-FORMAT-INVALID`, `CDC-EVIDENCE-INVALID`, `MOSMIX-EVIDENCE-INVALID`
+- `CatalogRetrievalException` `CATALOG-RETRIEVAL-FAILED`, `CATALOG-TIMEOUT`, `CATALOG-TOO-LARGE`
+- `SelectionLimitException` `SELECTION-TOO-MANY-CANDIDATES`, `SELECTION-DEADLINE-EXCEEDED`, `SELECTION-LIMIT-INVALID`
+- `EvidenceCacheException` `EVIDENCE-CACHE-SETTINGS-INVALID`, `EVIDENCE-CACHE-FAILED`, `MOSMIX-S-REFRESH-DEADLINE-EXCEEDED`, `MOSMIX-S-EVIDENCE-MISSING`
+- `ParserEndpointValidationException` `ENDPOINT-INVALID`
+
+Notices (log event names):
+- `SELECTION-EMPTY` (Information)
+- `MOSMIX-LOCATION-NO-ALTITUDE`, `CDC-STATION-NO-ALTITUDE`, `CATALOG-RECORD-SKIPPED`, `CDC-STATION-CONFLICT`, `MOSMIX-S-EVIDENCE-STALE` (Warning)
+
+A caller cancellation surfaces as `OperationCanceledException` and wins over the selection deadline.
+
+### Source conditions and retrieval guidance
+
+- The data come from the Deutscher Wetterdienst (DWD) open-data server [opendata.dwd.de](https://opendata.dwd.de/) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) per the [DWD legal notice](https://www.dwd.de/EN/service/legal_notice/legal_notice_node.html).
+- Consumers who republish selection results or other DWD-derived data (for example via MQTT or file export) must keep the attribution "Deutscher Wetterdienst (DWD)".
+- DWD stores the requesting IP address for at most 7 days.
+- A selection is a configuration-time operation — run it when a station or location is chosen or reviewed, not on a schedule, and if repeated at most once per day per search.
+- The per-station evidence requests are part of that run and not intended for polling (project recommendation, not a provider guarantee).
+
 ## Configuration and publication
 
 Station selection, source settings, MQTT connection and topics are configurable. Credentials belong in environment variables or local configuration excluded from Git. The public repository contains only examples without secrets or private operational data.
@@ -174,7 +252,9 @@ The additional decisions and P0 clarifications dated 2026-10-14 (development env
 
 **2026-10-19: P1 accepted by the user (see the [P1 acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)). P2 is next and starts only on a separate instruction.**
 
-**2026-10-20: P2 accepted by the user (see the [P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)); complete after the merge of pull request #3 into `develop`. P4 is next and starts only on a separate instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)).**
+**2026-10-20: P2 accepted by the user (see the [P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)); complete: pull request #3 merged into `develop` on 2026-10-20 (merge commit `74bf625`). P4 started on 2026-10-20 on the user's instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)).**
+
+**2026-10-24: P4 accepted by the user on candidate `b6bc47f` ([P4 acceptance record](docs/p4/P4_12_ACCEPTANCE.md)); it is complete once the user merges pull request #5 into `develop`; P5 starts only on a separate instruction ([P5 handoff](docs/p4/P5_HANDOFF.md)).**
 
 Sequence with unchanged phase IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Complete and accept the entire library first, including station selection, DWD/OsthessenWetter/MOSMIX_S/MOSMIX_L parsers, output entities, JSON/XML, XSDs, MQTT serializer and DI. Then begin P3 with the CLI usage example, configuration and example broker transport. Public release remains P9.
 

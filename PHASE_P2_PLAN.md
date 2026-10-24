@@ -1,6 +1,6 @@
 # WeatherParser – P2 implementation plan
 
-**Status (2026-10-20): P2 accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)); steps P2.01 to P2.11 are complete, and P2.12 completes with the merge of pull request #3 into `develop`; P4 handoff: [P4_HANDOFF.md](docs/p2/P4_HANDOFF.md).** Original planning status (2026-10-19): planning only; P1 completion was checked and its accepted handoff incorporated below.
+**Status (2026-10-20): P2 accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)); steps P2.01 to P2.11 are complete, and P2.12 is complete: pull request #3 was merged into `develop` on 2026-10-20 (merge commit `74bf625`); P2 is complete; P4 handoff: [P4_HANDOFF.md](docs/p2/P4_HANDOFF.md).** Original planning status (2026-10-19): planning only; P1 completion was checked and its accepted handoff incorporated below.
 
 ## 1. First step: check P1 completion, extract evidence and adjust this plan
 
@@ -232,7 +232,7 @@ Checked on 2026-10-20 against the [P2 acceptance record](docs/p2/P2_12_ACCEPTANC
 - [x] Full candidate coverage minimum/comparison and provenance checks pass without another bootstrap or exclusion/bypass workaround.
 - [x] New P2 platform behavior is verified, or any missing mandatory check has a named blocker and explicit acceptance disposition; no unsupported runtime claim is made.
 - [x] The result record states actual SHAs, tool versions, test counts, package/schema hashes, qwen/orchestrator authorship per step, limitations and the explicit acceptance decision.
-- [ ] Pull request #3 marked ready for review after the status updates, review findings resolved, and the pull request merged into `develop` by the user (or on the user's explicit instruction)
+- [x] Pull request #3 marked ready for review after the status updates, review findings resolved, and the pull request merged into `develop` by the user (or on the user's explicit instruction) (done 2026-10-20: CI run 39495576541 succeeded, no review findings, merge commit `74bf625`).
 - [x] P4 receives the accepted public contracts/helpers, schema/version mapping and source-specific validation/mapping responsibilities; plans and current status agree.
 
 P4 implements coordinates/catalog selection against these contracts; P5–P7 own provider extraction and verified element mappings; P8 adds MQTT serialization/integration; P3 later adds the CLI and transport. P2 acceptance neither completes those phases nor permits publication.

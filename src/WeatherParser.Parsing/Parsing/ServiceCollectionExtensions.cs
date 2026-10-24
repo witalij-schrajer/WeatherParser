@@ -1,9 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
+using WeatherParser.Parsing.Catalogs;
+using WeatherParser.Parsing.Evidence.MosmixL;
+using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Forecasts;
+using WeatherParser.Parsing.Geography;
 using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Quantities;
 using WeatherParser.Parsing.Serialization;
+using WeatherParser.Parsing.Selection;
 using WeatherParser.Parsing.Time;
 
 namespace WeatherParser.Parsing.Parsing;
@@ -21,6 +26,21 @@ public static class ServiceCollectionExtensions
     /// The quantity services (output rounding, pressure conversion, validation, period-rate and wind-speed conversion) are also registered.
     /// The observation dataset builder is also registered.
     /// The forecast run builder is also registered.
+    /// The coordinate parser is also registered.
+    /// The search-parameter factory is also registered.
+    /// The distance calculator is also registered.
+    /// The search-area filter is also registered.
+    /// The CDC station-list reader is also registered.
+    /// The CDC evidence reader is also registered.
+    /// The CDC availability deriver is also registered.
+    /// The MOSMIX station-catalog reader is also registered.
+    /// The MOSMIX catalog endpoints validator is also registered.
+    /// The MOSMIX_L evidence reader is also registered.
+    /// The MOSMIX_S evidence cache is also registered.
+    /// The MOSMIX availability resolver is also registered.
+    /// The catalog downloader is also registered; the consumer registers the <see cref="HttpClient"/> and the <see cref="TimeProvider"/>.
+    /// The CDC endpoints validator and the CDC and MOSMIX catalog sources are also registered; the consumer registers <see cref="CdcCatalogEndpoints"/> and <see cref="WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints"/>.
+    /// The MOSMIX_S evidence refresher is also registered; its timing is controlled externally (no scheduler).
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -42,6 +62,25 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWindSpeedConverter, WindSpeedConverter>();
         services.AddSingleton<IObservationDatasetBuilder, ObservationDatasetBuilder>();
         services.AddSingleton<IForecastRunBuilder, ForecastRunBuilder>();
+        services.AddSingleton<ICoordinateParser, CoordinateParser>();
+        services.AddSingleton<ISearchParameterFactory, SearchParameterFactory>();
+        services.AddSingleton<IDistanceCalculator, DistanceCalculator>();
+        services.AddSingleton<ISearchAreaFilter, SearchAreaFilter>();
+        services.AddSingleton<ICdcStationCatalogReader, CdcStationCatalogReader>();
+        services.AddSingleton<ICdcNowEvidenceReader, CdcNowEvidenceReader>();
+        services.AddSingleton<ICdcAvailabilityDeriver, CdcAvailabilityDeriver>();
+        services.AddSingleton<IMosmixLocationCatalogReader, MosmixLocationCatalogReader>();
+        services.AddSingleton<IMosmixCatalogEndpointsValidator, MosmixCatalogEndpointsValidator>();
+        services.AddSingleton<IMosmixLEvidenceReader, MosmixLEvidenceReader>();
+        services.AddSingleton<IMosmixEvidenceCache, FileSystemMosmixEvidenceCache>();
+        services.AddSingleton<IMosmixAvailabilityResolver, MosmixAvailabilityResolver>();
+        services.AddSingleton<ICatalogDownloader, CatalogDownloader>();
+        services.AddSingleton<ICdcCatalogEndpointsValidator, CdcCatalogEndpointsValidator>();
+        services.AddSingleton<ICdcCatalogSource, CdcCatalogSource>();
+        services.AddSingleton<IMosmixCatalogSource, MosmixCatalogSource>();
+        services.AddSingleton<IMosmixSEvidenceRefresher, MosmixSEvidenceRefresher>();
+        services.AddSingleton<ICdcStationSelector, CdcStationSelector>();
+        services.AddSingleton<IMosmixLocationSelector, MosmixLocationSelector>();
 
         return services;
     }
