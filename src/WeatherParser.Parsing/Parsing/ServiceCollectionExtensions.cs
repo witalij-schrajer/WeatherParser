@@ -6,6 +6,7 @@ using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Forecasts;
 using WeatherParser.Parsing.Geography;
 using WeatherParser.Parsing.Observations;
+using WeatherParser.Parsing.Observations.Dwd;
 using WeatherParser.Parsing.Quantities;
 using WeatherParser.Parsing.Serialization;
 using WeatherParser.Parsing.Selection;
@@ -41,6 +42,7 @@ public static class ServiceCollectionExtensions
     /// The catalog downloader is also registered; the consumer registers the <see cref="HttpClient"/> and the <see cref="TimeProvider"/>.
     /// The CDC endpoints validator and the CDC and MOSMIX catalog sources are also registered; the consumer registers <see cref="CdcCatalogEndpoints"/> and <see cref="WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints"/>.
     /// The MOSMIX_S evidence refresher is also registered; its timing is controlled externally (no scheduler).
+    /// The DWD station resolver is also registered.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -81,6 +83,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMosmixSEvidenceRefresher, MosmixSEvidenceRefresher>();
         services.AddSingleton<ICdcStationSelector, CdcStationSelector>();
         services.AddSingleton<IMosmixLocationSelector, MosmixLocationSelector>();
+        services.AddSingleton<IDwdStationResolver, DwdStationResolver>();
 
         return services;
     }

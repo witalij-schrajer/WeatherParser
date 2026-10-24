@@ -1,6 +1,6 @@
 # P5.03 – Station Resolution: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-01, OC-02 (option A) and OC-10; conflict variant A kept, variant B removed. Refines the P5.03 row of section 5 and the "Station resolution" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: executed on 2026-10-24 ([record](P5_VERIFICATION.md) section 3): Red evidence per slice, T-P5-01 and T-P5-02 cases green, coverage gate passed, Codex review with 0 findings.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-01, OC-02 (option A) and OC-10; conflict variant A kept, variant B removed. Refines the P5.03 row of section 5 and the "Station resolution" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: an injectable resolver that validates one station ID (OC-01), finds the station in the four CDC station lists supplied by the caller (OC-02), assembles the `ObservationLocation` (name with umlauts, coordinates, altitude or none, ID with leading zeros) and names the products whose lists contain the station — without any HTTP request and before any `now` archive is touched.
