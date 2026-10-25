@@ -1,6 +1,6 @@
 # P5.11 – P5 Acceptance Record
 
-**Status (2026-10-25): the evidence audit (section 5) accepts the implementation candidate `fd461c8`. P5 was accepted by the user on 2026-10-25 (section 6), and the status documents are updated (section 7). P5 is complete only once the user merges pull request #7 into `develop` (A11, section 8).** Plan: [P5_11_ACCEPTANCE_HANDOFF_PLAN.md](P5_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P6_HANDOFF.md](P6_HANDOFF.md).
+**Status (2026-10-25): the evidence audit (section 5) accepts the implementation candidate `fd461c8`. P5 was accepted by the user on 2026-10-25 (section 6), and the status documents are updated (section 7). P5 is complete: pull request #7 merged into `develop` on 2026-10-25 (merge commit `29fd553`) (A11, section 8).** Plan: [P5_11_ACCEPTANCE_HANDOFF_PLAN.md](P5_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P6_HANDOFF.md](P6_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
@@ -135,15 +135,16 @@ Status passages updated on 2026-10-25:
 - `P5_VERIFICATION.md`: the status line and section 11.
 - `P5_11_ACCEPTANCE_HANDOFF_PLAN.md`: the status line.
 
-Every passage says that P5 is complete only once the user merges pull request #7 into `develop`. The README change triggers the package check (AGENTS.md consistency table).
+Every passage says that P5 is complete only once the user merges pull request #7 into `develop`. After the merge (section 8) the post-merge documentation pull request changes these passages to "P5 complete" with the merge commit `29fd553`. The README change triggers the package check (AGENTS.md consistency table).
 
 The working-tree checks and the Codex review rounds are recorded in [P5_VERIFICATION.md](P5_VERIFICATION.md) section 11. The checkpoint commit, its `ci-local.ps1` run and the push are recorded there once executed.
 
 ## 8. Ready for review, review and merge (A9 to A11)
 
 - **A9 (ready for review)**: on the user's instruction of 2026-10-25, after the A8 push (plan section 3): marked ready at 2026-10-25T07:15:38Z; the `ready_for_review` CI run is 40172103969 on head `07bc9b0` ([P5_VERIFICATION.md](P5_VERIFICATION.md) section 11).
-- **A10 (review)**: further review comments are handled by the new-candidate rule of the plan.
-- **A11 (merge)**: the user's. The home of the post-merge records is decided by the user at A11.
+- **A9 CI**: the `ready_for_review` run 40172103969 and the `synchronize` run 40172023674, both on head `07bc9b0`, were cancelled by the workflow's `cancel-in-progress` concurrency when the record commit `6b0c70c` was pushed. The run on the final head `6b0c70c` is 40172186730 (`pull_request`, pull request already ready for review, created 2026-10-25T07:17:01Z), all three jobs green: ubuntu-x64, windows-x64, debian13-arm64.
+- **A10 (review)**: no review or comment was submitted on pull request #7 after it was marked ready for review; the three earlier review threads were answered and resolved: one in `485d492` (plans only), two in `fd461c8` (new candidate, P5.10 rerun READY). No production code changed after `fd461c8`; the commits `c3d49ae`, `07bc9b0` and `6b0c70c` change documentation only.
+- **A11 (merge)**: the user merged pull request #7 into `develop` on 2026-10-25T08:24:59Z: merge commit `29fd5533449898f1b14513b11c65a0afa1cf049a` (`29fd553`), parents `1e604dc` (`develop`) and the head `6b0c70c`; its tree equals the tree of `6b0c70c`. On the user's decision of 2026-10-25 the post-merge records are in a separate documentation pull request into `develop` (branch `features/develop/P5-post-merge`), as after P4.
 
 ## 9. Authorship and review
 
