@@ -1,6 +1,6 @@
 # Phase P6 – OsthessenWetter Observations: Implementation Plan
 
-**Status: P6 started on 2026-10-25 on the user's instruction (branch `features/develop/P6` from `develop` `8d8079a`); P6.01 (foundation check) in progress. Planning (2026-10-25): phase plan and step plans P6.01 to P6.11 written and Codex-reviewed to 0 findings (section 10); the step plans are reconciled with the contract only after its approval in P6.02 (planning gate, section 5). The decisions in section 3 are proposals; they become binding only through the user's approval of the OsthessenWetter contract in P6.02.** This plan refines the P6 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P6 handoff](docs/p5/P6_HANDOFF.md). Planning input: [P6 planning check](docs/p6/research/P6_PLANNING_PAGE_CHECK.md) (page structure and source conditions as retrieved on 2026-10-25).
+**Status: P6 started on 2026-10-25 on the user's instruction (branch `features/develop/P6` from `develop` `8d8079a`); P6.01 (foundation check) complete with outcome READY ([record](docs/p6/P6_01_FOUNDATION_CHECK.md)). Planning (2026-10-25): phase plan and step plans P6.01 to P6.11 written and Codex-reviewed to 0 findings (section 10); the step plans are reconciled with the contract only after its approval in P6.02 (planning gate, section 5). The decisions in section 3 are proposals; they become binding only through the user's approval of the OsthessenWetter contract in P6.02.** This plan refines the P6 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P6 handoff](docs/p5/P6_HANDOFF.md). Planning input: [P6 planning check](docs/p6/research/P6_PLANNING_PAGE_CHECK.md) (page structure and source conditions as retrieved on 2026-10-25).
 
 ## 1. First step: check P5 completion and adjust this plan
 
@@ -11,6 +11,20 @@ P6.01 is always the first execution step:
 - check the SDK servicing status;
 - remeasure the native block coverage of the integration target (expected 7491/7494) with `ci-local.ps1` on the first committed revision of the P6 branch;
 - record everything in `docs/p6/P6_01_FOUNDATION_CHECK.md` and adjust this plan where the extraction contradicts it. P6.01 adds a table "P6.01 extraction" to this section.
+
+P6.01 extraction (2026-10-25, [record](docs/p6/P6_01_FOUNDATION_CHECK.md)):
+
+| Field | Value |
+| --- | --- |
+| Integration target | `8d8079a4238514f7c9bcfc3846829e2408938ae3` (`develop` head at branch creation; P5 merge `29fd553` plus the documentation-only pull request #8; no production change since `29fd553`) |
+| Package identity | `WeatherParser.Parsing` `0.1.0-initial`, unpublished |
+| SDK / runtime | SDK 10.0.402 (latest 10.0 SDK on 2026-10-25), runtime 10.0.13 |
+| Coverage tools | Microsoft.CodeCoverage 18.11.0, dotnet-coverage 18.11.0 |
+| Contracts | Export contract v1 C-01 to C-119 (frozen; additive optional members only, C-03); selection contract SC-01 to SC-23; observation contract OC-01 to OC-14 |
+| Baseline | 7491/7494 native blocks of `WeatherParser.Parsing.dll`, remeasured for target `8d8079a` on the seed commit `62441ff` (`ci-local.ps1` exit 0); valid while the pull-request base and `coverage.runsettings` are unchanged |
+| Branch and pull request | `features/develop/P6`, draft pull request #9 into `develop` |
+| Inherited limitations | Every item mapped to a P6 step or a carried-forward owner (record section 3) |
+| Adjustment | The integration target is `8d8079a` instead of `29fd553`; no other plan change. Open for P6.02: the `PageDeadline` default equals the downloader's 30-second request timeout (record section 5) |
 
 ## 2. Goal, binding scope and exclusions
 

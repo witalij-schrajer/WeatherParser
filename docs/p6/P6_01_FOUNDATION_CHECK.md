@@ -1,6 +1,6 @@
 # P6.01 – Foundation Check
 
-**Status (2026-10-25): in progress. S1 and S2 recorded; S3 (branch, status passages, seed commit, draft pull request), S4 (baseline run) and S5 (plan reconciliation and review) follow.** Plan: [P6_01_FOUNDATION_CHECK_PLAN.md](P6_01_FOUNDATION_CHECK_PLAN.md).
+**Status (2026-10-25): complete, outcome READY (section 5).** Plan: [P6_01_FOUNDATION_CHECK_PLAN.md](P6_01_FOUNDATION_CHECK_PLAN.md).
 
 User instruction (2026-10-25, chat): "I have merged the PR. start the p6 implementation. Executes step by step, commit and push changes after each step".
 
@@ -70,10 +70,20 @@ Every open item of [P5_11_ACCEPTANCE.md](../p5/P5_11_ACCEPTANCE.md) section 4 an
 
 No item is without a disposition.
 
-## 4. Baseline run (S4)
+## 4. Branch, seed commit and baseline run (S3, S4)
 
-Pending.
+- Branch `features/develop/P6` from `origin/develop` `8d8079a`; README package check passed (P6_VERIFICATION.md section 1).
+- Seed commit `62441ff2d687b4132b0d3843457caccbcc9d615e` (status passages and the S1/S2 record), pushed; draft pull request #9 into `develop` opened; Auto-fix on.
+- `pwsh ./scripts/ci-local.ps1 -Commit 62441ff2d687b4132b0d3843457caccbcc9d615e -TargetRef 8d8079a4238514f7c9bcfc3846829e2408938ae3 -RunSettings coverage.runsettings`: exit 0, 2026-10-25T09:39:24Z to 09:40:28Z, run directory artifacts/ci/62441ff-20261025T093924Z (gitignored); commits.json: commit `62441ff...`, targetCommit `8d8079a...`, two-pass.
+- Tests: Parsing 1937 of 1939 passed (the two live tests not executed), SchemaGeneration 46, Coverage 99, Coverage.Runner 56, package consumer 36.
+- Gate passed: 7491/7494 (99.96 %) at or above the baseline 7491/7494 of `8d8079a` (documentation-only candidate); gate-result.json SHA-256 `25774d03278c9037bdcb6992d1411a290bcc36ed3b92eb7609eb65e22e9bbc55`.
+- Packed SHA-512 `i0JDQXZTNaDFInttJLjnEs4oYlPcSq/Kc2xe0v/qX/VtnR9P0G3+o3ucu5b+p4pYLbGYUYs7jHAEZv83AQwGRA==`.
+- Hosted CI for the seed commit `62441ff`: run 40181539289 (`pull_request`, created 2026-10-25T09:39:21Z, completed 09:42:07Z), ubuntu-x64, windows-x64 and debian13-arm64 all success.
+- Baseline for the P6 code steps: **7491/7494** native blocks for target `8d8079a`, valid while the pull-request base is `8d8079a` and `coverage.runsettings` is unchanged. Every P6 code step must strictly improve the unrounded ratio.
 
 ## 5. Plan adjustments and outcome (S5)
 
-Pending.
+- `PHASE_P6_PLAN.md` section 1 receives the "P6.01 extraction" table.
+- Adjustment: the integration target is `8d8079a` instead of `29fd553` (documentation-only successor, as the plan allows); no other plan change.
+- Open for P6.02 (recorded, not a P6.01 adjustment): the planned default `PageDeadline` of 30 s equals the downloader's own request timeout of 30 s (`CatalogDownloader.RequestTimeoutSeconds`); when both fire together the downloader classifies the failure as a deadline (caller cancellation, then the deadline). P6.02 decides whether OW-10 keeps the default and pins the tie with a test or chooses another default.
+- Outcome: **READY**. Every field is resolved, the baseline run passed, every commit since `29fd553` is documentation-only, and every inherited limitation has a disposition.

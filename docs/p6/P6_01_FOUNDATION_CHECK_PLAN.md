@@ -1,6 +1,6 @@
 # P6.01 – Foundation Check and Plan Adjustment: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is executed yet.** Refines section 1 and the P6.01 row of section 5 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md).
+**Status: executed on 2026-10-25 ([record](P6_01_FOUNDATION_CHECK.md)): outcome READY; integration target `8d8079a`, baseline 7491/7494.** Refines section 1 and the P6.01 row of section 5 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: confirm that P5 is accepted and merged, extract the accepted foundation, map every inherited limitation to a P6 step or a carried-forward owner, remeasure the native block-coverage baseline of the integration target on the first committed revision of the P6 branch, and adjust `PHASE_P6_PLAN.md` where the extraction contradicts it.
