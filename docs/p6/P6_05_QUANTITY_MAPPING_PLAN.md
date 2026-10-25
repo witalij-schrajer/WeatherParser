@@ -1,6 +1,6 @@
 # P6.05 – Quantity Mapping, Identity and Times: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is implemented yet.** Refines the P6.05 row of section 5 and the "Values", "Units and periods" and "Times" rows of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): compound temperature cases added to S5 (contract section 6.1, A7); OW-03, OW-04, OW-06, OW-07 and OW-11 as planned.
+**Status: implemented (2026-10-25), slices S1 to S5 recorded in [P6_VERIFICATION.md](P6_VERIFICATION.md) section 5.** Refines the P6.05 row of section 5 and the "Values", "Units and periods" and "Times" rows of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): compound temperature cases added to S5 (contract section 6.1, A7); OW-03, OW-04, OW-06, OW-07 and OW-11 as planned.
 
 ## 1. Goal and Scope
 Goal: injectable services that turn the raw station rows of P6.04 into station identities, locations and `ObservationReading` lists with checked units, the wind period and inferred UTC times — each concern in its own service and slice, so that every slice has its own files and its own exit check.

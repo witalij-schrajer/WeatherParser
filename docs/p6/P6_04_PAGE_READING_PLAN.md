@@ -1,6 +1,6 @@
 # P6.04 – Page Reading: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is implemented yet.** Refines the P6.04 row of section 5 and the "Page reading" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-02 AngleSharp 1.8.5; A7 compound temperature cell added to S2 and the fixtures (contract section 6.1); OW-01, OW-05, OW-11 and OW-12 as planned.
+**Status: executed on 2026-10-25 ([record](P6_VERIFICATION.md) section 4): reader and AngleSharp dependency, OW-11 amendment of 2026-10-25 implemented test-first, coverage gate passed (7784/7787), Codex round 3 with 0 findings.** Refines the P6.04 row of section 5 and the "Page reading" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-02 AngleSharp 1.8.5; A7 compound temperature cell added to S2 and the fixtures (contract section 6.1); OW-01, OW-05, OW-11 and OW-12 as planned.
 
 ## 1. Goal and Scope
 Goal: an injectable reader that turns the page markup of the documented revision into raw station rows of the overview and the wind table, joins the wind rows to the overview rows, and reports format deviations — without interpreting values, units or times.
