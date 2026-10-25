@@ -16,6 +16,7 @@ using WeatherParser.Parsing.Serialization;
 using WeatherParser.Parsing.Tests.Schemas;
 using WeatherParser.Parsing.Tests.Selection;
 using WeatherParser.Parsing.Observations.Dwd;
+using WeatherParser.Parsing.Observations.Osthessen;
 
 namespace WeatherParser.Parsing.Tests.Live;
 
@@ -72,6 +73,7 @@ internal static class LiveCheckRunner
         services.AddSingleton(settings.Cdc);
         services.AddSingleton(settings.Mosmix);
         services.AddSingleton(new DwdObservationOptions());
+        services.AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } });
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
@@ -137,6 +139,7 @@ internal static class LiveCheckRunner
         services.AddSingleton(settings.Cdc);
         services.AddSingleton(settings.Mosmix);
         services.AddSingleton(new DwdObservationOptions());
+        services.AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } });
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 

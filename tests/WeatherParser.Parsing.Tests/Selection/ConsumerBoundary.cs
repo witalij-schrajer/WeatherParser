@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using WeatherParser.Parsing.Catalogs;
 using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Observations.Dwd;
+using WeatherParser.Parsing.Observations.Osthessen;
 
 namespace WeatherParser.Parsing.Tests.Selection;
 
@@ -48,6 +49,7 @@ internal static class ConsumerBoundary
         services.AddSingleton(cdc);
         services.AddSingleton(mosmix);
         services.AddSingleton(new DwdObservationOptions());
+        services.AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } });
         return services;
     }
 
