@@ -1,6 +1,6 @@
 # P6.03 – Station Name Pattern: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is implemented yet.** Refines the P6.03 row of section 5 and the "Pattern" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-09 and OW-13 as planned.
+**Status: executed on 2026-10-25 ([record](P6_VERIFICATION.md) section 3): Red evidence per slice, T-P6-01 cases green, coverage gate passed (7564/7567), Codex review 2 findings fixed test-first, then 1 record count fixed.** Refines the P6.03 row of section 5 and the "Pattern" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-09 and OW-13 as planned.
 
 ## 1. Goal and Scope
 Goal: an injectable matcher that validates a station name pattern and decides whether a station name matches it, with the glob semantics of REQ-040, culture-independent and within an O(pattern length × name length) bound, before any request is made.

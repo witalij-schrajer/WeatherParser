@@ -7,6 +7,7 @@ using WeatherParser.Parsing.Forecasts;
 using WeatherParser.Parsing.Geography;
 using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Observations.Dwd;
+using WeatherParser.Parsing.Observations.Osthessen;
 using WeatherParser.Parsing.Quantities;
 using WeatherParser.Parsing.Serialization;
 using WeatherParser.Parsing.Selection;
@@ -92,6 +93,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDwdObservationMapper, DwdObservationMapper>();
         services.AddSingleton<IDwdObservationSource, DwdObservationSource>();
         services.AddSingleton<IDwdObservationParser, DwdObservationParser>();
+        services.AddSingleton<IStationNamePatternMatcher, StationNamePatternMatcher>();
 
         return services;
     }

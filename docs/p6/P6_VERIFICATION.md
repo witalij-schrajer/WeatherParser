@@ -1,6 +1,6 @@
 # P6 Verification Record
 
-**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled).**
+**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled); P6.03 in review.**
 
 - Integration target: `8d8079a4238514f7c9bcfc3846829e2408938ae3` (documentation-only successor of the P5 merge `29fd553`).
 - Branch `features/develop/P6`.
@@ -36,3 +36,21 @@
 - Codex five-angle review of S4 and S5 (`p602s5_codex_r1.md`): 2 findings [P3], both confirmed and fixed by the orchestrating agent (a leftover "option B may replace" in the P6.05 precipitation test; the phase-plan section 10 still called the reconciliation pending). Round 2 (`p602s5_codex_r2.md`): 0 findings.
 - README package check on the working tree: README.md SHA-256 `80AEF0A40ED5A292F04D1FAD8D8444177447106D6D6627D8B23D844BAF838BA5` identical in the package with LICENSE and the export schema; packed SHA-512 `kCGiW6EZEh7h+brKQaRzYUKYWZM58DC+3nQsJpidK8Rmr0TRl/pW4RZ2WDPjpyMYeAQ+s8MpuAlRK3EOWSXEPA==` equals the restored hash; package consumer 36/36. The `ci-local.ps1` run on this commit is recorded with the first P6.03 commit.
 - P6.02 complete.
+
+## 3. P6.03 – Station name pattern
+
+- Carried from P6.02: `pwsh ./scripts/ci-local.ps1 -Commit dac331a -TargetRef 8d8079a4238514f7c9bcfc3846829e2408938ae3 -RunSettings coverage.runsettings` on the P6.02 commit `dac331a`: exit 0 (background run, log outside the repository).
+- Files: `src/WeatherParser.Parsing/Exceptions/OsthessenWetterException.cs` (the eight OW-13 error IDs and the guard), `src/WeatherParser.Parsing/Observations/Osthessen/IStationNamePatternMatcher.cs`, `StationNamePatternMatcher.cs`, `StationNamePattern.cs`, the registration in `ServiceCollectionExtensions`; tests `tests/WeatherParser.Parsing.Tests/Observations/Osthessen/StationNamePatternMatcherTests.cs` (24 methods) and `tests/WeatherParser.Parsing.Tests/Exceptions/OsthessenWetterExceptionTests.cs` (4 methods).
+- Stubs first (declarations, `NotImplementedException`, no registration), so that the Red tests compile.
+- S1 Red (validation, exception guard, null checks, registration): 25 failing cases, with `NotImplementedException` from the stubs and the missing-registration assertion of `ServiceRegistrationCompletenessTests` for `IStationNamePatternMatcher`; `OsthessenWetterException_ConstantsMatchContract` passed on its first run (the constants exist in the stub). S1 Green: Parsing 1962 passed, 0 failed (2 live tests skipped).
+- S2 Red (matching): 21 failing cases in 12 methods, all `NotImplementedException`; the first build failed with CS1061 (`BeLessOrEqualTo` does not exist in FluentAssertions 8) and was corrected compiler-guided to `BeLessThanOrEqualTo`. S2 Green: two-pointer matching over invariant-folded Unicode scalars in NFC, backtracking only to the last `*`, with an internal step counter (test seam through the existing `InternalsVisibleTo`). The first Green failed `NoSharedStateTests.LibraryTypes_DeclareNoStaticState` (two `static readonly Rune` fields); corrected test-guided to `const int` values; that correction also dropped `using System.Text;` (CS0246), corrected compiler-guided.
+- Refactor: one helper for the repeated `OSTHESSEN-PATTERN-INVALID` construction. Final: build 0 warnings, 0 errors; Parsing 1983 passed, 0 failed, 2 skipped (the live tests).
+- Step-count bound verified: `*a*a*a*a*a*a*a*a*b` and `*` + 126 `a` + `b` against 2000 `a` stay within pattern length × (name length + 1) steps.
+- Pre-commit coverage gate (target `8d8079a`, results directory `TestResults/p6-precommit-20261025T153528Z/`, gitignored): all five rules passed, 7564/7567 against the baseline 7491/7494; all 73 new blocks covered; `evaluate.json` SHA-256 `9874b520e69b4f628aacb92b148890269941b389ce43c9af41304232ddf39338`.
+- Codex five-angle review round 1 (`p603_codex_r1.md`): 2 findings [P2], both confirmed by the orchestrating agent by tracing the code and fixed test-first through qwen:
+  - the length was checked after NFC instead of on the input (plan S1 order); a 129-character input normalizing to 128 was accepted;
+  - the literal comparison ran before the wildcard test, so a pattern `*` facing a `*` in the name was consumed literally and no backtracking point was recorded (`*a` did not match `*ba`).
+  - Regression Red: `Validate_129InputCharactersNormalizingTo128_ThrowsPatternInvalid`, `Validate_128InputCharactersWithCombiningMark_Accepted` (a guard that passed on its first run), `IsMatch_StarBeforeLiteralStarInName` (8 rows) and `IsMatch_ConsecutiveStars_SameAsSingleStar` (6 rows); 4 cases failed (the 129-character input, `*a`/`*ba`, `*?`/`*`, `a*b`/`a*xb`). qwen's first version of the two `Validate_*` tests lost the letter `u` before the combining mark and wrote a literal umlaut; two precise correction briefs fixed them.
+  - Green: the input length checked before NFC; the wildcard test before the literal comparison. qwen kept a redundant second length check after NFC, removed on a further brief (not required by the contract and uncovered).
+  - Final: Parsing 1999 passed, 0 failed, 2 skipped; coverage gate (results `TestResults/p6-precommit-20261025T154531Z/`) passed with 7564/7567 against 7491/7494, `evaluate.json` SHA-256 `9874b520e69b4f628aacb92b148890269941b389ce43c9af41304232ddf39338`.
+- Authorship: qwen3-coder:30b generated the stubs, the tests, the implementation, the three corrections and the refactoring from the orchestrating agent's briefs (`/api/chat`, file allowlists). The orchestrating agent reviewed every diff, ran every build and test, and replaced the non-ASCII characters qwen wrote into the test string literals by `\u` escapes (a mechanical change; qwen keeps writing literal umlauts despite the ASCII rule, as recorded in P5).
