@@ -1,6 +1,6 @@
 # P6 Verification Record
 
-**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled); P6.03 complete (`343c2a2`); P6.04 complete: wind-row policy decided by the user and implemented (section 4); P6.05 complete (section 5).**
+**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled); P6.03 complete (`343c2a2`); P6.04 complete: wind-row policy decided by the user and implemented (section 4); P6.05 complete (section 5); P6.06 complete (section 6).**
 
 - Integration target: `8d8079a4238514f7c9bcfc3846829e2408938ae3` (documentation-only successor of the P5 merge `29fd553`).
 - Branch `features/develop/P6`.
@@ -135,3 +135,34 @@
 ### Review
 
 - Codex five-angle review round 1 (`p605_codex_r1.md`) over S1 to S5, the registrations, the consumer setups, the tests and this section: 0 findings (all five angles "No findings."). P6.05 is complete; the package-consumer setups are verified by the `ci-local.ps1` run on the committed revision and hosted CI.
+
+## 6. P6.06 – Retrieval boundary
+
+Plan: [P6_06_RETRIEVAL_BOUNDARY_PLAN.md](P6_06_RETRIEVAL_BOUNDARY_PLAN.md). Contract rows OW-10 and OW-13. One commit for the step: S1 alone would leave the stubbed `ReadAsync` uncovered and fail the strict block-coverage gate, so S1 and S2 are committed together.
+
+### S1 Endpoints and options (OW-10, T-P6-09, T-P6-19)
+
+- Files: `OsthessenWetterEndpoints.cs` (`PageUri`), `OsthessenWetterOptions.PageDeadline` (default 60 s), `IOsthessenWetterPageSource.cs`, `OsthessenWetterPageSource.cs` (constants `PageEndpointName` and `PageMaxBytes` 2097152), registration in `ServiceCollectionExtensions`; tests `OsthessenWetterOptionsTests.cs` (20 methods). The consumer test setups (both `TestConsumerServices.cs`, `ConsumerSelectionSupport.cs`, `Selection/ConsumerBoundary.cs`, both containers of `Live/LiveCheckRunner.cs`) register a placeholder `OsthessenWetterEndpoints` with `https://osthessen.example/messwerte/`.
+- Behaviour decided by the orchestrating agent within OW-10: the constructor validates the page URI with the existing `IEndpointUriValidator` plus a user-information check and keeps a copy of the validated URI, so a later change of the endpoints object cannot bypass the validation; an invalid URI and an invalid deadline both raise `OSTHESSEN-OPTIONS-INVALID` with fixed messages that contain no part of the URI.
+- Deviation from the plan: the four `Construct_Metadata*` tests at page-source construction were not added. The page source needs no metadata, and an unused constructor dependency would only exist to trigger validation; the metadata lookup already validates at its own construction (section 5, S2, 20 tests). The P6.07 parser depends on both and carries the construction tests proving that invalid metadata fails before any request.
+- Red: 19 of the 20 new methods failed (`NotImplementedException`, or the missing registration for the DI test); `Construct_NullArguments_ThrowArgumentNullException` passed because the briefed stub had the guards; `ServiceRegistrationCompletenessTests` failed with its missing-registration assertion for `IOsthessenWetterPageSource`.
+- Green: as briefed on the first attempt. qwen's edit of `LiveCheckRunner.cs` duplicated the options and endpoint lines in the first container and left the summaries of both `TestConsumerServices.cs` unchanged; both corrected by qwen on a precise description. Parsing 2176 passed, 0 failed, 2 skipped.
+- Hosted CI on `62e8ee9` (run 40229671001, windows-x64, ubuntu-x64, debian13-arm64) passed, which verifies the P6.05 S2 package-consumer setups recorded as open in section 5.
+
+### S2 Retrieval and classification (OW-10, OW-13, T-P6-09)
+
+- Files: `CatalogDeadlineKind.OsthessenWetter` (additive), its case in `CatalogDownloader.Classify` (`OSTHESSEN-DEADLINE-EXCEEDED`), `OsthessenWetterPageSource.ReadAsync`; tests `OsthessenWetterPageSourceTests.cs` (17 methods, the real `CatalogDownloader` with a strict mocked `HttpMessageHandler` and the test `ManualTimeProvider`) and two methods added to `CatalogDownloaderObservationDeadlineTests.cs`.
+- Behaviour: one GET per call with `MaxBytes` 2097152 and `NotFoundIsAbsent` false; every `CatalogRetrievalException` (non-success status including 404, transport failure, `HttpClient` timeout, oversize, the downloader's 30-second request timeout) becomes `OSTHESSEN-PAGE-UNAVAILABLE` with the endpoint name, the host and the catalog error ID, never the path or query; deadline expiry and caller cancellation pass through from the downloader. The stalled-body cases use `OsthessenWetterHtml.PendingStream` and end by cancellation without waiting for the body.
+- Existing kinds unchanged: the Selection and Observation cases of `CatalogDownloaderObservationDeadlineTests` and the Refresh cases of `CatalogDownloaderFailureTests` and the MOSMIX_S refresher tests pass unchanged in the full run.
+- Red: qwen's first test file had no namespace, set up the HTTP mock only after starting the read in four tests, and checked the first exception's message in the query-string test; corrected by qwen. A missing closing parenthesis (CS1026) was not fixed by qwen on a compiler-guided brief (the output was unchanged), so the orchestrating agent added the parenthesis. 18 methods failed: the 17 page-source tests (`NotImplementedException`) and `CatalogDownloader_OsthessenWetterDeadlineExpired_ThrowsOsthessenDeadlineExceeded` (the unmapped kind fell through to `EvidenceCacheException`); `CatalogDownloader_CallerCancelledAndOsthessenWetterDeadline_ThrowsOperationCanceled` passed, because caller precedence already holds.
+- Green: as briefed on the first attempt, except a requested comment, added in the refactor.
+- Refactor: braces on the constructor's `if` statements (repository style), the null-result comment, and `!` on seven `Location` dereferences in `OsthessenWetterObservationMapperTests.Map_Location_FromMetadata`: these seven CS8602 warnings came in with `62e8ee9` (P6.05 S5) and are fixed here; a clean Release build of the library and the Parsing tests now reports 0 warnings, 0 errors.
+- Final: Parsing 2195 passed, 0 failed, 2 skipped (live); gate (results `TestResults/p6-precommit-20261025T232052Z/`) passed with 8237/8240 against 7491/7494, `evaluate.json` SHA-256 `c3796d82cf4cf99a57620c2215e15e6fa1579f9b21c59e0b7168f28acb6f7a7b`.
+- Authorship: qwen3-coder:30b generated the declarations, tests, implementation, consumer setups and corrections; the orchestrating agent added one closing parenthesis in a test, reviewed the diffs and ran every build and test.
+
+### Review
+
+- Codex five-angle review round 1 (`p606_codex_r1.md`) over S1, S2, the registration, the consumer setups and the tests: 1 finding, confirmed. [P2] `Read_ExactlyMaxBytes_Accepted` and `Read_OverMaxBytes_ThrowsPageUnavailable` derived their sizes from the production constant `PageMaxBytes`, so a changed constant would leave them green against the fixed OW-10 bound. Fixed by qwen: the tests use the contract literals 2097152 and 2097153. Mutation check by the orchestrating agent: with `PageMaxBytes` temporarily set to 4194304, `Read_OverMaxBytes_ThrowsPageUnavailable` failed; the constant was restored to 2097152. Gate re-run (results `TestResults/p6-precommit-20261025T232502Z/`) passed with 8237/8240 against 7491/7494, `evaluate.json` SHA-256 `c3796d82cf4cf99a57620c2215e15e6fa1579f9b21c59e0b7168f28acb6f7a7b`. Codex judged the metadata-validation deviation acceptable, provided P6.07 verifies it.
+- Round 2 (`p606_codex_r2.md`): 2 findings, both confirmed and fixed by the orchestrating agent (documentation). [P3] The P6.06 plan still listed the four `Construct_Metadata*` tests while the P6.07 plan did not take them over: P6.06 sections 5 and 6 now name the move, and P6.07 S1 lists the four tests at parser construction. [P3] This section did not record the review rounds: this subsection added.
+
+- Round 3 (`p606_codex_r3.md`): 0 findings (all five angles "No findings."). P6.06 is complete; the package-consumer setups of this step are verified by hosted CI on the committed revision.

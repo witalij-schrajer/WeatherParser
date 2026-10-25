@@ -18,5 +18,10 @@ public enum CatalogDeadlineKind
     /// <summary>
     /// The DWD observation deadline (contract OC-09); its expiry raises OBSERVATION-DEADLINE-EXCEEDED.
     /// </summary>
-    Observation
+    Observation,
+
+    /// <summary>
+    /// The OsthessenWetter page deadline (contract OW-10); its expiry raises OSTHESSEN-DEADLINE-EXCEEDED.
+    /// </summary>
+    OsthessenWetter
 }

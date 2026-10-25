@@ -109,7 +109,8 @@ internal sealed class ConsumerSelectionHost : IDisposable
             .AddSingleton(Cdc)
             .AddSingleton(Mosmix)
             .AddSingleton(new DwdObservationOptions())
-            .AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } });
+            .AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } })
+            .AddSingleton(new OsthessenWetterEndpoints { PageUri = new Uri("https://osthessen.example/messwerte/") });
     }
 
     public void ArrangeCdc()

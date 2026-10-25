@@ -9,7 +9,7 @@ using WeatherParser.Parsing.Observations.Osthessen;
 namespace WeatherParser.Package.Tests;
 
 /// <summary>
-/// Registers what a consumer must register next to AddWeatherParsing (SC-08, SC-09, SC-12, SC-13): logging (a no-op logger here), an HttpClient that is never used to send in these tests, the system TimeProvider and valid CDC and MOSMIX catalog endpoint options with placeholder URIs and the default DWD observation options and OsthessenWetter options with one synthetic station.
+/// Registers what a consumer must register next to AddWeatherParsing (SC-08, SC-09, SC-12, SC-13): logging (a no-op logger here), an HttpClient that is never used to send in these tests, the system TimeProvider and valid CDC and MOSMIX catalog endpoint options with placeholder URIs and the default DWD observation options, OsthessenWetter options with one synthetic station and a placeholder OsthessenWetter page endpoint.
 /// Tests that observe log calls use strict mocks instead.
 /// </summary>
 internal static class TestConsumerServices
@@ -40,6 +40,7 @@ internal static class TestConsumerServices
         });
         services.AddSingleton(new DwdObservationOptions());
         services.AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } });
+        services.AddSingleton(new OsthessenWetterEndpoints { PageUri = new Uri("https://osthessen.example/messwerte/") });
         return services;
     }
 }

@@ -94,4 +94,31 @@ public sealed class CatalogDownloaderObservationDeadlineTests
             .Should().ThrowAsync<OperationCanceledException>()
             .Where(ex => ex.CancellationToken == caller.Token);
     }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task CatalogDownloader_OsthessenWetterDeadlineExpired_ThrowsOsthessenDeadlineExceeded()
+    {
+        using var deadline = new CancellationTokenSource();
+        Respond(_ => Task.FromResult(HttpTestContent.Ok(new StreamContent(new CancelThenFailStream(() => deadline.Cancel())))));
+        var task = _subject.DownloadAsync(Request(deadline.Token, CatalogDeadlineKind.OsthessenWetter), ReadAll, CancellationToken.None);
+        await FluentActions.Awaiting(() => task)
+            .Should().ThrowAsync<OsthessenWetterException>()
+            .Where(ex => ex.ErrorId == "OSTHESSEN-DEADLINE-EXCEEDED" && 
+                        ex.Message.Contains("AirTemperatureStationList") && 
+                        ex.Message.Contains("https://example.org/cdc/list.txt"));
+    }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task CatalogDownloader_CallerCancelledAndOsthessenWetterDeadline_ThrowsOperationCanceled()
+    {
+        using var caller = new CancellationTokenSource();
+        using var deadline = new CancellationTokenSource();
+        Respond(_ => Task.FromResult(HttpTestContent.Ok(new StreamContent(new CancelThenFailStream(() => { deadline.Cancel(); caller.Cancel(); })))));
+        var task = _subject.DownloadAsync(Request(deadline.Token, CatalogDeadlineKind.OsthessenWetter), ReadAll, caller.Token);
+        await FluentActions.Awaiting(() => task)
+            .Should().ThrowAsync<OperationCanceledException>()
+            .Where(ex => ex.CancellationToken == caller.Token);
+    }
 }

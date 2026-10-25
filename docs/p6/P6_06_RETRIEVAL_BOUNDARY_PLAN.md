@@ -1,6 +1,6 @@
 # P6.06 – Retrieval Boundary: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is implemented yet.** Refines the P6.06 row of section 5 and the "Retrieval" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-10 `PageDeadline` default 60 s (instead of 30 s) and `MaxBytes` 2097152; OW-13 as planned.
+**Status: implemented on 2026-10-25 ([record](P6_VERIFICATION.md) section 6): page source, endpoints, page deadline and the additive deadline kind test-first; coverage gate passed (8237/8240).** Refines the P6.06 row of section 5 and the "Retrieval" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-10 `PageDeadline` default 60 s (instead of 30 s) and `MaxBytes` 2097152; OW-13 as planned.
 
 ## 1. Goal and Scope
 Goal: an injectable page source that retrieves the consumer-supplied page once per call through the existing bounded downloader and classifies every failure, with consumer endpoints and options validated at construction.
@@ -35,7 +35,7 @@ Out of scope with owner: the per-parse deadline token and failure precedence at 
 Every slice: roles and checks as in P6.03 section 5. HTTP is mocked through `HttpMessageHandler`; time through the existing test `ManualTimeProvider` or a strict `Mock<TimeProvider>`; no network.
 
 ### S1 Endpoints and options
-**Red**: `Construct_AbsoluteHttpsUri_Accepted`, `Construct_HttpUri_Accepted`, `Construct_NullOrRelativeUri_ThrowsOptionsInvalid`, `Construct_UriWithUserInfo_ThrowsOptionsInvalid` (the message contains neither the user name nor the password), `PageDeadline_Default60Seconds`, `PageDeadline_OneTick_Accepted`, `PageDeadline_OneHour_Accepted`, `PageDeadline_Zero_Negative_Infinite_AboveOneHour_MaxValue_ThrowOptionsInvalid` (each before any timer or request), `Construct_NoRequestMade`, and metadata validation at source construction (validation logic of P6.05 S2, invoked by the source constructor): `Construct_MetadataLatitudeOrLongitudeOutOfRange_ThrowsOptionsInvalid`, `Construct_MetadataDuplicateName_ThrowsOptionsInvalid`, `Construct_MetadataEmptyName_ThrowsOptionsInvalid`, `Construct_MetadataNullEntry_ThrowsOptionsInvalid`, each before any request; `AddWeatherParsing_ResolvesOsthessenWetterPageSource`, and `ServiceRegistrationCompletenessTests` red with its missing-registration assertion while the interface is unregistered.
+**Red**: `Construct_AbsoluteHttpsUri_Accepted`, `Construct_HttpUri_Accepted`, `Construct_NullOrRelativeUri_ThrowsOptionsInvalid`, `Construct_UriWithUserInfo_ThrowsOptionsInvalid` (the message contains neither the user name nor the password), `PageDeadline_Default60Seconds`, `PageDeadline_OneTick_Accepted`, `PageDeadline_OneHour_Accepted`, `PageDeadline_Zero_Negative_Infinite_AboveOneHour_MaxValue_ThrowOptionsInvalid` (each before any timer or request), `Construct_NoRequestMade`; the metadata validation at construction before any request was moved to the P6.07 parser on 2026-10-25 (the page source takes no metadata dependency; [record](P6_VERIFICATION.md) section 6) and is covered there by the `Construct_Metadata*` tests; `AddWeatherParsing_ResolvesOsthessenWetterPageSource`, and `ServiceRegistrationCompletenessTests` red with its missing-registration assertion while the interface is unregistered.
 **Green**: validation in the constructor; singleton registration of the page source, before S2 starts. S2 keeps both registration checks green and adds no registration.
 
 ### S2 Retrieval and classification
@@ -48,7 +48,7 @@ Every slice: roles and checks as in P6.03 section 5. HTTP is mocked through `Htt
 | Step-local case | T-P6 ID | Requirement IDs | Behavior and boundary |
 |---|---|---|---|
 | S1 | T-P6-09 (options), T-P6-19 (endpoint) | REQ-014, REQ-063, REQ-072 | Validation at construction, deadline bounds, user information rejected |
-| S1 | T-P6-08 (validation at construction) | C-51 | Metadata options validated when the source is constructed (validation logic from P6.05 S2) |
+| P6.07 S1 (moved) | T-P6-08 (validation at construction) | C-51 | Metadata options validated when the parser is constructed, before any request (validation logic from P6.05 S2) |
 | S2 | T-P6-09 | REQ-046, REQ-063 | One request, size bound, no retries, failure classification, precedence |
 | all | T-P6-13 (registration), T-P6-15 | REQ-078, REQ-085 | Registration; Red evidence |
 

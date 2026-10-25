@@ -127,15 +127,15 @@ public sealed class OsthessenWetterObservationMapperTests
         var stations = _subject.Map(Page(Row("Bimbach"), Row("Schlitz")), Retrieved);
 
         stations[0].Location.Should().NotBeNull();
-        stations[0].Location.StationId.Should().Be("bimbach");
-        stations[0].Location.Name.Should().Be("Bimbach");
-        stations[0].Location.Latitude.Should().Be(50.53m);
-        stations[0].Location.Longitude.Should().Be(9.72m);
-        stations[0].Location.AltitudeM.Should().Be(312m);
+        stations[0].Location!.StationId.Should().Be("bimbach");
+        stations[0].Location!.Name.Should().Be("Bimbach");
+        stations[0].Location!.Latitude.Should().Be(50.53m);
+        stations[0].Location!.Longitude.Should().Be(9.72m);
+        stations[0].Location!.AltitudeM.Should().Be(312m);
 
         stations[1].Location.Should().NotBeNull();
-        stations[1].Location.StationId.Should().Be("schlitz");
-        stations[1].Location.AltitudeM.Should().BeNull();
+        stations[1].Location!.StationId.Should().Be("schlitz");
+        stations[1].Location!.AltitudeM.Should().BeNull();
     }
 
     [TestMethod]

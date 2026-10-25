@@ -95,6 +95,8 @@ public sealed class CatalogDownloader : ICatalogDownloader
                     return new SelectionLimitException(SelectionLimitException.DeadlineExceededErrorId, message + " The selection deadline was exceeded (contract SC-18).");
                 case CatalogDeadlineKind.Observation:
                     return new ObservationLimitException(ObservationLimitException.DeadlineExceededErrorId, message + " The observation deadline was exceeded (contract OC-09).");
+                case CatalogDeadlineKind.OsthessenWetter:
+                    return new OsthessenWetterException(OsthessenWetterException.DeadlineExceededErrorId, message + " The OsthessenWetter page deadline was exceeded (contract OW-10).");
                 default: // Refresh
                     return new EvidenceCacheException(EvidenceCacheException.RefreshDeadlineExceededErrorId, message + " The MOSMIX_S refresh deadline was exceeded (contract SC-22).");
             }

@@ -50,6 +50,7 @@ internal static class ConsumerBoundary
         services.AddSingleton(mosmix);
         services.AddSingleton(new DwdObservationOptions());
         services.AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } });
+        services.AddSingleton(new OsthessenWetterEndpoints { PageUri = new Uri("https://osthessen.example/messwerte/") });
         return services;
     }
 
