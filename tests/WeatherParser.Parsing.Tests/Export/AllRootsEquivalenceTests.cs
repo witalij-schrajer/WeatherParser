@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using FluentAssertions;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Serialization;
+using WeatherParser.Parsing.Tests.Export;
 
 namespace WeatherParser.Parsing.Tests.Export;
 
@@ -21,48 +22,6 @@ public sealed class AllRootsEquivalenceTests
         _xml = new XmlExportSerializer();
     }
 
-    private static void AssertEquivalent(JsonElement json, XElement xml, string path)
-    {
-        xml.Name.Namespace.Should().Be(Ns, path);
-        xml.Attributes().Where(a => !a.IsNamespaceDeclaration).Should().BeEmpty(path);
-
-        switch (json.ValueKind)
-        {
-            case JsonValueKind.Object:
-                var jsonProperties = json.EnumerateObject().ToList();
-                var xmlChildren = xml.Elements().ToList();
-                xmlChildren.Select(e => e.Name.LocalName).Should().Equal(jsonProperties.Select(p => p.Name), path);
-                for (int i = 0; i < jsonProperties.Count; i++)
-                {
-                    AssertEquivalent(jsonProperties[i].Value, xmlChildren[i], path + "/" + jsonProperties[i].Name);
-                }
-                break;
-            case JsonValueKind.Array:
-                xml.Elements().Should().HaveCount(json.GetArrayLength(), path);
-                var xmlElements = xml.Elements().ToList();
-                for (int i = 0; i < xmlElements.Count; i++)
-                {
-                    AssertEquivalent(json[i], xmlElements[i], path + "[" + i + "]");
-                }
-                break;
-            case JsonValueKind.String:
-                xml.HasElements.Should().BeFalse(path);
-                xml.Value.Should().Be(json.GetString(), path);
-                break;
-            case JsonValueKind.Number:
-                xml.HasElements.Should().BeFalse(path);
-                xml.Value.Should().Be(json.GetRawText(), path);
-                break;
-            case JsonValueKind.True:
-            case JsonValueKind.False:
-                xml.Value.Should().Be(json.GetRawText(), path);
-                break;
-            default:
-                Assert.Fail(path + " has JSON kind " + json.ValueKind);
-                break;
-        }
-    }
-
     [TestMethod]
     [DynamicData(nameof(AllRootsTestData.Roots), typeof(AllRootsTestData))]
     public async Task AllRoots_JsonAndXml_AreSemanticallyEqual(string rootName)
@@ -75,7 +34,7 @@ public sealed class AllRootsEquivalenceTests
         xmlRoot.Name.LocalName.Should().Be(rootName);
 
         using var document = JsonDocument.Parse(json);
-        AssertEquivalent(document.RootElement, xmlRoot, rootName);
+        ExportEquivalence.AssertEquivalent(document.RootElement, xmlRoot, rootName);
     }
 
     [TestMethod]

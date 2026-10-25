@@ -6,6 +6,7 @@ using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Quantities;
 using WeatherParser.Parsing.Serialization;
 using WeatherParser.Parsing.Time;
+using WeatherParser.Parsing.Tests.Export;
 
 namespace WeatherParser.Parsing.Tests.Observations;
 
@@ -61,13 +62,13 @@ public sealed class ObservationExportEquivalenceTests
         var jsonMap = new Dictionary<string, string>();
         using (var document = JsonDocument.Parse(jsonStream.ToArray()))
         {
-            FlattenJson(document.RootElement, string.Empty, jsonMap);
+            ExportEquivalence.FlattenJson(document.RootElement, string.Empty, jsonMap);
         }
 
         var xmlMap = new Dictionary<string, string>();
         foreach (var element in XDocument.Parse(System.Text.Encoding.UTF8.GetString(xmlStream.ToArray())).Root!.Elements())
         {
-            FlattenXml(element, string.Empty, xmlMap);
+            ExportEquivalence.FlattenXml(element, string.Empty, xmlMap);
         }
 
         jsonMap.Should().BeEquivalentTo(xmlMap);
@@ -81,42 +82,6 @@ public sealed class ObservationExportEquivalenceTests
             map["measurements/wind_direction_deg/source_timezone"].Should().Be("Europe/Berlin");
             map["timestamp_quality"].Should().Be("estimated_date");
             map.Keys.Should().NotContain(key => key.StartsWith("measurements/illuminance_lux", StringComparison.Ordinal));
-        }
-    }
-
-    private static void FlattenJson(JsonElement element, string path, Dictionary<string, string> map)
-    {
-        foreach (var property in element.EnumerateObject())
-        {
-            var childPath = path.Length == 0 ? property.Name : $"{path}/{property.Name}";
-            switch (property.Value.ValueKind)
-            {
-                case JsonValueKind.Object:
-                    FlattenJson(property.Value, childPath, map);
-                    break;
-                case JsonValueKind.String:
-                    map[childPath] = property.Value.GetString()!;
-                    break;
-                default:
-                    map[childPath] = property.Value.GetRawText();
-                    break;
-            }
-        }
-    }
-
-    private static void FlattenXml(XElement element, string path, Dictionary<string, string> map)
-    {
-        var childPath = path.Length == 0 ? element.Name.LocalName : $"{path}/{element.Name.LocalName}";
-        if (element.HasElements)
-        {
-            foreach (var child in element.Elements())
-            {
-                FlattenXml(child, childPath, map);
-            }
-        }
-        else
-        {
-            map[childPath] = element.Value;
         }
     }
 }
