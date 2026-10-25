@@ -183,4 +183,6 @@ The step plans P6.01 to P6.11 were written by the orchestrating agent on 2026-10
 - round 3: metadata validation at source construction untested in P6.06; `ConsumerBoundary.cs` and the two `LiveCheckRunner.cs` containers missing from the consumer-setup updates;
 - round 4: 0 findings.
 
-With this review the first part of the planning gate (section 5) is met; the reconciliation with the approved P6.02 contract remains before P6.03.
+Pull-request review of `608497d` (2026-10-25): the original planning finding was closed; 2 new findings [P2], both confirmed by the orchestrating agent against `CatalogDownloader` (`BoundedStream.Read` blocks in the inner read) and `ServiceRegistrationCompletenessTests`, and fixed: the P6.04 reader consumes the HTTP body only asynchronously (`ReadAsync`, with an asynchronous in-memory copy if the parser package needs synchronous input), with stalled-body tests through the real downloader in P6.06 and composed in P6.07; P6.04 and P6.07 register their service in S1, and P6.06, which had the same sequencing issue, too. Codex five-angle review of the fix: 1 round, 0 findings.
+
+With these reviews the first part of the planning gate (section 5) is met; the reconciliation with the approved P6.02 contract remains before P6.03.

@@ -14,7 +14,7 @@ Out of scope with owner: number, unit and time interpretation → P6.05; retriev
 ## 3. Decisions Required
 | Decision | Options | Recommended | Decided by | Blocks |
 |---|---|---|---|---|
-| Interface and types (Proposed) | `IOsthessenWetterPageReader` with `OsthessenWetterPage Read(Stream html, CancellationToken)`; `OsthessenWetterPage` (`Stations` as `OsthessenWetterStationRow` in overview order, `Diagnostics`); row: `Name`, `Status` (`Online`/`Offline`), `OverviewTimeText`, `OverviewCells` (by column), `WindTimeText?`, `WindCells?` | Proposed; raw texts only, interpretation in P6.05 | Orchestrator, recorded | S2 |
+| Interface and types (Proposed) | `IOsthessenWetterPageReader` with `Task<OsthessenWetterPage> ReadAsync(Stream html, CancellationToken)`; `OsthessenWetterPage` (`Stations` as `OsthessenWetterStationRow` in overview order, `Diagnostics`); row: `Name`, `Status` (`Online`/`Offline`), `OverviewTimeText`, `OverviewCells` (by column), `WindTimeText?`, `WindCells?` / a synchronous `Read` (rejected: the downloader's synchronous `BoundedStream.Read` cannot interrupt a pending read of the live HTTP body, so a body that stalls after the headers would outlast `PageDeadline` and caller cancellation) | Proposed; the HTTP body is consumed only with asynchronous reads using the token passed in (the downloader's linked token); if the selected parser package needs synchronous input, the reader first copies the body asynchronously into memory (within the 2 MiB bound and the deadline) and parses the in-memory copy; the live HTTP body is never read synchronously; raw texts only, interpretation in P6.05 | Orchestrator, recorded (PR #8 review of `608497d`) | S1, S2 |
 | Package | As approved in OW-02 | Pinned to the evaluated version | User (OW-02) | S1 |
 | Input bound | The reader reads at most the bytes the retrieval boundary allows (2 MiB, OW-10) / own bound | The stream is already bounded by P6.06; the reader adds no second limit but stops after the two tables | Orchestrator, recorded | S2 |
 | Fixtures | Synthetic HTML files under `tests/WeatherParser.Parsing.Tests/Fixtures/Osthessen/` reproducing the structural features (malformed tags, legacy references, offline rows, empty cells, name spellings, row order) | Proposed; no copy of the real page | Orchestrator, recorded | S2 |
@@ -35,33 +35,35 @@ Every slice: roles and checks as in P6.03 section 5. The package addition is ver
 
 ### S1 Package and secure parsing
 **Red**
-- `Read_ScriptElement_NotExecutedAndIgnored`, `Read_ExternalResources_NeverRequested` (a fixture with `<img>`, `<link>` and `<iframe>` to an unreachable host; the reader completes without network access)
-- `Read_NullStream_ThrowsArgumentNullException`, `Read_CancelledToken_ThrowsOperationCanceled`
+- `ReadAsync_ScriptElement_NotExecutedAndIgnored`, `ReadAsync_ExternalResources_NeverRequested` (a fixture with `<img>`, `<link>` and `<iframe>` to an unreachable host; the reader completes without network access)
+- `ReadAsync_NullStream_ThrowsArgumentNullException`, `ReadAsync_CancelledToken_ThrowsOperationCanceled`
+- `ReadAsync_UsesOnlyAsynchronousReads` (a test stream whose synchronous `Read` throws; the reader completes)
+- `ReadAsync_PendingReadCancelled_ThrowsOperationCanceled` (a test stream whose pending `ReadAsync` completes only when its token is cancelled; cancelling the token ends the read)
+- `AddWeatherParsing_ResolvesOsthessenWetterPageReader`; `ServiceRegistrationCompletenessTests` red with its missing-registration assertion while the interface is unregistered
 
-**Green**: package configured without scripting and without a resource loader.
+**Green**: package configured without scripting and without a resource loader; asynchronous body consumption (with the in-memory copy if the package needs it); singleton registration of the reader, before S2 starts. S2 and S3 keep both registration checks green and add no registration.
 
 ### S2 Tables and rows
 **Red**
-- `Read_ValidPage_ReturnsOverviewRowsInPageOrder`
-- `Read_Row_StatusNameTimeAndCells`
-- `Read_OfflineRow_StatusOfflineAndEmptyCells`
-- `Read_EmptyCell_IsEmptyText` (never zero)
-- `Read_LegacyReferences_DecodedLikeBrowser` (`Ro&szligbach` → `Roßbach`, `Hohh&uumltte;` → `Hohhütte;`)
-- `Read_UnclosedAndStrayTags_Tolerated`
-- `Read_OtherSections_NeverRead` (daily-extreme lists with an error message containing a host name; no row and no diagnostic carries that text)
-- `Read_OverviewTableMissing_ThrowsFormatChanged`, `Read_OverviewHeaderChanged_ThrowsFormatChanged`, `Read_RowWithMissingCell_ThrowsFormatChanged`
-- `Read_UnknownStatusTitle_ThrowsFormatChanged`, `Read_MissingStatus_ThrowsFormatChanged`
-- `Read_DuplicateOverviewName_Reported` (two rows with the same name are both returned; identity collisions are decided in P6.05)
+- `ReadAsync_ValidPage_ReturnsOverviewRowsInPageOrder`
+- `ReadAsync_Row_StatusNameTimeAndCells`
+- `ReadAsync_OfflineRow_StatusOfflineAndEmptyCells`
+- `ReadAsync_EmptyCell_IsEmptyText` (never zero)
+- `ReadAsync_LegacyReferences_DecodedLikeBrowser` (`Ro&szligbach` → `Roßbach`, `Hohh&uumltte;` → `Hohhütte;`)
+- `ReadAsync_UnclosedAndStrayTags_Tolerated`
+- `ReadAsync_OtherSections_NeverRead` (daily-extreme lists with an error message containing a host name; no row and no diagnostic carries that text)
+- `ReadAsync_OverviewTableMissing_ThrowsFormatChanged`, `ReadAsync_OverviewHeaderChanged_ThrowsFormatChanged`, `ReadAsync_RowWithMissingCell_ThrowsFormatChanged`
+- `ReadAsync_UnknownStatusTitle_ThrowsFormatChanged`, `ReadAsync_MissingStatus_ThrowsFormatChanged`
+- `ReadAsync_DuplicateOverviewName_Reported` (two rows with the same name are both returned; identity collisions are decided in P6.05)
 
 **Green**: table location by header labels; cell extraction.
 
 ### S3 Wind table and join
 **Red**
-- `Read_WindRowsJoinedByKey_DifferentOrder`
-- `Read_JoinKey_EszettCaseTrailingSemicolon` (`Roßbach`/`Rossbach`, `Müs-Hohhütte`/`Müs-Hohhütte;`, case)
-- `Read_WindRowMissing_DiagnosticUnmatched`, `Read_TwoWindCandidates_DiagnosticUnmatched`
-- `Read_WindTableMissing_DiagnosticAndNoWindCells`, `Read_WindHeaderChanged_DiagnosticAndNoWindCells`
-- `AddWeatherParsing_ResolvesOsthessenWetterPageReader`; completeness test red before registration
+- `ReadAsync_WindRowsJoinedByKey_DifferentOrder`
+- `ReadAsync_JoinKey_EszettCaseTrailingSemicolon` (`Roßbach`/`Rossbach`, `Müs-Hohhütte`/`Müs-Hohhütte;`, case)
+- `ReadAsync_WindRowMissing_DiagnosticUnmatched`, `ReadAsync_TwoWindCandidates_DiagnosticUnmatched`
+- `ReadAsync_WindTableMissing_DiagnosticAndNoWindCells`, `ReadAsync_WindHeaderChanged_DiagnosticAndNoWindCells`
 
 **Green**: join key NFC, invariant fold, `ß`→`ss`, trailing `;` and whitespace removed; exactly one candidate joins.
 
