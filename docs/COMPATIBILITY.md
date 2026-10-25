@@ -42,16 +42,16 @@ Candidate `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` (after the A10 review fixes
 | GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40041773136) | All jobs succeeded; recorded separately and not counted as target evidence |
 | Windows x64 (developer machine), live DWD sources | Explicitly enabled live check (`WEATHERPARSER_LIVE_CHECK=1`), one run on candidate `98122e5` | 14 requests of a budget of 56, all HTTP 200; both documents schema-valid. Recorded as a snapshot of 2026-10-23 and not repeated for `b6bc47f` (SC-16). Offline, the `b6bc47f` MOSMIX_S parser builds the same index from a stored real file as `98122e5` |
 
-## P5 scope (P5.10, 2026-10-25)
+## P5 scope (P5.10, rerun 2026-10-25)
 
-Candidate `a87c7bb55180561bbbb86dde851fbdce9311f32d` against PR base `1e604dc7b3f17826d19207cbec9a699e40e5a30f`. Details are in the [P5.10 record](p5/P5_10_INTEGRATED_VERIFICATION.md).
+Candidate `fd461c8cededddf53a039c31adad68a110c1c7c9` (after the PR #7 review fixes) against PR base `1e604dc7b3f17826d19207cbec9a699e40e5a30f`. Details are in the [P5.10 record](p5/P5_10_INTEGRATED_VERIFICATION.md), section 9. The first verification of candidate `a87c7bb` is in sections 3 to 8 of that record.
 
 | Platform | Evidence class | Result |
 |---|---|---|
-| Windows x64 (developer machine), SDK 10.0.402, runtime 10.0.13 | Local two-pass `ci-local.ps1` | Exit 0; tests 1928 passed (two live tests not executed), 99, 56, 46, consumer 36; block coverage 7481/7484 against baseline 6811/6814; gate passed |
+| Windows x64 (developer machine), SDK 10.0.402, runtime 10.0.13 | Local two-pass `ci-local.ps1` | Exit 0; tests 1937 passed (two live tests not executed), 99, 56, 46, consumer 36; block coverage 7491/7494 against baseline 6811/6814; gate passed |
 | NanoPi R76S, Debian 13 (trixie), `linux-arm64`, SDK 10.0.402, runtime 10.0.13, ICU 76 | Class B target run (CONTRIBUTING.md section 7) | Exit 0; same tests, outcomes, block counters and gate result as Windows |
-| GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40165707736) | All jobs succeeded; recorded separately and not counted as target evidence |
-| Windows x64 (developer machine), live DWD sources | Explicitly enabled observation live check (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=observation`), one run on candidate `a87c7bb` | Station 01526: 6 requests of a budget of 8, all HTTP 200; dataset schema-valid, JSON and XML equivalent. Recorded as a snapshot of 2026-10-25 and not repeated (SC-16 pattern) |
+| GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40170729670) | All jobs succeeded; recorded separately and not counted as target evidence |
+| Windows x64 (developer machine), live DWD sources | Explicitly enabled observation live check (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=observation`), one run on candidate `a87c7bb` | Station 01526: 6 requests of a budget of 8, all HTTP 200; dataset schema-valid, JSON and XML equivalent. Recorded as a snapshot of 2026-10-25 and not repeated for `fd461c8` (SC-16 pattern) |
 
 ## Limits
 

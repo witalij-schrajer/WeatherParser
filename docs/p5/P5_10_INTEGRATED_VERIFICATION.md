@@ -1,6 +1,6 @@
 # P5.10 – Integrated Coverage and Platform Verification: Record
 
-**Status (2026-10-25): complete. S0 to S5 executed on candidate `a87c7bb`; outcome READY (section 8).**
+**Status (2026-10-25): complete. S0 to S5 executed on candidate `a87c7bb` (outcome READY, section 8). The PR #7 review fixes made `fd461c8` the new implementation candidate; S1 to S3 were rerun on it with outcome READY, S4 not repeated (section 9).**
 
 Plan: [P5_10_INTEGRATED_VERIFICATION_PLAN.md](P5_10_INTEGRATED_VERIFICATION_PLAN.md).
 
@@ -198,3 +198,52 @@ Plan: [P5_10_INTEGRATED_VERIFICATION_PLAN.md](P5_10_INTEGRATED_VERIFICATION_PLAN
     - the gate-result hash difference is only a line-ending difference;
     - the review rounds of this record were not recorded.
   - Further rounds are listed in [P5_VERIFICATION.md](P5_VERIFICATION.md) section 10.
+
+## 9. Rerun on candidate `fd461c8` after the PR #7 review fixes
+
+- **Trigger**: the peer review of `6492091` on PR #7 (2026-10-25) reported two Minor findings. The user instructed in chat: "Retry the commit and push of the PR #7 review fixes, reply on the two review threads, then rerun Windows ci-local, the NanoPi run and hosted CI on the new candidate (no new live parse) and update the P5.10 records."
+- **Finding 1 (production fix, confirmed)**:
+  - **Defect**: the CDC reader accepts `MESS_DATUM` `000101010000`. For a wind, precipitation or solar row the mapper's period start `AddMinutes(-10)` then threw `ArgumentOutOfRangeException` instead of a documented failure.
+  - **Red**: new cases in `DwdObservationMapperPeriodTests` for ff, rr and sd at 0001-01-01 00:00 and 00:09 UTC; all 6 failed with `ArgumentOutOfRangeException`. The three 00:10 cases (period start 0001-01-01 00:00) passed on their first run.
+  - **Green**: `DwdObservationMapper.Reading` throws `CatalogFormatException` `CDC-EVIDENCE-INVALID` before constructing a period that cannot be represented; instantaneous readings are not restricted. Parsing 1937 passed, 2 skipped.
+- **Finding 2 (test fix, confirmed)**:
+  - **Gap**: every package observation test served the TU archive only, so the packaged wind, precipitation and solar conversions and periods were never exercised.
+  - **Fix**: `ConsumerSelectionHost.ArrangeCdcFullStation` serves the ff, rr and sd archives as well, and `ConsumerFixtures.CdcNowZip` writes each product's DWD header. The complete-station and expected-graph tests now assert in JSON and XML: `wind_speed_kmh` 12 (3.47 m/s), `wind_direction_deg` 270, `rain_rate_mm_h` 3 (0.5 mm per 10 minutes) and `solar_irradiance_w_m2` 600 (36.0 J/cm² per 10 minutes). Each has `measured_at` 2026-10-21T11:50:00, quality 3 and the period 11:40:00 to 11:50:00; the parse makes 8 requests. The missing-product test keeps the TU-only arrangement.
+  - **First run**: characterization; the new expectations passed on their first run against the freshly packed library. Package consumer 36/36.
+- **Review and gate**:
+  - Codex five-angle review of the fix (`pr7_codex_r1.md`): 0 findings.
+  - Pre-commit gate: `TestResults/p502-precommit-20261025T060545Z/`, 7491/7494 against 6811/6814 (the guard adds 10 covered blocks).
+  - Commit `fd461c8`; replies posted on both review threads.
+- **Authorship**:
+  - qwen3-coder:30b generated the regression tests, the guard and the package-test changes.
+  - qwen also switched the missing-product test to the full station, which the brief said to leave unchanged; it restored the TU-only arrangement on a precise correction brief.
+  - The orchestrating agent wrote the briefs and this record, and ran every build, test, gate and run.
+- **Candidate**: `fd461c8cededddf53a039c31adad68a110c1c7c9` (`fd461c8`) against the unchanged integration target `1e604dc7b3f17826d19207cbec9a699e40e5a30f`.
+- **S1 Windows**:
+  - `ci-local.ps1` exit 0, 06:53:46Z to 06:54:52Z; run directory artifacts/ci/fd461c8-20261025T065346Z. commits.json: commit `fd461c8...`, targetCommit `1e604dc...`, two-pass, exitCode 0.
+  - Tests: Parsing 1939 total, 1937 passed, 0 failed (the two live tests not executed); Coverage.Runner 56, Coverage 99, SchemaGeneration 46, package consumer 36/36; target Parsing 1662 of 1663.
+  - Gate: passed with all five rules true, 7491/7494 above 6811/6814; gate-result.json SHA-256 `964ac345c54cc205f1839828f919219f5a28c4650c5bf801fa6d198fe22d87b2`.
+  - Package: packed SHA-512 `H3eh/g0+Ip6jMDvoYOzEqalfXN/T80+4Ukjxa8Y0+c+/98sz2trIVwG1PXDryKJupM/YVuKO/eKP/Qr/g2km3Q==`, recomputed equal, 8 entries; consumer lock: only the contentHash line rewritten.
+- **S2 Hosted CI**:
+  - Run 40170729670 (pull_request) succeeded: debian13-arm64, ubuntu-x64 and windows-x64.
+  - Artifacts: ci-debian13-arm64 id 12590250740, 2385008 B; ci-windows-x64 id 12590161103, 2434908 B; ci-ubuntu-x64 id 12589453846, 2388432 B.
+  - Each commits.json names `fd461c8...` and `1e604dc...`, with exit 0 and mode two-pass.
+  - Each job: Parsing 1937 of 1939 passed, Coverage.Runner 56, Coverage 99, SchemaGeneration 46, package consumer 36/36, target Parsing 1662 of 1663; gate 7491/7494; 8 package entries.
+  - Packed SHA-512, each equal to its recomputed hash:
+    - debian13-arm64 `k5VSa3fSAFyhbV+jfmqcjalQoeW2CckhwIHnLETS1zYi9DcP0F5a8dwCZyOdilmzLLFi+4X74TxS0t46fORZmA==`
+    - ubuntu-x64 `l5H7I6zm7yAxGwd4CftxGATOL40YwUaNOOR0vyw2h0rEgD9aRFm+bDlywYzWx0vDSJfuP/zIUhiTEy7IflmsjA==`
+    - windows-x64 `ybG7HG17gQb7EEi6BuOInu+G8Jvd1Lb4gHZc2Y5OTMSRpjhZk3rTUrVMEKxFEJfBbas6xrkaf+9kcWZnpcY7AA==`
+- **S3 NanoPi R76S**:
+  - Bundle: features/develop/P5 at `fd461c8` and the temporary branch p510-target at `1e604dc` (deleted after bundling), complete history. Size 1532232 B, SHA-256 `63ef0b2e023bc26a8b0e5d8ac81e9f5c36a39d3c394f81d878bb875ecdd7ae7a`, equal on both sides.
+  - Procedure as in section 6, working directory ~/weatherparser-p510b; prepare exit 0 (nothing installed; SDK 10.0.402, PowerShell 7.6.7, runtime 10.0.13, ICU 76).
+  - Run: ci-local exit 0, run `fd461c8-20261025T065355Z` (06:53:55Z to 06:59:18Z; run completed in 5 min 40 s). Copied back to artifacts/ci/arm64-fd461c8-20261025T065355Z; working directory removed afterwards.
+  - Results: Parsing 1937 of 1939 passed, Coverage.Runner 56, Coverage 99, SchemaGeneration 46, package consumer 36/36, target Parsing 1662 of 1663; gate passed 7491/7494; gate-result.json SHA-256 `7030168b9feac3710a9a67a89035adb5147637c872bdd5bd2811e467344f2e10`; packed SHA-512 `pTeA9PGxJRxg5tG5lx53YuMDsdCN2kj5tJqQuIT/fpaqWSJRm3rUhm/qWBb6/gdXUzfEESOjFi6OMaHvgZHL/Q==`, recomputed equal.
+  - Comparison with S1: all 1939 Parsing test names and outcomes identical after decimal-separator normalization (0 differences; only the two live tests NotExecuted). The gate-result.json content is identical after line-ending normalization.
+- **S4**: not repeated. The live row T-P5-18 rests on the single run of section 7 on `a87c7bb` (SC-16 pattern). The fix changes only the rejection of timestamps before 0001-01-01 00:10, which the live data cannot reach.
+- **T-P5 audit**:
+  - The section 8 table holds for `fd461c8`, with platform evidence from this section.
+  - T-P5-06 gains the boundary cases of `DwdObservationMapperPeriodTests`.
+  - T-P5-13 gains the full-station `PackageDwdObservationTests`.
+  - No open defect.
+- **Outcome**: **READY** for P5.11 on candidate `fd461c8`.
+- **Codex review of this section** (`pr7_doc_r1.md`): 0 findings.
