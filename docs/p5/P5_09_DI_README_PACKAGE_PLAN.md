@@ -1,6 +1,6 @@
 # P5.09 – DI Registration, README and Package Consumption: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-05 (`RWS_10` limitation text), OC-07, OC-09, OC-10 and OC-12 (option A: every 10 minutes). Refines the P5.09 row of section 5 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: executed on 2026-10-25 ([record](P5_VERIFICATION.md) section 9): DI and package-consumer characterization tests green, README section and status written, package check passed, Codex review 3, 1, 0 findings (all fixed). The two planned package test files are one file `PackageDwdObservationTests` (the equivalence and expected-graph checks are `Package_Result_MatchesExpectedGraphAndJsonXmlEquivalent`).** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-05 (`RWS_10` limitation text), OC-07, OC-09, OC-10 and OC-12 (option A: every 10 minutes). Refines the P5.09 row of section 5 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: prove the integrated DI configuration of the observation parser with consumer-registered options, document the library feature for consumers in README.md (registration, attribution, IP note, retrieval guidance, error and notice IDs, quality-code meaning), and prove same-run package consumption of the parser from the independent consumer project.
