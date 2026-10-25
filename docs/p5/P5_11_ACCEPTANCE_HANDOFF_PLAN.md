@@ -1,6 +1,6 @@
 # P5.11 – Acceptance and P6 Handoff: Implementation Plan
 
-**Status: executed on 2026-10-25 ([record](P5_11_ACCEPTANCE.md)): A1 to A7 complete (P5 accepted by the user on candidate `fd461c8`); A8 status passages written and checked on the working tree, checkpoint `07bc9b0` with its committed-revision run (exit 0) recorded in [P5_VERIFICATION.md](P5_VERIFICATION.md) section 11; A9: pull request #7 marked ready for review on 2026-10-25 on the user's instruction; A10 and A11 (review, merge by the user) pending.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: the limitations of OC-05 and OC-06 added to A4. Refines the P5.11 row of section 5 and section 9 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: executed on 2026-10-25 ([record](P5_11_ACCEPTANCE.md)): A1 to A7 complete (P5 accepted by the user on candidate `fd461c8`); A8 status passages written and checked on the working tree, checkpoint `07bc9b0` with its committed-revision run (exit 0) recorded in [P5_VERIFICATION.md](P5_VERIFICATION.md) section 11; A9: pull request #7 marked ready for review on 2026-10-25 on the user's instruction; A10: no review findings after ready for review; A11: pull request #7 merged into `develop` on 2026-10-25 (merge commit `29fd553`), post-merge records in a separate documentation pull request.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: the limitations of OC-05 and OC-06 added to A4. Refines the P5.11 row of section 5 and section 9 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: turn the READY outcome of P5.10 into an explicit, evidence-based acceptance decision by the user, hand P6 the accepted observation foundation, update the status documents consistently, and complete the phase through the pull-request review and the user's merge.
@@ -136,12 +136,12 @@ Out of scope with owner: P6 work → P6 (starts only on the user's instruction);
 - (d) Corrections during A8 to A11 that materially change evidence, contract claims, limitations or acceptance criteria reopen the affected P5.10 audit and A2 to A6, stop progression until the verification outcome satisfies the approved criteria, and repeat A7
 
 ## 9. Acceptance Criteria
-- [ ] Preconditions recorded; candidate and base verified
-- [ ] Evidence matrix complete: every mandatory T-P5 row PASSED, or OPEN only with a user-approved amendment, blocker and owner; a T-P5-18 skip recorded separately
-- [ ] Contract summary and limitations complete
-- [ ] Audit decision recorded; P6 handoff written and Codex-reviewed
-- [ ] User acceptance recorded with date and wording
-- [ ] Status documents consistent; package check and committed-revision run passed
-- [ ] Pull request ready for review; review findings resolved test-first; new-candidate rule applied where production code changed
-- [ ] Merged into `develop` by the user; post-merge checkpoint recorded in the chosen home
-- [ ] Codex review of the A8 changes with 0 open findings, or a recorded Codex unavailability or failure reported to the user
+- [x] Preconditions recorded; candidate and base verified
+- [x] Evidence matrix complete: every mandatory T-P5 row PASSED, or OPEN only with a user-approved amendment, blocker and owner; a T-P5-18 skip recorded separately
+- [x] Contract summary and limitations complete
+- [x] Audit decision recorded; P6 handoff written and Codex-reviewed
+- [x] User acceptance recorded with date and wording
+- [x] Status documents consistent; package check and committed-revision run passed
+- [x] Pull request ready for review; review findings resolved test-first; new-candidate rule applied where production code changed
+- [x] Merged into `develop` by the user; post-merge checkpoint recorded in the chosen home
+- [x] Codex review of the A8 changes with 0 open findings, or a recorded Codex unavailability or failure reported to the user

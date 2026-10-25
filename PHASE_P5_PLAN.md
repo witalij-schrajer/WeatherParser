@@ -1,6 +1,6 @@
 # Phase P5 – DWD Observations: Implementation Plan
 
-**Status: planning complete (2026-10-24, record in section 10); P5 started on 2026-10-24 on the user's instruction (branch `features/develop/P5` from `develop` `1e604dc`); P5.01 (foundation check) executed with outcome READY ([record](docs/p5/P5_01_FOUNDATION_CHECK.md)), checkpoint `ca76114`; P5.02: observation contract OC-01 to OC-14 approved by the user on 2026-10-24 ([contract](docs/p5/P5_OBSERVATION_CONTRACT.md)), this plan and the step plans P5.03 to P5.11 reconciled with it; P5.03 to P5.09 (station resolution, file reading, quantity mapping, retrieval boundary, parser service, export equivalence, DI, README and package consumption) complete ([record](docs/p5/P5_VERIFICATION.md) sections 3 to 9); P5.10 (integrated verification) complete with outcome READY on candidate `a87c7bb` and, after the PR #7 review fixes, on candidate `fd461c8` ([P5.10 record](docs/p5/P5_10_INTEGRATED_VERIFICATION.md)); P5 accepted by the user on 2026-10-25 on candidate `fd461c8` ([P5.11 acceptance record](docs/p5/P5_11_ACCEPTANCE.md), [P6 handoff](docs/p5/P6_HANDOFF.md)); P5 is complete only once the user merges pull request #7 into `develop`.** This plan refines the P5 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P5 handoff](docs/p4/P5_HANDOFF.md).
+**Status: planning complete (2026-10-24, record in section 10); P5 started on 2026-10-24 on the user's instruction (branch `features/develop/P5` from `develop` `1e604dc`); P5.01 (foundation check) executed with outcome READY ([record](docs/p5/P5_01_FOUNDATION_CHECK.md)), checkpoint `ca76114`; P5.02: observation contract OC-01 to OC-14 approved by the user on 2026-10-24 ([contract](docs/p5/P5_OBSERVATION_CONTRACT.md)), this plan and the step plans P5.03 to P5.11 reconciled with it; P5.03 to P5.09 (station resolution, file reading, quantity mapping, retrieval boundary, parser service, export equivalence, DI, README and package consumption) complete ([record](docs/p5/P5_VERIFICATION.md) sections 3 to 9); P5.10 (integrated verification) complete with outcome READY on candidate `a87c7bb` and, after the PR #7 review fixes, on candidate `fd461c8` ([P5.10 record](docs/p5/P5_10_INTEGRATED_VERIFICATION.md)); P5 accepted by the user on 2026-10-25 on candidate `fd461c8` ([P5.11 acceptance record](docs/p5/P5_11_ACCEPTANCE.md), [P6 handoff](docs/p5/P6_HANDOFF.md)); it is complete: pull request #7 merged into `develop` on 2026-10-25 (merge commit `29fd553`); P6 starts only on a separate instruction.** This plan refines the P5 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P5 handoff](docs/p4/P5_HANDOFF.md).
 
 ## 1. First step: check P4 completion and adjust this plan
 
@@ -164,7 +164,7 @@ New records under `docs/p5/`; production code under `src/WeatherParser.Parsing/<
 - [x] limitations with owners
 - [x] user acceptance recorded
 - [x] status documents consistent
-- [ ] pull request ready for review, review findings resolved test-first, merged into `develop` by the user
+- [x] pull request ready for review, review findings resolved test-first, merged into `develop` by the user
 - [x] P6 handoff written
 - [x] P6 handoff records what P6 reuses (`ISourceTimeNormalizer.InferDate`, `IObservationDatasetBuilder`, the real serializers) and the open items
 

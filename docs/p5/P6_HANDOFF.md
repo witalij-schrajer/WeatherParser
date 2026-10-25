@@ -1,11 +1,11 @@
 # P6 Handoff – OsthessenWetter Observations
 
-Status: prepared with the P5.11 acceptance record on 2026-10-25 after P5 was accepted by the user on candidate `fd461c8` ([P5.11 acceptance record](P5_11_ACCEPTANCE.md)). It takes effect once pull request #7 is merged into `develop`; P6 starts only on a separate instruction of the user.
+Status: prepared with the P5.11 acceptance record on 2026-10-25 after P5 was accepted by the user on candidate `fd461c8` ([P5.11 acceptance record](P5_11_ACCEPTANCE.md)). In effect since pull request #7 merged into `develop` on 2026-10-25 (merge commit `29fd553`); P6 starts only on a separate instruction of the user.
 
 ## 1. Accepted foundation
 
 - **Candidate**: verified implementation candidate `fd461c8cededddf53a039c31adad68a110c1c7c9` on branch `features/develop/P5`, pull request #7 into `develop` (PR base `1e604dc7b3f17826d19207cbec9a699e40e5a30f`). P5.10 outcome READY after the rerun on this candidate ([P5.10 record](P5_10_INTEGRATED_VERIFICATION.md) section 9).
-- **P6 integration target**: the merge commit of pull request #7 on `develop`, to be recorded after the merge.
+- **P6 integration target**: the merge commit `29fd5533449898f1b14513b11c65a0afa1cf049a` (`29fd553`) of pull request #7 on `develop`, or its documentation-only successor on `develop` at P6 branch creation (this post-merge documentation pull request); P6.01 records the `develop` head it branches from and classifies every commit since `29fd553`.
 - **Package**: `WeatherParser.Parsing` `0.1.0-initial` (not published); contents `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, [`schemas/export/v1/weatherparser-export-v1.xsd`](../../schemas/export/v1/weatherparser-export-v1.xsd).
 - **Coverage**: native block coverage of `WeatherParser.Parsing.dll` is 7491/7494 (99.96 %) on Windows and on the NanoPi R76S; the next PR's gate compares against the then-remeasured base.
 - **Contracts**:
