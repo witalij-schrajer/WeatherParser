@@ -143,6 +143,34 @@ public sealed class ObservationDatasetBuilderTests
     }
 
     [TestMethod]
+    public void Build_AllReadingsUnusable_ExceptionCarriesOmittedReadings()
+    {
+        var input = Input(
+            Reading(QuantityKind.RelativeHumidity, null, SourceTime(12, 0)),
+            Reading(QuantityKind.Temperature, double.NaN, SourceTime(12, 0))
+        );
+
+        var ex = FluentActions.Invoking(() => _subject.Build(input)).Should().Throw<ObservationDatasetRejectedException>().Which;
+
+        ex.OmittedReadings.Should().BeEquivalentTo(new[] { new OmittedReading(QuantityKind.RelativeHumidity, OmissionReason.Missing), new OmittedReading(QuantityKind.Temperature, OmissionReason.NonFinite) });
+    }
+
+    [TestMethod]
+    public void ObservationDatasetRejectedException_MessageConstructor_HasNoOmittedReadings()
+    {
+        var ex = new ObservationDatasetRejectedException("Message.");
+
+        ex.OmittedReadings.Should().BeEmpty();
+        ex.Message.Should().Be("Message.");
+    }
+
+    [TestMethod]
+    public void ObservationDatasetRejectedException_NullOmittedReadings_ThrowsArgumentNullException()
+    {
+        FluentActions.Invoking(() => new ObservationDatasetRejectedException("Message.", null!)).Should().Throw<ArgumentNullException>();
+    }
+
+    [TestMethod]
     public void Build_WithRealServices_RoundsOnlyAtOutput()
     {
         var input = Input(

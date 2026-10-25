@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
     /// The DWD station resolver is also registered.
     /// The DWD observation mapper is also registered.
     /// The DWD observation source is also registered; the consumer registers <see cref="DwdObservationOptions"/>.
+    /// The DWD observation parser is also registered.
     /// The CDC request composer is also registered.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
@@ -90,6 +91,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDwdStationResolver, DwdStationResolver>();
         services.AddSingleton<IDwdObservationMapper, DwdObservationMapper>();
         services.AddSingleton<IDwdObservationSource, DwdObservationSource>();
+        services.AddSingleton<IDwdObservationParser, DwdObservationParser>();
 
         return services;
     }
