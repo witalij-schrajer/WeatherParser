@@ -1,6 +1,6 @@
 # P6 Verification Record
 
-**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 in progress (contract draft reviewed, awaiting the user's approval).**
+**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled).**
 
 - Integration target: `8d8079a4238514f7c9bcfc3846829e2408938ae3` (documentation-only successor of the P5 merge `29fd553`).
 - Branch `features/develop/P6`.
@@ -31,4 +31,8 @@
 - S3: contract draft [P6_OSTHESSEN_CONTRACT.md](P6_OSTHESSEN_CONTRACT.md) written by the orchestrating agent; Codex rounds 3 and 0 findings (contract section 8).
 - Deliberate differences to the phase-plan proposals: OW-10 recommends a default `PageDeadline` of 60 s instead of 30 s (the 30 s default would tie with the downloader's request timeout); OW-03 fixes the collision scope to all overview names.
 - PR #9 review of `7c2da0f` (2026-10-25): 2 findings [P2], both confirmed and fixed by the orchestrating agent. The overview `Temp.2m` cell holds the temperature and, after `<br>`, the signed change in `°C/h`, and the `Temp.-Trend` cell is an image (checked on the retrieved page); A7 now requires extracting the primary temperature only. `DwdObservationParser` samples the clock before retrieval (line 51); OW-16 now samples `retrieved_at` after the page source returns, so a request crossing local midnight dates a `00:00` display correctly. Follow-up items for S5 in the contract section 6.1. Codex round 3: 0 findings.
-- S4: pending, the user's approval of OW-01 to OW-16. S5 (reconciliation of the plans) follows the approval.
+- S4: the user approved OW-01 to OW-16 on 2026-10-25 (chat): "I approve the P6 OsthessenWetter contract OW-01 to OW-16 as proposed, with the recommended option A for every row." Recorded in the contract section 1.
+- S5: reconciliation by the orchestrating agent: `PHASE_P6_PLAN.md` (approval paragraph in section 3, the OW-10 default 60 s in section 3 and T-P6-09, status) and the step plans P6.03 to P6.10 (status lines; P6.04 AngleSharp 1.8.5, compound temperature cell and fixtures; P6.05 compound-cell mapping cases; P6.06 default 60 s and the default-options stalled-request case; P6.07 collision scope, `retrieved_at` sampling and the delayed-response case across midnight); the P6.02 plan marked executed; status passages "P6.02 contract approved, plans reconciled" in AGENTS.md, README.md, DEVELOPMENT_PLAN.md and PHASE_P1_PLAN.md.
+- Codex five-angle review of S4 and S5 (`p602s5_codex_r1.md`): 2 findings [P3], both confirmed and fixed by the orchestrating agent (a leftover "option B may replace" in the P6.05 precipitation test; the phase-plan section 10 still called the reconciliation pending). Round 2 (`p602s5_codex_r2.md`): 0 findings.
+- README package check on the working tree: README.md SHA-256 `80AEF0A40ED5A292F04D1FAD8D8444177447106D6D6627D8B23D844BAF838BA5` identical in the package with LICENSE and the export schema; packed SHA-512 `kCGiW6EZEh7h+brKQaRzYUKYWZM58DC+3nQsJpidK8Rmr0TRl/pW4RZ2WDPjpyMYeAQ+s8MpuAlRK3EOWSXEPA==` equals the restored hash; package consumer 36/36. The `ci-local.ps1` run on this commit is recorded with the first P6.03 commit.
+- P6.02 complete.

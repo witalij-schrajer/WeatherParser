@@ -1,6 +1,6 @@
 # WeatherParser OsthessenWetter Contract (P6)
 
-**Status (2026-10-25): draft for review; OW-01 to OW-16 are proposals and not approved. They become binding only through the user's approval recorded in section 1.** Plan: [P6_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md](P6_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md); phase plan: [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md) section 3.
+**Status (2026-10-25): approved by the user on 2026-10-25 (section 1): OW-01 to OW-16 with option A in every row, after three Codex review rounds and one pull-request review (section 8). Binding for P6.03 to P6.11; the step plans are reconciled with it (section 6.1).** Plan: [P6_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md](P6_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md); phase plan: [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md) section 3.
 
 Written by the orchestrating agent from its own retrieval of 2026-10-25 (section 2), the planning check ([P6_PLANNING_PAGE_CHECK.md](research/P6_PLANNING_PAGE_CHECK.md)), REQUIREMENTS.md, the export contract ([P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md)) and the repository code. The retrieved files are not committed (copyright, REQ-083); this record holds URLs, times, sizes, hashes and structural facts only.
 
@@ -8,7 +8,7 @@ Written by the orchestrating agent from its own retrieval of 2026-10-25 (section
 
 | Date | Scope | Decision | Wording |
 | ---- | ----- | -------- | ------- |
-| – | OW-01 to OW-16 | Pending | – |
+| 2026-10-25 | OW-01 to OW-16 (after Codex rounds 3, 0, 0 findings and the PR #9 review of `7c2da0f` with 2 findings fixed in `ed7a982`, section 8) | Approved | User message: "I approve the P6 OsthessenWetter contract OW-01 to OW-16 as proposed, with the recommended option A for every row." — among them: AngleSharp 1.8.5 (OW-02), slug IDs with the collision check over all overview names (OW-03), consumer-supplied coordinates (OW-04), precipitation not exported (OW-06), the result type with station failures (OW-08), `PageDeadline` default 60 s (OW-10), offline stations as failures (OW-12), production use and redistribution not accepted until the conditions are clarified (OW-14), `retrieved_at` sampled after the page arrives (OW-16) |
 
 ## 2. Source register
 
@@ -65,7 +65,7 @@ Implementation date of the supported revision: 2026-10-25 (REQ-045). Every assum
 
 ## 6. Decision register
 
-Every row is a proposal until section 1 records the approval.
+Approved on 2026-10-25 with option A in every row (section 1); the other options are rejected alternatives.
 
 | ID | Decision | Options | Recommendation | Facts | Blocks |
 | --- | --- | --- | --- | --- | --- |
@@ -88,7 +88,7 @@ Every row is a proposal until section 1 records the approval.
 
 ### 6.1 Items for the plan reconciliation (S5)
 
-Recorded from the PR #9 review of `7c2da0f`; applied to the step plans in S5 after the approval:
+Recorded from the PR #9 review of `7c2da0f`; applied to the step plans in S5 on 2026-10-25 together with the other approved values:
 
 - P6.04: the reader returns the primary temperature of the compound `Temp.2m` cell (A7) separately from the change and never passes the combined text on; fixtures reproduce the compound cell and the trend image.
 - P6.05: composed reader-plus-mapper tests with positive, negative and zero changes, and with a missing or unreadable primary temperature next to a valid change, proving that the change is never exported as temperature.
