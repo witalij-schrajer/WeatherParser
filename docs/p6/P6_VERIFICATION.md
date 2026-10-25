@@ -1,6 +1,6 @@
 # P6 Verification Record
 
-**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled); P6.03 complete (`343c2a2`); P6.04 complete: wind-row policy decided by the user and implemented (section 4).**
+**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled); P6.03 complete (`343c2a2`); P6.04 complete: wind-row policy decided by the user and implemented (section 4); P6.05 in progress (section 5).**
 
 - Integration target: `8d8079a4238514f7c9bcfc3846829e2408938ae3` (documentation-only successor of the P5 merge `29fd553`).
 - Branch `features/develop/P6`.
@@ -81,3 +81,15 @@
   - Green: the reader ignores a deviating row and collects the join key of the name it carries (read only when the name cell exists); a station whose key belongs to a deviating row, or without exactly one valid row, gets the unmatched notice; `OSTHESSEN-WIND-TABLE-MISSING` remains for a missing table or a changed header. qwen's first version contained the placeholder `...` from the brief (CS8635) and was corrected compiler-guided. Build 0 warnings, 0 errors; Parsing 2048 passed, 0 failed, 2 skipped; gate (results `TestResults/p6-precommit-20261025T190012Z/`) passed with 7784/7787 against 7491/7494, `evaluate.json` SHA-256 `4dc218914ee702612f9ec9f7e2bc91fab5946b4a2b989402f2824b4ea9dbf7a5`.
   - Authorship: qwen3-coder:30b generated the test changes, the implementation and the correction; the orchestrating agent wrote the contract amendment and this record, reviewed the diffs and ran every build and test.
 - Codex round 3 (`p604_codex_r3.md`) on the amendment, its tests and the records: 0 findings (all five angles "No findings."). P6.04 is complete.
+
+## 5. P6.05 – Quantity mapping, identity and times
+
+### S1 Identity (OW-03, T-P6-07)
+
+- Files: `IOsthessenWetterStationIdentity.cs`, `OsthessenWetterStationIdentity.cs` (`ToStationId`, `EnsureUnique`), registration in `ServiceCollectionExtensions`; tests `OsthessenWetterStationIdentityTests.cs` (16 methods).
+- Interpretation recorded by the orchestrating agent: two equal overview names map to one ID and are a collision (`OSTHESSEN-STATION-ID-COLLISION`), because they would give two datasets with one `station_id`; OW-03 speaks of "two names with one slug".
+- Red: 15 methods, 18 cases, all failing (`NotImplementedException`, missing registration).
+- Green: slug per OW-03 (NFC, invariant lower case, `ae`/`oe`/`ue`/`ss`, one hyphen per run of other characters, no edge hyphens; an empty slug fails with `OSTHESSEN-FORMAT-CHANGED`, the message without the name); collision check over all names, the message names the slug. Parsing 2066 passed, 0 failed, 2 skipped.
+- Refactor: qwen's Green repeated the separator logic for each umlaut; replaced by one `Transliterate` switch.
+- Coverage: the first gate run failed (7842/7846, one uncovered block in `Transliterate` for characters outside the tested ranges); `ToStationId_CharactersAroundTheMappedRanges_BecomeSeparators` added (passed on its first run). In that edit qwen changed the NFD input `Mu\u0308s` of `ToStationId_NfdEqualsNfc` to `Mu\u00f6s` (the test failed); restored by qwen test-guided. Final gate (results `TestResults/p6-precommit-20261025T191552Z/`) passed with 7843/7846 against 7491/7494, `evaluate.json` SHA-256 `477c414a89d96e46b0e850aeafaf55508eb3f70e9d351878a41b42d632a1bf7d`.
+- Authorship: qwen3-coder:30b generated the stubs, tests, implementation, refactoring and corrections; the orchestrating agent replaced the literal non-ASCII characters qwen wrote into the test literals and the switch labels by `\u` escapes (mechanical; qwen ignored the escape instruction), reviewed the diffs and ran every build and test.

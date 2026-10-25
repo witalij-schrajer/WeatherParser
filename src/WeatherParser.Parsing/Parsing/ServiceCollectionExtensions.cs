@@ -95,6 +95,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDwdObservationParser, DwdObservationParser>();
         services.AddSingleton<IStationNamePatternMatcher, StationNamePatternMatcher>();
         services.AddSingleton<IOsthessenWetterPageReader, OsthessenWetterPageReader>();
+        services.AddSingleton<IOsthessenWetterStationIdentity, OsthessenWetterStationIdentity>();
 
         return services;
     }
