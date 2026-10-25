@@ -97,6 +97,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IOsthessenWetterPageReader, OsthessenWetterPageReader>();
         services.AddSingleton<IOsthessenWetterStationIdentity, OsthessenWetterStationIdentity>();
         services.AddSingleton<IOsthessenWetterStationMetadataLookup, OsthessenWetterStationMetadataLookup>();
+        services.AddSingleton<IOsthessenWetterValueReader, OsthessenWetterValueReader>();
 
         return services;
     }
