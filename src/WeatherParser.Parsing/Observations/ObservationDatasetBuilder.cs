@@ -173,7 +173,7 @@ public sealed class ObservationDatasetBuilder : IObservationDatasetBuilder
         if (exportedValues.Count == 0)
         {
             var source = $"{input.Provider}:{input.Location.StationId}";
-            throw new ObservationDatasetRejectedException($"The observation dataset for source '{source}' has no usable reading (contract C-60, REQ-050); omitted: {string.Join(", ", omitted.Select(o => $"{o.Kind} ({o.Reason})"))}.");
+            throw new ObservationDatasetRejectedException($"The observation dataset for source '{source}' has no usable reading (contract C-60, REQ-050); omitted: {string.Join(", ", omitted.Select(o => $"{o.Kind} ({o.Reason})"))}.", omitted);
         }
 
         var maxTime = exportedValues.Max(v => v.MeasuredAtUtc);

@@ -22,7 +22,7 @@ public sealed class CdcCatalogEndpointsValidator : ICdcCatalogEndpointsValidator
     }
 
     /// <inheritdoc/>
-    public void Validate(CdcCatalogEndpoints options)
+    public void ValidateEndpoints(CdcCatalogEndpoints options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
@@ -57,6 +57,12 @@ public sealed class CdcCatalogEndpointsValidator : ICdcCatalogEndpointsValidator
                 throw new ParserEndpointValidationException($"The CDC endpoint '{name}' must be an absolute HTTP(S) directory URI whose path ends with '/' and that has no query and no fragment (contract SC-12).");
             }
         }
+    }
+
+    /// <inheritdoc/>
+    public void Validate(CdcCatalogEndpoints options)
+    {
+        ValidateEndpoints(options);
 
         if (options.MaxEvidenceCandidates < 1 || options.MaxEvidenceCandidates > 10000)
         {

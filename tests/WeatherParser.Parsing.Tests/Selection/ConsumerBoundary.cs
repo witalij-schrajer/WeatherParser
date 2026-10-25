@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using WeatherParser.Parsing.Catalogs;
 using WeatherParser.Parsing.Evidence.MosmixS;
+using WeatherParser.Parsing.Observations.Dwd;
 
 namespace WeatherParser.Parsing.Tests.Selection;
 
@@ -46,6 +47,7 @@ internal static class ConsumerBoundary
         services.AddSingleton<TimeProvider>(clock);
         services.AddSingleton(cdc);
         services.AddSingleton(mosmix);
+        services.AddSingleton(new DwdObservationOptions());
         return services;
     }
 

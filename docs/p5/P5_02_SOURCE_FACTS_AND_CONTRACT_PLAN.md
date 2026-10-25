@@ -1,6 +1,6 @@
 # P5.02 – Source Facts and Observation Contract: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines section 3 and the P5.02 row of section 5 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: in execution (2026-10-24): S1 to S5 done, OC-01 to OC-14 approved by the user on 2026-10-24 with OC-02 option A, OC-05 `RWS_10` option A, OC-06 option B and OC-12 option A ([contract](P5_OBSERVATION_CONTRACT.md) section 1); S6 (checks and checkpoint) open. Section 3 shows the planning state before the approval; the contract is binding where they differ.** Refines section 3 and the P5.02 row of section 5 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: verify the DWD 10-minute `now` observation sources against official documentation and the actual published files, record the section 3 decisions of the phase plan as the observation contract `docs/p5/P5_OBSERVATION_CONTRACT.md` (OC-01 to OC-14, Proposed), have Codex review it read-only, obtain the user's approval, and reconcile the step plans P5.03 to P5.11 with the approved contract. No production code.
@@ -114,7 +114,7 @@ Out of scope with owner: any production code, fixture or test → P5.03 onwards;
 
 ## 8. Risks and Limitations
 - (a) A source changed since 2026-10-21 (columns, units, archive names) — recorded as a difference; the contract follows the current source
-- (b) DWD calm-wind semantics not documented — OC-06 stays OPEN for the user with the observed sample behavior recorded
+- (b) DWD calm-wind semantics not documented — decided on 2026-10-24 as OC-06 option B (a recorded project assumption: `DD_10` omitted when `FF_10` is 0 or `DD_10` is 0); no calm row was observed on 2026-10-24, so the rule rests on synthetic tests
 - (c) Codex review does not converge within 10 rounds — remaining findings reported with the agent's check; the user decides
 - (d) Research downloads: only names, sizes and hashes enter the repository (REQ-083, licence)
 

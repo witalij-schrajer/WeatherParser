@@ -16,6 +16,7 @@ using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Selection;
 using WeatherParser.Parsing.Serialization;
+using WeatherParser.Parsing.Observations.Dwd;
 
 namespace WeatherParser.Package.Tests;
 
@@ -105,7 +106,8 @@ internal sealed class ConsumerSelectionHost : IDisposable
             .AddSingleton(new HttpClient(Handler))
             .AddSingleton<TimeProvider>(Clock)
             .AddSingleton(Cdc)
-            .AddSingleton(Mosmix);
+            .AddSingleton(Mosmix)
+            .AddSingleton(new DwdObservationOptions());
     }
 
     public void ArrangeCdc()
@@ -119,6 +121,14 @@ internal sealed class ConsumerSelectionHost : IDisposable
 
         var nowFile = ConsumerFixtures.CdcNowZip("tu", "00044", ConsumerFixtures.CdcRow("00044", "202610211150", "1001.2", "12.3", "10.1", "85.0", "8.9"));
         Handler.Add(new Uri(Cdc.AirTemperatureNowDirectory!, "10minutenwerte_TU_00044_now.zip"), nowFile);
+    }
+
+    public void ArrangeCdcFullStation()
+    {
+        ArrangeCdc();
+        Handler.Add(new Uri(Cdc.WindNowDirectory!, "10minutenwerte_wind_00044_now.zip"), ConsumerFixtures.CdcNowZip("ff", "00044", ConsumerFixtures.CdcRow("00044", "202610211150", "3.47", "270")));
+        Handler.Add(new Uri(Cdc.PrecipitationNowDirectory!, "10minutenwerte_nieder_00044_now.zip"), ConsumerFixtures.CdcNowZip("rr", "00044", ConsumerFixtures.CdcRow("00044", "202610211150", "10", "0.5", "1")));
+        Handler.Add(new Uri(Cdc.SolarNowDirectory!, "10minutenwerte_SOLAR_00044_now.zip"), ConsumerFixtures.CdcNowZip("sd", "00044", ConsumerFixtures.CdcRow("00044", "202610211150", "0.0", "36.0", "0.1", "-999")));
     }
 
     public void ArrangeMosmix()

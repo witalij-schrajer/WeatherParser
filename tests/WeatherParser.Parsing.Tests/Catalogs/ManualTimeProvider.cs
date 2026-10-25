@@ -11,6 +11,7 @@ internal sealed class ManualTimeProvider : TimeProvider
     }
 
     public int GetUtcNowCalls { get; private set; }
+    public int CreatedTimers { get; private set; }
 
     public override DateTimeOffset GetUtcNow()
     {
@@ -24,9 +25,21 @@ internal sealed class ManualTimeProvider : TimeProvider
         lock (_timers)
         {
             _timers.Add(timer);
+            ++CreatedTimers;
         }
         timer.Change(dueTime, period);
         return timer;
+    }
+
+    public int ActiveTimers
+    {
+        get
+        {
+            lock (_timers)
+            {
+                return _timers.Count(t => !t.Disposed);
+            }
+        }
     }
 
     public void Advance(TimeSpan by)
@@ -46,6 +59,7 @@ internal sealed class ManualTimeProvider : TimeProvider
     private sealed class ManualTimer(ManualTimeProvider owner, TimerCallback callback, object? state) : ITimer
     {
         public DateTimeOffset? DueAt { get; private set; }
+        public bool Disposed { get; private set; }
 
         public bool Change(TimeSpan dueTime, TimeSpan period)
         {
@@ -62,6 +76,7 @@ internal sealed class ManualTimeProvider : TimeProvider
         public void Dispose()
         {
             DueAt = null;
+            Disposed = true;
         }
 
         public ValueTask DisposeAsync()

@@ -1,6 +1,6 @@
 # P5.04 – Observation File Reading: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines the P5.04 row of section 5 and the "File reading" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: executed on 2026-10-24 ([record](P5_VERIFICATION.md) section 4): Red evidence per slice, T-P5-03 cases green, P4 regression green, coverage gate passed, Codex review with 1 finding (fixed in this plan's S2 expected-failure text).** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-07 and OC-14; no change of content. Refines the P5.04 row of section 5 and the "File reading" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: extend the shared `ICdcNowEvidenceReader` component additively (OC-14, SC-21) so that every row exposes its `QN` quality level and the raw tokens of all data columns of the four products, while the SC-19 bounds, grammar and failure semantics and every P4 caller stay unchanged.
@@ -62,7 +62,7 @@ Expected failure: the defaulted `QualityLevel` property is added first without r
 - `ReadAsync_MissingUsedColumn_StillCdcEvidenceInvalid`
 - `ReadAsync_TokensAreTrimmed`
 
-Expected failure: `ReadAsync_TuArchive_ExposesAllFiveColumns`, `ReadAsync_RrArchive_ExposesThreeColumns` and `ReadAsync_SdArchive_ExposesFourColumns` fail because `Values` holds only the used columns (`TM5_10`, `TD_10`, `RWS_DAU_10`, `RWS_IND_10`, `DS_10`, `SD_10`, `LS_10` absent); `ReadAsync_FfArchive_ExposesBothColumns` (no ignored column in `ff`), `ReadAsync_IgnoredColumnWithArbitraryToken_NotValidated`, `ReadAsync_UsedColumnInvalidToken_StillCdcEvidenceInvalid`, `ReadAsync_MissingUsedColumn_StillCdcEvidenceInvalid` and `ReadAsync_TokensAreTrimmed` pass on first run and are recorded as existing behavior.
+Expected failure: `ReadAsync_TuArchive_ExposesAllFiveColumns`, `ReadAsync_RrArchive_ExposesThreeColumns` and `ReadAsync_SdArchive_ExposesFourColumns` fail because `Values` holds only the used columns (`TM5_10`, `TD_10`, `RWS_DAU_10`, `RWS_IND_10`, `DS_10`, `SD_10`, `LS_10` absent); `ReadAsync_IgnoredColumnWithArbitraryToken_NotValidated` fails too, on its exposure assertion (`KeyNotFoundException` for `TM5_10`), while its acceptance of the arbitrary token is existing behavior (corrected after the Codex review of 2026-10-24); `ReadAsync_FfArchive_ExposesBothColumns` (no ignored column in `ff`), `ReadAsync_UsedColumnInvalidToken_StillCdcEvidenceInvalid`, `ReadAsync_MissingUsedColumn_StillCdcEvidenceInvalid` and `ReadAsync_TokensAreTrimmed` pass on first run and are recorded as existing behavior.
 
 **Green**
 - all data columns between `QN` and `eor` copied as trimmed raw tokens; validation set unchanged.

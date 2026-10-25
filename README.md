@@ -1,6 +1,6 @@
 # WeatherParser
 
-**Phase status (2026-10-24): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); P2 (export contract) accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)), complete (pull request #3 merged into `develop` on 2026-10-20, merge commit `74bf625`); P4 started on 2026-10-20 ([P4 handoff](docs/p2/P4_HANDOFF.md)) and was accepted by the user on 2026-10-24 on candidate `b6bc47f` ([P4 acceptance record](docs/p4/P4_12_ACCEPTANCE.md)); it is complete: pull request #5 merged into `develop` on 2026-10-24 (merge commit `95bcb1e`); P5 starts only on a separate instruction ([P5 handoff](docs/p4/P5_HANDOFF.md)). The SDK is pinned ([DEPENDENCIES.md](DEPENDENCIES.md)); P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; P1.11 developer instructions ([CONTRIBUTING.md](CONTRIBUTING.md)) are accepted.**
+**Phase status (2026-10-25): P0 and P1 complete; P1 accepted by the user on 2026-10-19 ([acceptance record](docs/p1/P1_12_ACCEPTANCE.md#p1-acceptance-2026-10-19)); P2 (export contract) accepted by the user on 2026-10-20 ([P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)), complete (pull request #3 merged into `develop` on 2026-10-20, merge commit `74bf625`); P4 started on 2026-10-20 ([P4 handoff](docs/p2/P4_HANDOFF.md)) and was accepted by the user on 2026-10-24 on candidate `b6bc47f` ([P4 acceptance record](docs/p4/P4_12_ACCEPTANCE.md)); it is complete: pull request #5 merged into `develop` on 2026-10-24 (merge commit `95bcb1e`); P5 (DWD observations) started on 2026-10-24 on the user's instruction ([P5 handoff](docs/p4/P5_HANDOFF.md), [P5 plan](PHASE_P5_PLAN.md)); P5 accepted by the user on 2026-10-25 on candidate `fd461c8` ([P5 acceptance record](docs/p5/P5_11_ACCEPTANCE.md), [P6 handoff](docs/p5/P6_HANDOFF.md)); P5 is complete only once the user merges pull request #7 into `develop`. The SDK is pinned ([DEPENDENCIES.md](DEPENDENCIES.md)); P1.09 is accepted and clean-checkout reproducibility is verified on Windows x64. P1.10 (Debian 13 ARM64) is verified on the NanoPi R76S and accepted; P1.11 developer instructions ([CONTRIBUTING.md](CONTRIBUTING.md)) are accepted.**
 
 WeatherParser is primarily a planned C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts. The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
@@ -23,7 +23,7 @@ English is the sole maintained language for project documentation and instructio
 
 ## Project status
 
-As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md); its version 1 is frozen since the P2 acceptance on 2026-10-20 (only additive optional changes, C-03). Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). Since P4.09 (2026-10-23) it also selects CDC stations and MOSMIX forecast locations around a reference point (see [Station and location selection](#station-and-location-selection-library)). **Weather-source parsers, MQTT and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. No public package publication is claimed.
+As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md); its version 1 is frozen since the P2 acceptance on 2026-10-20 (only additive optional changes, C-03). Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). Since P4.09 (2026-10-23) it also selects CDC stations and MOSMIX forecast locations around a reference point (see [Station and location selection](#station-and-location-selection-library)). Since P5.07 (2026-10-25) it also parses the DWD 10-minute observations of one CDC station into an observation dataset (see [DWD observations](#dwd-observations-library)). **The OsthessenWetter and MOSMIX parsers, MQTT and executable CLI commands are not implemented yet.** The commands below describe the planned interface and cannot be run yet. No public package publication is claimed.
 
 ## Workflow role and execution
 
@@ -220,6 +220,63 @@ A caller cancellation surfaces as `OperationCanceledException` and wins over the
 - A selection is a configuration-time operation — run it when a station or location is chosen or reviewed, not on a schedule, and if repeated at most once per day per search.
 - The per-station evidence requests are part of that run and not intended for polling (project recommendation, not a provider guarantee).
 
+## DWD observations (library)
+
+The library parses the DWD 10-minute `now` observations of one explicitly given CDC station (`IDwdObservationParser`). `ParseAsync(string stationId, CancellationToken cancellationToken)` returns an `ObservationDataset` (export root of contract v1, serializable with `IJsonExportSerializer` / `IXmlExportSerializer`). The station ID has exactly five ASCII digits with leading zeros, for example `00044`; it is checked before any request, and the library never substitutes another or the nearest station. One call is one parse: the library reads the four CDC station lists, resolves the station and reads the station's `now` archive of every product whose list contains it. There is no scheduler and no retry; scheduling stays external. The example CLI command `--ParseDWD` is still planned (P3).
+
+### Consumer registration
+
+The registration of [Station and location selection](#station-and-location-selection-library) is extended by the observation options:
+
+```csharp
+services.AddSingleton(new DwdObservationOptions
+{
+    ObservationDeadline = TimeSpan.FromSeconds(120),
+});
+```
+
+- `DwdObservationOptions` must be registered by every consumer of `AddWeatherParsing`, also one that only selects stations, because the container validation (`ValidateOnBuild`) checks the parser's dependencies; `new DwdObservationOptions()` gives the default.
+- `ObservationDeadline` (default 120 s) bounds one parse: it must be greater than zero and at most 1 hour, otherwise construction fails with `OBSERVATION-LIMIT-INVALID` (zero, negative values, `Timeout.InfiniteTimeSpan` and values above 1 hour are rejected); its expiry fails the parse with `OBSERVATION-DEADLINE-EXCEEDED`.
+- The parser reuses the eight URIs of `CdcCatalogEndpoints`; its `SelectionDeadline` and `MaxEvidenceCandidates` do not apply to observations.
+- At most eight requests per parse: the four station lists and at most four archives (`10minutenwerte_TU_<id>_now.zip`, `..._wind_...`, `..._nieder_...`, `..._SOLAR_...` below the `now` directories), at most four in parallel, with the bounds of [HTTP transport](#http-transport). An archive answering HTTP 404 is a missing product (`OBSERVATION-PRODUCT-MISSING`), and the other products are still used; every other retrieval or format failure fails the parse.
+
+### Exported quantities
+
+| DWD column | Export field | Conversion and period |
+| --- | --- | --- |
+| `TT_10` (°C, 2 m, instantaneous) | `temperature_c` | none; no period |
+| `RF_10` (%) | `humidity_percent` | none; no period |
+| `PP_10` (hPa at station altitude) | `pressure_hpa`, `pressure_mmhg` | `pressure_reference` `sensor`; both from one value; no period |
+| `FF_10` (m/s, mean of the previous 10 minutes) | `wind_speed_kmh` | × 3.6; period of the previous 10 minutes |
+| `DD_10` (degrees, mean of the previous 10 minutes) | `wind_direction_deg` | 360 exported as 0 (north); period of the previous 10 minutes |
+| `RWS_10` (mm, sum of the previous 10 minutes) | `rain_rate_mm_h` | mm per 10 minutes × 6; period of the previous 10 minutes |
+| `GS_10` (J/cm², sum of the previous 10 minutes) | `solar_irradiance_w_m2` | × 10000 to J/m², ÷ 600 s; period of the previous 10 minutes |
+
+- Every quantity takes the newest row with a usable value and keeps its own `measured_at` (UTC, from `MESS_DATUM`); the dataset `measured_at` is the newest of them. There is no freshness filter: the archive of a station that stopped reporting still yields its old values, so consumers evaluate `measured_at`.
+- `-999` in any spelling is a missing value and the quantity is omitted (`OBSERVATION-READING-OMITTED`); `0` is a real value.
+- Wind direction is omitted when the wind speed of the same row is 0 (calm) or the direction is 0, because the DWD data write north as 360 and document no calm marker (a project assumption).
+- `quality` is the DWD quality level `QN` of the row, unchanged: `1` only formal control, `2` controlled with individually defined criteria, `3` automatic control and correction ([DWD dataset descriptions](#data-sources)); data with `QN` 1 may contain significant errors.
+- Not exported: `TM5_10`, `TD_10`, `RWS_DAU_10`, `RWS_IND_10`, `DS_10`, `SD_10`, `LS_10` (no export field) and `illuminance_lux` (no DWD 10-minute source).
+- Limitations: the quality control of the `now` data is not yet completed, so values may still change; the time stamp of `RWS_10` is instrument dependent (with a Pluvio Ott gauge the physical interval ends about 5 minutes earlier) and is not corrected — the exported period is the nominal one.
+
+### Error and notice IDs
+
+Exceptions (`ErrorId`):
+- `DwdStationException` `STATION-ID-INVALID` (before any request), `STATION-UNKNOWN` (the station is in no list; no archive request), `STATION-METADATA-CONFLICT` (the station's records in the lists differ, so its location cannot be stated)
+- `ObservationLimitException` `OBSERVATION-LIMIT-INVALID`, `OBSERVATION-DEADLINE-EXCEEDED`
+- reused from selection: `CatalogRetrievalException` `CATALOG-RETRIEVAL-FAILED`, `CATALOG-TIMEOUT`, `CATALOG-TOO-LARGE`; `CatalogFormatException` `CATALOG-FORMAT-INVALID`, `CDC-EVIDENCE-INVALID`; `ParserEndpointValidationException` `ENDPOINT-INVALID`
+- `ObservationDatasetRejectedException` when no reading is usable (no `ErrorId`; `OmittedReadings` lists the omitted quantities with their reasons)
+
+Notices (log event names, Warning): `OBSERVATION-PRODUCT-MISSING`, `OBSERVATION-READING-OMITTED` (quantity and reason, including `CalmWind` and `ZeroDirection`), `CDC-STATION-CONFLICT`, `CATALOG-RECORD-SKIPPED`. Log messages carry the station ID and the retrieval time in UTC, never measurement values.
+
+A caller cancellation surfaces as `OperationCanceledException` and wins over the observation deadline, which wins over every other failure.
+
+### Source conditions and retrieval guidance
+
+- The attribution and privacy notes of [Source conditions and retrieval guidance](#source-conditions-and-retrieval-guidance) apply: data of the Deutscher Wetterdienst (DWD) under CC BY 4.0, republished observations keep the attribution "Deutscher Wetterdienst (DWD)", and DWD stores the requesting IP address for at most 7 days.
+- The values are 10-minute values; DWD updates the `now` data at a frequency of less than one hour (DWD dataset descriptions).
+- Project recommendation, not a provider rule (DWD documents no request-rate limit): schedule parses externally (for example cron or an n8n workflow; neither is a dependency) and parse a station at most once every 10 minutes.
+
 ## Configuration and publication
 
 Station selection, source settings, MQTT connection and topics are configurable. Credentials belong in environment variables or local configuration excluded from Git. The public repository contains only examples without secrets or private operational data.
@@ -230,6 +287,9 @@ The example CLI separate broker transport uses dedicated credentials and scoped 
 
 - [DWD Climate Data Center: 10-minute observations](https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/)
 - [DWD: temperature, humidity and pressure dataset description](https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/air_temperature/DESCRIPTION_obsgermany_climate_10min_air_temperature_en.pdf)
+- [DWD: wind dataset description](https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/wind/DESCRIPTION_obsgermany_climate_10min_wind_en.pdf)
+- [DWD: precipitation dataset description](https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/precipitation/DESCRIPTION_obsgermany-climate-10min-precipitation_en.pdf)
+- [DWD: solar dataset description](https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/solar/DESCRIPTION_obsgermany_climate_10min_solar_en.pdf)
 - [OsthessenWetter observations](https://osthessen-wetter.de/messwerte/)
 - [DWD MOSMIX: catalog, formats and element definitions](https://www.dwd.de/DE/leistungen/opendata/hilfe.html)
 - [DWD MOSMIX_L: individual forecast locations](https://opendata.dwd.de/weather/local_forecasts/mos/MOSMIX_L/single_stations/)
@@ -255,6 +315,10 @@ The additional decisions and P0 clarifications dated 2026-10-14 (development env
 **2026-10-20: P2 accepted by the user (see the [P2 acceptance record](docs/p2/P2_12_ACCEPTANCE.md)); complete: pull request #3 merged into `develop` on 2026-10-20 (merge commit `74bf625`). P4 started on 2026-10-20 on the user's instruction ([P4 handoff](docs/p2/P4_HANDOFF.md)).**
 
 **2026-10-24: P4 accepted by the user on candidate `b6bc47f` ([P4 acceptance record](docs/p4/P4_12_ACCEPTANCE.md)); it is complete: pull request #5 merged into `develop` on 2026-10-24 (merge commit `95bcb1e`); P5 starts only on a separate instruction ([P5 handoff](docs/p4/P5_HANDOFF.md)).**
+
+**2026-10-24: P5 (DWD observations) started on the user's instruction on branch `features/develop/P5` from `develop` `1e604dc` ([P5 handoff](docs/p4/P5_HANDOFF.md), [P5 plan](PHASE_P5_PLAN.md)); P5.01 (foundation check) complete with outcome READY ([record](docs/p5/P5_01_FOUNDATION_CHECK.md)); P5.02: observation contract OC-01 to OC-14 approved by the user on 2026-10-24 ([contract](docs/p5/P5_OBSERVATION_CONTRACT.md)) and the P5 plans reconciled with it.**
+
+**2026-10-25: P5 (DWD observations) accepted by the user on candidate `fd461c8` ([P5 acceptance record](docs/p5/P5_11_ACCEPTANCE.md)) after the integrated verification READY on Windows, hosted CI and the NanoPi R76S ([P5.10 record](docs/p5/P5_10_INTEGRATED_VERIFICATION.md)); P5 is complete only once the user merges pull request #7 into `develop`; P6 starts only on a separate instruction ([P6 handoff](docs/p5/P6_HANDOFF.md)).**
 
 Sequence with unchanged phase IDs: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Complete and accept the entire library first, including station selection, DWD/OsthessenWetter/MOSMIX_S/MOSMIX_L parsers, output entities, JSON/XML, XSDs, MQTT serializer and DI. Then begin P3 with the CLI usage example, configuration and example broker transport. Public release remains P9.
 

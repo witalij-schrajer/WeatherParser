@@ -20,7 +20,7 @@ public interface ICdcNowEvidenceReader
     /// <param name="stationId">The five-digit station ID.</param>
     /// <param name="productCode">The product code, one of "tu", "ff", "rr" or "sd".</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The validated rows of the product's own columns (raw tokens) with their UTC measurement times; ignored columns are not returned.</returns>
+    /// <returns>The validated rows with their UTC measurement times, the trimmed QN token (<see cref="CdcNowEvidenceRow.QualityLevel"/>) and the raw trimmed tokens of every data column of the header; only the product's own columns are validated (SC-19, OC-14).</returns>
     /// <exception cref="CatalogFormatException">
     /// Thrown with <see cref="CatalogFormatException.ErrorId"/> <c>CDC-EVIDENCE-INVALID</c> when the archive is not a valid ZIP archive,
     /// does not contain exactly one correctly named member,

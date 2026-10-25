@@ -19,3 +19,11 @@ internal sealed record LiveCheckResult(
     IReadOnlyList<string> CdcSchemaEvents,
     IReadOnlyList<LiveRequest> Requests,
     IReadOnlyList<(LogLevel Level, string? EventName, string Message)> Notices);
+
+internal sealed record LiveObservationResult(
+    ObservationDataset Dataset,
+    byte[] Json,
+    byte[] Xml,
+    IReadOnlyList<string> SchemaEvents,
+    IReadOnlyList<LiveRequest> Requests,
+    IReadOnlyList<(LogLevel Level, string? EventName, string Message)> Notices);

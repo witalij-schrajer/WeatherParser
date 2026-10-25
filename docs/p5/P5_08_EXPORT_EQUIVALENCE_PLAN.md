@@ -1,6 +1,6 @@
 # P5.08 – Export Equivalence and Schema Validation: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines the P5.08 row of section 5 and the "Export" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: executed on 2026-10-25 ([record](P5_VERIFICATION.md) section 8): characterization tests green, shared helper extracted with the P2 tests unchanged, Codex review 3, 2, 0 findings (test gaps, all fixed). The synthetic inputs are helpers inside `DwdObservationExportContractTests` instead of a separate file.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: OC-05, OC-06 (option B) and OC-07; the calm-wind input follows option B; after the PR #7 review of 2026-10-24: all-calm and all-zero-direction inputs on the wire. Refines the P5.08 row of section 5 and the "Export" row of section 4 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: prove that the `ObservationDataset` produced by the P5 pipeline serializes through both real serializers to equivalent, schema-valid documents that carry the UTC forms, omitted members, periods, quality strings, pressure reference and rounded values the contract requires, without any further retrieval.
@@ -21,7 +21,7 @@ Out of scope with owner: serializer or schema changes → none planned (a defect
 | Path | Action | Content |
 |---|---|---|
 | `tests/WeatherParser.Parsing.Tests/Observations/Dwd/DwdObservationExportContractTests.cs` | Create | Equivalence, schema and wire tests |
-| `tests/WeatherParser.Parsing.Tests/Observations/Dwd/DwdObservationSyntheticInputs.cs` | Create | Synthetic lists and archives for one station with all four products, one with a missing product, one with calm wind, one with only-missing columns (SC-14, no copied DWD rows) |
+| `tests/WeatherParser.Parsing.Tests/Observations/Dwd/DwdObservationSyntheticInputs.cs` | Create | Synthetic lists and archives for one station with all four products, one with a missing product, one with calm wind, one whose wind rows are all calm, one whose `DD_10` values are all 0, one with only-missing columns (SC-14, no copied DWD rows) |
 | `tests/WeatherParser.Parsing.Tests/Export/ExportEquivalence.cs` | Create | Shared equivalence helper extracted from the private routines |
 | `tests/WeatherParser.Parsing.Tests/Export/AllRootsEquivalenceTests.cs`, `tests/WeatherParser.Parsing.Tests/Observations/ObservationExportEquivalenceTests.cs` | Change | Use the shared helper; behavior unchanged |
 | `docs/p5/P5_VERIFICATION.md` | Change | P5.08 section |
@@ -45,7 +45,7 @@ Out of scope with owner: serializer or schema changes → none planned (a defect
 
 ### S2 Wire details
 **Red**
-- No Red: characterization; `Export_MeasuredAtPerQuantity_UtcFormWithoutZ` (`YYYY-MM-DDTHH:mm:ss`, differing times per quantity); `Export_DatasetMeasuredAt_IsLatest`; `Export_RetrievedAt_WholeSeconds`; `Export_OmittedQuantities_Absent` (no `illuminance_lux`; a missing-product quantity absent in JSON and XML); `Export_Periods_StartAndEndOnWindPrecipitationRadiation`; `Export_NoPeriodOnTemperatureHumidityPressure`; `Export_Quality_PerContract` (OC-07 form on every exported value); `Export_PressureReference_Sensor_BothUnits` (`1013.25` → `1013` hPa and `760` mmHg); `Export_Rounding_PerREQ057` (temperature `20.25` → `20.3`, wind `3.47` m/s → `12`, humidity `50.5` → `51`); `Export_Irradiance_FromEnergyAndPeriod` (`36.0` J/cm² → `600` W/m²); `Export_RainRate_FromAccumulationAndPeriod` (`0.5` mm → `3` mm/h); `Export_CalmWind_DirectionPerContract`; `Export_UmlautsAndLeadingZeros_Preserved` (`Würzburg`, `00044`, `dwd:00044`).
+- No Red: characterization; `Export_MeasuredAtPerQuantity_UtcFormWithoutZ` (`YYYY-MM-DDTHH:mm:ss`, differing times per quantity); `Export_DatasetMeasuredAt_IsLatest`; `Export_RetrievedAt_WholeSeconds`; `Export_OmittedQuantities_Absent` (no `illuminance_lux`; a missing-product quantity absent in JSON and XML); `Export_Periods_StartAndEndOnWindPrecipitationRadiation`; `Export_NoPeriodOnTemperatureHumidityPressure`; `Export_Quality_PerContract` (OC-07 form on every exported value); `Export_PressureReference_Sensor_BothUnits` (`1013.25` → `1013` hPa and `760` mmHg); `Export_Rounding_PerREQ057` (temperature `20.25` → `20.3`, wind `3.47` m/s → `12`, humidity `50.5` → `51`); `Export_Irradiance_FromEnergyAndPeriod` (`36.0` J/cm² → `600` W/m²); `Export_RainRate_FromAccumulationAndPeriod` (`0.5` mm → `3` mm/h); `Export_CalmWind_DirectionPerContract`; `Export_AllCalmOrZeroDirection_NoWindDirectionMember` (no `wind_direction_deg` in JSON and XML, never 0); `Export_UmlautsAndLeadingZeros_Preserved` (`Würzburg`, `00044`, `dwd:00044`).
 
 **Green**
 - no change expected.

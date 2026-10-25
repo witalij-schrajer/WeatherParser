@@ -233,7 +233,8 @@ public sealed class CdcNowEvidenceReader : ICdcNowEvidenceReader
 
             rows.Add(new CdcNowEvidenceRow(
                 DateTime.SpecifyKind(measuredAt, DateTimeKind.Utc),
-                columns.ToDictionary(c => c, c => fields[Array.IndexOf(names, c)], StringComparer.Ordinal)));
+                Enumerable.Range(3, names.Length - 4).ToDictionary(i => names[i], i => fields[i], StringComparer.Ordinal))
+            { QualityLevel = fields[2] });
         }
 
         return new CdcNowEvidence(stationId, productCode, rows);

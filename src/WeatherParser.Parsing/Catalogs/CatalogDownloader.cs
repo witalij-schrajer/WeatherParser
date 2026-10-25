@@ -89,9 +89,15 @@ public sealed class CatalogDownloader : ICatalogDownloader
         if (request.DeadlineToken.IsCancellationRequested)
         {
             var message = $"The deadline expired while retrieving endpoint '{request.EndpointName}' ({Sanitize(request.Uri)}).";
-            return request.DeadlineKind == CatalogDeadlineKind.Selection
-                ? new SelectionLimitException(SelectionLimitException.DeadlineExceededErrorId, message + " The selection deadline was exceeded (contract SC-18).")
-                : new EvidenceCacheException(EvidenceCacheException.RefreshDeadlineExceededErrorId, message + " The MOSMIX_S refresh deadline was exceeded (contract SC-22).");
+            switch (request.DeadlineKind)
+            {
+                case CatalogDeadlineKind.Selection:
+                    return new SelectionLimitException(SelectionLimitException.DeadlineExceededErrorId, message + " The selection deadline was exceeded (contract SC-18).");
+                case CatalogDeadlineKind.Observation:
+                    return new ObservationLimitException(ObservationLimitException.DeadlineExceededErrorId, message + " The observation deadline was exceeded (contract OC-09).");
+                default: // Refresh
+                    return new EvidenceCacheException(EvidenceCacheException.RefreshDeadlineExceededErrorId, message + " The MOSMIX_S refresh deadline was exceeded (contract SC-22).");
+            }
         }
 
         return new CatalogRetrievalException(CatalogRetrievalException.TimeoutErrorId, request.EndpointName, $"The retrieval of endpoint '{request.EndpointName}' ({Sanitize(request.Uri)}) timed out (contract SC-09).");

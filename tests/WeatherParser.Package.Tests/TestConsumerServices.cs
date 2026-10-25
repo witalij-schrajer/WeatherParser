@@ -3,11 +3,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using WeatherParser.Parsing.Catalogs;
 using WeatherParser.Parsing.Evidence.MosmixS;
+using WeatherParser.Parsing.Observations.Dwd;
 
 namespace WeatherParser.Package.Tests;
 
 /// <summary>
-/// Registers what a consumer must register next to AddWeatherParsing (SC-08, SC-09, SC-12, SC-13): logging (a no-op logger here), an HttpClient that is never used to send in these tests, the system TimeProvider and valid CDC and MOSMIX catalog endpoint options with placeholder URIs.
+/// Registers what a consumer must register next to AddWeatherParsing (SC-08, SC-09, SC-12, SC-13): logging (a no-op logger here), an HttpClient that is never used to send in these tests, the system TimeProvider and valid CDC and MOSMIX catalog endpoint options with placeholder URIs and the default DWD observation options.
 /// Tests that observe log calls use strict mocks instead.
 /// </summary>
 internal static class TestConsumerServices
@@ -36,6 +37,7 @@ internal static class TestConsumerServices
             SolarStationList = new Uri("https://example.org/cdc/solar/now/zehn_now_sd_Beschreibung_Stationen.txt"),
             SolarNowDirectory = new Uri("https://example.org/cdc/solar/now/"),
         });
+        services.AddSingleton(new DwdObservationOptions());
         return services;
     }
 }

@@ -26,6 +26,11 @@ internal static class CdcNowArchiveBuilder
         return $"{stationId,10};{messDatum};    3;" + string.Join(";", values.Select(v => v.PadLeft(8))) + ";eor";
     }
 
+    public static string RowWithQn(string stationId, string messDatum, string qn, params string[] values)
+    {
+        return $"{stationId,10};{messDatum};{qn,5};" + string.Join(";", values.Select(v => v.PadLeft(8))) + ";eor";
+    }
+
     public static string MemberName(string productCode, string stationId)
     {
         return $"produkt_zehn_now_{productCode}_20250420_20261021_{stationId}.txt";

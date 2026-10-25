@@ -1,6 +1,6 @@
 # P5.11 – Acceptance and P6 Handoff: Implementation Plan
 
-**Status: plan only (2026-10-24); nothing is implemented or verified yet.** Refines the P5.11 row of section 5 and section 9 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+**Status: executed on 2026-10-25 ([record](P5_11_ACCEPTANCE.md)): A1 to A7 complete (P5 accepted by the user on candidate `fd461c8`); A8 status passages written and checked on the working tree, checkpoint `07bc9b0` with its committed-revision run (exit 0) recorded in [P5_VERIFICATION.md](P5_VERIFICATION.md) section 11; A9: pull request #7 marked ready for review on 2026-10-25 on the user's instruction; A10 and A11 (review, merge by the user) pending.** Reconciled with the approved observation contract ([OC rows](P5_OBSERVATION_CONTRACT.md), approved 2026-10-24) on 2026-10-24: the limitations of OC-05 and OC-06 added to A4. Refines the P5.11 row of section 5 and section 9 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: turn the READY outcome of P5.10 into an explicit, evidence-based acceptance decision by the user, hand P6 the accepted observation foundation, update the status documents consistently, and complete the phase through the pull-request review and the user's merge.
@@ -53,7 +53,7 @@ Out of scope with owner: P6 work → P6 (starts only on the user's instruction);
 - No Red: records.
 
 **Roles**
-- the orchestrating agent lists the approved OC rows with links and the export-contract status (unchanged or additive decisions), and every limitation with its owner (including inherited P2 and P4 limitations carried forward item by item) and writes the prose.
+- the orchestrating agent lists the approved OC rows with links and the export-contract status (unchanged or additive decisions), and every limitation with its owner (including inherited P2 and P4 limitations carried forward item by item, the uncorrected instrument-dependent `RWS_10` time stamp of OC-05 and the calm-wind project assumption of OC-06) and writes the prose.
 
 **Check**
 - every OC row listed; every limitation has an owner.
