@@ -123,6 +123,14 @@ internal sealed class ConsumerSelectionHost : IDisposable
         Handler.Add(new Uri(Cdc.AirTemperatureNowDirectory!, "10minutenwerte_TU_00044_now.zip"), nowFile);
     }
 
+    public void ArrangeCdcFullStation()
+    {
+        ArrangeCdc();
+        Handler.Add(new Uri(Cdc.WindNowDirectory!, "10minutenwerte_wind_00044_now.zip"), ConsumerFixtures.CdcNowZip("ff", "00044", ConsumerFixtures.CdcRow("00044", "202610211150", "3.47", "270")));
+        Handler.Add(new Uri(Cdc.PrecipitationNowDirectory!, "10minutenwerte_nieder_00044_now.zip"), ConsumerFixtures.CdcNowZip("rr", "00044", ConsumerFixtures.CdcRow("00044", "202610211150", "10", "0.5", "1")));
+        Handler.Add(new Uri(Cdc.SolarNowDirectory!, "10minutenwerte_SOLAR_00044_now.zip"), ConsumerFixtures.CdcNowZip("sd", "00044", ConsumerFixtures.CdcRow("00044", "202610211150", "0.0", "36.0", "0.1", "-999")));
+    }
+
     public void ArrangeMosmix()
     {
         var catalogLine1 = ConsumerFixtures.MosmixLine("X123A", "MÜHLHEIM & <SUED>", "50.06", "9.30", "250");

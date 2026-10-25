@@ -35,7 +35,7 @@ public sealed class PackageDwdObservationTests
     public async Task Package_ParseAsync_SyntheticStation_ProducesSchemaValidJsonAndXml()
     {
         using var host = new ConsumerSelectionHost("https://a.example.invalid/", Now);
-        host.ArrangeCdc();
+        host.ArrangeCdcFullStation();
 
         var parser = host.Provider.GetRequiredService<IDwdObservationParser>();
         var dataset = await parser.ParseAsync("00044", CancellationToken.None);
@@ -82,10 +82,12 @@ public sealed class PackageDwdObservationTests
     public async Task Package_Result_MatchesExpectedGraphAndJsonXmlEquivalent()
     {
         using var host = new ConsumerSelectionHost("https://a.example.invalid/", Now);
-        host.ArrangeCdc();
+        host.ArrangeCdcFullStation();
 
         var parser = host.Provider.GetRequiredService<IDwdObservationParser>();
         var dataset = await parser.ParseAsync("00044", CancellationToken.None);
+
+        host.Handler.Requests.Count.Should().Be(8);
 
         // Validate XML
         var xml = await host.XmlAsync(dataset);
@@ -146,11 +148,19 @@ public sealed class PackageDwdObservationTests
         }
 
         // Check that absent members are not present
-        measurementsJson.TryGetProperty("wind_speed_kmh", out _).Should().BeFalse();
-        measurementsJson.TryGetProperty("wind_direction_deg", out _).Should().BeFalse();
-        measurementsJson.TryGetProperty("rain_rate_mm_h", out _).Should().BeFalse();
-        measurementsJson.TryGetProperty("solar_irradiance_w_m2", out _).Should().BeFalse();
         measurementsJson.TryGetProperty("illuminance_lux", out _).Should().BeFalse();
+
+        // Period quantities
+        var periodQuantities = new[] { ("wind_speed_kmh", 12m), ("wind_direction_deg", 270m), ("rain_rate_mm_h", 3m), ("solar_irradiance_w_m2", 600m) };
+        foreach (var (name, expectedValue) in periodQuantities)
+        {
+            var element = measurementsJson.GetProperty(name);
+            element.GetProperty("measured_at").GetString().Should().Be("2026-10-21T11:50:00");
+            element.GetProperty("quality").GetString().Should().Be("3");
+            element.GetProperty("period").GetProperty("start").GetString().Should().Be("2026-10-21T11:40:00");
+            element.GetProperty("period").GetProperty("end").GetString().Should().Be("2026-10-21T11:50:00");
+            element.GetProperty("value").GetDecimal().Should().Be(expectedValue);
+        }
 
         // XML assertions
         xmlDocument.Root!.Name.Should().Be(ns + "observation_dataset");
@@ -184,10 +194,27 @@ public sealed class PackageDwdObservationTests
             element.Element(ns + "period").Should().BeNull();
         }
 
-        foreach (var name in new[] { "wind_speed_kmh", "wind_direction_deg", "rain_rate_mm_h", "solar_irradiance_w_m2", "illuminance_lux" })
+        foreach (var name in new[] { "illuminance_lux" })
         {
             measurementsXml.Element(ns + name).Should().BeNull();
         }
+
+        // Period quantities XML
+        foreach (var (name, expectedValue) in periodQuantities)
+        {
+            var element = measurementsXml.Element(ns + name)!;
+            element.Element(ns + "measured_at")!.Value.Should().Be("2026-10-21T11:50:00");
+            element.Element(ns + "quality")!.Value.Should().Be("3");
+            element.Element(ns + "period")!.Element(ns + "start")!.Value.Should().Be("2026-10-21T11:40:00");
+            element.Element(ns + "period")!.Element(ns + "end")!.Value.Should().Be("2026-10-21T11:50:00");
+            decimal.Parse(element.Element(ns + "value")!.Value, CultureInfo.InvariantCulture).Should().Be(expectedValue);
+        }
+
+        // Typed graph assertions
+        dataset.Measurements.WindSpeedKmh!.Value.Should().Be(12m);
+        dataset.Measurements.RainRateMmH!.Value.Should().Be(3m);
+        dataset.Measurements.SolarIrradianceWm2!.Value.Should().Be(600m);
+        dataset.Measurements.WindDirectionDeg!.Value.Should().Be(270m);
     }
 
     private static IReadOnlyList<string> Validate(byte[] document)

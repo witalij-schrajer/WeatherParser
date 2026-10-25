@@ -1,4 +1,5 @@
 using System.Globalization;
+using WeatherParser.Parsing.Exceptions;
 using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Quantities;
 using WeatherParser.Parsing.Time;
@@ -12,6 +13,7 @@ public sealed class DwdObservationMapper : IDwdObservationMapper
 {
     private readonly IQuantityValidator _validator;
     private readonly ISourceTimeNormalizer _normalizer;
+    private static readonly TimeSpan TenMinutes = TimeSpan.FromMinutes(10);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DwdObservationMapper"/> class.
@@ -170,15 +172,26 @@ public sealed class DwdObservationMapper : IDwdObservationMapper
     /// <param name="value">The value, or null if no valid value was found.</param>
     /// <param name="hasPeriod">Whether the reading has a period.</param>
     /// <returns>The observation reading.</returns>
-    private ObservationReading Reading(QuantityKind kind, CdcNowEvidenceRow? row, double? value, bool hasPeriod) => new()
+    /// <exception cref="CatalogFormatException">CDC-EVIDENCE-INVALID when a period-bearing row is earlier than 0001-01-01 00:10 UTC, so the period start is not representable.</exception>
+    private ObservationReading Reading(QuantityKind kind, CdcNowEvidenceRow? row, double? value, bool hasPeriod)
     {
-        Kind = kind,
-        Value = value,
-        Time = row is null ? null : _normalizer.NormalizeComplete(new DateTimeOffset(row.MeasuredAtUtc)),
-        Period = hasPeriod && row is not null ? new AveragingPeriod(row.MeasuredAtUtc.AddMinutes(-10), row.MeasuredAtUtc) : null,
-        PressureUnit = kind == QuantityKind.Pressure ? Quantities.PressureUnit.Hectopascal : null,
-        PressureReference = kind == QuantityKind.Pressure ? Quantities.PressureReference.Sensor : null,
-        WindSpeedUnit = kind == QuantityKind.MeanWindSpeed ? Observations.WindSpeedUnit.MetresPerSecond : null,
-        Quality = row is null || row.QualityLevel.Length == 0 ? null : row.QualityLevel
-    };
+        if (hasPeriod && row is not null && row.MeasuredAtUtc.Ticks < TenMinutes.Ticks)
+        {
+            throw new CatalogFormatException(
+                CatalogFormatException.CdcEvidenceInvalidErrorId,
+                "The measurement timestamp cannot represent its ten-minute period (contract OC-05).");
+        }
+
+        return new ObservationReading
+        {
+            Kind = kind,
+            Value = value,
+            Time = row is null ? null : _normalizer.NormalizeComplete(new DateTimeOffset(row.MeasuredAtUtc)),
+            Period = hasPeriod && row is not null ? new AveragingPeriod(row.MeasuredAtUtc - TenMinutes, row.MeasuredAtUtc) : null,
+            PressureUnit = kind == QuantityKind.Pressure ? Quantities.PressureUnit.Hectopascal : null,
+            PressureReference = kind == QuantityKind.Pressure ? Quantities.PressureReference.Sensor : null,
+            WindSpeedUnit = kind == QuantityKind.MeanWindSpeed ? Observations.WindSpeedUnit.MetresPerSecond : null,
+            Quality = row is null || row.QualityLevel.Length == 0 ? null : row.QualityLevel
+        };
+    }
 }

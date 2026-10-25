@@ -65,12 +65,15 @@ internal static class ConsumerFixtures
 
     public static byte[] CdcNowZip(string productCode, string stationId, params string[] rows)
     {
-        if (productCode != "tu")
+        var header = productCode switch
         {
-            throw new ArgumentException("Only 'tu' product code is supported.", nameof(productCode));
-        }
+            "tu" => "STATIONS_ID;MESS_DATUM;  QN;PP_10;TT_10;TM5_10;RF_10;TD_10;eor",
+            "ff" => "STATIONS_ID;MESS_DATUM;  QN;FF_10;DD_10;eor",
+            "rr" => "STATIONS_ID;MESS_DATUM;  QN;RWS_DAU_10;RWS_10;RWS_IND_10;eor",
+            "sd" => "STATIONS_ID;MESS_DATUM;  QN;DS_10;GS_10;SD_10;LS_10;eor",
+            _ => throw new ArgumentException("Unknown product code.", nameof(productCode))
+        };
 
-        var header = "STATIONS_ID;MESS_DATUM;  QN;PP_10;TT_10;TM5_10;RF_10;TD_10;eor";
         var sb = new StringBuilder();
         sb.Append(header);
         sb.Append("\r\n");

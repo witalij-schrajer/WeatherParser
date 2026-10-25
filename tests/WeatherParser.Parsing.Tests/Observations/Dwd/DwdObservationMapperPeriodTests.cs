@@ -1,6 +1,7 @@
 using System;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using WeatherParser.Parsing.Exceptions;
 using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Observations.Dwd;
 using WeatherParser.Parsing.Parsing;
@@ -106,5 +107,33 @@ public sealed class DwdObservationMapperPeriodTests
         reading.Value.Should().Be(0.0);
         ShouldHaveTenMinutePeriod(reading);
         result.Omissions.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow("ff", "FF_10", "3.4", 0)]
+    [DataRow("ff", "FF_10", "3.4", 9)]
+    [DataRow("rr", "RWS_10", "0.4", 0)]
+    [DataRow("rr", "RWS_10", "0.4", 9)]
+    [DataRow("sd", "GS_10", "36.0", 0)]
+    [DataRow("sd", "GS_10", "36.0", 9)]
+    public void Map_PeriodProduct_TimestampBeforeFirstTenMinutes_ThrowsCdcEvidenceInvalid(string product, string column, string token, int minute)
+    {
+        var time = new DateTime(1, 1, 1, 0, minute, 0, DateTimeKind.Utc);
+        var act = () => _subject.Map(new[] { Evidence(product, Row(time, "3", (column, token))) });
+        act.Should().Throw<CatalogFormatException>().Where(e => e.ErrorId == CatalogFormatException.CdcEvidenceInvalidErrorId);
+    }
+
+    [TestMethod]
+    [DataRow("ff", "FF_10", "3.4", QuantityKind.MeanWindSpeed)]
+    [DataRow("rr", "RWS_10", "0.4", QuantityKind.PrecipitationAccumulation)]
+    [DataRow("sd", "GS_10", "36.0", QuantityKind.RadiationEnergy)]
+    public void Map_PeriodProduct_TimestampAtTenMinutes_PeriodStartsAtMinimum(string product, string column, string token, QuantityKind kind)
+    {
+        var time = new DateTime(1, 1, 1, 0, 10, 0, DateTimeKind.Utc);
+        var result = _subject.Map(new[] { Evidence(product, Row(time, "3", (column, token))) });
+        var reading = Single(result, kind);
+        reading.Period.Should().NotBeNull();
+        reading.Period!.StartUtc.Should().Be(new DateTime(1, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+        reading.Period.EndUtc.Should().Be(time);
     }
 }
