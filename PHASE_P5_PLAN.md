@@ -1,6 +1,6 @@
 # Phase P5 – DWD Observations: Implementation Plan
 
-**Status: planning complete (2026-10-24, record in section 10); P5 started on 2026-10-24 on the user's instruction (branch `features/develop/P5` from `develop` `1e604dc`); P5.01 (foundation check) executed with outcome READY ([record](docs/p5/P5_01_FOUNDATION_CHECK.md)), checkpoint `ca76114`; P5.02: observation contract OC-01 to OC-14 approved by the user on 2026-10-24 ([contract](docs/p5/P5_OBSERVATION_CONTRACT.md)), this plan and the step plans P5.03 to P5.11 reconciled with it; P5.03 to P5.09 (station resolution, file reading, quantity mapping, retrieval boundary, parser service, export equivalence, DI, README and package consumption) complete ([record](docs/p5/P5_VERIFICATION.md) sections 3 to 9); P5.10 (integrated verification) complete with outcome READY on candidate `a87c7bb` and, after the PR #7 review fixes, on candidate `fd461c8` ([P5.10 record](docs/p5/P5_10_INTEGRATED_VERIFICATION.md)); P5.11 (acceptance) needs the user's decision.** This plan refines the P5 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P5 handoff](docs/p4/P5_HANDOFF.md).
+**Status: planning complete (2026-10-24, record in section 10); P5 started on 2026-10-24 on the user's instruction (branch `features/develop/P5` from `develop` `1e604dc`); P5.01 (foundation check) executed with outcome READY ([record](docs/p5/P5_01_FOUNDATION_CHECK.md)), checkpoint `ca76114`; P5.02: observation contract OC-01 to OC-14 approved by the user on 2026-10-24 ([contract](docs/p5/P5_OBSERVATION_CONTRACT.md)), this plan and the step plans P5.03 to P5.11 reconciled with it; P5.03 to P5.09 (station resolution, file reading, quantity mapping, retrieval boundary, parser service, export equivalence, DI, README and package consumption) complete ([record](docs/p5/P5_VERIFICATION.md) sections 3 to 9); P5.10 (integrated verification) complete with outcome READY on candidate `a87c7bb` and, after the PR #7 review fixes, on candidate `fd461c8` ([P5.10 record](docs/p5/P5_10_INTEGRATED_VERIFICATION.md)); P5 accepted by the user on 2026-10-25 on candidate `fd461c8` ([P5.11 acceptance record](docs/p5/P5_11_ACCEPTANCE.md), [P6 handoff](docs/p5/P6_HANDOFF.md)); P5 is complete only once the user merges pull request #7 into `develop`.** This plan refines the P5 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P5 handoff](docs/p4/P5_HANDOFF.md).
 
 ## 1. First step: check P4 completion and adjust this plan
 
@@ -153,20 +153,20 @@ New records under `docs/p5/`; production code under `src/WeatherParser.Parsing/<
 
 ## 9. P5 acceptance and P6 handoff checklist
 
-- [ ] P5.01 foundation check recorded
-- [ ] observation contract approved by the user after Codex review
-- [ ] every mandatory T-P5 row has passing tests and recorded evidence; the optional live check T-P5-18 is either passed or recorded as skipped with its limitation
-- [ ] station resolution, retrieval, parsing and normalization match REQ-030–032, REQ-043–044 and REQ-050–057
-- [ ] the dataset serializes equivalently and validates against the v1 schema
-- [ ] no export contract change without a recorded additive decision
-- [ ] DI and same-run package consumption proven
-- [ ] coverage gate passed on Windows and the NanoPi R76S, platform outcomes separate
-- [ ] limitations with owners
-- [ ] user acceptance recorded
-- [ ] status documents consistent
+- [x] P5.01 foundation check recorded
+- [x] observation contract approved by the user after Codex review
+- [x] every mandatory T-P5 row has passing tests and recorded evidence; the optional live check T-P5-18 is either passed or recorded as skipped with its limitation
+- [x] station resolution, retrieval, parsing and normalization match REQ-030–032, REQ-043–044 and REQ-050–057
+- [x] the dataset serializes equivalently and validates against the v1 schema
+- [x] no export contract change without a recorded additive decision
+- [x] DI and same-run package consumption proven
+- [x] coverage gate passed on Windows and the NanoPi R76S, platform outcomes separate
+- [x] limitations with owners
+- [x] user acceptance recorded
+- [x] status documents consistent
 - [ ] pull request ready for review, review findings resolved test-first, merged into `develop` by the user
-- [ ] P6 handoff written
-- [ ] P6 handoff records what P6 reuses (`ISourceTimeNormalizer.InferDate`, `IObservationDatasetBuilder`, the real serializers) and the open items
+- [x] P6 handoff written
+- [x] P6 handoff records what P6 reuses (`ISourceTimeNormalizer.InferDate`, `IObservationDatasetBuilder`, the real serializers) and the open items
 
 ## 10. Plan authorship and review
 

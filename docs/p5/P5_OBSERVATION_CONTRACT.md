@@ -1,6 +1,6 @@
 # WeatherParser Observation Contract (P5)
 
-**Status (2026-10-24): approved by the user on 2026-10-24 (section 1): OC-01 to OC-14 with OC-02 option A, OC-05 `RWS_10` option A, OC-06 option B and OC-12 option A, after three Codex review rounds (4, 2, 0 findings, section 6). Nothing is implemented.**
+**Status (2026-10-25): approved by the user on 2026-10-24 (section 1): OC-01 to OC-14 with OC-02 option A, OC-05 `RWS_10` option A, OC-06 option B and OC-12 option A, after three Codex review rounds (4, 2, 0 findings, section 6). Implemented in P5.03 to P5.09 and verified on candidate `fd461c8` ([P5.10 record](P5_10_INTEGRATED_VERIFICATION.md) section 9); P5 accepted by the user on 2026-10-25 ([P5.11 acceptance record](P5_11_ACCEPTANCE.md)).**
 
 This record holds the observation decisions of phase P5 ([phase plan](../../PHASE_P5_PLAN.md) section 3, [P5.02 plan](P5_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md)). It builds on export contract v1 ([P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md), C-01 to C-119), which stays unchanged (C-03), and on the selection contract ([P4_SELECTION_CONTRACT.md](../p4/P4_SELECTION_CONTRACT.md), SC-01 to SC-23), whose components P5 reuses (SC-21). The orchestrating agent researched the source facts on 2026-10-24 from the official DWD sources in section 2. The downloaded files are not committed (REQ-083); only their names, sizes and hashes are.
 

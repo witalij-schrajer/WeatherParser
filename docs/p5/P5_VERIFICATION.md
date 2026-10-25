@@ -1,6 +1,6 @@
 # P5 Verification Record
 
-**Status (2026-10-25): P5.01 complete, outcome READY ([record](P5_01_FOUNDATION_CHECK.md), checkpoint `ca76114`); P5.02 complete (contract approved 2026-10-24, checkpoint `248d270`, review fix `485d492`); P5.03 complete (`c01d0fa`, section 3); P5.04 complete (`b32985c`, section 4); P5.05 complete (`a1a1928`, section 5); P5.06 complete (`eba34c2`, section 6); P5.07 complete (`18c984a`, section 7); P5.08 complete (`b65e660`, section 8); P5.09 complete (`1301b84`, section 9); P5.10 complete, outcome READY on `fd461c8` (section 10).**
+**Status (2026-10-25): P5.01 complete, outcome READY ([record](P5_01_FOUNDATION_CHECK.md), checkpoint `ca76114`); P5.02 complete (contract approved 2026-10-24, checkpoint `248d270`, review fix `485d492`); P5.03 complete (`c01d0fa`, section 3); P5.04 complete (`b32985c`, section 4); P5.05 complete (`a1a1928`, section 5); P5.06 complete (`eba34c2`, section 6); P5.07 complete (`18c984a`, section 7); P5.08 complete (`b65e660`, section 8); P5.09 complete (`1301b84`, section 9); P5.10 complete, outcome READY on `fd461c8` (section 10); P5.11: P5 accepted by the user on 2026-10-25 (section 11).**
 
 Collects the evidence of every P5 step as required by [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md) section 7; model output is never evidence; only runs executed by the orchestrating agent count.
 
@@ -126,3 +126,16 @@ Collects the evidence of every P5 step as required by [PHASE_P5_PLAN.md](../../P
 - Codex review of the P5.10 records: round 1 (`p510_doc_r1.md`) 4 findings (the pressure statement went beyond the retained evidence, the offline case count, the line-ending cause of the gate-result hash difference, the missing review record), all confirmed and fixed by the orchestrating agent; round 2 (`p510_doc_r2.md`) 0 findings.
 - The P5.09 commit `1301b84` also passed `ci-local.ps1` (exit 0, run `1301b84-20261025T005934Z`, gate 7481/7484, gate-result.json SHA-256 `3941203d3f9ff3cf5425fbd2572c26f89ad75515ba656791bc487cc96330c013`) and hosted run 40148837765.
 - PR #7 review of `6492091` (2026-10-25): two Minor findings, both confirmed and fixed in `fd461c8`: a period-start guard (`CDC-EVIDENCE-INVALID`, Red recorded) and a full-station package-consumer case (characterization). S1 to S3 rerun on `fd461c8`: Windows exit 0, hosted run 40170729670 green, NanoPi exit 0, gate 7491/7494 on all three; live parse not repeated ([P5.10 record](P5_10_INTEGRATED_VERIFICATION.md) section 9).
+
+## 11. P5.11 – Acceptance and P6 handoff
+
+- Records: [P5_11_ACCEPTANCE.md](P5_11_ACCEPTANCE.md) (review identity, evidence matrix T-P5-01 to T-P5-19, contract summary, limitations with owners, audit decision ACCEPTED, user decision) and [P6_HANDOFF.md](P6_HANDOFF.md), written by the orchestrating agent.
+- User decision (2026-10-25, chat): "I accept P5 (DWD observations) on candidate fd461c8. Go ahead with P5.11: acceptance record, status updates, mark PR #7 ready for review."
+- Status passages updated (AGENTS.md, README.md, DEVELOPMENT_PLAN.md, PHASE_P1_PLAN.md, PHASE_P5_PLAN.md with the section 9 checklist, the observation contract, the P5.11 plan).
+- Checks on the working tree (HEAD `c3d49ae` plus these changes; Windows, SDK 10.0.402):
+  - `dotnet build WeatherParser.Ci.slnf -c Release --no-incremental`: 0 warnings, 0 errors.
+  - `dotnet test WeatherParser.Ci.slnf -c Release --no-build`: Parsing 1937 passed (2 skipped: the live tests), SchemaGeneration 46, Coverage 99, Coverage.Runner 56.
+  - README package check (CONTRIBUTING.md section 4): README.md (SHA-256 `24FC81AE796063C1C6BB080418085D7FB98C018F45AD36ED858335B85028D9D9`), LICENSE and the export schema are byte-identical in the package. Packed SHA-512 `s2Eg/HSedqQq3zIrJQ6ZofTQqQMUSEwCkTf2HsVDLbH6j40lzehHmEDeyeCATBxPz4CKdYlNdNMfAYMb6euFyw==` equals the restored hash; package consumer 36/36; the consumer lock was not committed.
+  - Pre-commit coverage gate (results directory `TestResults/p502-precommit-20261025T070930Z/`, target `1e604dc`): all five rules passed, 7491/7494; `evaluate.json` SHA-256 `964ac345c54cc205f1839828f919219f5a28c4650c5bf801fa6d198fe22d87b2`.
+- Codex five-angle review of the record, the handoff and the status passages: round 1 (`p511_codex_r1.md`) 2 findings, both confirmed and fixed by the orchestrating agent. The process status claimed A8 complete and checks that were not yet recorded (now recorded above, with the checkpoint pending), and the contract status line kept the date 2026-10-24. Round 2 (`p511_codex_r2.md`) 2 findings (P3), both confirmed and fixed: the inherited P4 item "DI under load" was missing from the limitations; two passages still described pending runs as recorded. Round 3 (`p511_codex_r3.md`) 0 findings.
+- Pending at the time of writing: the checkpoint commit, `ci-local.ps1` on it, the push, and A9 (ready for review) with its CI run.
