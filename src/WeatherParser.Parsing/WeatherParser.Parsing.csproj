@@ -18,6 +18,7 @@
     <InternalsVisibleTo Include="WeatherParser.Parsing.Tests" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AngleSharp" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
