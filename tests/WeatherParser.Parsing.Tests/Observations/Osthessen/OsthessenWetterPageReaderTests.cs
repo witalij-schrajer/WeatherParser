@@ -341,7 +341,7 @@ public sealed class OsthessenWetterPageReaderTests
     }
 
     [TestMethod]
-    public async Task ReadAsync_WindRowWithMissingCell_WindTableDeviates()
+    public async Task ReadAsync_WindRowWithMissingCell_RowIgnoredStationUnmatched()
     {
         var windRow = OsthessenWetterHtml.WindRow("Bimbach").Replace("<td class='tg-iohx'>30.6<font size='-2'>km/h</font></td> ", "");
         var page = await Read(OsthessenWetterHtml.Page(
@@ -351,11 +351,11 @@ public sealed class OsthessenWetterPageReaderTests
         Station(page, "Bimbach").WindMeanText.Should().BeNull();
         Station(page, "Bimbach").WindTimeText.Should().BeNull();
         page.Diagnostics.Should().ContainSingle()
-            .Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindTableMissing, null));
+            .Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindRowUnmatched, "Bimbach"));
     }
 
     [TestMethod]
-    public async Task ReadAsync_WindRowWithoutName_WindTableDeviates()
+    public async Task ReadAsync_WindRowWithoutName_RowIgnoredStationUnmatched()
     {
         var overviewRow = OsthessenWetterHtml.OverviewRow("Bimbach");
         var windRow = OsthessenWetterHtml.WindRow("Bimbach").Replace("<font size='2em'>Bimbach</font>", "");
@@ -363,11 +363,11 @@ public sealed class OsthessenWetterPageReaderTests
         page.Stations[0].WindMeanText.Should().BeNull();
         page.Stations[0].WindTimeText.Should().BeNull();
         page.Diagnostics.Should().ContainSingle()
-            .Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindTableMissing, null));
+            .Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindRowUnmatched, "Bimbach"));
     }
 
     [TestMethod]
-    public async Task ReadAsync_WindRowUnknownStatus_WindTableDeviates()
+    public async Task ReadAsync_WindRowUnknownStatus_RowIgnoredStationUnmatched()
     {
         var page = await Read(OsthessenWetterHtml.Page(
             OsthessenWetterHtml.Table(OsthessenWetterHtml.OverviewHeader(), OsthessenWetterHtml.OverviewRow("Bimbach")),
@@ -376,11 +376,11 @@ public sealed class OsthessenWetterPageReaderTests
         Station(page, "Bimbach").WindMeanText.Should().BeNull();
         Station(page, "Bimbach").WindTimeText.Should().BeNull();
         page.Diagnostics.Should().ContainSingle()
-            .Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindTableMissing, null));
+            .Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindRowUnmatched, "Bimbach"));
     }
 
     [TestMethod]
-    public async Task ReadAsync_WindRowMissingStatus_WindTableDeviates()
+    public async Task ReadAsync_WindRowMissingStatus_RowIgnoredStationUnmatched()
     {
         var windRow = OsthessenWetterHtml.WindRow("Bimbach").Replace(" title='Station online'", "");
         var page = await Read(OsthessenWetterHtml.Page(
@@ -390,11 +390,11 @@ public sealed class OsthessenWetterPageReaderTests
         Station(page, "Bimbach").WindMeanText.Should().BeNull();
         Station(page, "Bimbach").WindTimeText.Should().BeNull();
         page.Diagnostics.Should().ContainSingle()
-            .Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindTableMissing, null));
+            .Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindRowUnmatched, "Bimbach"));
     }
 
     [TestMethod]
-    public async Task ReadAsync_OneDeviatingWindRow_NoStationGetsWind()
+    public async Task ReadAsync_OneDeviatingWindRow_OnlyThatStationLosesWind()
     {
         var page = await Read(OsthessenWetterHtml.Page(
             OsthessenWetterHtml.Table(OsthessenWetterHtml.OverviewHeader(),
@@ -404,13 +404,11 @@ public sealed class OsthessenWetterPageReaderTests
                 OsthessenWetterHtml.WindRow("Bimbach"),
                 OsthessenWetterHtml.WindRow("Schlitz", status: "Station maintenance"))));
 
-        foreach (var station in page.Stations)
-        {
-            station.WindMeanText.Should().BeNull();
-            station.WindTimeText.Should().BeNull();
-        }
-        page.Diagnostics.Should().ContainSingle()
-            .Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindTableMissing, null));
+        Station(page, "Bimbach").WindMeanText.Should().Be("23.1km/h");
+        Station(page, "Bimbach").WindTimeText.Should().Be("09:31 Uhr");
+        Station(page, "Schlitz").WindMeanText.Should().BeNull();
+        Station(page, "Schlitz").WindTimeText.Should().BeNull();
+        page.Diagnostics.Should().ContainSingle().Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindRowUnmatched, "Schlitz"));
     }
 
     [TestMethod]

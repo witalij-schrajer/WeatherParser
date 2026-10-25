@@ -67,8 +67,9 @@ Every slice: roles and checks as in P6.03 section 5. The package addition is ver
 - `ReadAsync_JoinKey_EszettCaseTrailingSemicolon` (`Roßbach`/`Rossbach`, `Müs-Hohhütte`/`Müs-Hohhütte;`, case)
 - `ReadAsync_WindRowMissing_DiagnosticUnmatched`, `ReadAsync_TwoWindCandidates_DiagnosticUnmatched`
 - `ReadAsync_WindTableMissing_DiagnosticAndNoWindCells`, `ReadAsync_WindHeaderChanged_DiagnosticAndNoWindCells`
+- Added after the OW-11 amendment of 2026-10-25 (contract section 6): a wind row deviating from A5 (cell count, name, status) is ignored and its station gets `OSTHESSEN-WIND-ROW-UNMATCHED`, other stations keep their wind (`..._RowIgnoredStationUnmatched`, `ReadAsync_OneDeviatingWindRow_OnlyThatStationLosesWind`, `ReadAsync_DeviatingAndValidWindRowForSameStation_StationUnmatched`, `ReadAsync_WindRowWithMissingCell_OtherStationKeepsWind`, `ReadAsync_WindRowWithSingleCell_IgnoredWithoutNotice`).
 
-**Green**: join key NFC, invariant fold, `ß`→`ss`, trailing `;` and whitespace removed; exactly one candidate joins.
+**Green**: join key NFC, invariant fold, `ß`→`ss`, trailing `;` and whitespace removed; exactly one candidate joins, and none when a deviating row carries the same key.
 
 **Refactor**: remove duplication with all tests green.
 

@@ -106,7 +106,7 @@ public sealed class OsthessenWetterPageReaderBoundaryTests
     }
 
     [TestMethod]
-    public async Task ReadAsync_WindStatusCellWithoutImage_WindTableDeviates()
+    public async Task ReadAsync_WindStatusCellWithoutImage_RowIgnoredStationUnmatched()
     {
         var overviewRow = OsthessenWetterHtml.OverviewRow("Bimbach");
         var windRow = OsthessenWetterHtml.WindRow("Bimbach").Replace("<img src='/uploads/s.jpg' title='Station online' width='18' height='18' border='0'>", "");
@@ -115,7 +115,7 @@ public sealed class OsthessenWetterPageReaderBoundaryTests
         page.Stations.Should().HaveCount(1);
         page.Stations[0].WindMeanText.Should().BeNull();
         page.Stations[0].WindTimeText.Should().BeNull();
-        page.Diagnostics.Should().ContainSingle().Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindTableMissing, null));
+        page.Diagnostics.Should().ContainSingle().Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindRowUnmatched, "Bimbach"));
     }
 
     [TestMethod]
@@ -142,5 +142,43 @@ public sealed class OsthessenWetterPageReaderBoundaryTests
         page.Stations.Should().ContainSingle();
         page.Stations[0].WindMeanText.Should().BeNull();
         page.Diagnostics.Should().ContainSingle().Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindTableMissing, null));
+    }
+
+    [TestMethod]
+    public async Task ReadAsync_DeviatingAndValidWindRowForSameStation_StationUnmatched()
+    {
+        var page = await Read(OsthessenWetterHtml.Page(Overview(OsthessenWetterHtml.OverviewRow("Bimbach")), Wind(OsthessenWetterHtml.WindRow("Bimbach"), OsthessenWetterHtml.WindRow("Bimbach", status: "Station maintenance"))));
+
+        page.Stations.Should().ContainSingle();
+        page.Stations[0].WindMeanText.Should().BeNull();
+        page.Stations[0].WindTimeText.Should().BeNull();
+        page.Diagnostics.Should().ContainSingle().Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindRowUnmatched, "Bimbach"));
+    }
+
+    [TestMethod]
+    public async Task ReadAsync_WindRowWithMissingCell_OtherStationKeepsWind()
+    {
+        var shortRow = OsthessenWetterHtml.WindRow("Schlitz").Replace("<td class='tg-iohx'>30.6<font size='-2'>km/h</font></td> ", "");
+        var page = await Read(OsthessenWetterHtml.Page(Overview(OsthessenWetterHtml.OverviewRow("Bimbach"), OsthessenWetterHtml.OverviewRow("Schlitz")), Wind(OsthessenWetterHtml.WindRow("Bimbach", mean10: "4.0"), shortRow)));
+
+        var bimbach = page.Stations.Single(s => s.Name == "Bimbach");
+        bimbach.WindMeanText.Should().Be("4.0km/h");
+        bimbach.WindTimeText.Should().Be("09:31 Uhr");
+
+        var schlitz = page.Stations.Single(s => s.Name == "Schlitz");
+        schlitz.WindMeanText.Should().BeNull();
+        schlitz.WindTimeText.Should().BeNull();
+
+        page.Diagnostics.Should().ContainSingle().Which.Should().BeEquivalentTo(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindRowUnmatched, "Schlitz"));
+    }
+
+    [TestMethod]
+    public async Task ReadAsync_WindRowWithSingleCell_IgnoredWithoutNotice()
+    {
+        var page = await Read(OsthessenWetterHtml.Page(Overview(OsthessenWetterHtml.OverviewRow("Bimbach")), Wind("<tr><td>x</td></tr>", OsthessenWetterHtml.WindRow("Bimbach", mean10: "4.0"))));
+
+        page.Stations.Should().ContainSingle();
+        page.Stations[0].WindMeanText.Should().Be("4.0km/h");
+        page.Diagnostics.Should().BeEmpty();
     }
 }

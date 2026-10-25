@@ -86,30 +86,26 @@ public sealed class OsthessenWetterPageReader : IOsthessenWetterPageReader
 
         // Collect candidates for joining
         var windCandidates = new List<(string JoinKey, string WindTimeText, string WindMeanText)>();
-        bool windTableDeviates = false;
+        var deviatingKeys = new HashSet<string>(StringComparer.Ordinal);
         
+        // A deviating wind row is ignored and its station gets the unmatched notice; the other rows keep their wind values (contract OW-11 amendment of 2026-10-25).
         foreach (var tr in windTable.QuerySelectorAll("tr").Skip(1))
         {
             var cells = tr.Children.Where(child => child.LocalName == "td").ToArray();
             
-            if (cells.Length != WindLabels().Length)
+            string? name = null;
+            if (cells.Length > WindNameCell)
             {
-                windTableDeviates = true;
-                continue;
+                var nameElement = cells[WindNameCell].QuerySelector("font[size='2em']");
+                name = nameElement?.TextContent.Trim();
             }
 
-            var nameElement = cells[WindNameCell].QuerySelector("font[size='2em']");
-            var name = nameElement?.TextContent.Trim();
-            if (string.IsNullOrEmpty(name))
+            if (cells.Length != WindLabels().Length || string.IsNullOrEmpty(name) || ParseStatus(cells[StatusCell].QuerySelector("img")?.GetAttribute("title")) is null)
             {
-                windTableDeviates = true;
-                continue;
-            }
-
-            var statusImage = cells[StatusCell].QuerySelector("img")?.GetAttribute("title");
-            if (ParseStatus(statusImage) is null)
-            {
-                windTableDeviates = true;
+                if (!string.IsNullOrEmpty(name))
+                {
+                    deviatingKeys.Add(JoinKey(name));
+                }
                 continue;
             }
 
@@ -120,19 +116,13 @@ public sealed class OsthessenWetterPageReader : IOsthessenWetterPageReader
             windCandidates.Add((joinKey, windTimeText, windMeanText));
         }
 
-        if (windTableDeviates)
-        {
-            diagnostics.Add(new OsthessenWetterPageDiagnostic(OsthessenWetterNoticeIds.WindTableMissing, null));
-            return new OsthessenWetterPage(stations, diagnostics);
-        }
-
         // Join candidates to overview rows
         var joinedStations = new List<OsthessenWetterStationRow>();
         foreach (var station in stations)
         {
             var key = JoinKey(station.Name);
             var matchingCandidates = windCandidates.Where(c => c.JoinKey == key).ToList();
-            if (matchingCandidates.Count == 1)
+            if (matchingCandidates.Count == 1 && !deviatingKeys.Contains(key))
             {
                 var candidate = matchingCandidates[0];
                 joinedStations.Add(station with
