@@ -1,6 +1,6 @@
 # P6 Verification Record
 
-**Status (2026-10-25): P6.01 complete, outcome READY.**
+**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 in progress (contract draft reviewed, awaiting the user's approval).**
 
 - Integration target: `8d8079a4238514f7c9bcfc3846829e2408938ae3` (documentation-only successor of the P5 merge `29fd553`).
 - Branch `features/develop/P6`.
@@ -22,3 +22,12 @@
 - Codex five-angle review of P6.01 (`p601_codex_r1.md`): 1 finding [P2], confirmed and fixed by the orchestrating agent: the hosted CI run of the seed commit was not recorded (now recorded above).
 - Round 2 (`p601_codex_r2.md`): 0 findings.
 - README package check on the S5 working tree (README status passage changed): README.md SHA-256 `9E55253F629F00B75BAE8245721E05F0D5CA16405ADA032C2C1668B6BCCB0750` identical in the package with LICENSE and the export schema; packed SHA-512 `TIZS7LW/0aiReShFsQwMO8czbRNDBVMqYHkWtLjJzZH4cYycjHxK05rBAVkqr2jtStU8IXidwMMOK+cwzDFF2g==` equals the restored hash; package consumer 36/36. The `ci-local.ps1` run on this record commit is recorded with the first P6.02 commit.
+
+## 2. P6.02 – Source facts and OsthessenWetter contract
+
+- Carried from P6.01: `pwsh ./scripts/ci-local.ps1 -Commit d27bf7d -TargetRef 8d8079a4238514f7c9bcfc3846829e2408938ae3 -RunSettings coverage.runsettings` on the P6.01 record commit `d27bf7d13e1460cc1c7e8f845faa969b27e71a06`: exit 0, 2026-10-25T09:43:38Z to 09:44:34Z, run directory artifacts/ci/d27bf7d-20261025T094338Z (gitignored); Parsing 1937 of 1939 passed (the two live tests not executed), SchemaGeneration 46, Coverage 99, Coverage.Runner 56, package consumer 36; gate passed with 7491/7494 at or above the baseline (gate-result.json SHA-256 `25774d03278c9037bdcb6992d1411a290bcc36ed3b92eb7609eb65e22e9bbc55`); packed SHA-512 `H4CL6XMbr74ZjZwayuW+EHWHsYhjapxI2FSV8qKiFl8/A+qYSMxS1FiSGxrbfHw/zX6CTf9LXHoe8bfkUShvXg==`.
+- S1: one retrieval each of the page, robots.txt and the imprint on 2026-10-25 at 09:43Z (source register in the contract section 2); structural facts A1 to A14 extracted with a script kept outside the repository; they agree with the planning check. Additional checks on the retrieved page: the 20 overview names give 20 distinct slugs under OW-03 option A, and all 20 wind rows join under the OW-05 key.
+- S2: package evaluation of AngleSharp 1.8.5 and HtmlAgilityPack 1.13.1 from the nuget.org registration API; local probe on synthetic markup (outside the repository): AngleSharp decodes the legacy references like a browser, HtmlAgilityPack does not; AngleSharp's package is managed-only.
+- S3: contract draft [P6_OSTHESSEN_CONTRACT.md](P6_OSTHESSEN_CONTRACT.md) written by the orchestrating agent; Codex rounds 3 and 0 findings (contract section 8).
+- Deliberate differences to the phase-plan proposals: OW-10 recommends a default `PageDeadline` of 60 s instead of 30 s (the 30 s default would tie with the downloader's request timeout); OW-03 fixes the collision scope to all overview names.
+- S4: pending, the user's approval of OW-01 to OW-16. S5 (reconciliation of the plans) follows the approval.

@@ -1,0 +1,118 @@
+# WeatherParser OsthessenWetter Contract (P6)
+
+**Status (2026-10-25): draft for review; OW-01 to OW-16 are proposals and not approved. They become binding only through the user's approval recorded in section 1.** Plan: [P6_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md](P6_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md); phase plan: [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md) section 3.
+
+Written by the orchestrating agent from its own retrieval of 2026-10-25 (section 2), the planning check ([P6_PLANNING_PAGE_CHECK.md](research/P6_PLANNING_PAGE_CHECK.md)), REQUIREMENTS.md, the export contract ([P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md)) and the repository code. The retrieved files are not committed (copyright, REQ-083); this record holds URLs, times, sizes, hashes and structural facts only.
+
+## 1. Approval
+
+| Date | Scope | Decision | Wording |
+| ---- | ----- | -------- | ------- |
+| – | OW-01 to OW-16 | Pending | – |
+
+## 2. Source register
+
+One request per URL with `curl`, User-Agent `WeatherParser-P6.02/0.1 (one-off source fact check)`, no retries, no redirect:
+
+| Retrieved (UTC) | URL | HTTP status | Content type | Bytes | SHA-256 |
+| --- | --- | --- | --- | --- | --- |
+| 2026-10-25T09:43:38Z | https://osthessen-wetter.de/messwerte/ | 200 | `text/html; charset=UTF-8` | 106534 | `b91eb9f62c56f8f96391f0f6647f9b6d5d83554b695fa47ba0c5bed43e6dd22c` |
+| 2026-10-25T09:43:43Z | https://osthessen-wetter.de/robots.txt | 200 | `text/plain; charset=utf-8` | 222 | `bb68faf029190614e64249d19ea5382aaefae6aae962c317ed666a8f811ec14a` |
+| 2026-10-25T09:43:45Z | https://osthessen-wetter.de/impressum-datenschutzerklaerung/ | 200 | `text/html; charset=UTF-8` | 96593 | `2fc9ade2e90171b3d17ec00be053cc77c9787230d2407c015a4ea6a6052ab926` |
+
+Package sources (section 5) read on 2026-10-25 from the nuget.org registration API (`https://api.nuget.org/v3/registration5-gz-semver2/<id>/index.json`) and the package licence pages.
+
+## 3. Verified page revision (OW-01)
+
+Implementation date of the supported revision: 2026-10-25 (REQ-045). Every assumption below was checked on the retrieval of section 2 and agrees with the planning check of 2026-10-25T08:34Z (only the values and times differ).
+
+| ID | Structural assumption |
+| --- | --- |
+| A1 | The page is UTF-8 (`<meta charset="UTF-8">`, HTTP `charset=UTF-8`); WordPress 6.6.2 |
+| A2 | The overview table is the first `<table class='tg'>` whose header cells, after whitespace normalization, are in this order: empty, `Wetterstation`, `Temp.2m Änderung`, `Temp.- Trend`, `Tmax/ Tmin`, `Spitzen- böe`, `Nieder- schlag`, `Luft- feuchte` (the labels contain `<br>`) |
+| A3 | The wind table is the `<table class='tg'>` whose header cells are: empty, `Wetterstation letzte Daten`, `Spitzen- böe heute`, `Spitzen- böe verg.10Min.`, `Wind Ø 10 Min.`, `Wind Ø 60 Min.` |
+| A4 | A third `<table class='tg'>` (snow line, last precipitation, annual precipitation) has neither header and is not read |
+| A5 | Each station row has, in this order: a status cell with an `<img>` whose `title` is `Station online` or `Station offline`; a name cell with the name in `<font size='2em'>` and the time in `<font size='1'>`; then one cell per remaining header (overview: 6 value cells, of which `Tmax/Tmin` holds two values; wind: 4 value cells) |
+| A6 | The time text is `HH:MM Uhr` (two-digit hour and minute, a space, `Uhr`) or empty; there is no date anywhere in the table |
+| A7 | A value cell is empty or holds a number with `.` as the decimal separator (optional leading `-`) followed by its unit in a nested `<font size='-2'>`: overview `°C` (temperature, Tmax/Tmin), `°C/h` (trend), `km/h` (gust), `mm` (precipitation), `%` (humidity); wind `km/h` in every value column |
+| A8 | Offline rows (3 of 20 on both retrievals) show no time and no values |
+| A9 | Names are given with character references; the HTML5 rules decode them, including legacy references without a semicolon: overview `Ro&szligbach` → `Roßbach`; wind `M&uuml;s-Hohh&uumltte;` → `Müs-Hohhütte;` |
+| A10 | Both tables list the same 20 stations, but the spelling differs (`Roßbach`/`Rossbach`, `Müs-Hohhütte`/`Müs-Hohhütte;`) and the order differs (`Bad Salzschlirf` and `Gotthards` swapped) |
+| A11 | The markup is not well-formed: unclosed `<b>` and `<font>`, stray `</td>`, header cells outside `<tr>`, a header cell closed as `</th</font>` |
+| A12 | Other page sections (daily-extreme lists) can contain a database error message with a database user and host name instead of values; they are outside both tables |
+| A13 | The page shows no station identifier, no coordinates and no altitude |
+| A14 | The page states no reference period for `Niederschlag` and labels the gust columns "heute" (today) and "verg.10Min." (past 10 minutes) and the means "10 Min." and "60 Min." |
+
+## 4. Source conditions (OW-14)
+
+- No licence for the measured values and no machine-readable interface (REQ-092 already states the latter).
+- The imprint states that the copyright for objects the author created remains with the author, and that reproducing or using such graphics, sound documents, video sequences and texts in other electronic or printed publications is not permitted without the author's express consent. It has a liability disclaimer (no warranty for currency, correctness, completeness or quality).
+- No attribution rule and no request-frequency rule.
+- robots.txt: `User-agent: *` with an empty `Disallow:`; it does not restrict crawling and grants no licence.
+- The imprint names a private person as the operator with a postal address and an e-mail address; this record does not repeat them. Contacting the operator is the user's decision.
+
+## 5. HTML parser evaluation (OW-02)
+
+| Package | Latest stable (2026-10-25) | Published | Licence | .NET 10 dependencies | Probe on the A9/A11 defects |
+| --- | --- | --- | --- | --- | --- |
+| AngleSharp | 1.8.5 | 2026-10-15 | MIT (licence expression) | none for `net10.0` and `net8.0` | `Ro&szligbach` → `Roßbach`, `M&uuml;s-Hohh&uumltte;` → `Müs-Hohhütte;` (browser behavior); unclosed and stray tags tolerated (1 table, header and two station rows found); `<script>` content not executed; `title` attributes read |
+| HtmlAgilityPack | 1.13.1 | 2026-10-12 | MIT (licence expression) | none (`netstandard2.0`) | `Ro&szligbach` and `&uumltte;` stay undecoded, also with `HtmlEntity.DeEntitize` and `WebUtility.HtmlDecode`; its tree held 2 rows where AngleSharp builds 3 (the implicit header row and both station rows), because the header cells stand outside a `<tr>` |
+
+- Probe: a local console program (outside the repository, SDK 10.0.402) parsed one synthetic snippet with the A9 and A11 defects, a script and a stylesheet and image link to `unreachable.invalid`; results as in the table. The default AngleSharp configuration has no resource loader and no scripting, so no request is issued for linked resources.
+- Both packages have no listed deprecation or vulnerability on nuget.org. AngleSharp publishes frequent releases (1.8.1 to 1.8.5 between 2026-09-10 and 2026-10-15).
+- Platform assessment (expected compatibility, not execution evidence): the AngleSharp 1.8.5 package contains only managed assemblies (`lib/net10.0`, `lib/net8.0`, `lib/netstandard2.0`, `lib/net462`, `lib/net472`, each `AngleSharp.dll`), no `runtimes/` folder and no native library, and has no dependency for `net10.0`; it is therefore expected to run unchanged on `linux-arm64`. Actual execution on Debian 13 ARM64 is verified in P6.10 (T-P6-17).
+- AngleSharp offers `HtmlParser.ParseDocumentAsync(Stream, CancellationToken)`; the reader nevertheless copies the HTTP body asynchronously into memory first (P6.04), so that no synchronous read of the live body can happen inside the package.
+
+## 6. Decision register
+
+Every row is a proposal until section 1 records the approval.
+
+| ID | Decision | Options | Recommendation | Facts | Blocks |
+| --- | --- | --- | --- | --- | --- |
+| OW-01 | Supported page revision | A: the revision of section 3 (assumptions A1 to A14), implementation date 2026-10-25, URL https://osthessen-wetter.de/messwerte/; a later structural change is a format deviation (OW-11) and may need a parser update (REQ-045) / B: no fixed revision | A: REQ-045 requires a documented revision; without it a format deviation could not be defined | Section 3 | P6.04 |
+| OW-02 | HTML parsing | A: AngleSharp 1.8.5 (MIT), pinned in `Directory.Packages.props`, `DEPENDENCIES.md` updated, default configuration without scripting and without a resource loader / B: HtmlAgilityPack 1.13.1 (rejected: does not decode the A9 references) / C: own tokenizer (rejected: would reimplement the HTML5 reference and tree rules) | A: the only candidate that decodes the observed markup like a browser; MIT, managed-only, no dependency for `net10.0` | Section 5 | P6.04 |
+| OW-03 | Station identity and source ID | A: `station_id` = slug of the overview name: NFC, invariant lower case, `ä`→`ae`, `ö`→`oe`, `ü`→`ue`, `ß`→`ss`, each run of other characters outside `[a-z0-9]` → `-`, leading and trailing `-` removed; a name without any `[a-z0-9]` after these rules → `OSTHESSEN-FORMAT-CHANGED`; `source` `osthessenwetter:<slug>` (C-50); the original name in `location.name`; the collision check runs over all overview names, so two names with one slug fail the parse with `OSTHESSEN-STATION-ID-COLLISION` whatever the pattern / B: the original name as `station_id` / C: collision check only over the matched names | A: ASCII IDs are stable for topics (P8) and files; checking all names makes an ID independent of the pattern (B keeps umlauts and spaces in IDs; C lets the same page give different outcomes per pattern) | A10, A13; on the retrieval the 20 names give 20 distinct slugs | P6.05, P6.07 |
+| OW-04 | Coordinates (C-51) | A: consumer-supplied `OsthessenWetterStationMetadata` entries (`Name` exact after NFC, `Latitude`, `Longitude`, optional `AltitudeM`) in `OsthessenWetterOptions`, validated at construction (ranges as C-51, non-empty unique names, no null entry → `OSTHESSEN-OPTIONS-INVALID`); a matched station without an entry is a station failure `OSTHESSEN-STATION-METADATA-MISSING` / B: coordinates built into the library (rejected: unverified, not traceable) / C: optional coordinates in the export contract (rejected: not additive, C-03) | A: the only option that keeps C-51 and uses verified data; the consumer owns its station knowledge | A13; C-51 | P6.05, P6.06, P6.07, P6.09 |
+| OW-05 | Joining the two tables | A: the overview table is the station list; a wind row joins when exactly one wind row has the same join key (NFC, invariant case fold, `ß`→`ss`, trailing `;` and whitespace removed); none or several → notice `OSTHESSEN-WIND-ROW-UNMATCHED` and no wind readings for that station / B: join by position (rejected: A10) | A: tolerates the observed spelling differences; an ambiguous join never mixes two stations (REQ-031 analogue) | A10; on the retrieval all 20 wind rows join with key A | P6.04, P6.05 |
+| OW-06 | Quantities, units and periods | A: exported `Temp.2m` → `Temperature` (°C, instantaneous, overview time); `Luftfeuchte` → `RelativeHumidity` (%, overview time); `Wind Ø 10 Min.` → `MeanWindSpeed` (`KilometresPerHour`, period `[t − 10 min, t]` at the wind time t); not exported: both gust columns and `Spitzenböe` (gusts, REQ-044), `Wind Ø 60 Min.` (one wind field), `Niederschlag` (period unverified, A14; never a rate, REQ-055), `Temp.-Trend` and `Tmax/Tmin` (no REQ-052 field); the unit suffix is checked per column (A7) / B: as A, but `Niederschlag` as `PrecipitationAccumulation` over `[local midnight, t]` (rejected while the period is unverified) | A: REQ-055 allows a rate only with a known period; A14 gives none | A7, A14 | P6.05 |
+| OW-07 | Times | A: `\A([01][0-9]\|2[0-3]):[0-5][0-9] Uhr\z` → `TimeOnly`; `ISourceTimeNormalizer.InferDate(time, retrievedAtUtc)` with the retrieval instant truncated to whole seconds → UTC, `estimated_date`, `Europe/Berlin` (REQ-042, C-30 to C-33); the overview time for the overview readings, the wind time for the wind reading (REQ-056); missing or unreadable time → no reading for that table row, omission `MissingTime`; DST gap or overlap → notice `OSTHESSEN-TIME-UNRESOLVED` and no reading for that table row; no freshness filter (REQ-043) / B: an unresolved or missing time fails the whole station (station failure) instead of omitting that table row's readings / C: an unresolved DST time resolved to the earlier offset (rejected: REQ-043 forbids arbitrary resolution, C-31) | A: keeps the readings of the other table, whose time may be valid (REQ-056 per-value times), and every omission stays visible through its reason; B hides valid wind or overview readings | A6 | P6.05 |
+| OW-08 | Public API and partial failure | A: `IOsthessenWetterParser.ParseAsync(string stationNamePattern, CancellationToken)` → `OsthessenWetterParseResult` (`Datasets` in overview order, `StationFailures` with name, error ID and reason); no match → `OsthessenWetterException` `OSTHESSEN-PATTERN-NO-MATCH`; matches without any dataset → `OSTHESSEN-NO-USABLE-STATION` carrying the failures / B: only datasets, failures logged / C: all-or-nothing | A: every match stays visible to the consumer (REQ-041), and a station without readings is never a dataset (REQ-050); B leaves failures only in logs; C lets one offline station hide all others | REQ-041, REQ-050 | P6.07 |
+| OW-09 | Pattern grammar | A: `*` any number of characters, `?` exactly one Unicode scalar after NFC, every other character literal; invariant case folding; whole-name match against the NFC overview name; null, empty, whitespace-only or more than 128 characters → `OSTHESSEN-PATTERN-INVALID` before any request; matching in at most O(pattern length × name length) steps / B: regular expressions (rejected, REQ-040) | A: REQ-040 fixes the glob semantics; the bound keeps a 128-character pattern harmless | REQ-040 | P6.03 |
+| OW-10 | Retrieval and options | A: `OsthessenWetterEndpoints.PageUri` (absolute HTTP or HTTPS, no user information; diagnostics without the query) and `OsthessenWetterOptions.PageDeadline` with default **60 s**, permitted (0, 1 h], validated at construction; one GET through `ICatalogDownloader` with an additive `CatalogDeadlineKind.OsthessenWetter`, `MaxBytes` 2 MiB (2097152), `NotFoundIsAbsent` false, no retries; non-success status, transport failure, size overflow and the downloader's own 30-second request timeout → `OSTHESSEN-PAGE-UNAVAILABLE`; deadline → `OSTHESSEN-DEADLINE-EXCEEDED`; caller cancellation first / B: as A with default 30 s (equal to the downloader's request timeout, `CatalogDownloader.RequestTimeoutSeconds`; both fire together and the downloader classifies the failure as the deadline, so a stalled request is never reported as unavailable; a tie test pins that) | A: a default above the request timeout lets a stalled request surface as `OSTHESSEN-PAGE-UNAVAILABLE` (timed out) while the deadline bounds the whole parse, as in P5 (120 s deadline, 30 s request timeout) | Section 2: 106534 bytes; `CatalogDownloader` | P6.06, P6.09 |
+| OW-11 | Format deviations | A: overview table not found, its header changed, a row without the A5 cells, or a status other than A5 → `OSTHESSEN-FORMAT-CHANGED` (failure); wind table not found or its header changed → notice `OSTHESSEN-WIND-TABLE-MISSING`, no wind readings; a value outside the A7 grammar or with another unit → notice `OSTHESSEN-VALUE-UNREADABLE` and no reading; numbers parsed culture-invariantly; page text other than station names never logged (A12) / B: a missing wind table also fails the parse / C: an unreadable value fails the station | A: the overview table carries the station list and two of three quantities, so it is required; the wind table and single cells are optional, so their loss is a notice with omitted readings and not a failure (REQ-044 logs, REQ-046 no fabricated values) | A2 to A7, A12 | P6.04, P6.05 |
+| OW-12 | Offline and stale stations | A: `Station offline` → station failure `OSTHESSEN-STATION-OFFLINE` even if values are shown; stale displays are not filtered (REQ-043); a displayed time more than 5 minutes later than the local retrieval time goes to the previous day (C-30, after the C-31 checks); older displays are not detectable (limitation) / B: the values of an offline row are exported when present / C: a freshness cutoff for old displays (rejected: REQ-043) | A: the source marks the station offline, so its values are not current observations; B would export what the source itself flags | A5, A8 | P6.04, P6.07 |
+| OW-13 | Error and notice IDs | `OsthessenWetterException`: `OSTHESSEN-PATTERN-INVALID`, `OSTHESSEN-PATTERN-NO-MATCH`, `OSTHESSEN-PAGE-UNAVAILABLE`, `OSTHESSEN-DEADLINE-EXCEEDED`, `OSTHESSEN-FORMAT-CHANGED`, `OSTHESSEN-STATION-ID-COLLISION`, `OSTHESSEN-NO-USABLE-STATION`, `OSTHESSEN-OPTIONS-INVALID`; station failures `OSTHESSEN-STATION-OFFLINE`, `OSTHESSEN-STATION-METADATA-MISSING`, `OSTHESSEN-STATION-NO-READING`; notices `OSTHESSEN-WIND-TABLE-MISSING`, `OSTHESSEN-WIND-ROW-UNMATCHED`, `OSTHESSEN-VALUE-UNREADABLE`, `OSTHESSEN-TIME-UNRESOLVED`, `OBSERVATION-READING-OMITTED` (reused, OC-10) / B: reuse the DWD and catalog IDs where they fit (for example `CATALOG-RETRIEVAL-FAILED`) | A: provider-specific IDs keep diagnostics and consumer handling unambiguous, as P5 did with `STATION-*` and `OBSERVATION-*`; only the generic omission notice is shared | OW-03 to OW-12 | P6.03 to P6.07 |
+| OW-14 | Source conditions | A: implementation and tests with synthetic fixtures only; README states the conditions of section 4, the attribution "Osthessen-Wetter.de" and a project recommendation of at most one retrieval every 10 minutes, scheduled externally, with the consumer's User-Agent; production use and redistribution (for example MQTT) are not accepted until the user records the operator's consent or other clarified conditions / B: production acceptance without clarified conditions (rejected, DEVELOPMENT_PLAN.md P6 acceptance) | A: the imprint forbids reproduction without consent; implementation with synthetic data reproduces nothing, while production use would | Section 4 | P6.09, P6.11 |
+| OW-15 | Live verification | A: optional, `WEATHERPARSER_LIVE_CHECK=1` with `WEATHERPARSER_LIVE_CHECK_MODE=osthessen`, budget one request, summary to the gitignored run directory, the page not written; run only with the user's authorization in P6.10 / B: no live check | A: one request is the minimum that shows the documented revision still holds; the user decides given OW-14 | REQ-083 | P6.10 |
+| OW-16 | Dataset values | A: provider `osthessenwetter`; `location` from the overview name and the OW-04 entry; `retrieved_at` from the consumer's `TimeProvider`, read once per parse, truncated to whole seconds; dataset `measured_at` the latest exported reading (C-55); `timestamp_quality` `estimated_date` (C-56); `source_timezone` `Europe/Berlin` on each reading (C-53); no `quality` member; export contract unchanged / B: an additive optional dataset member, for example a source-revision note (rejected: not needed for REQ-050; would need C-03 and C-105 handling) | A: C-49 to C-60 already cover every member the page supplies; the page shows no quality code, so `quality` stays absent rather than invented | C-49 to C-60 | P6.07, P6.08 |
+
+## 7. Traceability
+
+| T-P6 ID | OW rows |
+| --- | --- |
+| T-P6-01 | OW-09 |
+| T-P6-02 | OW-01, OW-02, OW-11 |
+| T-P6-03 | OW-05 |
+| T-P6-04 | OW-06, OW-11 |
+| T-P6-05, T-P6-06 | OW-07, OW-12 |
+| T-P6-07 | OW-03 |
+| T-P6-08 | OW-04 |
+| T-P6-09 | OW-10 |
+| T-P6-10, T-P6-11 | OW-08, OW-12, OW-16 |
+| T-P6-12 | OW-16 |
+| T-P6-13 | OW-04, OW-10 |
+| T-P6-14 | OW-14 |
+| T-P6-18 | OW-15 |
+| T-P6-19 | OW-10, OW-11, OW-13 |
+| T-P6-15 | None: cross-cutting obligation (REQ-085, recorded Red → Green → Refactor per slice), P6.03 to P6.09 |
+| T-P6-16 | None: cross-cutting obligation (REQ-086, native block coverage against the remeasured target, baseline 7491/7494 at `8d8079a`), P6.10 |
+| T-P6-17 | OW-02 (managed-only package, section 5); otherwise cross-cutting (REQ-017, REQ-084, NanoPi R76S), P6.10 |
+
+## 8. Review rounds
+
+Codex five-angle review, read-only (2026-10-25):
+
+| Round | Output (outside the repository) | Findings | Disposition |
+| --- | --- | --- | --- |
+| 1 | `p602_codex_r1.md` | 3 (P2: T-P6-15/16/17 missing from section 7; P3: no target-platform assessment of the package; P3: OW-07, OW-11, OW-12, OW-13, OW-16 without alternatives and several recommendations without a reason) | All confirmed and fixed by the orchestrating agent |
+| 2 | `p602_codex_r2.md` | 0 | – |
