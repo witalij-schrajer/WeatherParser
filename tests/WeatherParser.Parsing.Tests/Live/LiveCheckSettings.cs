@@ -9,6 +9,10 @@ internal sealed record LiveCheckSettings(CdcCatalogEndpoints Cdc, MosmixCatalogE
 {
     public int RequestBudget => 1 + 1 + Mosmix.MaxEvidenceCandidates + 4 + (4 * Cdc.MaxEvidenceCandidates);
 
+    public const int ObservationRequestBudget = 8; // Four CDC station lists and at most four now archives (contract OC-13).
+
+    public string ObservationStationId { get; init; } = "01526"; // Fulda-Horas, the nearest CDC station of the P4 live check.
+
     public static LiveCheckSettings Dwd(string evidenceCacheDirectory)
     {
         const string Cdc = "https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/";

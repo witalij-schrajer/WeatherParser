@@ -22,11 +22,19 @@ namespace WeatherParser.Parsing.Tests.Live;
 internal static class LiveCheckRunner
 {
     public const string EnableVariable = "WEATHERPARSER_LIVE_CHECK";
+    public const string ModeVariable = "WEATHERPARSER_LIVE_CHECK_MODE";
+    public const string ObservationMode = "observation";
 
     public static bool IsEnabled(Func<string, string?> environment)
     {
         ArgumentNullException.ThrowIfNull(environment);
         return string.Equals(environment(EnableVariable), "1", StringComparison.Ordinal);
+    }
+
+    public static bool IsObservationMode(Func<string, string?> environment)
+    {
+        ArgumentNullException.ThrowIfNull(environment);
+        return IsEnabled(environment) && string.Equals(environment(ModeVariable), ObservationMode, StringComparison.Ordinal);
     }
 
     public static async Task<LiveCheckResult?> RunIfEnabledAsync(Func<string, string?> environment, LiveCheckSettings settings, HttpMessageHandler transport, TimeProvider clock, CancellationToken cancellationToken)
@@ -37,6 +45,16 @@ internal static class LiveCheckRunner
         }
 
         return await RunAsync(settings, transport, clock, cancellationToken);
+    }
+
+    public static async Task<LiveObservationResult?> RunObservationIfEnabledAsync(Func<string, string?> environment, LiveCheckSettings settings, HttpMessageHandler transport, TimeProvider clock, CancellationToken cancellationToken)
+    {
+        if (!IsObservationMode(environment))
+        {
+            return null;
+        }
+
+        return await RunObservationAsync(settings, transport, clock, cancellationToken);
     }
 
     public static async Task<LiveCheckResult> RunAsync(LiveCheckSettings settings, HttpMessageHandler transport, TimeProvider clock, CancellationToken cancellationToken)
@@ -104,6 +122,41 @@ internal static class LiveCheckRunner
             cdcEvents,
             budget.Requests,
             cdcLogger.Entries.Concat(mosmixLogger.Entries).ToList());
+    }
+
+    public static async Task<LiveObservationResult> RunObservationAsync(LiveCheckSettings settings, HttpMessageHandler transport, TimeProvider clock, CancellationToken cancellationToken)
+    {
+        var budget = new RequestBudgetHandler(LiveCheckSettings.ObservationRequestBudget, transport);
+        var parserLogger = new CapturingLogger<DwdObservationParser>();
+
+        var services = new ServiceCollection().AddWeatherParsing();
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<ILogger<DwdObservationParser>>(parserLogger);
+        services.AddSingleton(new HttpClient(budget, disposeHandler: false) { Timeout = Timeout.InfiniteTimeSpan });
+        services.AddSingleton<TimeProvider>(clock);
+        services.AddSingleton(settings.Cdc);
+        services.AddSingleton(settings.Mosmix);
+        services.AddSingleton(new DwdObservationOptions());
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+
+        var parser = provider.GetRequiredService<IDwdObservationParser>();
+        var json = provider.GetRequiredService<IJsonExportSerializer>();
+        var xml = provider.GetRequiredService<IXmlExportSerializer>();
+
+        var dataset = await parser.ParseAsync(settings.ObservationStationId, cancellationToken);
+
+        using var jsonStream = new MemoryStream();
+        await json.SerializeAsync(dataset, jsonStream, cancellationToken);
+        var jsonBytes = jsonStream.ToArray();
+
+        using var xmlStream = new MemoryStream();
+        await xml.SerializeAsync(dataset, xmlStream, cancellationToken);
+        var xmlBytes = xmlStream.ToArray();
+
+        var events = ExportSchemaValidation.Validate(xmlBytes);
+
+        return new LiveObservationResult(dataset, jsonBytes, xmlBytes, events, budget.Requests, parserLogger.Entries.ToList());
     }
 
     public static SocketsHttpHandler CreateTransport()
