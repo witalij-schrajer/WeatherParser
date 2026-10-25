@@ -1,6 +1,6 @@
 # P5 Verification Record
 
-**Status (2026-10-25): P5.01 complete, outcome READY ([record](P5_01_FOUNDATION_CHECK.md), checkpoint `ca76114`); P5.02 complete (contract approved 2026-10-24, checkpoint `248d270`, review fix `485d492`); P5.03 complete (`c01d0fa`, section 3); P5.04 complete (`b32985c`, section 4); P5.05 complete (`a1a1928`, section 5); P5.06 complete (`eba34c2`, section 6); P5.07 complete (`18c984a`, section 7); P5.08 complete (`b65e660`, section 8); P5.09 complete (section 9).**
+**Status (2026-10-25): P5.01 complete, outcome READY ([record](P5_01_FOUNDATION_CHECK.md), checkpoint `ca76114`); P5.02 complete (contract approved 2026-10-24, checkpoint `248d270`, review fix `485d492`); P5.03 complete (`c01d0fa`, section 3); P5.04 complete (`b32985c`, section 4); P5.05 complete (`a1a1928`, section 5); P5.06 complete (`eba34c2`, section 6); P5.07 complete (`18c984a`, section 7); P5.08 complete (`b65e660`, section 8); P5.09 complete (`1301b84`, section 9); P5.10 complete, outcome READY (section 10).**
 
 Collects the evidence of every P5 step as required by [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md) section 7; model output is never evidence; only runs executed by the orchestrating agent count.
 
@@ -111,3 +111,17 @@ Collects the evidence of every P5 step as required by [PHASE_P5_PLAN.md](../../P
 - Package check (CONTRIBUTING.md section 4) on the working tree: fresh pack, entries as expected, `README.md`, `LICENSE` and the schema byte-identical in the package (README SHA-256 `4AA61387F37B359A3BB55E4932776983318523A7DAE1E6FD4627F473CDDB2083`), package `WeatherParser.Parsing.0.1.0-initial.nupkg` SHA-512 (Base64) `q71zxuZ3ZLue3B6OYIyzmBol8KrgvpVny4lm26ER+Jjn53LToIwOgOdjBN04UwoYqbFpwmaKdt3h33op+mdf6w==`, equal to the restored `.nupkg.sha512` after the locked restore, consumer lock refresh discarded.
 - Codex five-angle review: round 1 (`p509_codex_r1.md`) 3 findings (README status contradicted the new section, the deadline test did not exercise a deadline, the package test compared no XML content and no timestamps), round 2 (`p509_codex_r2.md`) 1 finding (period absence not asserted, P3), round 3 (`p509_codex_r3.md`) 0 findings; all confirmed and fixed. Review of this record: round 1 (`p509_codex_doc_r1.md`) 2 findings (package SHA-512 not recorded, stale status date), round 2 (`p509_codex_doc_r2.md`) 0 findings; both confirmed and fixed by the orchestrating agent.
 - Pre-commit coverage gate (results directory `TestResults/p502-precommit-20261025T005209Z/`, target `1e604dc`; test-only change, production blocks unchanged): all five rules passed; 7481/7484 blocks; `evaluate.json` SHA-256 `3941203d3f9ff3cf5425fbd2572c26f89ad75515ba656791bc487cc96330c013` (identical content to the P5.08 gate).
+
+## 10. P5.10 – Integrated coverage and platform verification
+
+- Record: [P5_10_INTEGRATED_VERIFICATION.md](P5_10_INTEGRATED_VERIFICATION.md). The user authorized the NanoPi run and the live parse on 2026-10-25.
+- S0 (test code only, `a87c7bb`): the live-check runner's opt-in observation mode with offline tests, Red recorded, Codex 1, 0 findings.
+- Candidate `a87c7bb` against integration target `1e604dc`:
+  - Windows `ci-local.ps1` exit 0.
+  - Hosted run 40165707736 green with the verified SHA pair.
+  - NanoPi R76S exit 0 with identical test outcomes and block counters.
+  - Gate 7481/7484 against 6811/6814 on all three.
+  - Live parse of station 01526 once: 6 of 8 requests, schema-valid and equivalent.
+- T-P5-01 to T-P5-19 audited; no open defect; outcome READY.
+- Codex review of the P5.10 records: round 1 (`p510_doc_r1.md`) 4 findings (the pressure statement went beyond the retained evidence, the offline case count, the line-ending cause of the gate-result hash difference, the missing review record), all confirmed and fixed by the orchestrating agent; round 2 (`p510_doc_r2.md`) 0 findings.
+- The P5.09 commit `1301b84` also passed `ci-local.ps1` (exit 0, run `1301b84-20261025T005934Z`, gate 7481/7484, gate-result.json SHA-256 `3941203d3f9ff3cf5425fbd2572c26f89ad75515ba656791bc487cc96330c013`) and hosted run 40148837765.
