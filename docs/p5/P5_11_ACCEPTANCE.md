@@ -141,7 +141,7 @@ The working-tree checks and the Codex review rounds are recorded in [P5_VERIFICA
 
 ## 8. Ready for review, review and merge (A9 to A11)
 
-- **A9 (ready for review)**: on the user's instruction of 2026-10-25, after the A8 push (plan section 3). The `ready_for_review` CI run will be recorded in [P5_VERIFICATION.md](P5_VERIFICATION.md) section 11 once it has run.
+- **A9 (ready for review)**: on the user's instruction of 2026-10-25, after the A8 push (plan section 3): marked ready at 2026-10-25T07:15:38Z; the `ready_for_review` CI run is 40172103969 on head `07bc9b0` ([P5_VERIFICATION.md](P5_VERIFICATION.md) section 11).
 - **A10 (review)**: further review comments are handled by the new-candidate rule of the plan.
 - **A11 (merge)**: the user's. The home of the post-merge records is decided by the user at A11.
 
