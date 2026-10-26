@@ -122,7 +122,7 @@ Test glob filters, multiple results, umlauts and collision-free sources using sy
 
 ### P7 – MOSMIX forecasts
 
-Phase plan (planning only, 2026-10-26; P7 not started): [PHASE_P7_PLAN.md](PHASE_P7_PLAN.md).
+Phase plan (planning only, accepted by the user on 2026-10-26; step plans written; P7 not started): [PHASE_P7_PLAN.md](PHASE_P7_PLAN.md).
 
 ### Separate MOSMIX parsers and update frequency
 
