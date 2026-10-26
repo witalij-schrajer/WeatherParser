@@ -1,6 +1,6 @@
 # P7.11 – Integrated Coverage and Platform Verification: Implementation Plan
 
-**Status: planned (2026-10-26); not started. Written before the P7.02 contract; it is reconciled with the approved contract in P7.02 S6 before its first Red test.** Refines the P7.11 row of section 5 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: planned (2026-10-26); reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6); not started.** Refines the P7.11 row of section 5 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: verify one fixed candidate of the complete P7 implementation through the integrated coverage gate on Windows, hosted CI and the NanoPi R76S, measure the MOSMIX_S stream duration and peak memory on the target, optionally run one authorized live parse per product, and record READY or NOT_READY.
@@ -15,9 +15,9 @@ Out of scope with owner: acceptance → P7.12; release hardware acceptance → P
 ## 3. Decisions Required
 | Decision | Options | Recommended | Decided by | Blocks |
 |---|---|---|---|---|
-| Live-check modes | As approved in MF-17 (Proposed `mosmix-l`, `mosmix-s`), budget one request each | As approved; summaries value-free and escaped; artifacts only in the gitignored run directory | User (MF-17) | S0, S4 |
+| Live-check modes | Approved in MF-17: `WEATHERPARSER_LIVE_CHECK_MODE=mosmix-l` and `mosmix-s`, budget one request each | As approved; summaries value-free and escaped; artifacts only in the gitignored run directory | User (MF-17) | S0, S4 |
 | Resource check (Proposed) | An explicitly enabled offline check (Proposed `WEATHERPARSER_RESOURCE_CHECK`) in two separate test-host invocations: (1) mode `generate` writes a synthetic all-stations KMZ of the recorded full size (placemark, element and step counts from P7.02) into the gitignored run directory and exits; (2) mode `measure` runs alone in a fresh `dotnet test` process (filter to the single check), parses the pre-generated file through the real parser with a fake HTTP handler serving the file from disk, and records the duration and the absolute `Process.PeakWorkingSet64` of that process at the end of the parse, compared with the approved total-memory threshold of MF-07 (an absolute peak for the whole measuring process, so no earlier peak can hide the parse's own use); the current working set before the parse is recorded for information only, never subtracted; nothing else runs in that process / one in-suite test that generates and parses (rejected: fixture generation and earlier tests set the process-lifetime peak) / measurement only with the live file | Two-invocation offline check: repeatable on both platforms without network and scoped to the parse; the live parse adds one real-file measurement when authorized | Orchestrator, recorded; the thresholds are MF-05 and MF-07 values | S0, S1, S3 |
-| Readiness rule | READY when S1 to S3 pass and the measured values stay within the approved deadline, request bound and memory threshold; S4 passed or recorded as skipped | As stated; a threshold miss is NOT_READY and goes to the user (MF-05 default adjustment by a recorded decision) | User (MF-05, MF-07) | S5 |
+| Readiness rule | READY when S1 to S3 pass and the measured values stay within the approved MOSMIX_S deadline of 5 minutes (which is also its request bound) and the memory threshold of 256 MiB absolute process peak (MF-05, MF-07); S4 passed or recorded as skipped | As stated; a threshold miss is NOT_READY and goes to the user (MF-05 default adjustment by a recorded decision) | User (MF-05, MF-07) | S5 |
 
 ## 4. Artifacts
 | Path | Action | Content |

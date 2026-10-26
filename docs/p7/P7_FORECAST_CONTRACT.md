@@ -1,6 +1,6 @@
 # WeatherParser MOSMIX Forecast Contract (P7)
 
-**Status (2026-10-26): draft for the user's approval; MF-01 to MF-18 are proposals with a recommended option each and are not approved. Codex review rounds in section 9.** Plan: [P7_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md](P7_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md); phase plan [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md) section 3.
+**Status (2026-10-26): approved by the user on 2026-10-26 (section 1): MF-01 to MF-18 with the recommended option in every row, after four Codex review rounds and one pull-request review (section 9). Binding for P7.03 to P7.12; the phase plan and the step plans are reconciled with it (P7.02 S6).** Plan: [P7_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md](P7_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md); phase plan [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md) section 3.
 
 Written by the orchestrating agent from its own retrievals of 2026-10-26 (section 2), REQUIREMENTS.md, the export contract ([P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md)), the selection contract ([P4_SELECTION_CONTRACT.md](../p4/P4_SELECTION_CONTRACT.md)) and the repository code on `features/develop/P7`. The retrieved files and the probe programs are kept outside the repository (REQ-083); this record holds URLs, times, sizes, hashes and structural facts only, never forecast values.
 
@@ -10,7 +10,7 @@ User authorization (2026-10-26, chat): "I authorize the P7.02 S1 retrievals (one
 
 | Date | Scope | Decision | Wording |
 | ---- | ----- | -------- | ------- |
-| — | MF-01 to MF-18 | Pending | — |
+| 2026-10-26 | MF-01 to MF-18 (after Codex rounds 5, 2, 0 and 0 findings and the PR #11 review of `3582936` with 1 finding fixed in `0a1fa17`, section 9) | Approved | User message: "I approve the P7 MOSMIX forecast contract MF-01 to MF-18 as proposed, with the recommended option in every row, including the MF-11 partial-failure rule of 0a1fa17." Open after the approval: adopting the CRC-32 check in the P4 evidence readers (MF-06) stays a proposal for the user; unless the user approves an SC-20/SC-22 amendment, P7.12 records it as a limitation |
 
 ## 2. Source register
 
@@ -129,7 +129,7 @@ Commands: Windows `dotnet build -c Release probe.cs`, then three times `dotnet r
 
 ## 8. Decision register
 
-Each row lists the options, the recommendation and the T-P7 IDs it governs. Names in the rows are the implementation names proposed for P7; P7.03 to P7.10 use them unless a row says otherwise.
+Each row lists the options, the recommendation and the T-P7 IDs it governs; the recommended option of every row is approved (section 1), the other options are rejected alternatives. Names in the rows are the implementation names of P7; P7.03 to P7.10 use them.
 
 | ID | Decision | Options and recommendation | T-P7 |
 | --- | --- | --- | --- |
