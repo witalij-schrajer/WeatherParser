@@ -35,9 +35,9 @@ public sealed class LiveCheckTests
             Assert.Inconclusive($"Live check skipped: set {LiveCheckRunner.EnableVariable}=1 to run it once against the DWD sources (contract SC-15, SC-16).");
         }
 
-        if (LiveCheckRunner.IsObservationMode(Environment.GetEnvironmentVariable))
+        if (!LiveCheckRunner.IsSelectionMode(Environment.GetEnvironmentVariable))
         {
-            Assert.Inconclusive($"Selection live check skipped: {LiveCheckRunner.ModeVariable}={LiveCheckRunner.ObservationMode} runs only the observation live check (contract OC-13).");
+            Assert.Inconclusive($"Selection live check skipped: {LiveCheckRunner.ModeVariable} selects another live check (contract OC-13, OW-15).");
         }
 
         var cache = Path.Combine(Path.GetTempPath(), "wp-live-cache-" + Guid.NewGuid().ToString("N"));
@@ -128,6 +128,51 @@ public sealed class LiveCheckTests
             result.SchemaEvents.Should().BeEmpty();
             result.Dataset.Source.Should().Be("dwd:" + settings.ObservationStationId);
             ExportEquivalence.AssertEquivalent(json.RootElement, XDocument.Parse(Encoding.UTF8.GetString(result.Xml)).Root!, "observation_dataset");
+        }
+        finally
+        {
+            if (Directory.Exists(cache))
+            {
+                Directory.Delete(cache, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    [TestCategory("Live")]
+    [Timeout(300000)]
+    public async Task LiveCheck_Osthessen_OnlyWhenExplicitlyEnabled()
+    {
+        if (!LiveCheckRunner.IsOsthessenMode(Environment.GetEnvironmentVariable))
+        {
+            Assert.Inconclusive($"OsthessenWetter live check skipped: set {LiveCheckRunner.EnableVariable}=1 and {LiveCheckRunner.ModeVariable}={LiveCheckRunner.OsthessenMode} to run one request against the OsthessenWetter page (contract OW-15).");
+        }
+
+        var cache = Path.Combine(Path.GetTempPath(), "wp-live-cache-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(cache);
+        var output = Path.Combine(Path.GetTempPath(), "wp-live-osthessen-" + DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture));
+        Directory.CreateDirectory(output);
+
+        try
+        {
+            var settings = LiveCheckSettings.Dwd(cache);
+            using var transport = LiveCheckRunner.CreateTransport();
+            var result = await LiveCheckRunner.RunOsthessenAsync(settings, transport, TimeProvider.System, CancellationToken.None);
+
+            await LiveOsthessenArtifacts.WriteAsync(result, settings, output, CancellationToken.None);
+
+            Console.WriteLine(output);
+
+            LiveCheckRunner.EnsureUsable(result);
+
+            result.Requests.Count.Should().BeLessThanOrEqualTo(LiveCheckSettings.OsthessenRequestBudget);
+            result.SchemaEvents.Should().BeEmpty();
+            result.Datasets.Should().OnlyContain(d => d.Source.StartsWith("osthessenwetter:", StringComparison.Ordinal));
+            for (var i = 0; i < result.Datasets.Count; i++)
+            {
+                using var json = JsonDocument.Parse(result.Json[i]);
+                ExportEquivalence.AssertEquivalent(json.RootElement, XDocument.Parse(Encoding.UTF8.GetString(result.Xml[i])).Root!, "observation_dataset");
+            }
         }
         finally
         {
