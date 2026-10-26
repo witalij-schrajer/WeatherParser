@@ -1,6 +1,6 @@
 # P6 Verification Record
 
-**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled); P6.03 complete (`343c2a2`); P6.04 complete: wind-row policy decided by the user and implemented (section 4); P6.05 complete (section 5); P6.06 complete (section 6); P6.07 complete (section 7); P6.08 complete (section 8).**
+**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled); P6.03 complete (`343c2a2`); P6.04 complete: wind-row policy decided by the user and implemented (section 4); P6.05 complete (section 5); P6.06 complete (section 6); P6.07 complete (section 7); P6.08 complete (section 8); P6.09 complete (section 9).**
 
 - Integration target: `8d8079a4238514f7c9bcfc3846829e2408938ae3` (documentation-only successor of the P5 merge `29fd553`).
 - Branch `features/develop/P6`.
@@ -202,3 +202,27 @@ Plan: [P6_08_EXPORT_EQUIVALENCE_PLAN.md](P6_08_EXPORT_EQUIVALENCE_PLAN.md). Cont
 
 - Codex five-angle review round 1 (`p608_codex_r1.md`): 1 finding, confirmed. [P2] `Export_UtcForm_NoOffsetNoZ` checked the temperature and humidity timestamps only for their format, so giving them the wind time would pass: qwen added the exact expectations `2026-01-15T08:31:00` for `measurements/temperature_c/measured_at` and `measurements/humidity_percent/measured_at` in both documents; they passed on their first run (characterization). Parsing 2259 passed, 0 failed, 2 skipped.
 - Round 2 (`p608_codex_r2.md`): 0 findings (all five angles "No findings."). P6.08 is complete; the gate was not re-run after this test-only assertion change, which cannot change the library block counters.
+
+## 9. P6.09 – DI registration, README and package consumption
+
+Plan: [P6_09_DI_README_PACKAGE_PLAN.md](P6_09_DI_README_PACKAGE_PLAN.md). Contract rows OW-04, OW-10, OW-13, OW-14.
+
+### S1 DI and package consumption (characterization)
+
+- Files: `tests/WeatherParser.Parsing.Tests/Observations/Osthessen/OsthessenWetterDependencyInjectionTests.cs` (8 methods) and `tests/WeatherParser.Package.Tests/PackageOsthessenWetterTests.cs` (5 methods, over the existing `ConsumerSelectionHost`, with an own copy of the synthetic page markup, so the consumer stays independent of the parsing test project). No production code changed.
+- Covered: resolution with consumer options; `ValidateOnBuild` fails without `OsthessenWetterOptions` or without `OsthessenWetterEndpoints`; `AddWeatherParsing` registers neither; an invalid `PageDeadline` and invalid metadata fail at resolution (the latter without any request); two containers keep their own endpoints and metadata (each requests only its own URI and builds only its own station); the parser is a singleton; from the packed library: resolution, one and several stations with one request per parse, the datasets serialized and validated against the packaged schema with the expected wire values, `OSTHESSEN-PATTERN-NO-MATCH` after one request and `OSTHESSEN-PATTERN-INVALID` without a request.
+- Characterization: qwen's DI file used an invented `StationName` member on `ObservationDataset` (CS1061) and was corrected compiler-guided, with exact list assertions; afterwards all 8 passed on their first run. The package file used `ContainInOrder` and lacked two timeouts; qwen's correction also removed an unrequested request-count assertion, which qwen restored on a precise description; all 5 passed on their first run. No product defect was found.
+- Package check (CONTRIBUTING.md section 4) on the working tree after the README change: entries `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, `schemas/export/v1/weatherparser-export-v1.xsd` and NuGet metadata; README, LICENSE and schema byte-identical to the working tree (after the review fix below: README SHA-256 `333D1FD5C63BD722BBBA1D75881FBD88FB96C21AFA42FF0E6D78C98C12B7BDB5` in and outside the package; LICENSE `F271C121B44D6C5B0C2A150A901EB5A064BF48F1EA907EB98FE0BFF5D21D770A`; schema `7B48A7E4D296F16FA5C50319796C38FCC2A509C227E1B790E1E5EF2F16A497C6`); packed hash equal to the restored hash (SHA-512, Base64: `SNmRYCw6q0dGNIgVvPXxZEm2uaxP4PoPu6MU1z92DfZGDyuD+/djxgbtPAJizsaV8mmFPjKYHWgorSa1LhUixQ==`; the package embeds the commit ID, so the committed revision packs to a different hash); package tests 41 passed, 0 failed; the consumer lock refresh was discarded with `git restore`.
+
+### S2 README and status
+
+- README (written by the orchestrating agent): new section "OsthessenWetter observations (library)" with the pattern semantics, consumer registration (endpoint, deadline, station metadata, the registration consequence for every consumer of `AddWeatherParsing`), retrieval bounds, the exported quantities and their times, the station ID rule and collision scope, the date inference and its markers, value and wind-join rules, station failures, not-exported columns, the supported-revision limitation, the error and notice IDs, the precedence, and the source conditions with the OW-14 status (production use and redistribution not accepted until the conditions are clarified), the attribution "Osthessen-Wetter.de" and the retrieval recommendation; the project status paragraph names the OsthessenWetter parser as implemented.
+- Status passages updated in the same change (AGENTS.md consistency table): README (twice), AGENTS.md (twice), DEVELOPMENT_PLAN.md, PHASE_P1_PLAN.md, PHASE_P6_PLAN.md.
+- Final: build 0 warnings; Parsing 2267 passed, 0 failed, 2 skipped (live); gate (results `TestResults/p6-precommit-20261026T010238Z/`) passed with 8475/8478 against 7491/7494, `evaluate.json` SHA-256 `4a879cdf92c492d27bb9ed2a8465bff4a8cafe925a4f52f41fd1e0e0d4b41edb`. `ci-local.ps1` on the committed revision follows the commit.
+- Authorship: qwen3-coder:30b generated the DI and package tests and their corrections; the orchestrating agent wrote the README section, the status passages and this record, ran the package check and every build and test.
+
+### Review
+
+- Codex five-angle review round 1 (`p609_codex_r1.md`): 2 findings, both confirmed and fixed by the orchestrating agent (documentation). [P3] The README stated without qualification that a stalled request fails as `OSTHESSEN-PAGE-UNAVAILABLE` first; with a `PageDeadline` below 30 s the deadline expires first: the sentence now distinguishes both cases. [P3] The record omitted the package hash: added above with the algorithm. The package check was repeated after the README fix (README byte-identical in the package, packed equal to restored, package tests 41 passed, lock refresh discarded).
+
+- Round 2 (`p609_codex2.brief.md`, output `p609_codex_r2.md`): 0 findings (all five angles "No findings."). P6.09 is complete; `ci-local.ps1` on the committed revision is recorded in section 10.
