@@ -1,6 +1,6 @@
 # P6.11 – Acceptance and P7 Handoff: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is executed yet.** Refines the P6.11 row of section 5 and section 9 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md).
+**Status: A1 to A6 and A8 executed on 2026-10-26 ([record](P6_11_ACCEPTANCE.md)); A9 (ready for review) follows the push of the record and is recorded with its timestamp, head and CI run; A7 (the user's acceptance), A10 (review) and A11 (merge) pending.** Refines the P6.11 row of section 5 and section 9 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: audit the P6 evidence, record the limitations and the source-condition status, obtain the user's acceptance, update the status documents, write the P7 handoff, and take the pull request through review to the user's merge.

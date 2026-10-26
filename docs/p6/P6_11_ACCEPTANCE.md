@@ -1,0 +1,94 @@
+# P6.11 – P6 Acceptance Record
+
+**Status (2026-10-26): the evidence audit (section 5) accepts the implementation candidate `4373399`. The user's acceptance (A7, section 6) is pending; pull request #9 is to be marked ready for review on the user's instruction after this record is pushed (A9, section 8). P6 is complete only after the user's acceptance and the merge of pull request #9 into `develop`.** Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](P6_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
+
+## 1. Review identity (A1)
+
+| Item | Value |
+|---|---|
+| Implementation candidate | `4373399b278e65097452fe18d7029fee5461bdb1` (`4373399`), branch `features/develop/P6` |
+| Pull request | #9 into `develop`, draft until A9 (section 8) |
+| Integration target | PR base `8d8079a4238514f7c9bcfc3846829e2408938ae3`; checked on 2026-10-26 (`gh pr view 9` `baseRefOid` and `git rev-parse origin/develop` after `git fetch`): unchanged since P6.01 |
+| Head before this record | `4373399` itself; this record's commit changes documentation only (no production code, tests, build, CI, package or schema files) |
+| P6.10 outcome | READY ([P6.10 record](P6_10_INTEGRATED_VERIFICATION.md) section 7) |
+| Package | `WeatherParser.Parsing` `0.1.0-initial`, not published |
+
+## 2. Requirement and test evidence matrix (A2, T-P6-01 – T-P6-19)
+
+Platform evidence for every row: the P6.10 runs on candidate `4373399` — Windows `ci-local.ps1` exit 0, hosted CI run 40255069498 with three green jobs and the SHA pair verified, and the NanoPi R76S run with identical test outcomes ([P6.10 record](P6_10_INTEGRATED_VERIFICATION.md)). Each run passed 2295 Parsing tests (the three live tests are not executed in standard runs) and 41 package-consumer tests, and its gate passed with 8475/8478 blocks against 7491/7494.
+
+"Red" names the step whose record in [P6_VERIFICATION.md](P6_VERIFICATION.md) holds the Red → Green → Refactor evidence; "Characterization" marks tests over behaviour implemented test-first in an earlier step, recorded as first-run passes.
+
+| T-P6 ID | Requirements | Tests | TDD evidence | Status |
+|---|---|---|---|---|
+| T-P6-01 | REQ-040 | `StationNamePatternMatcherTests` | Red, P6.03 (section 3) | PASSED |
+| T-P6-02 | REQ-044, REQ-045 | `OsthessenWetterPageReaderTests`, `OsthessenWetterPageReaderBoundaryTests` | Red, P6.04 (section 4) | PASSED |
+| T-P6-03 | REQ-041 | page-reader join tests, `OsthessenWetterObservationMapperTests`, `OsthessenWetterComposedMappingTests` | Red, P6.04 S3 (with the OW-11 amendment) and P6.05 S5 | PASSED |
+| T-P6-04 | REQ-044, REQ-052, REQ-053, REQ-057 | `OsthessenWetterValueReaderTests`, `OsthessenWetterComposedMappingTests`, `OsthessenWetterExportContractTests` (rounding) | Red, P6.05 S3 and S5; characterization, P6.08 | PASSED |
+| T-P6-05 | REQ-042, REQ-043, REQ-056 | `OsthessenWetterTimeReaderTests`, mapper and composed tests, export marker tests | Red, P6.05 S4 and S5; characterization, P6.08 | PASSED |
+| T-P6-06 | REQ-042, REQ-043, REQ-082 | `OsthessenWetterTimeReaderTests` (midnight, tolerance, gap, overlap), `ParseAsync_DelayedResponseAcrossMidnight_ReadingGetsResponseDate`; Debian time-zone data in the NanoPi run | Red, P6.05 S4 and P6.07 | PASSED |
+| T-P6-07 | REQ-041, REQ-050 | `OsthessenWetterStationIdentityTests`, collision tests of the parser and the composed pipeline | Red, P6.05 S1 and P6.07 | PASSED |
+| T-P6-08 | REQ-041, C-51 | `OsthessenWetterStationMetadataLookupTests`, `Construct_Metadata*` (composed), metadata failure tests | Red, P6.05 S2 and P6.07 | PASSED |
+| T-P6-09 | REQ-046, REQ-063 | `OsthessenWetterOptionsTests`, `OsthessenWetterPageSourceTests`, `CatalogDownloaderObservationDeadlineTests`, parser deadline and precedence tests | Red, P6.06 and P6.07 | PASSED |
+| T-P6-10 | REQ-041, REQ-044 | `OsthessenWetterParserStationTests`, `ComposedOsthessenWetterPipelineTests` | Red, P6.07 | PASSED |
+| T-P6-11 | REQ-050, C-55, C-56 | `ParseAsync_Dataset_SourceLocationTimes`, `ParseAsync_RetrievedAtSampledAfterPageSourceReturns`, station tests | Red, P6.07 | PASSED |
+| T-P6-12 | REQ-051, REQ-067 to REQ-069, REQ-079 | `OsthessenWetterExportContractTests` | Characterization, P6.08 (section 8) | PASSED |
+| T-P6-13 | REQ-013, REQ-014, REQ-016, REQ-078 | `OsthessenWetterDependencyInjectionTests`, `PackageOsthessenWetterTests`, `ServiceRegistrationCompletenessTests`, `NoSharedStateTests` | Characterization, P6.09; registration Red in each step | PASSED |
+| T-P6-14 | REQ-090, REQ-092 | README section "OsthessenWetter observations (library)"; package check | P6.09 (section 9) | PASSED |
+| T-P6-15 | REQ-085 | step records | sections 3 to 10 of the verification record | PASSED |
+| T-P6-16 | REQ-086 | gate on Windows, hosted CI and the NanoPi | P6.10 | PASSED |
+| T-P6-17 | REQ-017, REQ-084 | NanoPi R76S run | P6.10 S3 | PASSED |
+| T-P6-18 | REQ-083, REQ-092 | `LiveCheck_Osthessen_OnlyWhenExplicitlyEnabled` (one authorized run), `LiveCheckOsthessenRunnerTests` | Red, P6.10 S0; live run P6.10 S4 | PASSED (single snapshot on Windows, 2026-10-26) |
+| T-P6-19 | REQ-044, REQ-072, REQ-082 | logging tests of `OsthessenWetterParserStationTests`, `ParseAsync_Logs_NoValuesNoPageTextNoQuery`, `Read_Diagnostic_NoQueryString` | Red, P6.06 and P6.07 | PASSED |
+
+## 3. Contract summary (A3)
+
+- OW-01 to OW-16 approved by the user on 2026-10-25 with option A in every row; OW-11 amended by the user on the same day (only the deviating wind row is ignored). Each row is implemented in the step its contract row names (P6.03 to P6.10) and traced in section 2.
+- Export contract v1: unchanged; no additive decision was needed (P6.08).
+- Additive library changes: the OsthessenWetter types listed in the [P7 handoff](P7_HANDOFF.md) section 2, `CatalogDeadlineKind.OsthessenWetter`, and `OsthessenWetterException.StationFailures`; the registration consequence that every consumer of `AddWeatherParsing` registers `OsthessenWetterEndpoints` and `OsthessenWetterOptions`.
+
+## 4. Limitations and open items (A4)
+
+| Item | Owner |
+|---|---|
+| **Source conditions (OW-14)**: no licence and the imprint forbids reproduction without the author's consent; production use and redistribution (for example over MQTT) are not accepted until the user records the operator's consent or other clarified conditions | User; P8 and P3 must not redistribute the values until clarified |
+| Only the page revision documented in the contract is supported (REQ-045); a changed overview table fails with `OSTHESSEN-FORMAT-CHANGED` | Recorded limitation; a parser update for a new revision is a new decision |
+| Stale displays cannot be detected and are not filtered (REQ-043); consumers evaluate `measured_at` | Consumers (README) |
+| Precipitation, gusts, the 60-minute mean, trends and extremes are not exported (OW-06) | Recorded decision |
+| Coordinates are consumer-supplied (OW-04); a matched station without metadata is a station failure | Consumers (README) |
+| Registration consequence: consumers that do not use OsthessenWetter still register its endpoint and options | Recorded (README); revisit with optional registration only by a new decision |
+| The live check is a single snapshot of 2026-10-26 on Windows with placeholder coordinates, not on the target (OW-15) | Recorded limitation |
+| Scheduling (at most one retrieval every 10 minutes is a project recommendation) | External orchestration (cron, n8n), not a dependency |
+| Example CLI `--ParseOstHessen`, configuration, exit codes | P3 |
+| MQTT payloads and topics | P8 (subject to the source conditions) |
+| Inherited: builders and root validation implement the same rules separately (equivalence tests guard it); coarse XML cancellation (C-10); hosted `debian13-arm64` is a container, target evidence only from the NanoPi R76S; the package is not byte-reproducible across builds; DI under load | P7, P8, P9 as in the P5.11 record, carried forward |
+| Inherited from P4 and P5 (MOSMIX element verification and parsing; MOSMIX_S refresh exposure; the selection and DWD observation live snapshots; forecast-only quantities; the target locale) | Unchanged owners ([P5.11 acceptance record](../p5/P5_11_ACCEPTANCE.md) section 4) |
+
+## 5. Audit decision (A5)
+
+**ACCEPTED** (orchestrating agent's evidence audit, 2026-10-26, for candidate `4373399`):
+- every T-P6 row is PASSED with tests and run evidence for `4373399`; the live row T-P6-18 is a single authorized snapshot;
+- the P6.10 outcome is READY with no open defect;
+- the coverage gate passed with 8475/8478 against 7491/7494 on Windows, in hosted CI and on the NanoPi R76S;
+- every contract decision is approved, and each limitation has an owner; the source-condition status is stated (section 4).
+
+This audit decision is not the user's acceptance.
+
+## 6. User decision (A7)
+
+Pending. The user decides on the basis of this record, the [P6.10 record](P6_10_INTEGRATED_VERIFICATION.md) and the pull request review. Plan recommendation for the wording (plan section 3): the library accepted, production use and redistribution open until the source conditions are clarified.
+
+## 7. Status updates (A8)
+
+Status passages updated on 2026-10-26 to "P6 implemented and verified (P6.10 READY); acceptance by the user pending; complete only once the user accepts and merges pull request #9": `AGENTS.md` and `README.md` (the phase-status line and the dated line), `DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `PHASE_P6_PLAN.md`, `P6_OSTHESSEN_CONTRACT.md` (verification reference), `P6_VERIFICATION.md`. The README change triggers the package check (AGENTS.md consistency table), recorded in [P6_VERIFICATION.md](P6_VERIFICATION.md) section 11.
+
+## 8. Ready for review, review and merge (A9 to A11)
+
+- **A9 (ready for review)**: on the user's instruction of 2026-10-26 ("After you are ready for my acceptance change the PR status to \"ready for review\""), after the push of this record.
+- **A10 (review)**: on the user's instruction of 2026-10-26, the pull request comments are checked every 30 minutes; on reported issues the pull request goes back to draft, the issues are analysed and fixed test-first, and it is marked ready for review again, until the reviewer reports no findings. A production change makes a new candidate and repeats P6.10 S1 to S3.
+- **A11 (merge)**: by the user only.
+
+## 9. Authorship and review
+
+- The orchestrating agent wrote this record, the P7 handoff and the status passages from the recorded evidence and ran every check.
+- Codex reviewed them read-only; the rounds, findings and dispositions are in [P6_VERIFICATION.md](P6_VERIFICATION.md) section 11.

@@ -1,6 +1,6 @@
 # P6 Verification Record
 
-**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled); P6.03 complete (`343c2a2`); P6.04 complete: wind-row policy decided by the user and implemented (section 4); P6.05 complete (section 5); P6.06 complete (section 6); P6.07 complete (section 7); P6.08 complete (section 8); P6.09 complete (section 9).**
+**Status (2026-10-25): P6.01 complete, outcome READY; P6.02 complete (contract approved by the user on 2026-10-25, plans reconciled); P6.03 complete (`343c2a2`); P6.04 complete: wind-row policy decided by the user and implemented (section 4); P6.05 complete (section 5); P6.06 complete (section 6); P6.07 complete (section 7); P6.08 complete (section 8); P6.09 complete (section 9); P6.10 READY on candidate `4373399` (section 10, [P6.10 record](P6_10_INTEGRATED_VERIFICATION.md)); P6.11 evidence audit ACCEPTED, acceptance by the user pending (section 11, [acceptance record](P6_11_ACCEPTANCE.md)).**
 
 - Integration target: `8d8079a4238514f7c9bcfc3846829e2408938ae3` (documentation-only successor of the P5 merge `29fd553`).
 - Branch `features/develop/P6`.
@@ -240,3 +240,16 @@ Plan: [P6_10_INTEGRATED_VERIFICATION_PLAN.md](P6_10_INTEGRATED_VERIFICATION_PLAN
 - Codex round 1 (`p610_s0_codex_r1.md`): 3 findings, all confirmed and fixed test-first. [P2] The live entry point passed without any usable dataset: `EnsureUsable` added with offline and usable regression tests. [P2] Page-derived station names were written unescaped, so a name with a line break or markup could forge summary lines: names are escaped, with an adversarial-name test. [P3] The summary lacked the matched count and the original names: added. Red: 4 tests failed against an `EnsureUsable` stub; qwen wrote the expected escapes as C# escapes instead of literal backslashes, which the orchestrating agent doubled mechanically, and one forged-line assertion used `Contains` instead of equality, corrected by qwen. Round 2 (`p610_s0_codex_r2.md`): 0 findings.
 - Final: build 0 warnings; Parsing 2295 passed, 0 failed, 3 skipped (the three live tests); gate (test-only change) 8475/8478 against 7491/7494.
 - Authorship: qwen3-coder:30b generated the tests, the runner members, the lookup, the artifact writer and the entry point and their corrections; the orchestrating agent restored the stubs, doubled the escape backslashes, reviewed the diffs and ran every build and test.
+
+- S1 to S4 on candidate `4373399`: outcome READY ([P6.10 record](P6_10_INTEGRATED_VERIFICATION.md)).
+
+## 11. P6.11 – Acceptance preparation
+
+Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](P6_11_ACCEPTANCE_HANDOFF_PLAN.md). Record: [P6_11_ACCEPTANCE.md](P6_11_ACCEPTANCE.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
+
+- A1 to A6 written by the orchestrating agent on 2026-10-26: review identity, evidence matrix T-P6-01 to T-P6-19, contract summary, limitations with owners (including the OW-14 source-condition status), audit decision ACCEPTED, P7 handoff. A7 (the user's acceptance) is pending.
+- A8 status passages (documentation only): AGENTS.md (twice), README.md (twice), DEVELOPMENT_PLAN.md, PHASE_P1_PLAN.md, PHASE_P6_PLAN.md, the contract status line, this record, the P6.10 and P6.11 plan status lines; COMPATIBILITY.md gains the P6 scope section and limit.
+- Package check after the README change (CONTRIBUTING.md section 4): README SHA-256 `59A3F51B35083AC3A397729D1C24A1FCDD79BCB2A85703460D2AECFF706FD634`, LICENSE and schema byte-identical; packed SHA-512 `Q6CBSNljnekn1h9nKaNEUuPfhwxzvx+bgVqS95daHiwLPJYs05mQa52la1mFPkHSiZG/oGXrw5caqrmQCELH+g==` equal to the restored hash; package tests 41 passed; the lock refresh discarded.
+- Codex five-angle review round 1 (`p611_codex_r1.md`) over the P6.10 record, COMPATIBILITY.md, the acceptance record, the P7 handoff and the status passages: 3 findings, all confirmed and fixed by the orchestrating agent (documentation). [P2] The plan status and the record called A9 executed before the record was pushed: both now state A9 as following the push, to be recorded with timestamp, head and CI run. [P3] The P6.10 comparison counted 2464 results after deduplicating display names: corrected to 2540 results (2537 passed, 3 not executed) compared with multiplicity preserved, 0 differences (recounted by the orchestrating agent). [P3] The acceptance record named a review trail that did not exist yet: this entry records it.
+
+- Round 2 (`p611_codex_r2.md`): 0 findings (all five angles "No findings.").
