@@ -1,6 +1,6 @@
 # P7 Verification Record
 
-**Status (2026-10-26): P7.01 complete, outcome READY (section 1); P7.02 complete: contract MF-01 to MF-18 approved by the user on 2026-10-26, plans reconciled (section 2); P7.03 in progress: S1 complete (section 3).**
+**Status (2026-10-26): P7.01 complete, outcome READY (section 1); P7.02 complete: contract MF-01 to MF-18 approved by the user on 2026-10-26, plans reconciled (section 2); P7.03 in progress: S1 and S2 complete (section 3).**
 
 - Integration target: `8009f1c413ead6b150f2c71bec8f669e81be5558` (documentation-only successor of the P6 merge `de9d4ba`).
 - Branch `features/develop/P7`.
@@ -49,3 +49,12 @@
 - Green part 1 (qwen): `ForecastRunRejectedException` gains `OmittedValues` and the constructor `(string, IReadOnlyList<OmittedForecastValue>)` after the `ObservationDatasetRejectedException` pattern. Observed runtime Red: `Build_NoUsableValue_ExceptionCarriesOmissions` failed ("Expected ForecastRunRejectedException.OmittedValues to be equal to" the six omissions, but it was empty); the other five passed.
 - Green part 2 (qwen): `ForecastRunBuilder` passes its collected `omitted` list to the no-usable-value rejection (one-line diff); every earlier rejection keeps the one-argument constructor.
 - Checks by the orchestrating agent: diff reviewed (only the authorized files, no changed expectations); Release build 0 errors; Parsing 2307 of 2310 passed (the three opt-in live tests not executed), SchemaGeneration 46; pre-commit coverage gate against `8009f1c`: 8492/8495 exceeds the baseline 8486/8489 (TestResults/p7-precommit-20261026T212310Z, gitignored).
+
+### S2 Freshness member `run_age_exceeded` (MF-09)
+
+- Red (qwen, new file `tests/WeatherParser.Parsing.Tests/Forecasts/ForecastRunFreshnessMarkerTests.cs`): `Build_StaleInput_RunCarriesMarker`, `Build_FreshInput_MarkerFalse`, `Build_UnsetInput_MarkerOmitted`, `Serialize_Json_MemberAfterForecasts`, `Serialize_Xml_ElementAfterForecasts`, `Serialize_MarkerJsonXmlEquivalent`, `Schema_RunWithMarker_Valid`, `Schema_MarkerBeforeForecasts_Invalid`, `Deserialize_DocumentWithoutMarker_StillValid`. The generation lacked two using directives (`System.Xml.Linq`, `WeatherParser.Parsing.Tests.Schemas`); qwen's first correction added only one, the second precise correction the other. Observed Red: the build failed only with CS0117/CS1061 (`RunAgeExceeded` missing on `ForecastRunInput` and `ForecastRun`).
+- Green (qwen, three single-file requests): `ForecastRunInput.RunAgeExceeded` (`bool?`, init); `ForecastRun.RunAgeExceeded` appended after `Forecasts` with `JsonIgnore(WhenWritingNull)` and the XML companion `RunAgeExceededSpecified`; the builder copies the input value. Observed second Red after the code change: `Schema_RunWithMarker_Valid` failed against the unchanged committed schema (8 of 9 passed).
+- Schema regenerated with the golden-file procedure (CONTRIBUTING.md "Export schema generation (P2.09)"; the regeneration run ended as skipped, as documented): the diff is exactly one appended element `<xs:element minOccurs="0" maxOccurs="1" name="run_age_exceeded" type="xs:boolean" />` after `forecasts` in `ForecastRun`; new SHA-256 of `schemas/export/v1/weatherparser-export-v1.xsd` `544aacc34c6f584632ad4fff1b2de8b7d7a95323326adba67b80690a1f8eaee4`. All nine tests green.
+- First coverage gate run failed (8497/8503 below the baseline 8486/8489): the setter of `RunAgeExceededSpecified` was not covered (3 blocks). Added after Green, without a Red because the behavior already existed (recorded as such): `RunAgeExceededSpecified_SetFalse_ClearsValue`, `RunAgeExceededSpecified_SetTrue_KeepsValue` (the `ForecastReadBackTests` pattern for the other C-05 companions) and `Deserialize_DocumentWithMarker_ReadsValue` (qwen).
+- Refactor (qwen): `RunAgeExceededSpecified` reformatted to the repository's multi-line layout; no behavior change.
+- Checks by the orchestrating agent: diffs reviewed; Release build 0 errors; Parsing 2319 of 2322 passed (the three opt-in live tests not executed), SchemaGeneration 46; pre-commit coverage gate: 8500/8503 exceeds the baseline 8486/8489 (TestResults/p7-precommit-20261026T213831Z, gitignored).

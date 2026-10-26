@@ -274,7 +274,8 @@ public sealed class ForecastRunBuilder : IForecastRunBuilder
             Location = location,
             Product = product,
             IssuedAtUtc = issuedAt,
-            RetrievedAtUtc = input.RetrievedAtUtc
+            RetrievedAtUtc = input.RetrievedAtUtc,
+            RunAgeExceeded = input.RunAgeExceeded
         };
 
         foreach (var step in keptSteps)

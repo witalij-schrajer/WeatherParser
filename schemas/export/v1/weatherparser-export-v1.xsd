@@ -102,6 +102,7 @@
       <xs:element minOccurs="1" maxOccurs="1" name="issued_at" type="tns:UtcTimestamp" />
       <xs:element minOccurs="1" maxOccurs="1" name="retrieved_at" type="tns:UtcTimestamp" />
       <xs:element minOccurs="1" maxOccurs="1" name="forecasts" type="tns:ArrayOfForecastStep" />
+      <xs:element minOccurs="0" maxOccurs="1" name="run_age_exceeded" type="xs:boolean" />
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="ForecastLocation">

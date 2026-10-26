@@ -185,6 +185,31 @@ public sealed class ForecastRun : IExportRootValidation
     [XmlArrayItem("forecast")]
     public List<ForecastStep> Forecasts { get; set; } = new();
 
+    /// <summary>
+    /// Gets or sets whether the run is older than the consumer's age limit (contract MF-09); omitted when unset (C-05).
+    /// </summary>
+    [XmlElement("run_age_exceeded")]
+    [JsonPropertyName("run_age_exceeded")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? RunAgeExceeded { get; set; }
+
+    /// <summary>
+    /// Controls XML output of run_age_exceeded; true exactly when RunAgeExceeded has a value.
+    /// </summary>
+    [XmlIgnore]
+    [JsonIgnore]
+    public bool RunAgeExceededSpecified
+    {
+        get => RunAgeExceeded.HasValue;
+        set
+        {
+            if (!value)
+            {
+                RunAgeExceeded = null;
+            }
+        }
+    }
+
     private static readonly decimal HpaToMmHg = 0.7500617m;
     private static readonly decimal MmHgToHpa = 1.3332239m;
 

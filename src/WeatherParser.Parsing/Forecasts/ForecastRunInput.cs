@@ -42,4 +42,9 @@ public sealed class ForecastRunInput
     /// Gets or sets the series of the forecast run.
     /// </summary>
     public IReadOnlyList<ForecastSeries?>? Series { get; init; }
+
+    /// <summary>
+    /// Gets the freshness marker of the run (contract MF-09): true when the run is older than the consumer's age limit, false when it is not, null when unset; copied unchanged to <see cref="ForecastRun.RunAgeExceeded"/>.
+    /// </summary>
+    public bool? RunAgeExceeded { get; init; }
 }
