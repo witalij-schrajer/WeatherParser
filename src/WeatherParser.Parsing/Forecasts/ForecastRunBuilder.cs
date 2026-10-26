@@ -264,7 +264,7 @@ public sealed class ForecastRunBuilder : IForecastRunBuilder
         if (keptSteps.Count == 0)
         {
             var source = $"{(product == MosmixProduct.MosmixS ? "dwd-mosmix-s:" : "dwd-mosmix-l:")}{mosmixId}";
-            throw new ForecastRunRejectedException($"The forecast run for source '{source}' has no usable values (contract C-76, REQ-107).");
+            throw new ForecastRunRejectedException($"The forecast run for source '{source}' has no usable values (contract C-76, REQ-107).", omitted);
         }
 
         var run = new ForecastRun
