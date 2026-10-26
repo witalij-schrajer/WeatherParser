@@ -316,4 +316,54 @@ public sealed class OsthessenWetterParserTests
         act = () => new OsthessenWetterParser(new OsthessenWetterOptions(), new StationNamePatternMatcher(), _source.Object, _reader.Object, _mapper.Object, _builder.Object, _clock, null!);
         act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
     }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task ParseAsync_OptionsMutatedAfterConstruction_UsesValidatedDeadline()
+    {
+        var options = new OsthessenWetterOptions { PageDeadline = TimeSpan.FromSeconds(45) };
+        _subject = Create(options);
+        options.PageDeadline = Timeout.InfiniteTimeSpan;
+        var cancelledAt44 = true;
+        var cancelledAt45 = false;
+        ArrangeSourceThrows(deadline =>
+        {
+            _clock.Advance(TimeSpan.FromSeconds(44));
+            cancelledAt44 = deadline.IsCancellationRequested;
+            _clock.Advance(TimeSpan.FromSeconds(1));
+            cancelledAt45 = deadline.IsCancellationRequested;
+            return Deadline();
+        });
+        Func<Task> act = () => _subject.ParseAsync("*", _caller.Token);
+        (await act.Should().ThrowAsync<OsthessenWetterException>()).Which.ErrorId.Should().Be(OsthessenWetterException.DeadlineExceededErrorId);
+        cancelledAt44.Should().BeFalse("the deadline must not expire before the configured 45 seconds");
+        cancelledAt45.Should().BeTrue("the deadline must expire at the configured 45 seconds");
+    }
+
+    [TestMethod]
+    public void Constructor_InvalidPageDeadline_ThrowsOptionsInvalid()
+    {
+        foreach (var value in new[]
+        {
+            TimeSpan.Zero,
+            TimeSpan.FromTicks(-1),
+            Timeout.InfiniteTimeSpan,
+            TimeSpan.FromHours(1) + TimeSpan.FromTicks(1),
+            TimeSpan.MaxValue
+        })
+        {
+            FluentActions.Invoking(() => Create(new OsthessenWetterOptions { PageDeadline = value }))
+                .Should().Throw<OsthessenWetterException>()
+                .Which.ErrorId.Should().Be(OsthessenWetterException.OptionsInvalidErrorId);
+        }
+    }
+
+    [TestMethod]
+    public void Constructor_PageDeadlineBounds_Accepted()
+    {
+        FluentActions.Invoking(() => Create(new OsthessenWetterOptions { PageDeadline = TimeSpan.FromTicks(1) }))
+            .Should().NotThrow<OsthessenWetterException>();
+        FluentActions.Invoking(() => Create(new OsthessenWetterOptions { PageDeadline = TimeSpan.FromHours(1) }))
+            .Should().NotThrow<OsthessenWetterException>();
+    }
 }

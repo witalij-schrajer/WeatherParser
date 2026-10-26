@@ -45,6 +45,7 @@ public sealed class OsthessenWetterPageReader : IOsthessenWetterPageReader
         var stations = new List<OsthessenWetterStationRow>();
         foreach (var tr in overviewTable.QuerySelectorAll("tr").Skip(1))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var cells = tr.Children.Where(child => child.LocalName == "td").ToArray();
             
             if (cells.Length != OverviewLabels().Length)
@@ -91,6 +92,7 @@ public sealed class OsthessenWetterPageReader : IOsthessenWetterPageReader
         // A deviating wind row is ignored and its station gets the unmatched notice; the other rows keep their wind values (contract OW-11 amendment of 2026-10-25).
         foreach (var tr in windTable.QuerySelectorAll("tr").Skip(1))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var cells = tr.Children.Where(child => child.LocalName == "td").ToArray();
             
             string? name = null;
@@ -117,11 +119,15 @@ public sealed class OsthessenWetterPageReader : IOsthessenWetterPageReader
         }
 
         // Join candidates to overview rows
+        // One lookup instead of a scan per station keeps the join linear in the row count.
+        var candidatesByKey = windCandidates.ToLookup(c => c.JoinKey, StringComparer.Ordinal);
         var joinedStations = new List<OsthessenWetterStationRow>();
         foreach (var station in stations)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var key = JoinKey(station.Name);
-            var matchingCandidates = windCandidates.Where(c => c.JoinKey == key).ToList();
+            // Two candidates already make the key ambiguous (contract OW-05).
+            var matchingCandidates = candidatesByKey[key].Take(2).ToList();
             if (matchingCandidates.Count == 1 && !deviatingKeys.Contains(key))
             {
                 var candidate = matchingCandidates[0];

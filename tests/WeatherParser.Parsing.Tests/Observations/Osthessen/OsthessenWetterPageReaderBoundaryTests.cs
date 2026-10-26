@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -180,5 +183,106 @@ public sealed class OsthessenWetterPageReaderBoundaryTests
         page.Stations.Should().ContainSingle();
         page.Stations[0].WindMeanText.Should().Be("4.0km/h");
         page.Diagnostics.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task ReadAsync_LargePage_AllWindRowsJoinedInReverseOrder()
+    {
+        var overviewRows = new List<string>();
+        var windRows = new List<string>();
+
+        for (int i = 0; i < 1500; i++)
+        {
+            string name = "Station" + i.ToString("D4", CultureInfo.InvariantCulture);
+            overviewRows.Add(OsthessenWetterHtml.OverviewRow(name));
+            windRows.Add(OsthessenWetterHtml.WindRow(name, mean10: (i % 90).ToString(CultureInfo.InvariantCulture) + ".5"));
+        }
+
+        var page = await Read(OsthessenWetterHtml.Page(Overview(overviewRows.ToArray()), Wind(Enumerable.Reverse(windRows).ToArray())));
+
+        page.Stations.Should().HaveCount(1500);
+        for (int i = 0; i < 1500; i++)
+        {
+            string name = "Station" + i.ToString("D4", CultureInfo.InvariantCulture);
+            var station = page.Stations[i];
+            station.Name.Should().Be(name);
+            station.WindMeanText.Should().StartWith((i % 90).ToString(CultureInfo.InvariantCulture) + ".5");
+        }
+        page.Diagnostics.Should().NotContain(d => d.NoticeId == OsthessenWetterNoticeIds.WindRowUnmatched);
+    }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task ReadAsync_LargePage_CancelledAtEndOfBody_ThrowsOperationCanceled()
+    {
+        var overviewRows = new List<string>();
+        var windRows = new List<string>();
+
+        for (int i = 0; i < 1500; i++)
+        {
+            string name = "Station" + i.ToString("D4", CultureInfo.InvariantCulture);
+            overviewRows.Add(OsthessenWetterHtml.OverviewRow(name));
+            windRows.Add(OsthessenWetterHtml.WindRow(name, mean10: (i % 90).ToString(CultureInfo.InvariantCulture) + ".5"));
+        }
+
+        var html = OsthessenWetterHtml.Page(Overview(overviewRows.ToArray()), Wind(windRows.ToArray()));
+        var bytes = Encoding.UTF8.GetBytes(html);
+
+        using var source = new CancellationTokenSource();
+        var stream = new CancelAtEndStream(bytes, source);
+        await FluentActions.Awaiting(() => _subject.ReadAsync(stream, source.Token))
+            .Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task ReadAsync_LargePage_DuplicateNames_AllUnmatchedWithoutWind()
+    {
+        var overviewRows = new List<string>();
+        var windRows = new List<string>();
+
+        for (int i = 0; i < 1000; i++)
+        {
+            overviewRows.Add(OsthessenWetterHtml.OverviewRow("Dup"));
+            windRows.Add(OsthessenWetterHtml.WindRow("Dup"));
+        }
+
+        var page = await Read(OsthessenWetterHtml.Page(Overview(overviewRows.ToArray()), Wind(windRows.ToArray())));
+
+        page.Stations.Should().HaveCount(1000);
+        foreach (var station in page.Stations)
+        {
+            station.Name.Should().Be("Dup");
+            station.WindMeanText.Should().BeNull();
+            station.WindTimeText.Should().BeNull();
+        }
+
+        page.Diagnostics.Should().HaveCount(1000);
+        foreach (var diagnostic in page.Diagnostics)
+        {
+            diagnostic.NoticeId.Should().Be(OsthessenWetterNoticeIds.WindRowUnmatched);
+            diagnostic.StationName.Should().Be("Dup");
+        }
+    }
+
+    private sealed class CancelAtEndStream : MemoryStream
+    {
+        private readonly CancellationTokenSource _source;
+
+        public CancelAtEndStream(byte[] bytes, CancellationTokenSource source) : base(bytes)
+        {
+            _source = source;
+        }
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        {
+            var result = await base.ReadAsync(buffer, cancellationToken);
+            if (result == 0)
+            {
+                _source.Cancel();
+            }
+            return result;
+        }
     }
 }

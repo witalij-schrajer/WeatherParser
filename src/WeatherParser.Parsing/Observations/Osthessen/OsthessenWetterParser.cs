@@ -17,7 +17,7 @@ namespace WeatherParser.Parsing.Observations.Osthessen;
 /// </summary>
 public sealed class OsthessenWetterParser : IOsthessenWetterParser
 {
-    private readonly OsthessenWetterOptions _options;
+    private readonly TimeSpan _pageDeadline;
     private readonly IStationNamePatternMatcher _matcher;
     private readonly IOsthessenWetterPageSource _source;
     private readonly IOsthessenWetterPageReader _reader;
@@ -37,9 +37,10 @@ public sealed class OsthessenWetterParser : IOsthessenWetterParser
     /// <param name="builder">The dataset builder.</param>
     /// <param name="timeProvider">The time provider.</param>
     /// <param name="logger">The logger.</param>
+    /// <exception cref="OsthessenWetterException">OSTHESSEN-OPTIONS-INVALID when the page deadline is not greater than zero or exceeds one hour.</exception>
     public OsthessenWetterParser(OsthessenWetterOptions options, IStationNamePatternMatcher matcher, IOsthessenWetterPageSource source, IOsthessenWetterPageReader reader, IOsthessenWetterObservationMapper mapper, IObservationDatasetBuilder builder, TimeProvider timeProvider, ILogger<OsthessenWetterParser> logger)
     {
-        _options = options ?? throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(options);
         _matcher = matcher ?? throw new ArgumentNullException(nameof(matcher));
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _reader = reader ?? throw new ArgumentNullException(nameof(reader));
@@ -47,6 +48,15 @@ public sealed class OsthessenWetterParser : IOsthessenWetterParser
         _builder = builder ?? throw new ArgumentNullException(nameof(builder));
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // The deadline is validated and kept at construction, so a later change of the options object cannot bypass the bounds (contract OW-10).
+        var pageDeadline = options.PageDeadline;
+        if (pageDeadline <= TimeSpan.Zero || pageDeadline > TimeSpan.FromHours(1))
+        {
+            throw new OsthessenWetterException(OsthessenWetterException.OptionsInvalidErrorId, "PageDeadline must be greater than zero and at most one hour (contract OW-10).");
+        }
+
+        _pageDeadline = pageDeadline;
     }
 
     private const string Provider = "osthessenwetter";
@@ -55,7 +65,7 @@ public sealed class OsthessenWetterParser : IOsthessenWetterParser
     public async Task<OsthessenWetterParseResult> ParseAsync(string stationNamePattern, CancellationToken cancellationToken)
     {
         var pattern = _matcher.Validate(stationNamePattern);
-        using var deadline = new CancellationTokenSource(_options.PageDeadline, _timeProvider);
+        using var deadline = new CancellationTokenSource(_pageDeadline, _timeProvider);
 
         try
         {
