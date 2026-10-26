@@ -1,6 +1,6 @@
 # P7.01 – Foundation Check
 
-**Status (2026-10-26): in progress; S1 to S3 recorded, the baseline run (S4) and the plan reconciliation (S5) follow.** Plan: [P7_01_FOUNDATION_CHECK_PLAN.md](P7_01_FOUNDATION_CHECK_PLAN.md).
+**Status (2026-10-26): complete, outcome READY (section 5).** Plan: [P7_01_FOUNDATION_CHECK_PLAN.md](P7_01_FOUNDATION_CHECK_PLAN.md).
 
 User instruction (2026-10-26, chat): "Start the implementation of the phase P7. Execute step by step. Commit and push the results of every step".
 
@@ -54,11 +54,19 @@ Every open item of [P6_11_ACCEPTANCE.md](../p6/P6_11_ACCEPTANCE.md) section 4, [
 | Packed package not byte-reproducible | Carried forward, P9 | Restated in the P7.12 limitations |
 | DI under load (P4) | Carried forward, P8 and P3 | Restated in the P7.12 limitations |
 | OsthessenWetter source conditions (OW-14) | Unchanged, owner the user; P8 and P3 must not redistribute | Restated in the P7.12 limitations and the P8 handoff |
-| Only the documented OsthessenWetter page revision is supported (REQ-045) | Unchanged; P6 scope | Carried forward |
-| OsthessenWetter stale displays not detected (REQ-043); coordinates consumer-supplied (OW-04); precipitation, gusts and trends not exported (OW-06); registration consequence for consumers without OsthessenWetter; live check single snapshot (OW-15) | Unchanged; P6 scope | Carried forward; the registration consequence also applies to the P7 options and is revisited in P7.10 |
-| `RWS_10` time stamp not corrected (OC-05); calm-wind assumption (OC-06); `now` quality control (OC-07); no freshness filter for observations (OC-04); P5 live parse single snapshot | Unchanged; P5 scope | Carried forward |
+| Only the documented OsthessenWetter page revision is supported (REQ-045); a changed table fails with `OSTHESSEN-FORMAT-CHANGED` | Recorded limitation; a new revision is a new decision (P6 owner unchanged) | Carried forward |
+| OsthessenWetter stale displays not detected or filtered (REQ-043) | Consumers evaluate `measured_at` (README) | Carried forward |
+| OsthessenWetter precipitation, gusts, the 60-minute mean, trends and extremes not exported (OW-06) | Recorded decision | Carried forward |
+| OsthessenWetter coordinates consumer-supplied (OW-04); a matched station without metadata is a station failure | Consumers (README) | Carried forward |
+| Registration consequence: consumers that do not use OsthessenWetter still register its endpoint and options | Recorded (README); optional registration only by a new decision | Carried forward; the same consequence for the P7 options is decided in P7.02 (MF-04) and documented in P7.10 |
+| OsthessenWetter live check single snapshot of 2026-10-26 on Windows with placeholder coordinates (OW-15) | Recorded limitation | Carried forward |
+| `RWS_10` time stamp not corrected; exported period nominal (OC-05) | Recorded limitation; a correction needs a new user decision | Carried forward |
+| Calm wind and zero direction assumption (OC-06) | Recorded assumption; revisit on a user decision | Carried forward |
+| `now` quality control not completed; `quality` passes `QN` unchanged (OC-07) | Consumers (README guidance) | Carried forward |
+| No freshness filter for DWD observations (OC-04) | Consumers evaluate `measured_at` (README) | Carried forward; P7 forecasts get their own freshness marker (MF-09) |
+| The P5 live parse is a single snapshot of 2026-10-25 on Windows, not repeated for `fd461c8`; its station reported no pressure, so the pressure path has synthetic evidence only (OC-13) | Recorded limitation | Carried forward |
 | Scheduling recommendations (OC-12, OW-14) | External orchestration; P7 adds per-product retrieval guidance (MF-16) | P7.10 README |
-| Example CLI `--ParseDWD`, `--ParseOstHessen`, `--ParseMOSMIX --Product`, configuration, exit codes | P3 | Carried forward |
+| Example CLI `--ParseDWD`, `--ParseOstHessen`, `--ParseMOSMIX --Product`, configuration, exit codes, CLI cancellation and timeout bounds | P3 | Carried forward |
 | MQTT payloads and topics (observations and forecasts) | P8 | Carried forward; P7 provides the product-specific `source` (C-68) |
 | Characterization evidence over existing behavior | Recorded; the P7 plans separate characterization from Red | P7 verification record |
 | Publication, package ID, feed, release | P9 | Carried forward |
@@ -73,3 +81,17 @@ No item is without a disposition.
 
 - Branch `features/develop/P7` from `origin/develop` `8009f1c`; status passages "P7 started" in AGENTS.md, README.md, DEVELOPMENT_PLAN.md and PHASE_P1_PLAN.md.
 - README package check (CONTRIBUTING.md section 4) on the working tree: README.md (SHA-256 `569409D674B7C9CAFC6344AF93D806C1F86D9EF8B4DBF7743C89C9A6D0C346AA`), LICENSE and the export schema byte-identical in the package; packed SHA-512 equals the restored hash; package consumer 41/41; the consumer lock was not committed.
+- Seed commit `edd74fd0aebbde35eb251cf943f54e8ceec70644` (status passages and the S1/S2 record), pushed; draft pull request #11 into `develop` opened; Auto-fix on.
+- `pwsh ./scripts/ci-local.ps1 -Commit edd74fd0aebbde35eb251cf943f54e8ceec70644 -TargetRef 8009f1c413ead6b150f2c71bec8f669e81be5558 -RunSettings coverage.runsettings`: exit 0, 2026-10-26T20:26:27Z to 20:27:36Z, run directory artifacts/ci/edd74fd-20261026T202627Z (gitignored); commits.json: commit `edd74fd...`, targetCommit `8009f1c...`, two-pass.
+- Tests: Parsing 2301 of 2304 passed (the three opt-in live tests not executed), SchemaGeneration 46, Coverage 99, Coverage.Runner 56, package consumer 41.
+- Gate passed: 8486/8489 (99.96 %) at or above the baseline 8486/8489 of `8009f1c` (documentation-only candidate); gate-result.json SHA-256 `d2c55afebf59d4460f1c30fd5d4b0fb842cad7cf50b08a73265442f9e780e0ef`.
+- Packed SHA-512 `fTHnwPXsnlLWmnUwWAFEP5y0EsYlOAy46ChRXrSWRc7MEQ0F3cd71HrWY+RfBmRboJoiJh8QCBF0gpctijO7yw==`.
+- Hosted CI for the seed commit `edd74fd`: run 40395632527 (`pull_request`, created 2026-10-26T20:26:21Z).
+- Baseline for the P7 code steps: **8486/8489** native blocks for target `8009f1c`, equal to the P6 end state on `12e7205` (expected value confirmed); valid while the pull-request base is `8009f1c` and `coverage.runsettings` is unchanged. Every P7 code step must strictly improve the unrounded ratio.
+
+## 5. Plan adjustments and outcome (S5)
+
+- `PHASE_P7_PLAN.md` section 1 receives the "P7.01 extraction" table.
+- Adjustment: the integration target is `8009f1c` instead of `de9d4ba` (documentation-only successor, as the plan allows); no other plan change.
+- Recorded for the user (not a plan adjustment): SDK 10.0.403 / runtime 10.0.14 is available since 2026-10-25; P7 stays on the pinned 10.0.402 unless the user decides an update (it would change `global.json`, `DEPENDENCIES.md` and CONTRIBUTING.md section 1 and require a new baseline).
+- Outcome: **READY**. Every field is resolved, the baseline run passed, every commit since `de9d4ba` is documentation-only, and every inherited limitation has a disposition.

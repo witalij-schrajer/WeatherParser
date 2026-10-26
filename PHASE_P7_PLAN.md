@@ -1,6 +1,6 @@
 # Phase P7 – MOSMIX Forecasts: Implementation Plan
 
-**Status: planning only (2026-10-26). This phase plan was written on the user's instruction of 2026-10-26 on the post-merge documentation branch `features/develop/P6-post-merge` (pull request #10), Codex-reviewed to 0 findings in three rounds and reviewed by the user on pull request #10 (two findings fixed, section 10); the user accepted the phase plan on 2026-10-26. The step plans P7.01 to P7.12 were written on the user's instruction of 2026-10-26 (section 5) and Codex-reviewed to 0 findings in five rounds (section 10). The user accepted the P7 plans (this phase plan and the step plans P7.01 to P7.12) on 2026-10-26 after the two pull-request review rounds on pull request #10 (section 10). P7 started on 2026-10-26 on the user's instruction on branch `features/develop/P7` from `develop` `8009f1c` ([P7 handoff](docs/p6/P7_HANDOFF.md)); P7.01 (foundation check) in progress ([record](docs/p7/P7_01_FOUNDATION_CHECK.md)). The rows of section 3 are planning proposals; the contract approved in P7.02 is binding and wins where it refines them.** This plan refines the P7 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P7 handoff](docs/p6/P7_HANDOFF.md). Planning inputs: the P2 forecast-run decisions C-66 to C-81 ([P2 export contract](docs/p2/P2_EXPORT_CONTRACT.md) section 11), the MOSMIX rows SC-04, SC-05, SC-09, SC-12, SC-18 and SC-20 to SC-23 and the source records of sections 2 and 3 of the [P4 selection contract](docs/p4/P4_SELECTION_CONTRACT.md) (MOSMIX files and the binding extension schema as retrieved on 2026-10-21), and the repository code on `develop` after the P6 merge `de9d4ba`.
+**Status: in execution since 2026-10-26 (P7.01 complete, READY); planned on 2026-10-26. This phase plan was written on the user's instruction of 2026-10-26 on the post-merge documentation branch `features/develop/P6-post-merge` (pull request #10), Codex-reviewed to 0 findings in three rounds and reviewed by the user on pull request #10 (two findings fixed, section 10); the user accepted the phase plan on 2026-10-26. The step plans P7.01 to P7.12 were written on the user's instruction of 2026-10-26 (section 5) and Codex-reviewed to 0 findings in five rounds (section 10). The user accepted the P7 plans (this phase plan and the step plans P7.01 to P7.12) on 2026-10-26 after the two pull-request review rounds on pull request #10 (section 10). P7 started on 2026-10-26 on the user's instruction on branch `features/develop/P7` from `develop` `8009f1c` ([P7 handoff](docs/p6/P7_HANDOFF.md)); P7.01 (foundation check) complete with outcome READY ([record](docs/p7/P7_01_FOUNDATION_CHECK.md)). The rows of section 3 are planning proposals; the contract approved in P7.02 is binding and wins where it refines them.** This plan refines the P7 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P7 handoff](docs/p6/P7_HANDOFF.md). Planning inputs: the P2 forecast-run decisions C-66 to C-81 ([P2 export contract](docs/p2/P2_EXPORT_CONTRACT.md) section 11), the MOSMIX rows SC-04, SC-05, SC-09, SC-12, SC-18 and SC-20 to SC-23 and the source records of sections 2 and 3 of the [P4 selection contract](docs/p4/P4_SELECTION_CONTRACT.md) (MOSMIX files and the binding extension schema as retrieved on 2026-10-21), and the repository code on `develop` after the P6 merge `de9d4ba`.
 
 ## 1. First step: check P6 completion and adjust this plan
 
@@ -13,6 +13,22 @@ P7.01 is always the first execution step:
 - record everything in `docs/p7/P7_01_FOUNDATION_CHECK.md` and adjust this plan where the extraction contradicts it; P7.01 adds a table "P7.01 extraction" to this section.
 
 The P7.01 record maps every open item of `docs/p6/P6_11_ACCEPTANCE.md` section 4 and `docs/p6/P7_HANDOFF.md` section 7 that names P7, and every item inherited with owner P7 from P2, P4 and P5 (MOSMIX element verification and freshness per product, full MOSMIX parsing, forecast-only quantities as additive contract decisions, the builder and root-validation duplication), to a P7 step and check or to a carried-forward owner; an unmapped item blocks P7 implementation readiness.
+
+### P7.01 extraction
+
+Recorded on 2026-10-26 in the [P7.01 record](docs/p7/P7_01_FOUNDATION_CHECK.md) (outcome READY):
+
+| Field | Value |
+| --- | --- |
+| Integration target | `develop` `8009f1c413ead6b150f2c71bec8f669e81be5558` (merge of pull request #10), documentation-only successor of the P6 merge `de9d4ba`; the six commits since `de9d4ba` and the merge commit `8009f1c` are documentation-only |
+| Package | `WeatherParser.Parsing` `0.1.0-initial`, unpublished |
+| SDK / runtime | SDK 10.0.402 pinned (`global.json`), verification runtime 10.0.13; SDK 10.0.403 / runtime 10.0.14 available since 2026-10-25 (update only on a user decision) |
+| Coverage tools | Microsoft.CodeCoverage 18.11.0, dotnet-coverage 18.11.0 |
+| Contracts | Export v1 C-01 to C-119 (forecast runs C-66 to C-81); SC-01 to SC-23; OC-01 to OC-14; OW-01 to OW-16 |
+| Baseline | 8486/8489 native blocks for `8009f1c` (remeasured on the seed commit `edd74fd`, equal to the expected value) |
+| Branch / pull request | `features/develop/P7`, draft pull request #11 into `develop` |
+| Inherited limitations | Every item mapped to a P7 step or carried forward with its owner (record section 3) |
+| Adjustment | Integration target `8009f1c` instead of `de9d4ba`; no other change |
 
 ## 2. Goal, binding scope and exclusions
 

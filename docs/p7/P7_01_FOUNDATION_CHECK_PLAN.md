@@ -1,6 +1,6 @@
 # P7.01 – Foundation Check and Plan Adjustment: Implementation Plan
 
-**Status: in execution since 2026-10-26 on the user's instruction ([record](P7_01_FOUNDATION_CHECK.md)).** Refines section 1 and the P7.01 row of section 5 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: executed on 2026-10-26 on the user's instruction; outcome READY ([record](P7_01_FOUNDATION_CHECK.md)).** Refines section 1 and the P7.01 row of section 5 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: confirm that P6 is accepted and merged, extract the accepted foundation, map every inherited limitation to a P7 step or a carried-forward owner, remeasure the native block-coverage baseline of the integration target on the first committed revision of the P7 branch, and adjust `PHASE_P7_PLAN.md` where the extraction contradicts it.
