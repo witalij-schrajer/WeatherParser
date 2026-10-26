@@ -122,6 +122,8 @@ Test glob filters, multiple results, umlauts and collision-free sources using sy
 
 ### P7 – MOSMIX forecasts
 
+Phase plan (planning only, 2026-10-26; P7 not started): [PHASE_P7_PLAN.md](PHASE_P7_PLAN.md).
+
 ### Separate MOSMIX parsers and update frequency
 
 Provide two distinct parsers with separate interfaces: `MosmixSParser` / `IMosmixSParser` for `MOSMIX_S`, and `MosmixLParser` / `IMosmixLParser` for `MOSMIX_L`. Both receive their own source URLs as constructor parameters and have independent DI configuration. Shared KML/KMZ helpers may be reused, but one switchable parser cannot replace the two public contracts. Missing data never triggers silent fallback to the other product.
