@@ -1,6 +1,6 @@
 # P6.08 – Export Equivalence and Schema Validation: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is implemented yet.** Refines the P6.08 row of section 5 and the "Export" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Subject to reconciliation with the approved OW-06 and OW-16 (P6.02).
+**Status: executed on 2026-10-26 ([record](P6_VERIFICATION.md) section 8): 11 characterization tests green, no product defect, export contract unchanged; coverage gate passed (8475/8478).** Refines the P6.08 row of section 5 and the "Export" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-06 and OW-16 as planned.
 
 ## 1. Goal and Scope
 Goal: prove that the datasets produced by the OsthessenWetter parser serialize through both real serializers equivalently and validate against the v1 output schema, with the P6-specific wire features: `estimated_date` markers, `source_timezone`, the wind period, umlauts and the rounding of the shown values.

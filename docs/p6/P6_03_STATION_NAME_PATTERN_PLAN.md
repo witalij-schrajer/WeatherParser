@@ -1,6 +1,6 @@
 # P6.03 – Station Name Pattern: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is implemented yet.** Refines the P6.03 row of section 5 and the "Pattern" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Subject to reconciliation with the approved OW-09 and OW-13 (P6.02).
+**Status: executed on 2026-10-25 ([record](P6_VERIFICATION.md) section 3): Red evidence per slice, T-P6-01 cases green, coverage gate passed (7564/7567), Codex review 2 findings fixed test-first, then 1 record count fixed.** Refines the P6.03 row of section 5 and the "Pattern" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-09 and OW-13 as planned.
 
 ## 1. Goal and Scope
 Goal: an injectable matcher that validates a station name pattern and decides whether a station name matches it, with the glob semantics of REQ-040, culture-independent and within an O(pattern length × name length) bound, before any request is made.
@@ -15,7 +15,7 @@ Out of scope with owner: reading names from the page → P6.04; applying the mat
 | Decision | Options | Recommended | Decided by | Blocks |
 |---|---|---|---|---|
 | Interface (Proposed) | `IStationNamePatternMatcher` with `StationNamePattern Validate(string? pattern)` and `bool IsMatch(StationNamePattern pattern, string name)`; `StationNamePattern` an immutable value holding the normalized pattern / one method taking strings | Validated value type, so P6.07 validates once before the request and matches many names | Orchestrator, recorded | S1 |
-| Algorithm | Two-pointer glob matching that backtracks only to the most recent `*` (each name position is revisited at most once per pattern position, so at most O(pattern × name) steps; the classic worst case is `*` followed by a long literal suffix) / conversion to `Regex` | Two-pointer; no regex, so metacharacters stay literal by construction; the bound is stated as O(pattern × name), not linear (proposed OW-09 reconciled in P6.02) | Orchestrator, recorded; bound User (OW-09) | S2 |
+| Algorithm | Two-pointer glob matching that backtracks only to the most recent `*` (each name position is revisited at most once per pattern position, so at most O(pattern × name) steps; the classic worst case is `*` followed by a long literal suffix) / conversion to `Regex` | Two-pointer; no regex, so metacharacters stay literal by construction; the bound is stated as O(pattern × name), not linear (OW-09 approved) | Orchestrator, recorded; bound User (OW-09) | S2 |
 | `?` unit | One `char` / one Unicode scalar (text element) after NFC | One Unicode scalar after NFC (OW-09), so `M?s` matches `Müs` in NFC and NFD input | User (OW-09) | S2 |
 | Case folding | `ToUpperInvariant` per scalar / culture-specific comparison | Invariant per scalar, culture-independent; `ß` folds to itself | User (OW-09) | S2 |
 | Folder | `src/WeatherParser.Parsing/Observations/Osthessen/` / other | Proposed (phase plan section 8) | Orchestrator, recorded | S1 |

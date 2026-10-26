@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using WeatherParser.Parsing.Catalogs;
 using WeatherParser.Parsing.Evidence.MosmixS;
+using WeatherParser.Parsing.Observations.Osthessen;
 
 namespace WeatherParser.Parsing.Tests.Live;
 
@@ -27,3 +28,5 @@ internal sealed record LiveObservationResult(
     IReadOnlyList<string> SchemaEvents,
     IReadOnlyList<LiveRequest> Requests,
     IReadOnlyList<(LogLevel Level, string? EventName, string Message)> Notices);
+
+internal sealed record LiveOsthessenResult(IReadOnlyList<ObservationDataset> Datasets, IReadOnlyList<OsthessenWetterStationFailure> StationFailures, string? ErrorId, IReadOnlyList<byte[]> Json, IReadOnlyList<byte[]> Xml, IReadOnlyList<string> SchemaEvents, IReadOnlyList<LiveRequest> Requests, IReadOnlyList<(LogLevel Level, string? EventName, string Message)> Notices);

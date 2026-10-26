@@ -11,7 +11,13 @@ internal sealed record LiveCheckSettings(CdcCatalogEndpoints Cdc, MosmixCatalogE
 
     public const int ObservationRequestBudget = 8; // Four CDC station lists and at most four now archives (contract OC-13).
 
+    public const int OsthessenRequestBudget = 1; // One request for the measurement page (contract OW-15).
+
     public string ObservationStationId { get; init; } = "01526"; // Fulda-Horas, the nearest CDC station of the P4 live check.
+
+    public Uri OsthessenPageUri { get; init; } = new("https://osthessen-wetter.de/messwerte/");
+
+    public string OsthessenPattern { get; init; } = "*";
 
     public static LiveCheckSettings Dwd(string evidenceCacheDirectory)
     {

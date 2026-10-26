@@ -1,6 +1,6 @@
 # P6.10 – Integrated Coverage and Platform Verification: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is executed yet.** Refines the P6.10 row of section 5 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Subject to reconciliation with the approved OW-15 (P6.02).
+**Status: executed on 2026-10-26 on candidate `4373399` ([record](P6_10_INTEGRATED_VERIFICATION.md)): outcome READY; after the PR #9 review fixes S1 to S3 repeated on candidate `12e7205`: READY (record section 8).** Refines the P6.10 row of section 5 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-15 as planned.
 
 ## 1. Goal and Scope
 Goal: verify one P6 candidate end to end on Windows, in hosted CI and on the NanoPi R76S, and optionally with one authorized live parse, and record the outcome READY or NOT_READY.

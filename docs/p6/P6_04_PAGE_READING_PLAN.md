@@ -1,6 +1,6 @@
 # P6.04 – Page Reading: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is implemented yet.** Refines the P6.04 row of section 5 and the "Page reading" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Subject to reconciliation with the approved OW-01, OW-02, OW-05, OW-11 and OW-12 (P6.02).
+**Status: executed on 2026-10-25 ([record](P6_VERIFICATION.md) section 4): reader and AngleSharp dependency, OW-11 amendment of 2026-10-25 implemented test-first, coverage gate passed (7784/7787), Codex round 3 with 0 findings.** Refines the P6.04 row of section 5 and the "Page reading" row of section 4 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-02 AngleSharp 1.8.5; A7 compound temperature cell added to S2 and the fixtures (contract section 6.1); OW-01, OW-05, OW-11 and OW-12 as planned.
 
 ## 1. Goal and Scope
 Goal: an injectable reader that turns the page markup of the documented revision into raw station rows of the overview and the wind table, joins the wind rows to the overview rows, and reports format deviations — without interpreting values, units or times.
@@ -15,9 +15,9 @@ Out of scope with owner: number, unit and time interpretation → P6.05; retriev
 | Decision | Options | Recommended | Decided by | Blocks |
 |---|---|---|---|---|
 | Interface and types (Proposed) | `IOsthessenWetterPageReader` with `Task<OsthessenWetterPage> ReadAsync(Stream html, CancellationToken)`; `OsthessenWetterPage` (`Stations` as `OsthessenWetterStationRow` in overview order, `Diagnostics`); row: `Name`, `Status` (`Online`/`Offline`), `OverviewTimeText`, `OverviewCells` (by column), `WindTimeText?`, `WindCells?` / a synchronous `Read` (rejected: the downloader's synchronous `BoundedStream.Read` cannot interrupt a pending read of the live HTTP body, so a body that stalls after the headers would outlast `PageDeadline` and caller cancellation) | Proposed; the HTTP body is consumed only with asynchronous reads using the token passed in (the downloader's linked token); if the selected parser package needs synchronous input, the reader first copies the body asynchronously into memory (within the 2 MiB bound and the deadline) and parses the in-memory copy; the live HTTP body is never read synchronously; raw texts only, interpretation in P6.05 | Orchestrator, recorded (PR #8 review of `608497d`) | S1, S2 |
-| Package | As approved in OW-02 | Pinned to the evaluated version | User (OW-02) | S1 |
+| Package | AngleSharp 1.8.5 (MIT), default configuration without scripting and without a resource loader (approved, OW-02) | Pinned to 1.8.5 | User (OW-02) | S1 |
 | Input bound | The reader reads at most the bytes the retrieval boundary allows (2 MiB, OW-10) / own bound | The stream is already bounded by P6.06; the reader adds no second limit but stops after the two tables | Orchestrator, recorded | S2 |
-| Fixtures | Synthetic HTML files under `tests/WeatherParser.Parsing.Tests/Fixtures/Osthessen/` reproducing the structural features (malformed tags, legacy references, offline rows, empty cells, name spellings, row order) | Proposed; no copy of the real page | Orchestrator, recorded | S2 |
+| Fixtures | Synthetic HTML files under `tests/WeatherParser.Parsing.Tests/Fixtures/Osthessen/` reproducing the structural features of contract section 3 (malformed tags, legacy references, offline rows, empty cells, name spellings, row order, the compound `Temp.2m` cell with the signed change, the trend image) | Proposed; no copy of the real page | Orchestrator, recorded | S2 |
 
 ## 4. Artifacts
 | Path | Action | Content |
@@ -49,6 +49,9 @@ Every slice: roles and checks as in P6.03 section 5. The package addition is ver
 - `ReadAsync_Row_StatusNameTimeAndCells`
 - `ReadAsync_OfflineRow_StatusOfflineAndEmptyCells`
 - `ReadAsync_EmptyCell_IsEmptyText` (never zero)
+- `ReadAsync_TemperatureCell_PrimaryValueOnly` (the `Temp.2m` cell yields only the text of its `<font size='3'>` value with its unit; the signed change after `<br>` is not part of it, A7)
+- `ReadAsync_TemperatureMissingChangePresent_TemperatureEmpty` (an empty or missing primary temperature yields an empty temperature text, never the change)
+- `ReadAsync_TrendCell_NotRead` (the `Temp.-Trend` image and its `title` are not returned as a value)
 - `ReadAsync_LegacyReferences_DecodedLikeBrowser` (`Ro&szligbach` → `Roßbach`, `Hohh&uumltte;` → `Hohhütte;`)
 - `ReadAsync_UnclosedAndStrayTags_Tolerated`
 - `ReadAsync_OtherSections_NeverRead` (daily-extreme lists with an error message containing a host name; no row and no diagnostic carries that text)
@@ -64,8 +67,9 @@ Every slice: roles and checks as in P6.03 section 5. The package addition is ver
 - `ReadAsync_JoinKey_EszettCaseTrailingSemicolon` (`Roßbach`/`Rossbach`, `Müs-Hohhütte`/`Müs-Hohhütte;`, case)
 - `ReadAsync_WindRowMissing_DiagnosticUnmatched`, `ReadAsync_TwoWindCandidates_DiagnosticUnmatched`
 - `ReadAsync_WindTableMissing_DiagnosticAndNoWindCells`, `ReadAsync_WindHeaderChanged_DiagnosticAndNoWindCells`
+- Added after the OW-11 amendment of 2026-10-25 (contract section 6): a wind row deviating from A5 (cell count, name, status) is ignored and its station gets `OSTHESSEN-WIND-ROW-UNMATCHED`, other stations keep their wind (`..._RowIgnoredStationUnmatched`, `ReadAsync_OneDeviatingWindRow_OnlyThatStationLosesWind`, `ReadAsync_DeviatingAndValidWindRowForSameStation_StationUnmatched`, `ReadAsync_WindRowWithMissingCell_OtherStationKeepsWind`, `ReadAsync_WindRowWithSingleCell_IgnoredWithoutNotice`).
 
-**Green**: join key NFC, invariant fold, `ß`→`ss`, trailing `;` and whitespace removed; exactly one candidate joins.
+**Green**: join key NFC, invariant fold, `ß`→`ss`, trailing `;` and whitespace removed; exactly one candidate joins, and none when a deviating row carries the same key.
 
 **Refactor**: remove duplication with all tests green.
 

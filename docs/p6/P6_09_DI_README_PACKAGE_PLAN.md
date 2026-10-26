@@ -1,6 +1,6 @@
 # P6.09 – DI Registration, README and Package Consumption: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is implemented yet.** Refines the P6.09 row of section 5 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Subject to reconciliation with the approved OW-04, OW-10, OW-13 and OW-14 (P6.02).
+**Status: executed on 2026-10-26 ([record](P6_VERIFICATION.md) section 9): DI and package-consumer characterization tests green, README section and status passages written, package check passed.** Refines the P6.09 row of section 5 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md). Reconciled on 2026-10-25 with the OsthessenWetter contract approved by the user on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), option A in every row): OW-10 default `PageDeadline` 60 s in the DI tests and README; OW-04, OW-13 and OW-14 as planned.
 
 ## 1. Goal and Scope
 Goal: prove that a consumer can register and use the OsthessenWetter parser through `AddWeatherParsing` with its own endpoint, options and station metadata, both inside the solution and from the same-run `.nupkg`, and document the library usage, source conditions and diagnostics in README.

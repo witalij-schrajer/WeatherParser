@@ -53,11 +53,23 @@ Candidate `fd461c8cededddf53a039c31adad68a110c1c7c9` (after the PR #7 review fix
 | GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40170729670) | All jobs succeeded; recorded separately and not counted as target evidence |
 | Windows x64 (developer machine), live DWD sources | Explicitly enabled observation live check (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=observation`), one run on candidate `a87c7bb` | Station 01526: 6 requests of a budget of 8, all HTTP 200; dataset schema-valid, JSON and XML equivalent. Recorded as a snapshot of 2026-10-25 and not repeated for `fd461c8` (SC-16 pattern) |
 
+## P6 scope (P6.10, 2026-10-26)
+
+Candidate `4373399b278e65097452fe18d7029fee5461bdb1` against PR base `8d8079a4238514f7c9bcfc3846829e2408938ae3`; after the PR #9 review fixes S1 to S3 were repeated on candidate `12e7205385d1ad6ca1eb45cb4fcb1f7b50699554` with the same outcomes (tests 2301 passed, block coverage 8486/8489; hosted run 40284717931). Details are in the [P6.10 record](p6/P6_10_INTEGRATED_VERIFICATION.md), sections 2 to 8.
+
+| Platform | Evidence class | Result |
+|---|---|---|
+| Windows x64 (developer machine), SDK 10.0.402, runtime 10.0.13 | Local two-pass `ci-local.ps1` | Candidate `12e7205`: exit 0; tests 2301 passed (three live tests not executed), 99, 56, 46, consumer 41; block coverage 8486/8489 against baseline 7491/7494; gate passed (first candidate `4373399`: 2295 passed, 8475/8478) |
+| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, SDK 10.0.402, runtime 10.0.13, ICU 76 | Class B target run (CONTRIBUTING.md section 7) | Exit 0; same tests, outcomes, block counters and gate result as Windows, including the `Europe/Berlin` time-zone tests |
+| GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40284717931 on `12e7205`; run 40255069498 on `4373399`) | All jobs succeeded; recorded separately and not counted as target evidence |
+| Windows x64 (developer machine), live OsthessenWetter page | Explicitly enabled live check (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=osthessen`), one authorized run on candidate `4373399`, not repeated for `12e7205` | 1 request of a budget of 1, HTTP 200; 20 stations matched, 16 datasets, 4 offline station failures; every dataset schema-valid, JSON and XML equivalent; placeholder coordinates; snapshot of 2026-10-26, not repeated (OW-15) |
+
 ## Limits
 
 - Class B proves the package foundation on ARM64 at P1 scope only, not release readiness (P9).
 - P2 scope (serializers, output schema, time-zone handling, DI and package consumption) is verified on the target by P2.11 (section below); DI under load, CLI, MQTT and network sources are not yet covered (later phases).
 - P4 scope (coordinates, geodesy, CDC and MOSMIX catalogs and availability, the retrieval boundary with mocked HTTP, the MOSMIX_S evidence cache, selection services, DI and package consumption) is verified on the target by P4.11; live retrieval was checked once on Windows only, not on the target; CLI and MQTT are not yet covered (later phases).
 - P5 scope (DWD station resolution, observation file reading, quantity mapping, the observation retrieval boundary with mocked HTTP, the parser service, export equivalence, DI and package consumption) is verified on the target by P5.10; the live observation parse was checked once on Windows only, not on the target; CLI and MQTT are not yet covered (later phases).
+- P6 scope (station name patterns, OsthessenWetter page reading, quantity mapping, identity and times, the page retrieval boundary with mocked HTTP, the parser service, export equivalence, DI and package consumption) is verified on the target by P6.10; the live check ran once on Windows only, not on the target; production use of OsthessenWetter values is open until the source conditions are clarified (OW-14); CLI and MQTT are not yet covered (later phases).
 - Windows-versus-ARM64 block counters are descriptive only, gating always uses a baseline measured on the same platform.
 - Emulation or x64 results never count as ARM64 evidence.

@@ -61,6 +61,7 @@
         "resolved": "0.1.0-initial",
         "contentHash": "icy3sINjcxz+OE7+MX4Zg3oPQNooQWfkIcetlSZsX23Hx9VIUap5OpiwEA0gJWo/Gy2QoZKyf2I6BOt3uYPoRA==",
         "dependencies": {
+          "AngleSharp": "1.8.5",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
           "Microsoft.Extensions.Logging.Abstractions": "10.0.13"
         }
@@ -117,6 +118,12 @@
         "type": "Transitive",
         "resolved": "4.5.1",
         "contentHash": "oa0w2QC/T3U+ulUn38AmbWE/wnEMtqSFRb2z277z5SpswqNc/ySWcAVlG1qEWUxzm+NztCjkoeLAn/83gIx3ug=="
+      },
+      "AngleSharp": {
+        "type": "CentralTransitive",
+        "requested": "[1.8.5, )",
+        "resolved": "1.8.5",
+        "contentHash": "BUgFIpmkjwMPi6QneHUHaprjUOGSXoWEF/xi/2seHCpnI8XMHACNiC09rn9qL8jbxrP8jWyJ3DnOjsGvXWNGmw=="
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",

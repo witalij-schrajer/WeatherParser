@@ -1,6 +1,6 @@
 # P6.02 – Source Facts and OsthessenWetter Contract: Implementation Plan
 
-**Status: plan only (2026-10-25); nothing is executed yet.** Refines section 3 and the P6.02 row of section 5 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md).
+**Status: executed on 2026-10-25 ([contract](P6_OSTHESSEN_CONTRACT.md), [record](P6_VERIFICATION.md) section 2): S1 to S3 done, S4 the user approved OW-01 to OW-16 with option A in every row, S5 the plans reconciled.** Refines section 3 and the P6.02 row of section 5 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: record the supported page revision and the source conditions from the actual published page, evaluate the HTML parser package, write the contract decisions OW-01 to OW-16 in `docs/p6/P6_OSTHESSEN_CONTRACT.md`, have them reviewed by Codex and approved by the user, and reconcile the step plans P6.03 to P6.11 with the approved contract.

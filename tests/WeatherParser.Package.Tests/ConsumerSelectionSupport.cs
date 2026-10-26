@@ -17,6 +17,7 @@ using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Selection;
 using WeatherParser.Parsing.Serialization;
 using WeatherParser.Parsing.Observations.Dwd;
+using WeatherParser.Parsing.Observations.Osthessen;
 
 namespace WeatherParser.Package.Tests;
 
@@ -107,7 +108,9 @@ internal sealed class ConsumerSelectionHost : IDisposable
             .AddSingleton<TimeProvider>(Clock)
             .AddSingleton(Cdc)
             .AddSingleton(Mosmix)
-            .AddSingleton(new DwdObservationOptions());
+            .AddSingleton(new DwdObservationOptions())
+            .AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } })
+            .AddSingleton(new OsthessenWetterEndpoints { PageUri = new Uri("https://osthessen.example/messwerte/") });
     }
 
     public void ArrangeCdc()
