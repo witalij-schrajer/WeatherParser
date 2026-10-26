@@ -1,21 +1,21 @@
 # P6.11 – P6 Acceptance Record
 
-**Status (2026-10-26): the evidence audit (section 5) accepts the implementation candidate `4373399`. The user's acceptance (A7, section 6) is pending; pull request #9 was marked ready for review on the user's instruction on 2026-10-26 (A9, section 8). P6 is complete only after the user's acceptance and the merge of pull request #9 into `develop`.** Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](P6_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
+**Status (2026-10-26): the evidence audit (section 5) accepts the implementation candidate `4373399` and, after the PR #9 review fixes, `12e7205` (section 10). The user's acceptance (A7, section 6) is pending; pull request #9 was marked ready for review on the user's instruction on 2026-10-26 (A9, section 8). P6 is complete only after the user's acceptance and the merge of pull request #9 into `develop`.** Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](P6_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
 | Item | Value |
 |---|---|
-| Implementation candidate | `4373399b278e65097452fe18d7029fee5461bdb1` (`4373399`), branch `features/develop/P6` |
+| Implementation candidate | `12e7205385d1ad6ca1eb45cb4fcb1f7b50699554` (`12e7205`), branch `features/develop/P6`; it carries the fixes of the PR #9 review of `0012d16` and replaces the first verification candidate `4373399` ([P6.10 record](P6_10_INTEGRATED_VERIFICATION.md) section 8) |
 | Pull request | #9 into `develop`, draft until A9 (section 8) |
 | Integration target | PR base `8d8079a4238514f7c9bcfc3846829e2408938ae3`; checked on 2026-10-26 (`gh pr view 9` `baseRefOid` and `git rev-parse origin/develop` after `git fetch`): unchanged since P6.01 |
-| Head before this record | `4373399` itself; this record's commit changes documentation only (no production code, tests, build, CI, package or schema files) |
-| P6.10 outcome | READY ([P6.10 record](P6_10_INTEGRATED_VERIFICATION.md) section 7) |
+| Head before this record | first `4373399` itself; after the review fixes `12e7205`; the record commits change documentation only (no production code, tests, build, CI, package or schema files) |
+| P6.10 outcome | READY for `4373399` ([P6.10 record](P6_10_INTEGRATED_VERIFICATION.md) section 7) and, after the rerun of S1 to S3, for `12e7205` (section 8); S4 not repeated |
 | Package | `WeatherParser.Parsing` `0.1.0-initial`, not published |
 
 ## 2. Requirement and test evidence matrix (A2, T-P6-01 – T-P6-19)
 
-Platform evidence for every row: the P6.10 runs on candidate `4373399` — Windows `ci-local.ps1` exit 0, hosted CI run 40255069498 with three green jobs and the SHA pair verified, and the NanoPi R76S run with identical test outcomes ([P6.10 record](P6_10_INTEGRATED_VERIFICATION.md)). Each run passed 2295 Parsing tests (the three live tests are not executed in standard runs) and 41 package-consumer tests, and its gate passed with 8475/8478 blocks against 7491/7494.
+Platform evidence for every row: the P6.10 rerun on candidate `12e7205` ([P6.10 record](P6_10_INTEGRATED_VERIFICATION.md) section 8) — Windows `ci-local.ps1` exit 0, hosted CI run 40284717931 with three green jobs and the SHA pair verified, and the NanoPi R76S run with identical test outcomes. Each run passed 2301 Parsing tests (the three live tests are not executed in standard runs) and 41 package-consumer tests, and its gate passed with 8486/8489 blocks against 7491/7494. The first runs on `4373399` (record sections 2 to 6) had the same outcomes with 2295 Parsing tests and 8475/8478 blocks. The only exception is T-P6-18, whose single live run was on `4373399`.
 
 "Red" names the step whose record in [P6_VERIFICATION.md](P6_VERIFICATION.md) holds the Red → Green → Refactor evidence; "Characterization" marks tests over behaviour implemented test-first in an earlier step, recorded as first-run passes.
 
@@ -66,10 +66,10 @@ Platform evidence for every row: the P6.10 runs on candidate `4373399` — Windo
 
 ## 5. Audit decision (A5)
 
-**ACCEPTED** (orchestrating agent's evidence audit, 2026-10-26, for candidate `4373399`):
-- every T-P6 row is PASSED with tests and run evidence for `4373399`; the live row T-P6-18 is a single authorized snapshot;
+**ACCEPTED** (orchestrating agent's evidence audit, 2026-10-26, for candidate `4373399` and, after the review fixes, for `12e7205`):
+- every T-P6 row is PASSED with tests and run evidence for `12e7205`; the live row T-P6-18 is a single authorized snapshot on `4373399`;
 - the P6.10 outcome is READY with no open defect;
-- the coverage gate passed with 8475/8478 against 7491/7494 on Windows, in hosted CI and on the NanoPi R76S;
+- the coverage gate passed with 8486/8489 (first candidate: 8475/8478) against 7491/7494 on Windows, in hosted CI and on the NanoPi R76S;
 - every contract decision is approved, and each limitation has an owner; the source-condition status is stated (section 4).
 
 This audit decision is not the user's acceptance.
@@ -92,3 +92,9 @@ Status passages updated on 2026-10-26 to "P6 implemented and verified (P6.10 REA
 
 - The orchestrating agent wrote this record, the P7 handoff and the status passages from the recorded evidence and ran every check.
 - Codex reviewed them read-only; the rounds, findings and dispositions are in [P6_VERIFICATION.md](P6_VERIFICATION.md) section 11.
+
+## 10. Review fixes after A9 (A10)
+
+- The peer code review of `0012d16` (review 5648301660) reported two production findings: the parser read the mutable page deadline on every parse (Major) and the wind join was quadratic without loop checkpoints (Minor). Both were fixed in `12e7205`: the deadline finding test-first with recorded Red (two failing regression tests), the wind-join finding with characterization tests and a cancellation regression guard that passed before and after the change, because the quadratic join had no observable result difference and the reader offers no deterministic in-loop cancellation hook ([P6_VERIFICATION.md](P6_VERIFICATION.md) section 11) and answered on their threads; P6.10 S1 to S3 were repeated on `12e7205` with outcome READY (P6.10 record section 8): Windows, hosted CI run 40284717931 and the NanoPi R76S, each with 2301 Parsing and 41 package-consumer tests passed and the gate at 8486/8489 against 7491/7494.
+- The evidence audit (section 5) holds for `12e7205` with these counters; the phase-transition reviews of the same morning ended with APPROVE (summary 6409898771). The user's acceptance (A7) is still pending.
+

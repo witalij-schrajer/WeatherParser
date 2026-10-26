@@ -1,13 +1,13 @@
 # P7 Handoff – MOSMIX Forecasts
 
-Status: prepared with the P6.11 acceptance record on 2026-10-26 for the verified candidate `4373399` ([P6.11 acceptance record](P6_11_ACCEPTANCE.md)). It takes effect only after the user has accepted P6 and merged pull request #9 into `develop`; P7 starts only on a separate instruction of the user.
+Status: prepared with the P6.11 acceptance record on 2026-10-26 for the verified candidate `12e7205` ([P6.11 acceptance record](P6_11_ACCEPTANCE.md)), which carries the PR #9 review fixes on top of the first candidate `4373399`. It takes effect only after the user has accepted P6 and merged pull request #9 into `develop`; P7 starts only on a separate instruction of the user.
 
 ## 1. Foundation
 
-- **Candidate**: verified implementation candidate `4373399b278e65097452fe18d7029fee5461bdb1` on branch `features/develop/P6`, pull request #9 into `develop` (PR base `8d8079a4238514f7c9bcfc3846829e2408938ae3`). P6.10 outcome in the [P6.10 record](P6_10_INTEGRATED_VERIFICATION.md) section 7.
+- **Candidate**: verified implementation candidate `12e7205385d1ad6ca1eb45cb4fcb1f7b50699554` on branch `features/develop/P6`, pull request #9 into `develop` (PR base `8d8079a4238514f7c9bcfc3846829e2408938ae3`). P6.10 outcome READY in the [P6.10 record](P6_10_INTEGRATED_VERIFICATION.md) section 8 (the rerun on this candidate; first candidate `4373399` in section 7).
 - **P7 integration target**: the merge commit of pull request #9 on `develop`, or its documentation-only successor at P7 branch creation; P7.01 records the `develop` head it branches from and classifies every commit since that merge.
 - **Package**: `WeatherParser.Parsing` `0.1.0-initial` (not published); contents `lib/net10.0/WeatherParser.Parsing.dll`, `README.md`, `LICENSE`, [`schemas/export/v1/weatherparser-export-v1.xsd`](../../schemas/export/v1/weatherparser-export-v1.xsd). New dependency since P5: AngleSharp 1.8.5 (MIT, [DEPENDENCIES.md](../../DEPENDENCIES.md)).
-- **Coverage**: native block coverage of `WeatherParser.Parsing.dll` is 8475/8478 (99.96 %) on candidate `4373399`; the next PR's gate compares against the then-remeasured base.
+- **Coverage**: native block coverage of `WeatherParser.Parsing.dll` is 8486/8489 (99.96 %) on candidate `12e7205`; the next PR's gate compares against the then-remeasured base.
 - **Contracts**:
   - export contract v1 [P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md) (C-01 to C-119; v1 frozen, only additive optional members, C-03, C-105; unchanged by P6)
   - selection contract [P4_SELECTION_CONTRACT.md](../p4/P4_SELECTION_CONTRACT.md) (SC-01 to SC-23)

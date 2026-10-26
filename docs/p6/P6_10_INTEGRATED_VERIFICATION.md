@@ -1,6 +1,6 @@
 # P6.10 – Integrated Coverage and Platform Verification: Record
 
-**Status (2026-10-26): S0 to S4 executed on candidate `4373399`; outcome in section 7.** Plan: [P6_10_INTEGRATED_VERIFICATION_PLAN.md](P6_10_INTEGRATED_VERIFICATION_PLAN.md). Step evidence of S0 is in [P6_VERIFICATION.md](P6_VERIFICATION.md) section 10.
+**Status (2026-10-26): S0 to S4 executed on candidate `4373399`; outcome in section 7; after the PR #9 review S1 to S3 repeated on the new candidate `12e7205`: READY (section 8).** Plan: [P6_10_INTEGRATED_VERIFICATION_PLAN.md](P6_10_INTEGRATED_VERIFICATION_PLAN.md). Step evidence of S0 is in [P6_VERIFICATION.md](P6_VERIFICATION.md) section 10.
 
 ## 1. Candidate, target and authorizations
 
@@ -53,3 +53,13 @@
 ## 7. Outcome
 
 **READY** for candidate `4373399`: S1 (Windows), S2 (hosted CI) and S3 (NanoPi R76S) passed on the same candidate with identical outcomes, and the authorized live check S4 passed with one request; no open defect. The candidate goes to P6.11.
+
+## 8. Rerun on candidate `12e7205` after the PR #9 review (2026-10-26)
+
+- **Trigger**: the peer code review of `0012d16` on PR #9 (review 5648301660) reported two production findings; their fixes ([P6_VERIFICATION.md](P6_VERIFICATION.md) section 11, A10) make `12e7205385d1ad6ca1eb45cb4fcb1f7b50699554` the new candidate. Under the new-candidate rule (section 1) S1 to S3 were repeated against the unchanged target `8d8079a`; S4 was not repeated (OW-15).
+- **S1 Windows**: `pwsh ./scripts/ci-local.ps1 -Commit 12e7205385d1ad6ca1eb45cb4fcb1f7b50699554 -TargetRef 8d8079a4238514f7c9bcfc3846829e2408938ae3 -RunSettings coverage.runsettings`: exit 0, 07:15:54Z to 07:16:58Z, run `artifacts/ci/12e7205-20261026T071554Z`; Parsing 2301 of 2304 (three live tests not executed), Coverage 99, Coverage.Runner 56, SchemaGeneration 46, package consumer 41/41; gate passed, 8486/8489 above 7491/7494; packed SHA-512 `vLtVCLhIIhxoROmyp7qs9T5YEDM9B49ba5me9Y/UMxE4CuUi7tfB+XdsSj2dlX/4F4dJD8Bu0cE/pmvvMAmY7A==`.
+- **S2 Hosted CI**: run 40284717931 (`pull_request`, created 07:15:45Z) on `12e7205`: `windows-x64`, `ubuntu-x64`, `debian13-arm64` success; every `commits.json` names `12e7205` and `8d8079a`, exitCode 0; every gate passed with 8486/8489; the same test counts as S1.
+- **S3 NanoPi R76S**: bundle with heads `12e7205` and `8d8079a`, 1758754 B, SHA-256 `889703b5782a2e8adc60384e10f56360455773a15adc526747e00b780aee809a` on both sides; the procedure of section 4; ci-local exit 0, run `12e7205-20261026T071609Z`, 07:16:09Z to 07:22:07Z, copied back to `artifacts/ci/arm64-12e7205-20261026T071609Z`, device directory removed; the same test counts as S1; gate passed, 8486/8489; `gate-result.json` SHA-256 `1fed15ceb1d941444281f0839bc7588f8e952c281f7b23eb3a7b130bb9e52dc4` (equal to the Windows file after line-ending normalization); packed SHA-512 `MFH2ypeOsIOr3qW+coaH4mb0ffNv2T9gy6qbEe07Xmvmm3Gt4SLW8t8iKaWLGJ3AmoEM5ALXiu8oGQLZRxqwkQ==`; the `Europe/Berlin` time-zone tests (10 results) passed.
+- **Comparison**: 2546 test results (all projects; the six new tests included) identical on Windows and the NanoPi with multiplicity preserved: 0 differences.
+- **Outcome**: **READY** for candidate `12e7205`; S4 stays the snapshot of section 5 (on `4373399`; the fixes do not change the parsing of a page with distinct station names or the deadline default).
+
