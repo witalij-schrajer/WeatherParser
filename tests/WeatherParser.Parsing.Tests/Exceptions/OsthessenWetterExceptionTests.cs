@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using WeatherParser.Parsing.Exceptions;
+using WeatherParser.Parsing.Observations.Osthessen;
 
 namespace WeatherParser.Parsing.Tests.Exceptions;
 
@@ -54,5 +56,29 @@ public sealed class OsthessenWetterExceptionTests
         // Act
         FluentActions.Invoking(() => new OsthessenWetterException(null!, "Message."))
             .Should().Throw<ArgumentException>();
+    }
+
+    [TestMethod]
+    public void OsthessenWetterException_StationFailures_DefaultEmpty()
+    {
+        new OsthessenWetterException(OsthessenWetterException.PageUnavailableErrorId, "Message.").StationFailures.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void OsthessenWetterException_StationFailures_Copied()
+    {
+        var failures = new List<OsthessenWetterStationFailure> { new("Langenbieber", "OSTHESSEN-STATION-OFFLINE", "offline") };
+        var ex = new OsthessenWetterException(OsthessenWetterException.NoUsableStationErrorId, "Message.", failures);
+        failures.Add(new("Schlitz", "OSTHESSEN-STATION-METADATA-MISSING", "missing"));
+        ex.StationFailures.Should().Equal(new OsthessenWetterStationFailure("Langenbieber", "OSTHESSEN-STATION-OFFLINE", "offline"));
+        ex.ErrorId.Should().Be(OsthessenWetterException.NoUsableStationErrorId);
+    }
+
+    [TestMethod]
+    public void OsthessenWetterException_NullStationFailures_ThrowsArgumentNullException()
+    {
+        FluentActions.Invoking(() => new OsthessenWetterException(OsthessenWetterException.NoUsableStationErrorId, "Message.", null!))
+            .Should().Throw<ArgumentNullException>()
+            .WithParameterName("stationFailures");
     }
 }

@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using WeatherParser.Parsing.Observations.Osthessen;
+
 namespace WeatherParser.Parsing.Exceptions;
 
 /// <summary>
@@ -51,6 +56,11 @@ public sealed class OsthessenWetterException : Exception
     public string ErrorId { get; }
 
     /// <summary>
+    /// Gets the station failures of the parse; empty unless the error is OSTHESSEN-NO-USABLE-STATION (contract OW-08).
+    /// </summary>
+    public IReadOnlyList<OsthessenWetterStationFailure> StationFailures { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OsthessenWetterException"/> class.
     /// </summary>
     /// <param name="errorId">The error identifier.</param>
@@ -70,5 +80,19 @@ public sealed class OsthessenWetterException : Exception
         }
 
         ErrorId = errorId;
+        StationFailures = Array.Empty<OsthessenWetterStationFailure>();
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OsthessenWetterException"/> class.
+    /// </summary>
+    /// <param name="errorId">The error identifier.</param>
+    /// <param name="message">The message that describes the error.</param>
+    /// <param name="stationFailures">The station failures; copied.</param>
+    /// <exception cref="ArgumentNullException">When stationFailures is null.</exception>
+    public OsthessenWetterException(string errorId, string message, IReadOnlyList<OsthessenWetterStationFailure> stationFailures) : this(errorId, message)
+    {
+        ArgumentNullException.ThrowIfNull(stationFailures);
+        StationFailures = stationFailures.ToArray();
     }
 }
