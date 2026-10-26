@@ -1,6 +1,6 @@
 # P6.11 – Acceptance and P7 Handoff: Implementation Plan
 
-**Status: A1 to A6, A8 and A9 executed on 2026-10-26 ([record](P6_11_ACCEPTANCE.md)); GitHub recorded A9 at 2026-10-26T01:48:01Z on head `a40b214ce4a39201f0b9151cd2dc12ffc3e12adc`, and hosted CI run [40255978200](https://github.com/witalij-schrajer/WeatherParser/actions/runs/40255978200) passed on that head; A10 in progress: two review rounds answered, the production findings fixed in the new candidate `12e7205` and P6.10 S1 to S3 repeated on it (record section 10); A7: P6 accepted by the user on 2026-10-26 on candidate `12e7205`; A11 (merge) pending.** Refines the P6.11 row of section 5 and section 9 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md).
+**Status: executed on 2026-10-26 ([record](P6_11_ACCEPTANCE.md)): A1 to A9 done; A7 P6 accepted by the user on candidate `12e7205`; A10 two review rounds answered, the production findings fixed in `12e7205` with P6.10 S1 to S3 repeated, the final review without findings; A11 pull request #9 merged into `develop` on 2026-10-26 (merge commit `de9d4ba`), post-merge records in a separate documentation pull request (the user's decision). P6 is complete.** Refines the P6.11 row of section 5 and section 9 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: audit the P6 evidence, record the limitations and the source-condition status, obtain the user's acceptance, update the status documents, write the P7 handoff, and take the pull request through review to the user's merge.
@@ -50,11 +50,11 @@ No new automated test. A2 traces T-P6-01 to T-P6-19.
 - (b) Source conditions still unclarified at acceptance — recorded as open for production; P8 and P3 must not redistribute the values until clarified
 
 ## 9. Acceptance Criteria
-- [ ] Preconditions recorded; candidate and base verified
-- [ ] Evidence matrix complete; live row recorded separately
-- [ ] Contract summary and limitations complete, including the source-condition status
-- [ ] Audit decision recorded; P7 handoff written and Codex-reviewed
-- [ ] User acceptance recorded with date and wording
-- [ ] Status documents consistent; package check and committed-revision run passed
-- [ ] Pull request ready for review; review findings resolved; new-candidate rule applied where production code changed
-- [ ] Merged into `develop` by the user; post-merge records in the chosen home
+- [x] Preconditions recorded; candidate and base verified
+- [x] Evidence matrix complete; live row recorded separately
+- [x] Contract summary and limitations complete, including the source-condition status
+- [x] Audit decision recorded; P7 handoff written and Codex-reviewed
+- [x] User acceptance recorded with date and wording
+- [x] Status documents consistent; package check and committed-revision run passed
+- [x] Pull request ready for review; review findings resolved; new-candidate rule applied where production code changed
+- [x] Merged into `develop` by the user; post-merge records in the chosen home
