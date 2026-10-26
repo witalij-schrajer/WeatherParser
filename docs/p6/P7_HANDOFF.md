@@ -1,6 +1,6 @@
 # P7 Handoff – MOSMIX Forecasts
 
-Status: prepared with the P6.11 acceptance record on 2026-10-26 for the verified candidate `12e7205` ([P6.11 acceptance record](P6_11_ACCEPTANCE.md)), which carries the PR #9 review fixes on top of the first candidate `4373399`. It takes effect only after the user has accepted P6 and merged pull request #9 into `develop`; P7 starts only on a separate instruction of the user.
+Status: prepared with the P6.11 acceptance record on 2026-10-26 for the verified candidate `12e7205` ([P6.11 acceptance record](P6_11_ACCEPTANCE.md)), which carries the PR #9 review fixes on top of the first candidate `4373399`. P6 was accepted by the user on 2026-10-26 on this candidate; the handoff takes effect once the user merges pull request #9 into `develop`; P7 starts only on a separate instruction of the user.
 
 ## 1. Foundation
 

@@ -1,6 +1,6 @@
 # P6.11 – P6 Acceptance Record
 
-**Status (2026-10-26): the evidence audit (section 5) accepts the implementation candidate `4373399` and, after the PR #9 review fixes, `12e7205` (section 10). The user's acceptance (A7, section 6) is pending; pull request #9 was marked ready for review on the user's instruction on 2026-10-26 (A9, section 8). P6 is complete only after the user's acceptance and the merge of pull request #9 into `develop`.** Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](P6_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
+**Status (2026-10-26): the evidence audit (section 5) accepts the implementation candidate `4373399` and, after the PR #9 review fixes, `12e7205` (section 10). P6 was accepted by the user on 2026-10-26 on candidate `12e7205` (A7, section 6); pull request #9 was marked ready for review on the user's instruction on 2026-10-26 (A9, section 8). P6 is complete only after the user merges pull request #9 into `develop` (A11).** Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](P6_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
@@ -76,15 +76,21 @@ This audit decision is not the user's acceptance.
 
 ## 6. User decision (A7)
 
-Pending. The user decides on the basis of this record, the [P6.10 record](P6_10_INTEGRATED_VERIFICATION.md) and the pull request review. Plan recommendation for the wording (plan section 3): the library accepted, production use and redistribution open until the source conditions are clarified.
+**P6 accepted by the user on 2026-10-26 on candidate `12e7205385d1ad6ca1eb45cb4fcb1f7b50699554`.**
+
+The user's message in chat (2026-10-26): "I accept P6"
+
+- **Basis**: the user decided after this record, the [P6.10 record](P6_10_INTEGRATED_VERIFICATION.md) with the rerun on `12e7205` (section 8), the answered pull-request reviews and the summary of the review fixes were presented; the PR head at the time was `2f00ea2` (documentation only on top of `12e7205`).
+- **Scope**: the message records no operator consent and no other clarified source conditions, so the plan's recommended scope applies (plan section 3, REQ-092, OW-14): the library is accepted; production use and redistribution of OsthessenWetter values (for example over MQTT) stay open until the user records the operator's consent or other clarified conditions.
+- **Effect**: the acceptance amends no acceptance criterion; the limitations of section 4 stay open with their owners. Under the PR workflow, P6 is complete only once the user merges pull request #9 into `develop` (A11).
 
 ## 7. Status updates (A8)
 
-Status passages updated on 2026-10-26 to "P6 implemented and verified (P6.10 READY); acceptance by the user pending; complete only once the user accepts and merges pull request #9": `AGENTS.md` and `README.md` (the phase-status line and the dated line), `DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `PHASE_P6_PLAN.md`, `P6_OSTHESSEN_CONTRACT.md` (verification reference), `P6_VERIFICATION.md`. The README change triggers the package check (AGENTS.md consistency table), recorded in [P6_VERIFICATION.md](P6_VERIFICATION.md) section 11.
+Status passages updated on 2026-10-26, first to "P6 implemented and verified (P6.10 READY); acceptance by the user pending" and, after A7, to "P6 accepted by the user on 2026-10-26 on candidate `12e7205` (the library; production use and redistribution open, OW-14); complete only once the user merges pull request #9": `AGENTS.md` and `README.md` (the phase-status line and the dated line), `DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `PHASE_P6_PLAN.md`, `P6_OSTHESSEN_CONTRACT.md` (verification reference), `P6_VERIFICATION.md`. The README change triggers the package check (AGENTS.md consistency table), recorded in [P6_VERIFICATION.md](P6_VERIFICATION.md) section 11.
 
 ## 8. Ready for review, review and merge (A9 to A11)
 
-- **A9 (ready for review)**: on the user's instruction of 2026-10-26 ("After you are ready for my acceptance change the PR status to \"ready for review\""), GitHub recorded the `ready_for_review` event at 2026-10-26T01:48:01Z on PR head `a40b214ce4a39201f0b9151cd2dc12ffc3e12adc`. Hosted CI run [40255978200](https://github.com/witalij-schrajer/WeatherParser/actions/runs/40255978200) (`pull_request`) completed successfully on that head in `windows-x64`, `ubuntu-x64` and `debian13-arm64`. `a40b214` is a documentation-only successor of the verified implementation candidate `4373399`; A7 user acceptance remains pending.
+- **A9 (ready for review)**: on the user's instruction of 2026-10-26 ("After you are ready for my acceptance change the PR status to \"ready for review\""), GitHub recorded the `ready_for_review` event at 2026-10-26T01:48:01Z on PR head `a40b214ce4a39201f0b9151cd2dc12ffc3e12adc`. Hosted CI run [40255978200](https://github.com/witalij-schrajer/WeatherParser/actions/runs/40255978200) (`pull_request`) completed successfully on that head in `windows-x64`, `ubuntu-x64` and `debian13-arm64`. `a40b214` is a documentation-only successor of the verified implementation candidate `4373399`; A7 user acceptance was still pending at that time (recorded on 2026-10-26, section 6).
 - **A10 (review)**: on the user's instruction of 2026-10-26, the pull request comments are checked every 30 minutes; on reported issues the pull request goes back to draft, the issues are analysed and fixed test-first, and it is marked ready for review again, until the reviewer reports no findings. A production change makes a new candidate and repeats P6.10 S1 to S3.
 - **A11 (merge)**: by the user only.
 
@@ -96,5 +102,5 @@ Status passages updated on 2026-10-26 to "P6 implemented and verified (P6.10 REA
 ## 10. Review fixes after A9 (A10)
 
 - The peer code review of `0012d16` (review 5648301660) reported two production findings: the parser read the mutable page deadline on every parse (Major) and the wind join was quadratic without loop checkpoints (Minor). Both were fixed in `12e7205`: the deadline finding test-first with recorded Red (two failing regression tests), the wind-join finding with characterization tests and a cancellation regression guard that passed before and after the change, because the quadratic join had no observable result difference and the reader offers no deterministic in-loop cancellation hook ([P6_VERIFICATION.md](P6_VERIFICATION.md) section 11) and answered on their threads; P6.10 S1 to S3 were repeated on `12e7205` with outcome READY (P6.10 record section 8): Windows, hosted CI run 40284717931 and the NanoPi R76S, each with 2301 Parsing and 41 package-consumer tests passed and the gate at 8486/8489 against 7491/7494.
-- The evidence audit (section 5) holds for `12e7205` with these counters; the phase-transition reviews of the same morning ended with APPROVE (summary 6409898771). The user's acceptance (A7) is still pending.
+- The evidence audit (section 5) holds for `12e7205` with these counters; the phase-transition reviews of the same morning ended with APPROVE (summary 6409898771). At that time the user's acceptance (A7) was still pending; it was given afterwards on 2026-10-26 (section 6).
 
