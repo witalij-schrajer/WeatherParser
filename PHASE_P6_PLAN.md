@@ -1,6 +1,6 @@
 # Phase P6 – OsthessenWetter Observations: Implementation Plan
 
-**Status: P6 started on 2026-10-25 on the user's instruction (branch `features/develop/P6` from `develop` `8d8079a`); P6.01 (foundation check) complete with outcome READY ([record](docs/p6/P6_01_FOUNDATION_CHECK.md)); P6.02: OsthessenWetter contract OW-01 to OW-16 approved by the user on 2026-10-25 with option A in every row ([contract](docs/p6/P6_OSTHESSEN_CONTRACT.md)) and the plans reconciled with it; P6.03 (station name pattern) complete ([record](docs/p6/P6_VERIFICATION.md) section 3); P6.04 to P6.09 complete on 2026-10-25 and 2026-10-26 (sections 4 to 9 of the record); P6.10 (integrated verification) READY on candidate `4373399` and, after the PR #9 review fixes, on `12e7205` ([record](docs/p6/P6_10_INTEGRATED_VERIFICATION.md)); P6.11: evidence audit ACCEPTED ([acceptance record](docs/p6/P6_11_ACCEPTANCE.md)), P6 accepted by the user on 2026-10-26 on candidate `12e7205` (the library; production use and redistribution of OsthessenWetter values stay open until the source conditions are clarified, OW-14); P6 is complete only once the user merges pull request #9 into `develop`. Planning (2026-10-25): phase plan and step plans P6.01 to P6.11 written and Codex-reviewed to 0 findings (section 10); the step plans are reconciled with the contract only after its approval in P6.02 (planning gate, section 5). The rows of section 3 are the planning proposals; the approved contract is binding and wins where it refines them (section 3).** This plan refines the P6 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P6 handoff](docs/p5/P6_HANDOFF.md). Planning input: [P6 planning check](docs/p6/research/P6_PLANNING_PAGE_CHECK.md) (page structure and source conditions as retrieved on 2026-10-25).
+**Status: P6 started on 2026-10-25 on the user's instruction (branch `features/develop/P6` from `develop` `8d8079a`); P6.01 (foundation check) complete with outcome READY ([record](docs/p6/P6_01_FOUNDATION_CHECK.md)); P6.02: OsthessenWetter contract OW-01 to OW-16 approved by the user on 2026-10-25 with option A in every row ([contract](docs/p6/P6_OSTHESSEN_CONTRACT.md)) and the plans reconciled with it; P6.03 (station name pattern) complete ([record](docs/p6/P6_VERIFICATION.md) section 3); P6.04 to P6.09 complete on 2026-10-25 and 2026-10-26 (sections 4 to 9 of the record); P6.10 (integrated verification) READY on candidate `4373399` and, after the PR #9 review fixes, on `12e7205` ([record](docs/p6/P6_10_INTEGRATED_VERIFICATION.md)); P6.11: evidence audit ACCEPTED ([acceptance record](docs/p6/P6_11_ACCEPTANCE.md)), P6 accepted by the user on 2026-10-26 on candidate `12e7205` (the library; production use and redistribution of OsthessenWetter values stay open until the source conditions are clarified, OW-14); it is complete: pull request #9 merged into `develop` on 2026-10-26 (merge commit `de9d4ba`); P7 starts only on a separate instruction ([P7 handoff](docs/p6/P7_HANDOFF.md)). Planning (2026-10-25): phase plan and step plans P6.01 to P6.11 written and Codex-reviewed to 0 findings (section 10); the step plans are reconciled with the contract only after its approval in P6.02 (planning gate, section 5). The rows of section 3 are the planning proposals; the approved contract is binding and wins where it refines them (section 3).** This plan refines the P6 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P6 handoff](docs/p5/P6_HANDOFF.md). Planning input: [P6 planning check](docs/p6/research/P6_PLANNING_PAGE_CHECK.md) (page structure and source conditions as retrieved on 2026-10-25).
 
 ## 1. First step: check P5 completion and adjust this plan
 
@@ -169,21 +169,21 @@ New records under `docs/p6/`; production code under `src/WeatherParser.Parsing/O
 
 ## 9. P6 acceptance and P7 handoff checklist
 
-- [ ] P6.01 foundation check recorded
-- [ ] OsthessenWetter contract approved by the user after Codex review
-- [ ] every mandatory T-P6 row has passing tests and recorded evidence; the optional live check T-P6-18 is either passed or recorded as skipped with its limitation
-- [ ] pattern, retrieval, page reading and normalization match REQ-040–046 and REQ-050–056
-- [ ] all matching stations exported traceably; no match, format changes and unresolved times yield defined errors; estimated times visible (DEVELOPMENT_PLAN.md P6 acceptance)
-- [ ] the datasets serialize equivalently and validate against the v1 schema
-- [ ] no export contract change without a recorded additive decision
-- [ ] DI and same-run package consumption proven
-- [ ] coverage gate passed on Windows and the NanoPi R76S, platform outcomes separate
-- [ ] source-condition status recorded; production acceptance stated as open unless the user has recorded clarified conditions (REQ-092)
-- [ ] limitations with owners
-- [ ] user acceptance recorded
-- [ ] status documents consistent
-- [ ] pull request ready for review, review findings resolved test-first, merged into `develop` by the user
-- [ ] P7 handoff written
+- [x] P6.01 foundation check recorded
+- [x] OsthessenWetter contract approved by the user after Codex review
+- [x] every mandatory T-P6 row has passing tests and recorded evidence; the optional live check T-P6-18 is either passed or recorded as skipped with its limitation
+- [x] pattern, retrieval, page reading and normalization match REQ-040–046 and REQ-050–056
+- [x] all matching stations exported traceably; no match, format changes and unresolved times yield defined errors; estimated times visible (DEVELOPMENT_PLAN.md P6 acceptance)
+- [x] the datasets serialize equivalently and validate against the v1 schema
+- [x] no export contract change without a recorded additive decision
+- [x] DI and same-run package consumption proven
+- [x] coverage gate passed on Windows and the NanoPi R76S, platform outcomes separate
+- [x] source-condition status recorded; production acceptance stated as open unless the user has recorded clarified conditions (REQ-092)
+- [x] limitations with owners
+- [x] user acceptance recorded
+- [x] status documents consistent
+- [x] pull request ready for review, review findings resolved (the deadline finding test-first with recorded Red; the wind-join finding with characterization tests and a cancellation regression guard, because its quadratic join had no observable result difference, [acceptance record](docs/p6/P6_11_ACCEPTANCE.md) section 10), merged into `develop` by the user
+- [x] P7 handoff written
 
 ## 10. Plan authorship and review
 
