@@ -1,6 +1,6 @@
 # P6.11 – Acceptance and P7 Handoff: Implementation Plan
 
-**Status: A1 to A6 and A8 executed on 2026-10-26 ([record](P6_11_ACCEPTANCE.md)); A9 (ready for review) follows the push of the record and is recorded with its timestamp, head and CI run; A7 (the user's acceptance), A10 (review) and A11 (merge) pending.** Refines the P6.11 row of section 5 and section 9 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md).
+**Status: A1 to A6, A8 and A9 executed on 2026-10-26 ([record](P6_11_ACCEPTANCE.md)); GitHub recorded A9 at 2026-10-26T01:48:01Z on head `a40b214ce4a39201f0b9151cd2dc12ffc3e12adc`, and hosted CI run [40255978200](https://github.com/witalij-schrajer/WeatherParser/actions/runs/40255978200) passed on that head; A7 (the user's acceptance), A10 (review) and A11 (merge) pending.** Refines the P6.11 row of section 5 and section 9 of [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: audit the P6 evidence, record the limitations and the source-condition status, obtain the user's acceptance, update the status documents, write the P7 handoff, and take the pull request through review to the user's merge.

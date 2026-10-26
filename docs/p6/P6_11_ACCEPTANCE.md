@@ -1,6 +1,6 @@
 # P6.11 – P6 Acceptance Record
 
-**Status (2026-10-26): the evidence audit (section 5) accepts the implementation candidate `4373399`. The user's acceptance (A7, section 6) is pending; pull request #9 is to be marked ready for review on the user's instruction after this record is pushed (A9, section 8). P6 is complete only after the user's acceptance and the merge of pull request #9 into `develop`.** Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](P6_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
+**Status (2026-10-26): the evidence audit (section 5) accepts the implementation candidate `4373399`. The user's acceptance (A7, section 6) is pending; pull request #9 was marked ready for review on the user's instruction on 2026-10-26 (A9, section 8). P6 is complete only after the user's acceptance and the merge of pull request #9 into `develop`.** Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](P6_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
@@ -84,7 +84,7 @@ Status passages updated on 2026-10-26 to "P6 implemented and verified (P6.10 REA
 
 ## 8. Ready for review, review and merge (A9 to A11)
 
-- **A9 (ready for review)**: on the user's instruction of 2026-10-26 ("After you are ready for my acceptance change the PR status to \"ready for review\""), after the push of this record.
+- **A9 (ready for review)**: on the user's instruction of 2026-10-26 ("After you are ready for my acceptance change the PR status to \"ready for review\""), GitHub recorded the `ready_for_review` event at 2026-10-26T01:48:01Z on PR head `a40b214ce4a39201f0b9151cd2dc12ffc3e12adc`. Hosted CI run [40255978200](https://github.com/witalij-schrajer/WeatherParser/actions/runs/40255978200) (`pull_request`) completed successfully on that head in `windows-x64`, `ubuntu-x64` and `debian13-arm64`. `a40b214` is a documentation-only successor of the verified implementation candidate `4373399`; A7 user acceptance remains pending.
 - **A10 (review)**: on the user's instruction of 2026-10-26, the pull request comments are checked every 30 minutes; on reported issues the pull request goes back to draft, the issues are analysed and fixed test-first, and it is marked ready for review again, until the reviewer reports no findings. A production change makes a new candidate and repeats P6.10 S1 to S3.
 - **A11 (merge)**: by the user only.
 
