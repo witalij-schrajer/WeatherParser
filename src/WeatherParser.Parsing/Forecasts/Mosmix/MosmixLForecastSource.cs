@@ -22,6 +22,7 @@ public sealed class MosmixLForecastSource : IMosmixLForecastSource
 
     private readonly Uri _directory;
     private readonly ICatalogDownloader _downloader;
+    private readonly string _sanitizedEndpoint;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MosmixLForecastSource"/> class.
@@ -60,7 +61,11 @@ public sealed class MosmixLForecastSource : IMosmixLForecastSource
         }
 
         _directory = uri;
+        _sanitizedEndpoint = CatalogDownloader.Sanitize(_directory);
     }
+
+    /// <inheritdoc />
+    public string SanitizedEndpoint => _sanitizedEndpoint;
 
     /// <inheritdoc />
     public async Task<T> RetrieveAsync<T>(string mosmixId, Func<Stream, CancellationToken, Task<T>> read, CancellationToken deadline, CancellationToken cancellationToken) where T : class

@@ -50,6 +50,7 @@ public static class ServiceCollectionExtensions
     /// The DWD observation source is also registered; the consumer registers <see cref="DwdObservationOptions"/>.
     /// The DWD observation parser is also registered.
     /// The CDC request composer is also registered.
+    /// The MOSMIX_L parser is also registered; it logs through <see cref="Microsoft.Extensions.Logging.ILogger{TCategoryName}"/> of <see cref="MosmixLParser"/> (contract MF-02).
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -76,6 +77,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMosmixElementMapper, MosmixElementMapper>();
         services.AddSingleton<IMosmixLForecastSource, MosmixLForecastSource>();
         services.AddSingleton<IMosmixSForecastSource, MosmixSForecastSource>();
+        services.AddSingleton<IMosmixLParser, MosmixLParser>();
         services.AddSingleton<ICoordinateParser, CoordinateParser>();
         services.AddSingleton<ISearchParameterFactory, SearchParameterFactory>();
         services.AddSingleton<IDistanceCalculator, DistanceCalculator>();

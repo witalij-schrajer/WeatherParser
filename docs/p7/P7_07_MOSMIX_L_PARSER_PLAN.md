@@ -1,6 +1,6 @@
 # P7.07 – MOSMIX_L Parser Service: Implementation Plan
 
-**Status: planned (2026-10-26); reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6); not started.** Refines the P7.07 row of section 5 and the "Input", "Times", "Run" and "Logging" rows of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: executed on 2026-10-27 (reconciled with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) in P7.02 S6; [verification record](P7_VERIFICATION.md) section 7).** Refines the P7.07 row of section 5 and the "Input", "Times", "Run" and "Logging" rows of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the public MOSMIX_L parser that validates the MOSMIX ID, retrieves the location's latest file once under one deadline, reads, maps and builds one `forecast_run`, determines its freshness, and logs every failure, notice and omission with stable IDs — following the P5.07 and P6.07 parser pattern.
