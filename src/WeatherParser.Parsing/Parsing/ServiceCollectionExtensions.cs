@@ -4,6 +4,7 @@ using WeatherParser.Parsing.Evidence.MosmixL;
 using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Forecasts;
+using WeatherParser.Parsing.Forecasts.Mosmix;
 using WeatherParser.Parsing.Geography;
 using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Observations.Dwd;
@@ -69,6 +70,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWindSpeedConverter, WindSpeedConverter>();
         services.AddSingleton<IObservationDatasetBuilder, ObservationDatasetBuilder>();
         services.AddSingleton<IForecastRunBuilder, ForecastRunBuilder>();
+        services.AddSingleton<IMosmixForecastDocumentReader, MosmixForecastDocumentReader>();
         services.AddSingleton<ICoordinateParser, CoordinateParser>();
         services.AddSingleton<ISearchParameterFactory, SearchParameterFactory>();
         services.AddSingleton<IDistanceCalculator, DistanceCalculator>();

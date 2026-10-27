@@ -214,8 +214,9 @@ public sealed class ForecastRunFreshnessMarkerTests
         var serializer = new XmlSerializer(typeof(ForecastRun));
         using var stream = new MemoryStream(xmlBytes);
         using var reader = XmlReader.Create(stream, ExportSchemaValidation.SecureReaderSettings());
-        var run = (ForecastRun)serializer.Deserialize(reader);
-        run.RunAgeExceeded.Should().BeNull();
+        var run = (ForecastRun?)serializer.Deserialize(reader);
+        run.Should().NotBeNull();
+        run!.RunAgeExceeded.Should().BeNull();
     }
 
     [TestMethod]
@@ -251,9 +252,10 @@ public sealed class ForecastRunFreshnessMarkerTests
         var serializer = new XmlSerializer(typeof(ForecastRun));
         using var stream = new MemoryStream(xmlBytes);
         using var reader = XmlReader.Create(stream, ExportSchemaValidation.SecureReaderSettings());
-        var restored = (ForecastRun)serializer.Deserialize(reader);
+        var restored = (ForecastRun?)serializer.Deserialize(reader);
+        restored.Should().NotBeNull();
 
         // Assert
-        restored.RunAgeExceeded.Should().BeTrue();
+        restored!.RunAgeExceeded.Should().BeTrue();
     }
 }
