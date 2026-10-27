@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
     /// The catalog downloader is also registered; the consumer registers the <see cref="HttpClient"/> and the <see cref="TimeProvider"/>.
     /// The CDC endpoints validator and the CDC and MOSMIX catalog sources are also registered; the consumer registers <see cref="CdcCatalogEndpoints"/> and <see cref="WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints"/>.
     /// The MOSMIX_S evidence refresher is also registered; its timing is controlled externally (no scheduler).
+    /// The MOSMIX_L and MOSMIX_S forecast sources are also registered; the consumer registers <see cref="MosmixLForecastEndpoints"/>, <see cref="MosmixSForecastEndpoints"/>, <see cref="MosmixLForecastOptions"/> and <see cref="MosmixSForecastOptions"/> (contracts MF-04, MF-05, MF-09).
     /// The DWD station resolver is also registered.
     /// The DWD observation mapper is also registered.
     /// The DWD observation source is also registered; the consumer registers <see cref="DwdObservationOptions"/>.
@@ -73,6 +74,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMosmixForecastDocumentReader, MosmixForecastDocumentReader>();
         services.AddSingleton<IMosmixUnitScaler, MosmixUnitScaler>();
         services.AddSingleton<IMosmixElementMapper, MosmixElementMapper>();
+        services.AddSingleton<IMosmixLForecastSource, MosmixLForecastSource>();
+        services.AddSingleton<IMosmixSForecastSource, MosmixSForecastSource>();
         services.AddSingleton<ICoordinateParser, CoordinateParser>();
         services.AddSingleton<ISearchParameterFactory, SearchParameterFactory>();
         services.AddSingleton<IDistanceCalculator, DistanceCalculator>();

@@ -5,6 +5,7 @@ using WeatherParser.Parsing.Catalogs;
 using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Observations.Dwd;
 using WeatherParser.Parsing.Observations.Osthessen;
+using WeatherParser.Parsing.Forecasts.Mosmix;
 
 namespace WeatherParser.Parsing.Tests.Selection;
 
@@ -51,6 +52,10 @@ internal static class ConsumerBoundary
         services.AddSingleton(new DwdObservationOptions());
         services.AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } });
         services.AddSingleton(new OsthessenWetterEndpoints { PageUri = new Uri("https://osthessen.example/messwerte/") });
+        services.AddSingleton(new MosmixLForecastEndpoints { SingleStationsDirectory = new Uri("https://mosmix.example/single_stations/") });
+        services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") });
+        services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) });
+        services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
         return services;
     }
 

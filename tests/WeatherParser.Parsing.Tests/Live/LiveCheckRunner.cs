@@ -20,6 +20,7 @@ using WeatherParser.Parsing.Observations.Dwd;
 using WeatherParser.Parsing.Observations.Osthessen;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using WeatherParser.Parsing.Exceptions;
+using WeatherParser.Parsing.Forecasts.Mosmix;
 
 namespace WeatherParser.Parsing.Tests.Live;
 
@@ -91,6 +92,10 @@ internal static class LiveCheckRunner
         services.AddSingleton(new DwdObservationOptions());
         services.AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } });
         services.AddSingleton(new OsthessenWetterEndpoints { PageUri = new Uri("https://osthessen.example/messwerte/") });
+        services.AddSingleton(new MosmixLForecastEndpoints { SingleStationsDirectory = new Uri("https://mosmix.example/single_stations/") });
+        services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") });
+        services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) });
+        services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
@@ -158,6 +163,10 @@ internal static class LiveCheckRunner
         services.AddSingleton(new DwdObservationOptions());
         services.AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } });
         services.AddSingleton(new OsthessenWetterEndpoints { PageUri = new Uri("https://osthessen.example/messwerte/") });
+        services.AddSingleton(new MosmixLForecastEndpoints { SingleStationsDirectory = new Uri("https://mosmix.example/single_stations/") });
+        services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") });
+        services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) });
+        services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
@@ -207,6 +216,10 @@ internal static class LiveCheckRunner
         services.AddSingleton(new OsthessenWetterEndpoints { PageUri = settings.OsthessenPageUri });
         // The real page has no consumer metadata here: placeholder coordinates let every online station build a dataset.
         services.Replace(ServiceDescriptor.Singleton<IOsthessenWetterStationMetadataLookup, PlaceholderMetadataLookup>());
+        services.AddSingleton(new MosmixLForecastEndpoints { SingleStationsDirectory = new Uri("https://mosmix.example/single_stations/") });
+        services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") });
+        services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) });
+        services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         var parser = provider.GetRequiredService<IOsthessenWetterParser>();

@@ -25,4 +25,7 @@ public sealed record CatalogRequest(
     /// The maximum bytes for the MOSMIX-S all stations file, SC-09.
     /// </summary>
     public const long MosmixSAllStationsMaxBytes = 67108864;
+
+    /// <summary>The bound of this request including the reader callback; null means the default of 30 seconds (contracts SC-09, MF-05).</summary>
+    public TimeSpan? RequestTimeout { get; init; }
 }

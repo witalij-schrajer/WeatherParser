@@ -23,5 +23,15 @@ public enum CatalogDeadlineKind
     /// <summary>
     /// The OsthessenWetter page deadline (contract OW-10); its expiry raises OSTHESSEN-DEADLINE-EXCEEDED.
     /// </summary>
-    OsthessenWetter
+    OsthessenWetter,
+
+    /// <summary>
+    /// The parse deadline of the MOSMIX_L forecast parser (contract MF-05).
+    /// </summary>
+    MosmixL,
+
+    /// <summary>
+    /// The parse deadline of the MOSMIX_S forecast parser (contract MF-05).
+    /// </summary>
+    MosmixS
 }

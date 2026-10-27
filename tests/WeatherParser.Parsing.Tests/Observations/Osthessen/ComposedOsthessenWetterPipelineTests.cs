@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
 using WeatherParser.Parsing.Exceptions;
+using WeatherParser.Parsing.Forecasts.Mosmix;
 using WeatherParser.Parsing.Observations.Osthessen;
 using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Tests.Catalogs;
@@ -71,6 +72,10 @@ public sealed class ComposedOsthessenWetterPipelineTests
         services.AddSingleton<TimeProvider>(_clock);
         services.AddSingleton(options);
         services.AddSingleton(new OsthessenWetterEndpoints { PageUri = new Uri("https://example.org/messwerte/?token=q1secret") });
+        services.AddSingleton(new MosmixLForecastEndpoints { SingleStationsDirectory = new Uri("https://mosmix.example/single_stations/") });
+        services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") });
+        services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) });
+        services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
         services.AddSingleton<ILogger<OsthessenWetterParser>>(_logger);
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
     }
