@@ -118,7 +118,7 @@ internal static class MosmixForecastKmzBuilder
 
     public static byte[] Kmz(string kml, CompressionLevel level = CompressionLevel.Optimal, string memberName = SingleMemberName) => Zip(level, (memberName, Encoding.Latin1.GetBytes(kml)));
 
-    public static byte[] LargeAllStationsKmz(int placemarks, int selectedIndex, string selectedId, int timeSteps, int elementsPerPlacemark)
+    public static byte[] LargeAllStationsKmz(int placemarks, int selectedIndex, string selectedId, int timeSteps, int elementsPerPlacemark, bool includeTemperature = false, string? issueTime = DefaultIssueTime)
     {
         using var ms = new MemoryStream();
         using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
@@ -131,7 +131,7 @@ internal static class MosmixForecastKmzBuilder
             writer.WriteLine($"<kml:kml xmlns:dwd=\"{DwdNs}\" xmlns:kml=\"{KmlNs}\">");
             writer.WriteLine("  <kml:Document>");
             writer.WriteLine("    <kml:ExtendedData>");
-            writer.Write(ProductDefinition(timeSteps: timeSteps));
+            writer.Write(ProductDefinition(issueTime: issueTime, timeSteps: timeSteps));
             writer.WriteLine("    </kml:ExtendedData>");
 
             var values = string.Join(" ", new string[timeSteps].Select(_ => "281.15"));
@@ -142,6 +142,12 @@ internal static class MosmixForecastKmzBuilder
                 writer.WriteLine($"      <kml:name>{id}</kml:name>");
                 writer.WriteLine("      <kml:description>STATION</kml:description>");
                 writer.WriteLine("      <kml:ExtendedData>");
+
+                if (includeTemperature)
+                {
+                    var temperatureValues = string.Join(" ", new string[timeSteps].Select(_ => "283.15"));
+                    writer.WriteLine($"        <dwd:Forecast dwd:elementName=\"TTT\"><dwd:value>{temperatureValues}</dwd:value></dwd:Forecast>");
+                }
 
                 for (int k = 0; k < elementsPerPlacemark; k++)
                 {

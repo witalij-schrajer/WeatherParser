@@ -55,7 +55,7 @@ public sealed class MosmixLParserTests
         _mocks.VerifyAll();
     }
 
-    private MosmixLParser Create(MosmixLForecastOptions options) => new(options, _source.Object, _reader.Object, _mapper.Object, _builder.Object, _clock, _logger);
+    private MosmixLParser Create(MosmixLForecastOptions options) => new(options, _source.Object, _reader.Object, new MosmixParsePipeline(_mapper.Object, _builder.Object, _clock), _logger);
     private static MosmixLForecastOptions Options() => new() { ParseDeadline = TimeSpan.FromSeconds(60), MaxRunAge = TimeSpan.FromHours(8) };
     private static DateTime Retrieved => new(2026, 10, 26, 16, 16, 30, DateTimeKind.Utc);
     private static DateTime Issued => new(2026, 10, 26, 15, 0, 0, DateTimeKind.Utc);
@@ -385,25 +385,29 @@ public sealed class MosmixLParserTests
     [Timeout(10000)]
     public void Construct_NullArguments_Throw()
     {
-        Action act = () => new MosmixLParser(null!, _source.Object, _reader.Object, _mapper.Object, _builder.Object, _clock, _logger);
+        Action act = () => new MosmixLParser(null!, _source.Object, _reader.Object, new MosmixParsePipeline(_mapper.Object, _builder.Object, _clock), _logger);
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => new MosmixLParser(Options(), null!, _reader.Object, _mapper.Object, _builder.Object, _clock, _logger);
+        act = () => new MosmixLParser(Options(), null!, _reader.Object, new MosmixParsePipeline(_mapper.Object, _builder.Object, _clock), _logger);
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => new MosmixLParser(Options(), _source.Object, null!, _mapper.Object, _builder.Object, _clock, _logger);
+        act = () => new MosmixLParser(Options(), _source.Object, null!, new MosmixParsePipeline(_mapper.Object, _builder.Object, _clock), _logger);
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => new MosmixLParser(Options(), _source.Object, _reader.Object, null!, _builder.Object, _clock, _logger);
+        act = () => new MosmixLParser(Options(), _source.Object, _reader.Object, null!, _logger);
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => new MosmixLParser(Options(), _source.Object, _reader.Object, _mapper.Object, null!, _clock, _logger);
+        act = () => new MosmixLParser(Options(), _source.Object, _reader.Object, new MosmixParsePipeline(_mapper.Object, _builder.Object, _clock), null!);
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => new MosmixLParser(Options(), _source.Object, _reader.Object, _mapper.Object, _builder.Object, null!, _logger);
+        // Check that pipeline's constructor validates its arguments
+        act = () => new MosmixParsePipeline(null!, _builder.Object, _clock);
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => new MosmixLParser(Options(), _source.Object, _reader.Object, _mapper.Object, _builder.Object, _clock, null!);
+        act = () => new MosmixParsePipeline(_mapper.Object, null!, _clock);
+        act.Should().Throw<ArgumentNullException>();
+
+        act = () => new MosmixParsePipeline(_mapper.Object, _builder.Object, null!);
         act.Should().Throw<ArgumentNullException>();
     }
 

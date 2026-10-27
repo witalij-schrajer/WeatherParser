@@ -1,6 +1,6 @@
 # P7.08 – MOSMIX_S Parser Service and Product Independence: Implementation Plan
 
-**Status: planned (2026-10-26); reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6); not started.** Refines the P7.08 row of section 5 and the "Separation", "Archive and XML" and "Run" rows of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: executed on 2026-10-27 (reconciled with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) in P7.02 S6; [verification record](P7_VERIFICATION.md) section 8).** Refines the P7.08 row of section 5 and the "Separation", "Archive and XML" and "Run" rows of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the public MOSMIX_S parser with the structure of P7.07 over the streamed all-stations file, and the proof that both parsers configured at once stay independent in endpoints, options, results and state.

@@ -23,6 +23,7 @@ public sealed class MosmixSForecastSource : IMosmixSForecastSource
     private readonly Uri _uri;
     private readonly TimeSpan _requestTimeout;
     private readonly ICatalogDownloader _downloader;
+    private readonly string _sanitizedEndpoint;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MosmixSForecastSource"/> class.
@@ -61,13 +62,16 @@ public sealed class MosmixSForecastSource : IMosmixSForecastSource
 
         _uri = uri!;
         _requestTimeout = parseDeadline;
+        _sanitizedEndpoint = CatalogDownloader.Sanitize(_uri);
     }
+
+    /// <inheritdoc />
+    public string SanitizedEndpoint => _sanitizedEndpoint;
 
     /// <inheritdoc />
     public async Task<T> RetrieveAsync<T>(Func<Stream, CancellationToken, Task<T>> read, CancellationToken deadline, CancellationToken cancellationToken) where T : class
     {
         ArgumentNullException.ThrowIfNull(read);
-        var endpoint = CatalogDownloader.Sanitize(_uri);
         var request = new CatalogRequest(EndpointName, _uri, CatalogRequest.MosmixSAllStationsMaxBytes, false, deadline, CatalogDeadlineKind.MosmixS)
         {
             RequestTimeout = _requestTimeout
@@ -83,7 +87,7 @@ public sealed class MosmixSForecastSource : IMosmixSForecastSource
             cancellationToken.ThrowIfCancellationRequested();
             if (deadline.IsCancellationRequested)
             {
-                throw new MosmixForecastException(MosmixForecastErrorIds.DeadlineExceeded, MosmixProduct.MosmixS, $"The MOSMIX_S all-stations file could not be retrieved within the parse deadline (endpoint '{EndpointName}', {endpoint}): {exception.ErrorId} (contract MF-05).");
+                throw new MosmixForecastException(MosmixForecastErrorIds.DeadlineExceeded, MosmixProduct.MosmixS, $"The MOSMIX_S all-stations file could not be retrieved within the parse deadline (endpoint '{EndpointName}', {_sanitizedEndpoint}): {exception.ErrorId} (contract MF-05).");
             }
 
             var errorId = exception.ErrorId switch
@@ -91,7 +95,7 @@ public sealed class MosmixSForecastSource : IMosmixSForecastSource
                 CatalogRetrievalException.TooLargeErrorId => MosmixForecastErrorIds.TooLarge,
                 _ => MosmixForecastErrorIds.RetrievalFailed
             };
-            throw new MosmixForecastException(errorId, MosmixProduct.MosmixS, $"The MOSMIX_S all-stations file could not be retrieved (endpoint '{EndpointName}', {endpoint}): {exception.ErrorId} (contract MF-14).");
+            throw new MosmixForecastException(errorId, MosmixProduct.MosmixS, $"The MOSMIX_S all-stations file could not be retrieved (endpoint '{EndpointName}', {_sanitizedEndpoint}): {exception.ErrorId} (contract MF-14).");
         }
     }
 

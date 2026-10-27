@@ -11,6 +11,11 @@ namespace WeatherParser.Parsing.Forecasts.Mosmix;
 public interface IMosmixSForecastSource
 {
     /// <summary>
+    /// Gets the configured all-stations URI as scheme, host, non-default port and path, without user information, query or fragment, for diagnostics (contract MF-15).
+    /// </summary>
+    string SanitizedEndpoint { get; }
+
+    /// <summary>
     /// Retrieves the forecast data for all stations.
     /// One request is made, no retries are performed.
     /// The deadline and cancellation token are passed to the downloader.

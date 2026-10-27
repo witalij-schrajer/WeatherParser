@@ -55,7 +55,7 @@ public sealed class MosmixLParserDiagnosticsTests
         _mocks.VerifyAll();
     }
 
-    private MosmixLParser Create(MosmixLForecastOptions options) => new(options, _source.Object, _reader.Object, _mapper.Object, _builder.Object, _clock, _logger);
+    private MosmixLParser Create(MosmixLForecastOptions options) => new(options, _source.Object, _reader.Object, new MosmixParsePipeline(_mapper.Object, _builder.Object, _clock), _logger);
 
     private static MosmixLForecastOptions Options() => new() { ParseDeadline = TimeSpan.FromSeconds(60), MaxRunAge = TimeSpan.FromHours(8) };
 
