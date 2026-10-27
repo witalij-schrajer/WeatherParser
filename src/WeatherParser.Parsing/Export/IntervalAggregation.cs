@@ -16,5 +16,19 @@ public enum IntervalAggregation
     /// </summary>
     [XmlEnum("mean")]
     [JsonStringEnumMemberName("mean")]
-    Mean
+    Mean,
+
+    /// <summary>
+    /// The maximum over the period (wind_gust_kmh, contract MF-11).
+    /// </summary>
+    [XmlEnum("maximum")]
+    [JsonStringEnumMemberName("maximum")]
+    Maximum,
+
+    /// <summary>
+    /// The total over the period (precipitation_amount_mm, contract MF-11).
+    /// </summary>
+    [XmlEnum("sum")]
+    [JsonStringEnumMemberName("sum")]
+    Sum
 }

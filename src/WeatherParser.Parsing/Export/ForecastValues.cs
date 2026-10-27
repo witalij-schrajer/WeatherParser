@@ -107,6 +107,22 @@ public sealed class ForecastValues
     public IntervalValue? RainRateMmH { get; set; }
 
     /// <summary>
+    /// Gets or sets the maximum wind gust over the period in km/h (aggregation maximum, contract MF-11).
+    /// </summary>
+    [XmlElement("wind_gust_kmh")]
+    [JsonPropertyName("wind_gust_kmh")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntervalValue? WindGustKmh { get; set; }
+
+    /// <summary>
+    /// Gets or sets the precipitation total over the period in millimetres (aggregation sum, contract MF-11).
+    /// </summary>
+    [XmlElement("precipitation_amount_mm")]
+    [JsonPropertyName("precipitation_amount_mm")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntervalValue? PrecipitationAmountMm { get; set; }
+
+    /// <summary>
     /// Controls XML output of temperature_c; true exactly when TemperatureC has a value.
     /// </summary>
     [XmlIgnore]

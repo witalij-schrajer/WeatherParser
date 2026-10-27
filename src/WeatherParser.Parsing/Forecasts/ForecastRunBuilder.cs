@@ -101,6 +101,9 @@ public sealed class ForecastRunBuilder : IForecastRunBuilder
             if (series.Kind == QuantityKind.MeanWindSpeed && (!series.WindSpeedUnit.HasValue || !Enum.IsDefined(series.WindSpeedUnit.Value)))
                 throw new ArgumentException("The wind speed unit must be a defined enum value when kind is MeanWindSpeed (contract C-76).", nameof(input));
 
+            if (series.Kind == QuantityKind.WindGust && (!series.WindSpeedUnit.HasValue || !Enum.IsDefined(series.WindSpeedUnit.Value)))
+                throw new ArgumentException("The wind speed unit must be a defined enum value when kind is WindGust (contract C-76, MF-11).", nameof(input));
+
             if (series.PressureUnit.HasValue && !Enum.IsDefined(series.PressureUnit.Value))
                 throw new ArgumentException("The pressure unit must be a defined enum value (contract C-76).", nameof(input));
             if (series.PressureReference.HasValue && !Enum.IsDefined(series.PressureReference.Value))
@@ -108,7 +111,7 @@ public sealed class ForecastRunBuilder : IForecastRunBuilder
             if (series.WindSpeedUnit.HasValue && !Enum.IsDefined(series.WindSpeedUnit.Value))
                 throw new ArgumentException("The wind speed unit must be a defined enum value (contract C-76).", nameof(input));
 
-            var isInterval = series.Kind is QuantityKind.Irradiance or QuantityKind.RadiationEnergy or QuantityKind.PrecipitationRate or QuantityKind.PrecipitationAccumulation;
+            var isInterval = series.Kind is QuantityKind.Irradiance or QuantityKind.RadiationEnergy or QuantityKind.PrecipitationRate or QuantityKind.PrecipitationAccumulation or QuantityKind.WindGust;
             if (isInterval && series.Periods is null)
                 throw new ArgumentException("The periods must not be null for interval kinds (contract C-76).", nameof(input));
             if (!isInterval && series.Periods is not null)
@@ -200,7 +203,7 @@ public sealed class ForecastRunBuilder : IForecastRunBuilder
 
                 var number = validated.Value!.Value;
 
-                if (kind is QuantityKind.Irradiance or QuantityKind.RadiationEnergy or QuantityKind.PrecipitationRate or QuantityKind.PrecipitationAccumulation)
+                if (kind is QuantityKind.Irradiance or QuantityKind.RadiationEnergy or QuantityKind.PrecipitationRate or QuantityKind.PrecipitationAccumulation or QuantityKind.WindGust)
                 {
                     if (series.Periods![j] is null)
                     {
@@ -236,6 +239,10 @@ public sealed class ForecastRunBuilder : IForecastRunBuilder
                                 : number;
                             steps[j].Values.WindSpeedKmh = _rounding.Round(QuantityKind.MeanWindSpeed, kmh);
                             break;
+                        case QuantityKind.WindGust:
+                            var gustKmh = series.WindSpeedUnit == WindSpeedUnit.MetresPerSecond ? _windSpeedConverter.ToKilometresPerHour(number) : number;
+                            steps[j].Values.WindGustKmh = Interval(_rounding.Round(QuantityKind.WindGust, gustKmh), series.Periods![j]!, IntervalAggregation.Maximum);
+                            break;
                         case QuantityKind.Illuminance:
                             steps[j].Values.IlluminanceLux = number;
                             break;
@@ -249,6 +256,7 @@ public sealed class ForecastRunBuilder : IForecastRunBuilder
                             steps[j].Values.RainRateMmH = Interval(number, series.Periods![j]!);
                             break;
                         case QuantityKind.PrecipitationAccumulation:
+                            steps[j].Values.PrecipitationAmountMm = Interval(number, series.Periods![j]!, IntervalAggregation.Sum);
                             steps[j].Values.RainRateMmH = Interval(_periodRateConverter.Convert(QuantityKind.PrecipitationAccumulation, QuantityKind.PrecipitationRate, number, series.Periods![j]).Value, series.Periods![j]!);
                             break;
                     }
@@ -260,7 +268,7 @@ public sealed class ForecastRunBuilder : IForecastRunBuilder
             }
         }
 
-        var keptSteps = steps.Where(s => s.Values.TemperatureC.HasValue || s.Values.PressureHpa.HasValue || s.Values.PressureMmHg.HasValue || s.Values.PressureReference.HasValue || s.Values.HumidityPercent.HasValue || s.Values.WindDirectionDeg.HasValue || s.Values.WindSpeedKmh.HasValue || s.Values.IlluminanceLux.HasValue || s.Values.SolarIrradianceWm2 is not null || s.Values.RainRateMmH is not null).OrderBy(s => s.ValidAt).ToList();
+        var keptSteps = steps.Where(s => s.Values.TemperatureC.HasValue || s.Values.PressureHpa.HasValue || s.Values.PressureMmHg.HasValue || s.Values.PressureReference.HasValue || s.Values.HumidityPercent.HasValue || s.Values.WindDirectionDeg.HasValue || s.Values.WindSpeedKmh.HasValue || s.Values.IlluminanceLux.HasValue || s.Values.SolarIrradianceWm2 is not null || s.Values.RainRateMmH is not null || s.Values.WindGustKmh is not null || s.Values.PrecipitationAmountMm is not null).OrderBy(s => s.ValidAt).ToList();
         if (keptSteps.Count == 0)
         {
             var source = $"{(product == MosmixProduct.MosmixS ? "dwd-mosmix-s:" : "dwd-mosmix-l:")}{mosmixId}";
@@ -293,18 +301,19 @@ public sealed class ForecastRunBuilder : IForecastRunBuilder
         QuantityKind.RelativeHumidity => "humidity_percent",
         QuantityKind.WindDirection => "wind_direction_deg",
         QuantityKind.MeanWindSpeed => "wind_speed_kmh",
+        QuantityKind.WindGust => "wind_gust_kmh",
         QuantityKind.Illuminance => "illuminance_lux",
         QuantityKind.Irradiance or QuantityKind.RadiationEnergy => "solar_irradiance_w_m2",
         QuantityKind.PrecipitationRate or QuantityKind.PrecipitationAccumulation => "rain_rate_mm_h",
         _ => null
     };
 
-    private static IntervalValue Interval(decimal value, AveragingPeriod period) => new()
+    private static IntervalValue Interval(decimal value, AveragingPeriod period, IntervalAggregation aggregation = IntervalAggregation.Mean) => new()
     {
         Value = value,
         PeriodStartUtc = period.StartUtc,
         PeriodEndUtc = period.EndUtc,
-        Aggregation = IntervalAggregation.Mean
+        Aggregation = aggregation
     };
 
     /// <summary>

@@ -237,7 +237,8 @@ public sealed class ForecastRunBuilderRulesTests
     [TestMethod]
     [DataRow("HumidityNaN", OmissionReason.NonFinite)]
     [DataRow("HumidityAboveRange", OmissionReason.OutOfRange)]
-    [DataRow("GustNaN", OmissionReason.NotExportable)]
+    [DataRow("GustNaN", OmissionReason.NonFinite)]
+    [DataRow("ProbabilityNaN", OmissionReason.NotExportable)]
     [DataRow("UnrepresentableWind", OmissionReason.Unrepresentable)]
     public void Build_OmissionReason_FollowsPrecedence(string scenario, OmissionReason expected)
     {
@@ -245,7 +246,8 @@ public sealed class ForecastRunBuilderRulesTests
         {
             "HumidityNaN" => Series(QuantityKind.RelativeHumidity, double.NaN),
             "HumidityAboveRange" => Series(QuantityKind.RelativeHumidity, 101.0),
-            "GustNaN" => Series(QuantityKind.WindGust, double.NaN),
+            "GustNaN" => new ForecastSeries { Kind = QuantityKind.WindGust, Values = new double?[] { double.NaN }, Periods = new AveragingPeriod?[] { Hour() }, WindSpeedUnit = WindSpeedUnit.MetresPerSecond, Product = MosmixProduct.MosmixL, MosmixId = "10637", IssuedAtUtc = IssuedAt },
+            "ProbabilityNaN" => Series(QuantityKind.Probability, double.NaN),
             "UnrepresentableWind" => new ForecastSeries { Kind = QuantityKind.MeanWindSpeed, Values = new double?[] { 3e28 }, WindSpeedUnit = WindSpeedUnit.MetresPerSecond, Product = MosmixProduct.MosmixL, MosmixId = "10637", IssuedAtUtc = IssuedAt },
             _ => throw new ArgumentException($"Unknown scenario {scenario}.", nameof(scenario))
         };

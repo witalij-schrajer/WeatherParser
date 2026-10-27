@@ -239,7 +239,7 @@ public sealed class ForecastRun : IExportRootValidation
 
             if (v.TemperatureC is null && v.PressureHpa is null && v.PressureMmHg is null && v.PressureReference is null &&
                 v.HumidityPercent is null && v.WindDirectionDeg is null && v.WindSpeedKmh is null && v.IlluminanceLux is null &&
-                v.SolarIrradianceWm2 is null && v.RainRateMmH is null)
+                v.SolarIrradianceWm2 is null && v.RainRateMmH is null && v.WindGustKmh is null && v.PrecipitationAmountMm is null)
                 throw Violation("a step has no value");
 
             var anyPressure = v.PressureHpa.HasValue || v.PressureMmHg.HasValue || v.PressureReference.HasValue;
@@ -270,23 +270,10 @@ public sealed class ForecastRun : IExportRootValidation
                     throw Violation("pressure_hpa and pressure_mmhg cannot come from one original value");
             }
 
-            if (v.SolarIrradianceWm2 is not null)
-            {
-                var irr = v.SolarIrradianceWm2;
-                if (irr.PeriodEndUtc <= irr.PeriodStartUtc)
-                    throw Violation("an interval must end after it starts");
-                if (irr.Value < 0)
-                    throw Violation("an interval value is outside its output range");
-            }
-
-            if (v.RainRateMmH is not null)
-            {
-                var rr = v.RainRateMmH;
-                if (rr.PeriodEndUtc <= rr.PeriodStartUtc)
-                    throw Violation("an interval must end after it starts");
-                if (rr.Value < 0)
-                    throw Violation("an interval value is outside its output range");
-            }
+            ValidateInterval(v.SolarIrradianceWm2, IntervalAggregation.Mean);
+            ValidateInterval(v.RainRateMmH, IntervalAggregation.Mean);
+            ValidateInterval(v.WindGustKmh, IntervalAggregation.Maximum);
+            ValidateInterval(v.PrecipitationAmountMm, IntervalAggregation.Sum);
 
             if (v.HumidityPercent is not null && (v.HumidityPercent < 0 || v.HumidityPercent > 100))
                 throw Violation("a value is outside its output range");
@@ -314,6 +301,27 @@ public sealed class ForecastRun : IExportRootValidation
 
             if (v.WindSpeedKmh is not null && v.WindSpeedKmh.Value.Scale != 0)
                 throw Violation("a value does not have the output scale of contract C-39");
+
+            if (v.WindGustKmh is not null && v.WindGustKmh.Value.Scale != 0)
+                throw Violation("a value does not have the output scale of contract C-39");
         }
+    }
+
+    /// <summary>
+    /// Checks one interval member against contract C-79: period order, a value of at least zero and the aggregation of its member (MF-11).
+    /// </summary>
+    private static void ValidateInterval(IntervalValue? interval, IntervalAggregation expected)
+    {
+        if (interval is null)
+            return;
+
+        if (interval.PeriodEndUtc <= interval.PeriodStartUtc)
+            throw Violation("an interval must end after it starts");
+
+        if (interval.Value < 0)
+            throw Violation("an interval value is outside its output range");
+
+        if (interval.Aggregation != expected)
+            throw Violation("an interval has the wrong aggregation for its member");
     }
 }

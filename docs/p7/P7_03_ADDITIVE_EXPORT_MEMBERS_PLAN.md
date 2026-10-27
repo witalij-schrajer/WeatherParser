@@ -1,6 +1,6 @@
 # P7.03 – Additive Export-Contract and Builder Members: Implementation Plan
 
-**Status: planned (2026-10-26); reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6); not started.** Refines the P7.03 row of section 5 and the "Run" and "Export" rows of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: in execution since 2026-10-26 (reconciled with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) in P7.02 S6); executed: S1 to S4 done, Codex 3/0 ([verification record](P7_VERIFICATION.md) section 3).** Refines the P7.03 row of section 5 and the "Run" and "Export" rows of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: extend the forecast part of export contract v1 and the forecast-run builder only additively, as approved in MF-02, MF-09 and MF-11, so that rejected runs keep their omission diagnostics, stale runs carry a wire marker, and the approved forecast-only quantities have their own members — with the frozen member order unchanged and the regenerated schema validating every produced run.
