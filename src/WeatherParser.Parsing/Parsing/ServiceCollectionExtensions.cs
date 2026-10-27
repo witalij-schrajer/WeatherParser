@@ -71,6 +71,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IObservationDatasetBuilder, ObservationDatasetBuilder>();
         services.AddSingleton<IForecastRunBuilder, ForecastRunBuilder>();
         services.AddSingleton<IMosmixForecastDocumentReader, MosmixForecastDocumentReader>();
+        services.AddSingleton<IMosmixUnitScaler, MosmixUnitScaler>();
+        services.AddSingleton<IMosmixElementMapper, MosmixElementMapper>();
         services.AddSingleton<ICoordinateParser, CoordinateParser>();
         services.AddSingleton<ISearchParameterFactory, SearchParameterFactory>();
         services.AddSingleton<IDistanceCalculator, DistanceCalculator>();
