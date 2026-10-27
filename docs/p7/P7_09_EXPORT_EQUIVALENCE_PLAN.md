@@ -1,6 +1,6 @@
 # P7.09 – Export Equivalence and Schema Validation: Implementation Plan
 
-**Status: planned (2026-10-26); reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6); not started.** Refines the P7.09 row of section 5 and the "Export" row of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: executed on 2026-10-28 (reconciled with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) in P7.02 S6; [verification record](P7_VERIFICATION.md) section 9).** Refines the P7.09 row of section 5 and the "Export" row of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: prove that the runs produced by both parsers serialize through the real JSON and XML serializers into equivalent, schema-valid documents that keep every forecast rule of the contract, without another retrieval.
