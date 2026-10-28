@@ -191,6 +191,6 @@ Further rounds after the plan acceptance, on the same pull request:
 - round 8 on `52a0725` (run 40774557409), the commit that recorded the acceptance: 0 findings.
 - round 9 on `f8f3c04` (run 40775125553), the AGENTS.md subsection "Plan generation" (user decision dated 2026-10-28): 1 finding, verified against `RequiredMember<T>.Get` and confirmed: [P2] P8.05 read placeholder values before JSON serialization, but the entity getters throw `InvalidOperationException` for an unassigned required member, which would bypass the promised `MQTT-SERIALIZATION-FAILED`; the P8.05 precedence now serializes (and so validates) before reading placeholder values, maps a read failure to `MQTT-SERIALIZATION-FAILED`, and names tests for unassigned `Source`, `Location` and forecast `Product`; MQ-11 states the order. The fix changes an accepted step plan; the user is informed of it with this round.
 - round 10 on `615248f` (run 40775511275): 0 findings.
-- round 11 on `527db11` (run 40775763102), the commit that recorded round 10: superseded by the following acceptance commit.
+- round 11 on `527db11` (run 40775763102), the commit that recorded round 10: 0 findings.
 
 The user accepted the plan changes of round 9 on 2026-10-28 ("I accept the plan changes."), at the reviewed state `615248f` (the P8.05 failure precedence and the MQ-11 order). The commit recording this acceptance is reviewed once more; that round is recorded in its pull request comment only (AGENTS.md "Plan generation").
