@@ -1,6 +1,6 @@
 # P7.12 – P7 Acceptance Record
 
-**Status (2026-10-28): the evidence audit (section 5) accepts the implementation candidate `a36d15a`; after the PR #11 review fixes (section 11) the candidate is `2f1115b`, with P7.11 S1 to S3 repeated and passed (the NanoPi rerun under the user's new authorization), so the audit decision of section 5 holds for `2f1115b`. The user's acceptance (A7, section 6) is pending; the pull request stays a draft until the user instructs otherwise (A9); P7 is complete only once the user merges pull request #11 (A11).** Plan: [P7_12_ACCEPTANCE_HANDOFF_PLAN.md](P7_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P8_HANDOFF.md](P8_HANDOFF.md).
+**Status (2026-10-28): the evidence audit (section 5) accepts the implementation candidate `a36d15a` and, after the PR #11 review fixes, `2f1115b` (section 11). P7 was accepted by the user on 2026-10-28 on candidate `2f1115b` (A7, section 6); the user marked pull request #11 ready for review on 2026-10-28 (A9, section 8). P7 is complete only once the user merges pull request #11 (A11).** Plan: [P7_12_ACCEPTANCE_HANDOFF_PLAN.md](P7_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P8_HANDOFF.md](P8_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
@@ -54,7 +54,7 @@ Platform evidence for every row: the P7.11 runs on candidate `a36d15a` ([P7.11 r
 
 | Item | Owner |
 |---|---|
-| **P7.06 TDD deviation**: several cases of the step plan's S1 and S3 Red sets (one request without retry, transport failure, the streamed MOSMIX_L size bound, the MOSMIX_L stall, the request-timeout carriage, the registration with independent options) were added after Green without a Red; no Red was manufactured afterwards; the tests pass and are part of every run since ([verification record](P7_VERIFICATION.md) section 6) | User: disposition (accept as recorded, or request a remedy); until then P7.06 reads "implemented and verified; completion pending" |
+| **P7.06 TDD deviation**: several cases of the step plan's S1 and S3 Red sets (one request without retry, transport failure, the streamed MOSMIX_L size bound, the MOSMIX_L stall, the request-timeout carriage, the registration with independent options) were added after Green without a Red; no Red was manufactured afterwards; the tests pass and are part of every run since ([verification record](P7_VERIFICATION.md) section 6) | Disposed by the user's phase acceptance of 2026-10-28 (A7, section 6): covered as recorded, P7.06 complete; the user can still amend this by a separate decision |
 | MOSMIX_S costs one all-stations download per parse (35,966,201 bytes on 2026-10-28; 8,967 ms parse on Windows, 58,710 ms for the synthetic workload on the NanoPi R76S); the compressed archive is held in memory while the member is streamed; the 5-minute deadline is also the request bound (MF-05) | Recorded; external scheduling at most once per hourly run (README) |
 | The first interval period may start before `issued_at` (MF-13, recorded, not corrected) | Recorded decision |
 | The CRC-32 member check runs on the forecast paths only; the P4 MOSMIX_S evidence refresher is unchanged (P7.04) | Recorded; a P4 amendment only by a new user decision |
@@ -76,21 +76,27 @@ Platform evidence for every row: the P7.11 runs on candidate `a36d15a` ([P7.11 r
 - the coverage gate passed with 10228/10231 against 8486/8489 on Windows, in hosted CI and on the NanoPi R76S;
 - every contract decision is approved and implemented, the export contract changes are additive with the regenerated schema recorded, and each limitation has an owner.
 
-This audit decision is not the user's acceptance. The P7.06 deviation is the one item whose disposition the audit leaves to the user explicitly.
+This audit decision is not the user's acceptance. The P7.06 deviation was the one item whose disposition the audit left to the user explicitly; the user's acceptance of 2026-10-28 disposed of it (section 6).
 
 ## 6. User decision (A7)
 
-Pending. The user decides on the evidence of this record, the [P7.11 record](P7_11_INTEGRATED_VERIFICATION.md) and the [verification record](P7_VERIFICATION.md): accept on candidate `a36d15a`, accept with amendments (for example a disposition of the P7.06 deviation), or not accept. The wording and date of the decision will be recorded here.
+**P7 accepted by the user on 2026-10-28 on candidate `2f1115b8b89275b42408a6ee7b61b55c73219440`.**
+
+The user's message in chat (2026-10-28): "I accept P7"
+
+- **Basis**: the user decided after this record (sections 1 to 5 and 11), the [P7.11 record](P7_11_INTEGRATED_VERIFICATION.md) with the rerun on `2f1115b` (section 9) and the summary of the review fixes were presented; the PR head at the time was `52bc1af` (documentation only on top of `2f1115b`).
+- **Scope**: the message names no amendment. The P7.06 TDD deviation (section 4) was presented as open for the user's disposition together with the acceptance request; the message gives no separate disposition, so the deviation is recorded as covered by this phase acceptance as documented (the tests exist and pass, no Red was manufactured), and P7.06 is now recorded as complete. The user can still amend this with a separate decision.
+- **Effect**: the acceptance amends no acceptance criterion; the other limitations of section 4 stay open with their owners. Under the PR workflow, P7 is complete only once the user merges pull request #11 (A11).
 
 ## 7. Status updates (A8)
 
-Status passages read "P7.11 READY on candidate `a36d15a`; not yet accepted or merged — P7.12 follows" since the P7.11 commit `14b7696` (AGENTS.md, README.md, DEVELOPMENT_PLAN.md, PHASE_P1_PLAN.md, PHASE_P7_PLAN.md). After A7 they change to "P7 accepted by the user on <date> on candidate `a36d15a`; complete only once the user merges pull request #11", with the README package check and a `ci-local.ps1` run on the committed revision recorded here.
+Status passages read "P7.11 READY on candidate `a36d15a`; not yet accepted or merged — P7.12 follows" since the P7.11 commit `14b7696`, then named `2f1115b` after the review fixes. After A7 (2026-10-28) they read "P7 accepted by the user on 2026-10-28 on candidate `2f1115b`; complete only once the user merges pull request #11": `AGENTS.md` and `README.md` (phase-status line and status paragraphs), `DEVELOPMENT_PLAN.md`, `PHASE_P1_PLAN.md`, `PHASE_P7_PLAN.md`, `P7_VERIFICATION.md`, the P7.06 and P7.12 step plans (P7.06 now complete, section 6). The README package check on the acceptance text is recorded at the end of section 11 (packed README SHA-256 `abb643bd…`); the `ci-local.ps1` run on the committed revision is recorded there once the acceptance commit exists.
 
 ## 8. Ready for review, review and merge (A9 to A11)
 
-- **A9**: pending the user's instruction; the pull request is a draft.
-- **A10**: review findings will be verified and fixed test-first; a production change makes a new candidate and repeats P7.11 S1 to S3.
-- **A11**: the user merges; the merge SHA and the P8 integration target will be recorded here and in the post-merge documentation pull request, as after P4, P5 and P6, if the user decides so.
+- **A9 (ready for review)**: the user marked pull request #11 ready for review themselves on 2026-10-28 (GitHub `ready_for_review` event at 2026-10-28T17:02:38Z on head `c850883`); hosted CI run [40731882160](https://github.com/witalij-schrajer/WeatherParser/actions/runs/40731882160) succeeded on that head, and run [40740129345](https://github.com/witalij-schrajer/WeatherParser/actions/runs/40740129345) on the head `52bc1af` at the time of A7. No separate ready-for-review step by the orchestrating agent was needed.
+- **A10 (review)**: the review of `c850883` (two findings) is answered by the candidate `2f1115b` and the P7.11 rerun (section 11); further review rounds, if any, are recorded there.
+- **A11 (merge)**: pending; the user merges. The merge SHA and the P8 integration target will be recorded here and, if the user decides so, in a post-merge documentation pull request as after P4, P5 and P6.
 
 ## 9. Authorship and review
 
@@ -116,3 +122,5 @@ Status passages read "P7.11 READY on candidate `a36d15a`; not yet accepted or me
 - README package check after the S3 status change (CONTRIBUTING.md section 4, working tree): packed README (SHA-256 `76fc56104a7743acbdd64c84c12429891618953c4b98366e591e611322ba6e86`), LICENSE and schema identical to the repository files, packed SHA-512 `48rNijg0BXQISbDPNqKPEg4nNbSUAYfUxEkcnu96dU4/nDGAWbAluCRDcDV96Cepo0anPr/c4XeN9o7Ur1zGQA==` equals the restored package, Package tests 47 passed, consumer exit 0; the consumer lock is not committed.
 - Codex review of the S3 records (`p712/codex_s3_r1.md`, outside the repository): 1 finding (P3), confirmed and fixed: the P7.11 record said the bundled branch tip and the target both contained the candidate, but the candidate is reachable only from the branch tip; the target is the comparison base.
 - Codex round 2 of the S3 records (`p712/codex_s3_r2.md`): 0 findings.
+- README package check after the acceptance status change (CONTRIBUTING.md section 4, working tree): packed README (SHA-256 `abb643bd88959c008c817af7c020a8372a482c7fc13d1b15a1c772f76626520c`), LICENSE and schema identical to the repository files, packed SHA-512 `FA9DlOBMuFWI827V/FuZZv/9pmBgQHYniHHPpAWjZPvo/4zp71js+yJhkXOFDPpE0BIIdgNuucXgjx0MpLcEDw==` equals the restored package, Package tests 47 passed, consumer exit 0; the consumer lock is not committed.
+- Codex review of the acceptance documentation (`p712/codex_accept_r1.md`, outside the repository): 2 findings, both confirmed and fixed: [P3] the limitations row and the P8 handoff still called the P7.06 disposition pending (now they reference A7); [P2] A8 pointed to a package check that predated the acceptance text (the check on the final text is the bullet above; the committed-revision `ci-local.ps1` run is recorded below once run). Codex also judged the reading of the deviation as covered by the acceptance reasonable.

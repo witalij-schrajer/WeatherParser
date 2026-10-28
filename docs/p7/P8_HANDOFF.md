@@ -1,6 +1,6 @@
 # P8 Handoff – From the MOSMIX Forecasts to the MQTT Serializer and Library Integration
 
-**Status (2026-10-28): draft, written with the P7.12 acceptance record; it becomes the P8 foundation once the user accepts P7 and merges pull request #11. P8 starts only on a separate instruction of the user.**
+**Status (2026-10-28): written with the P7.12 acceptance record; P7 accepted by the user on 2026-10-28 on candidate `2f1115b`; it becomes the P8 foundation once the user merges pull request #11. P8 starts only on a separate instruction of the user.**
 
 ## 1. Foundation
 
@@ -50,5 +50,5 @@
 ## 7. Open items and limitations
 
 - The limitations of the [P7.12 acceptance record](P7_12_ACCEPTANCE.md) section 4 stay open with their owners; relevant to P8: the product-specific sources for topics, the complete retained run, the registration consequence of the four MOSMIX option types for every consumer, the schema compatibility note (C-105, C-121), the OsthessenWetter redistribution restriction (OW-14).
-- The P7.06 TDD deviation awaits the user's disposition.
+- The P7.06 TDD deviation was disposed of by the user's phase acceptance of 2026-10-28 (covered as recorded, [acceptance record](P7_12_ACCEPTANCE.md) section 6); it stays documented in the verification record section 6.
 - Inherited: the builder and root-validation duplication (equivalence tests guard it), the coarse XML cancellation (C-10), the hosted `debian13-arm64` container is not target evidence, the package is not byte-reproducible, DI under load.

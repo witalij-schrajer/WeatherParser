@@ -1,6 +1,6 @@
 # P7.06 – Retrieval Boundary and Options: Implementation Plan
 
-**Status: implemented and verified on 2026-10-27; completion pending the user's disposition of the TDD deviation recorded in the [verification record](P7_VERIFICATION.md) section 6 (reconciled with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) in P7.02 S6; [verification record](P7_VERIFICATION.md) section 6).** Refines the P7.06 row of section 5 and the "Retrieval" and "Separation" rows of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: complete; implemented and verified on 2026-10-27, the TDD deviation recorded in the [verification record](P7_VERIFICATION.md) section 6 is covered by the user's phase acceptance of 2026-10-28 ([acceptance record](P7_12_ACCEPTANCE.md) section 6) (reconciled with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) in P7.02 S6; [verification record](P7_VERIFICATION.md) section 6).** Refines the P7.06 row of section 5 and the "Retrieval" and "Separation" rows of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: per-product consumer options and one bounded retrieval per parse for each product, with endpoints validated at construction, the MOSMIX_L file URI composed from the configured directory, an additive per-request bound for the shared downloader so that a long MOSMIX_S transfer is limited by its own bound and not by the fixed 30 seconds, and every retrieval failure classified with the MF-14 IDs.
