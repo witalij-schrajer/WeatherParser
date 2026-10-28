@@ -147,7 +147,7 @@ jobs:
           output-file: codex-review/review.md
           permission-profile: ":read-only"
           # The action installs @openai/codex and @openai/codex-responses-api-proxy with this version.
-          codex-version: "0.162.1"
+          codex-version: "0.165.0"
           # No automatic loading of AGENTS.md or AGENTS.override.md from the checked-out head, which the pull request controls;
           # the briefs name the base commit's AGENTS.md as the governing rules.
           codex-args: '["-c", "project_doc_max_bytes=0"]'
