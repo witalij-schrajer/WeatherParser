@@ -21,6 +21,8 @@ using WeatherParser.Parsing.Observations.Osthessen;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using WeatherParser.Parsing.Exceptions;
 using WeatherParser.Parsing.Forecasts.Mosmix;
+using WeatherParser.Parsing.Forecasts;
+using System.Diagnostics;
 
 namespace WeatherParser.Parsing.Tests.Live;
 
@@ -30,6 +32,8 @@ internal static class LiveCheckRunner
     public const string ModeVariable = "WEATHERPARSER_LIVE_CHECK_MODE";
     public const string ObservationMode = "observation";
     public const string OsthessenMode = "osthessen";
+    public const string MosmixLMode = "mosmix-l";
+    public const string MosmixSMode = "mosmix-s";
 
     public static bool IsEnabled(Func<string, string?> environment)
     {
@@ -49,10 +53,22 @@ internal static class LiveCheckRunner
         return IsEnabled(environment) && string.Equals(environment(ModeVariable), OsthessenMode, StringComparison.Ordinal);
     }
 
+    public static bool IsMosmixLMode(Func<string, string?> environment)
+    {
+        ArgumentNullException.ThrowIfNull(environment);
+        return IsEnabled(environment) && string.Equals(environment(ModeVariable), MosmixLMode, StringComparison.Ordinal);
+    }
+
+    public static bool IsMosmixSMode(Func<string, string?> environment)
+    {
+        ArgumentNullException.ThrowIfNull(environment);
+        return IsEnabled(environment) && string.Equals(environment(ModeVariable), MosmixSMode, StringComparison.Ordinal);
+    }
+
     public static bool IsSelectionMode(Func<string, string?> environment)
     {
         ArgumentNullException.ThrowIfNull(environment);
-        return IsEnabled(environment) && !IsObservationMode(environment) && !IsOsthessenMode(environment);
+        return IsEnabled(environment) && !IsObservationMode(environment) && !IsOsthessenMode(environment) && !IsMosmixLMode(environment) && !IsMosmixSMode(environment);
     }
 
     public static async Task<LiveCheckResult?> RunIfEnabledAsync(Func<string, string?> environment, LiveCheckSettings settings, HttpMessageHandler transport, TimeProvider clock, CancellationToken cancellationToken)
@@ -73,6 +89,116 @@ internal static class LiveCheckRunner
         }
 
         return await RunObservationAsync(settings, transport, clock, cancellationToken);
+    }
+
+    public static async Task<LiveMosmixResult?> RunMosmixIfEnabledAsync(Func<string, string?> environment, LiveCheckSettings settings, HttpMessageHandler transport, TimeProvider clock, CancellationToken cancellationToken)
+    {
+        if (!IsMosmixLMode(environment) && !IsMosmixSMode(environment))
+        {
+            return null;
+        }
+
+        var product = IsMosmixLMode(environment) ? MosmixProduct.MosmixL : MosmixProduct.MosmixS;
+        return await RunMosmixAsync(product, settings, transport, clock, cancellationToken);
+    }
+
+    public static async Task<LiveMosmixResult> RunMosmixAsync(MosmixProduct product, LiveCheckSettings settings, HttpMessageHandler transport, TimeProvider clock, CancellationToken cancellationToken)
+    {
+        var budget = new RequestBudgetHandler(LiveCheckSettings.MosmixRequestBudget, transport);
+        var lLogger = new CapturingLogger<MosmixLParser>();
+        var sLogger = new CapturingLogger<MosmixSParser>();
+
+        var services = new ServiceCollection().AddWeatherParsing();
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<ILogger<MosmixLParser>>(lLogger);
+        services.AddSingleton<ILogger<MosmixSParser>>(sLogger);
+        services.AddSingleton(new HttpClient(budget, disposeHandler: false) { Timeout = Timeout.InfiniteTimeSpan });
+        services.AddSingleton<TimeProvider>(clock);
+        services.AddSingleton(settings.Cdc);
+        services.AddSingleton(settings.Mosmix);
+        services.AddSingleton(new DwdObservationOptions());
+        services.AddSingleton(new OsthessenWetterOptions { Stations = { new OsthessenWetterStationMetadata { Name = "Teststation", Latitude = 50.5m, Longitude = 9.7m } } });
+        services.AddSingleton(new OsthessenWetterEndpoints { PageUri = new Uri("https://osthessen.example/messwerte/") });
+        services.AddSingleton(new MosmixLForecastEndpoints { SingleStationsDirectory = settings.MosmixLSingleStationsDirectory });
+        services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = settings.MosmixSAllStationsUri });
+        services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = settings.MosmixLMaxRunAge });
+        services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = settings.MosmixSMaxRunAge });
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+
+        Func<CancellationToken, Task<MosmixParseResult>> parse = product == MosmixProduct.MosmixS ? ct => provider.GetRequiredService<IMosmixSParser>().ParseAsync(settings.MosmixId, ct) : ct => provider.GetRequiredService<IMosmixLParser>().ParseAsync(settings.MosmixId, ct);
+        var json = provider.GetRequiredService<IJsonExportSerializer>();
+        var xml = provider.GetRequiredService<IXmlExportSerializer>();
+
+        MosmixParseResult? parsed = null;
+        string? errorId = null;
+        IReadOnlyList<OmittedForecastValue> omitted = Array.Empty<OmittedForecastValue>();
+        IReadOnlyList<string> notExported = Array.Empty<string>();
+        IReadOnlyList<string> absent = Array.Empty<string>();
+        ForecastRun? run = null;
+        MosmixRunFreshness? freshness = null;
+        TimeSpan? runAge = null;
+
+        var stopwatch = Stopwatch.StartNew();
+        try
+        {
+            parsed = await parse(cancellationToken);
+        }
+        catch (MosmixForecastException exception)
+        {
+            errorId = exception.ErrorId;
+            omitted = exception.OmittedValues;
+            notExported = exception.NotExportedElements;
+        }
+        stopwatch.Stop();
+
+        if (parsed is not null)
+        {
+            run = parsed.Run;
+            freshness = parsed.Freshness;
+            runAge = parsed.RunAge;
+            absent = parsed.AbsentElements;
+            omitted = parsed.OmittedValues;
+            notExported = parsed.NotExportedElements;
+        }
+
+        byte[]? jsonBytes = null;
+        byte[]? xmlBytes = null;
+
+        IReadOnlyList<string> schemaEvents = Array.Empty<string>();
+
+        if (run is not null)
+        {
+            using var jsonStream = new MemoryStream();
+            await json.SerializeAsync(run, jsonStream, cancellationToken);
+            jsonBytes = jsonStream.ToArray();
+
+            using var xmlStream = new MemoryStream();
+            await xml.SerializeAsync(run, xmlStream, cancellationToken);
+            xmlBytes = xmlStream.ToArray();
+
+            schemaEvents = ExportSchemaValidation.Validate(xmlBytes);
+        }
+
+        var peak = Process.GetCurrentProcess().PeakWorkingSet64;
+
+        return new LiveMosmixResult(
+            product,
+            settings.MosmixId,
+            run,
+            freshness,
+            runAge,
+            omitted,
+            notExported,
+            absent,
+            errorId,
+            jsonBytes,
+            xmlBytes,
+            schemaEvents,
+            budget.Requests,
+            product == MosmixProduct.MosmixS ? sLogger.Entries : lLogger.Entries,
+            stopwatch.Elapsed,
+            peak);
     }
 
     public static async Task<LiveCheckResult> RunAsync(LiveCheckSettings settings, HttpMessageHandler transport, TimeProvider clock, CancellationToken cancellationToken)

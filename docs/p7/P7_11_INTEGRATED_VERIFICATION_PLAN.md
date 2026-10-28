@@ -1,6 +1,6 @@
 # P7.11 – Integrated Coverage and Platform Verification: Implementation Plan
 
-**Status: planned (2026-10-26); reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6); not started.** Refines the P7.11 row of section 5 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: in execution since 2026-10-28 (reconciled with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) in P7.02 S6; [record](P7_11_INTEGRATED_VERIFICATION.md)).** Refines the P7.11 row of section 5 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: verify one fixed candidate of the complete P7 implementation through the integrated coverage gate on Windows, hosted CI and the NanoPi R76S, measure the MOSMIX_S stream duration and peak memory on the target, optionally run one authorized live parse per product, and record READY or NOT_READY.

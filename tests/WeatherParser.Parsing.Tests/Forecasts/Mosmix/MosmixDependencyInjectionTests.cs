@@ -184,7 +184,7 @@ public sealed class MosmixDependencyInjectionTests
     [DataRow("MosmixSForecastEndpoints")]
     [DataRow("MosmixLForecastOptions")]
     [DataRow("MosmixSForecastOptions")]
-    [DataTestMethod]
+    [TestMethod]
     public void AddWeatherParsing_MissingMosmixOptions_FailsOnBuild(string missing)
     {
         var services = Services();
@@ -211,7 +211,7 @@ public sealed class MosmixDependencyInjectionTests
 
     [DataRow(false)]
     [DataRow(true)]
-    [DataTestMethod]
+    [TestMethod]
     public void AddWeatherParsing_UnsetMaxRunAge_FailsWithOptionsInvalid(bool mosmixS)
     {
         var services = Services();

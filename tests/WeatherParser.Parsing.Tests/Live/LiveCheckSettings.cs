@@ -13,11 +13,23 @@ internal sealed record LiveCheckSettings(CdcCatalogEndpoints Cdc, MosmixCatalogE
 
     public const int OsthessenRequestBudget = 1; // One request for the measurement page (contract OW-15).
 
+    public const int MosmixRequestBudget = 1; // One request per product and run (contract MF-17).
+
     public string ObservationStationId { get; init; } = "01526"; // Fulda-Horas, the nearest CDC station of the P4 live check.
 
     public Uri OsthessenPageUri { get; init; } = new("https://osthessen-wetter.de/messwerte/");
 
     public string OsthessenPattern { get; init; } = "*";
+
+    public string MosmixId { get; init; } = "10637";
+
+    public Uri MosmixLSingleStationsDirectory { get; init; } = new("https://opendata.dwd.de/weather/local_forecasts/mos/MOSMIX_L/single_stations/");
+
+    public Uri MosmixSAllStationsUri { get; init; } = new("https://opendata.dwd.de/weather/local_forecasts/mos/MOSMIX_S/all_stations/kml/MOSMIX_S_LATEST_240.kmz");
+
+    public TimeSpan MosmixLMaxRunAge { get; init; } = TimeSpan.FromHours(8);
+
+    public TimeSpan MosmixSMaxRunAge { get; init; } = TimeSpan.FromHours(2);
 
     public static LiveCheckSettings Dwd(string evidenceCacheDirectory)
     {
