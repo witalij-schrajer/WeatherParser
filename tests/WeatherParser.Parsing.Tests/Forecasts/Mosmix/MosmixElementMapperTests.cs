@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Forecasts;
 using WeatherParser.Parsing.Forecasts.Mosmix;
@@ -31,6 +32,19 @@ public class MosmixElementMapperTests
             MosmixId = "10637",
             IssuedAtUtc = Utc(15),
             Timeline = new[] { Utc(16), Utc(17), Utc(18) },
+            LocationName = "BEISPIELSTADT",
+            Latitude = 50.5m,
+            Longitude = 9.6m,
+            AltitudeM = 250.0m,
+            Series = series
+        };
+
+    private static MosmixForecastDocument DayOneDocument(DateTime step, params MosmixForecastSeries[] series) =>
+        new()
+        {
+            MosmixId = "10637",
+            IssuedAtUtc = new DateTime(1, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            Timeline = new[] { step },
             LocationName = "BEISPIELSTADT",
             Latitude = 50.5m,
             Longitude = 9.6m,
@@ -327,5 +341,60 @@ public class MosmixElementMapperTests
         // Arrange / Act / Assert
         Action act = () => new MosmixElementMapper(null!);
         act.Should().Throw<ArgumentNullException>();
+    }
+
+    [TestMethod]
+    [DataRow("FX1")]
+    [DataRow("Rad1h")]
+    [DataRow("RR1c")]
+    public void Map_IntervalElementBelowOneHourOnDayOne_FailsFormatInvalid(string name)
+    {
+        // Arrange
+        var document = DayOneDocument(new DateTime(1, 1, 1, 0, 30, 0, DateTimeKind.Utc), Series(name, "1.5"));
+        Action act = () => Map(document);
+
+        // Act / Assert
+        act.Should().Throw<MosmixForecastFormatException>().Which.ErrorId.Should().Be(MosmixForecastErrorIds.FormatInvalid);
+    }
+
+    [TestMethod]
+    public void Map_IntervalElementBelowOneHourOnDayOne_MissingToken_FailsFormatInvalid()
+    {
+        // Arrange
+        var document = DayOneDocument(new DateTime(1, 1, 1, 0, 30, 0, DateTimeKind.Utc), Series("Rad1h", (string?)null));
+        Action act = () => Map(document);
+
+        // Act / Assert
+        act.Should().Throw<MosmixForecastFormatException>().Which.ErrorId.Should().Be(MosmixForecastErrorIds.FormatInvalid);
+    }
+
+    [TestMethod]
+    public void Map_IntervalElementExactlyOneHourOnDayOne_PeriodStartsAtMidnight()
+    {
+        // Arrange
+        var document = DayOneDocument(new DateTime(1, 1, 1, 1, 0, 0, DateTimeKind.Utc), Series("Rad1h", "1.5"));
+
+        // Act
+        var result = Map(document);
+
+        // Assert
+        var series = SeriesOf(result, QuantityKind.RadiationEnergy);
+        series.Periods!.Select(p => (p!.StartUtc, p.EndUtc)).Should().Equal(
+            (new DateTime(1, 1, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(1, 1, 1, 1, 0, 0, DateTimeKind.Utc)));
+    }
+
+    [TestMethod]
+    public void Map_PointElementBelowOneHourOnDayOne_Succeeds()
+    {
+        // Arrange
+        var document = DayOneDocument(new DateTime(1, 1, 1, 0, 30, 0, DateTimeKind.Utc), Series("TTT", "283.15"));
+
+        // Act
+        var result = Map(document);
+
+        // Assert
+        var series = SeriesOf(result, QuantityKind.Temperature);
+        series.Values.Should().Equal(10.0);
+        series.Periods.Should().BeNull();
     }
 }

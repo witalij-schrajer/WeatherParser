@@ -1,5 +1,6 @@
 namespace WeatherParser.Parsing.Forecasts.Mosmix;
 
+using System;
 using System.Globalization;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Forecasts;
@@ -58,8 +59,15 @@ public sealed class MosmixElementMapper : IMosmixElementMapper
                     for (var i = 0; i < document.Timeline.Count; i++)
                     {
                         var t = document.Timeline[i];
-                        var h = row.PeriodHours!.Value;
-                        periods[i] = new AveragingPeriod(t.AddHours(-h), t);
+                        var period = TimeSpan.FromHours(row.PeriodHours!.Value);
+
+                        // Contract MF-13: the period [valid_at - period, valid_at] must be representable; the readers accept any valid UTC instant, so guard the subtraction instead of leaking ArgumentOutOfRangeException.
+                        if (t.Ticks < period.Ticks)
+                        {
+                            throw new MosmixForecastFormatException(MosmixForecastErrorIds.FormatInvalid, $"The {row.ElementName} period of the time step at {t:yyyy-MM-dd'T'HH:mm:ss} UTC starts before the supported date range (contract MF-13).");
+                        }
+
+                        periods[i] = new AveragingPeriod(t - period, t);
                     }
                 }
 

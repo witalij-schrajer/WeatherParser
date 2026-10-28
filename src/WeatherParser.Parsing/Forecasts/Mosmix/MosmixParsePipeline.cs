@@ -99,7 +99,10 @@ public sealed class MosmixParsePipeline : IMosmixParsePipeline
                 LogOmission(omitted, mosmixId, retrievedAt, request.Product, request.SanitizedEndpoint, request.Logger);
             }
 
-            return new MosmixParseResult(built.Run, built.OmittedValues, mapping.NotExportedElements, mapping.AbsentElements, freshness, runAge);
+            // Contract MF-14: the final omission warnings may have run a slow or interrupting logging provider; check once more before the successful return.
+            var result = new MosmixParseResult(built.Run, built.OmittedValues, mapping.NotExportedElements, mapping.AbsentElements, freshness, runAge);
+            Checkpoint(cancellationToken, deadline, request.Product, request.SanitizedEndpoint, request.Logger);
+            return result;
         }
         catch (Exception exception) when (Reclassify(exception, cancellationToken, deadline))
         {

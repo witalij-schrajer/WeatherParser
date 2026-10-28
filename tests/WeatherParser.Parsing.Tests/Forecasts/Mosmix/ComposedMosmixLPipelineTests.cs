@@ -235,6 +235,30 @@ public sealed class ComposedMosmixLPipelineTests
         _logger.Entries.Should().NotContain(e => e.Message.Contains("secret"));
     }
 
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task ParseAsync_IntervalElementBelowOneHourOnDayOne_FailsFormatInvalid()
+    {
+        // The readers accept any valid UTC instant; an interval element whose one-hour period would start before 0001-01-01 must fail as a controlled format error (MF-13), never as an unhandled exception.
+        using var provider = Provider();
+        var parser = provider.GetRequiredService<IMosmixLParser>();
+        var productDefinition = MosmixForecastKmzBuilder.ProductDefinition(
+            issueTime: "0001-01-01T00:00:00.000Z",
+            timeStepsXml: "          <dwd:TimeStep>0001-01-01T00:30:00.000Z</dwd:TimeStep>\n");
+        var kml = MosmixForecastKmzBuilder.Document(
+            productDefinition,
+            MosmixForecastKmzBuilder.Placemark("10637", "BEISPIELSTADT", "9.6,50.5,250.0", MosmixForecastKmzBuilder.Forecast("Rad1h", "1.5")));
+        Respond(MosmixForecastKmzBuilder.Kmz(kml));
+
+        Func<Task> act = () => parser.ParseAsync("10637", CancellationToken.None);
+
+        var exception = (await act.Should().ThrowAsync<MosmixForecastException>()).Which;
+        exception.ErrorId.Should().Be("MOSMIX-FORMAT-INVALID");
+        exception.Product.Should().Be(MosmixProduct.MosmixL);
+        _requests.Should().HaveCount(1);
+        _logger.Count("MOSMIX-FORMAT-INVALID").Should().Be(1);
+    }
+
     private sealed class StallStream : Stream
     {
         public override bool CanRead => true;
