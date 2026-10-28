@@ -66,7 +66,7 @@ Candidate `4373399b278e65097452fe18d7029fee5461bdb1` against PR base `8d8079a423
 
 ## P7 scope (P7.11, 2026-10-28)
 
-Candidate `a36d15a538e6ddc9cdf01d47b2ff45073a36cd95` against PR base `8009f1c413ead6b150f2c71bec8f669e81be5558` (pull request #11). Details are in the [P7.11 record](p7/P7_11_INTEGRATED_VERIFICATION.md), sections 3 to 7.
+Candidate `a36d15a538e6ddc9cdf01d47b2ff45073a36cd95` against PR base `8009f1c413ead6b150f2c71bec8f669e81be5558` (pull request #11); after the PR #11 review fixes S1 to S3 were repeated on candidate `2f1115b8b89275b42408a6ee7b61b55c73219440` with the same outcomes (tests 2946 passed, block coverage 10246/10249; hosted run 40736417671; NanoPi resource check 51,505 ms and 142,491,648 bytes). Details are in the [P7.11 record](p7/P7_11_INTEGRATED_VERIFICATION.md), sections 3 to 7 and 9.
 
 | Platform | Evidence class | Result |
 |---|---|---|
