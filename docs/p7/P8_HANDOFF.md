@@ -1,12 +1,12 @@
 # P8 Handoff – From the MOSMIX Forecasts to the MQTT Serializer and Library Integration
 
-**Status (2026-10-28): written with the P7.12 acceptance record; P7 accepted by the user on 2026-10-28 on candidate `2f1115b`; it becomes the P8 foundation once the user merges pull request #11. P8 starts only on a separate instruction of the user.**
+**Status (2026-10-28): in effect. P7 accepted by the user on 2026-10-28 on candidate `2f1115b` and pull request #11 merged into `develop` the same day (merge commit `20b2ef0`); the integration target for P8 is `20b2ef0` or its documentation-only successor after the post-merge documentation pull request. P8 starts only on a separate instruction of the user.**
 
 ## 1. Foundation
 
-- Integration target after the merge: the `develop` merge commit of pull request #11 (recorded in the [P7.12 acceptance record](P7_12_ACCEPTANCE.md) section 8 once the user has merged). Until then the P7 candidate `a36d15a` on branch `features/develop/P7` is the reference ([P7.11 record](P7_11_INTEGRATED_VERIFICATION.md)).
+- Integration target: the `develop` merge commit `20b2ef0a62e8a2a85c7f1a28b7428cb45b8dbeec` of pull request #11 (2026-10-28, [P7.12 acceptance record](P7_12_ACCEPTANCE.md) section 8) or its documentation-only successor after the post-merge documentation pull request; the accepted implementation candidate is `2f1115b` ([P7.11 record](P7_11_INTEGRATED_VERIFICATION.md) section 9).
 - Platform: .NET SDK 10.0.402 (`global.json`), `net10.0`; verified on Windows x64, in hosted CI and on the NanoPi R76S (Debian 13.3, `linux-arm64`), [compatibility matrix](../COMPATIBILITY.md) "P7 scope".
-- Coverage: the gate on the P7 candidate is 10228/10231 blocks against the P7 baseline 8486/8489; the P8 baseline is remeasured on the merged target in P8.01, as every phase does.
+- Coverage: the gate on the accepted P7 candidate `2f1115b` is 10246/10249 blocks against the P7 baseline 8486/8489; the P8 baseline is remeasured on the merged target in P8.01, as every phase does.
 - Contracts in force: the [P2 export contract](../p2/P2_EXPORT_CONTRACT.md) with C-120 to C-127 (schema SHA-256 `6288f1a7dad2909477f9e104621bd8fd04706e09e115742832efba8e2628a0d2`), the [P4 selection contract](../p4/P4_SELECTION_CONTRACT.md), the [P5 observation contract](../p5/P5_OBSERVATION_CONTRACT.md), the [P6 OsthessenWetter contract](../p6/P6_OSTHESSEN_CONTRACT.md) and the [P7 forecast contract](P7_FORECAST_CONTRACT.md) MF-01 to MF-18.
 
 ## 2. What P7 provides

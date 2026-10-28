@@ -1,6 +1,6 @@
 # Phase P7 – MOSMIX Forecasts: Implementation Plan
 
-**Status: in execution since 2026-10-26 (P7.01 complete, READY; P7.02 complete: contract MF-01 to MF-18 approved by the user on 2026-10-26, plans reconciled; P7.03 complete: additive export members C-120 to C-127, schema regenerated; P7.04 complete: secure forecast reader; P7.05 complete: element mapping; P7.06 complete: retrieval boundary (its recorded TDD deviation is covered by the phase acceptance of 2026-10-28); P7.07 complete: MOSMIX_L parser; P7.08 complete: MOSMIX_S parser and product independence; P7.09 complete: export equivalence; P7.10 complete: DI, README and package — the MOSMIX_L and MOSMIX_S parsers are implemented in the library; P7.11 complete on 2026-10-28 with outcome READY on candidate `a36d15a` on Windows, hosted CI and the NanoPi R76S, with one authorized live parse per product ([record](docs/p7/P7_11_INTEGRATED_VERIFICATION.md)); P7.12 (acceptance and P8 handoff) in execution since 2026-10-28: evidence audit ACCEPTED ([acceptance record](docs/p7/P7_12_ACCEPTANCE.md), [P8 handoff](docs/p7/P8_HANDOFF.md)); the PR #11 review fixes made `2f1115b` the candidate, with P7.11 S1 to S3 repeated and READY (the NanoPi rerun authorized by the user); P7 accepted by the user on 2026-10-28 on candidate `2f1115b`; complete only once the user merges pull request #11); planned on 2026-10-26. This phase plan was written on the user's instruction of 2026-10-26 on the post-merge documentation branch `features/develop/P6-post-merge` (pull request #10), Codex-reviewed to 0 findings in three rounds and reviewed by the user on pull request #10 (two findings fixed, section 10); the user accepted the phase plan on 2026-10-26. The step plans P7.01 to P7.12 were written on the user's instruction of 2026-10-26 (section 5) and Codex-reviewed to 0 findings in five rounds (section 10). The user accepted the P7 plans (this phase plan and the step plans P7.01 to P7.12) on 2026-10-26 after the two pull-request review rounds on pull request #10 (section 10). P7 started on 2026-10-26 on the user's instruction on branch `features/develop/P7` from `develop` `8009f1c` ([P7 handoff](docs/p6/P7_HANDOFF.md)); P7.01 (foundation check) complete with outcome READY ([record](docs/p7/P7_01_FOUNDATION_CHECK.md)). The rows of section 3 are planning proposals; the contract approved in P7.02 is binding and wins where it refines them.** This plan refines the P7 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P7 handoff](docs/p6/P7_HANDOFF.md). Planning inputs: the P2 forecast-run decisions C-66 to C-81 ([P2 export contract](docs/p2/P2_EXPORT_CONTRACT.md) section 11), the MOSMIX rows SC-04, SC-05, SC-09, SC-12, SC-18 and SC-20 to SC-23 and the source records of sections 2 and 3 of the [P4 selection contract](docs/p4/P4_SELECTION_CONTRACT.md) (MOSMIX files and the binding extension schema as retrieved on 2026-10-21), and the repository code on `develop` after the P6 merge `de9d4ba`.
+**Status: complete on 2026-10-28 (P7.01 complete, READY; P7.02 complete: contract MF-01 to MF-18 approved by the user on 2026-10-26, plans reconciled; P7.03 complete: additive export members C-120 to C-127, schema regenerated; P7.04 complete: secure forecast reader; P7.05 complete: element mapping; P7.06 complete: retrieval boundary (its recorded TDD deviation is covered by the phase acceptance of 2026-10-28); P7.07 complete: MOSMIX_L parser; P7.08 complete: MOSMIX_S parser and product independence; P7.09 complete: export equivalence; P7.10 complete: DI, README and package — the MOSMIX_L and MOSMIX_S parsers are implemented in the library; P7.11 complete on 2026-10-28 with outcome READY on candidate `a36d15a` on Windows, hosted CI and the NanoPi R76S, with one authorized live parse per product ([record](docs/p7/P7_11_INTEGRATED_VERIFICATION.md)); P7.12 (acceptance and P8 handoff) complete on 2026-10-28: evidence audit ACCEPTED ([acceptance record](docs/p7/P7_12_ACCEPTANCE.md), [P8 handoff](docs/p7/P8_HANDOFF.md)); the PR #11 review fixes made `2f1115b` the candidate, with P7.11 S1 to S3 repeated and READY (the NanoPi rerun authorized by the user); P7 accepted by the user on 2026-10-28 on candidate `2f1115b`; it is complete: pull request #11 merged into `develop` on 2026-10-28 (merge commit `20b2ef0`); P8 starts only on a separate instruction); planned on 2026-10-26. This phase plan was written on the user's instruction of 2026-10-26 on the post-merge documentation branch `features/develop/P6-post-merge` (pull request #10), Codex-reviewed to 0 findings in three rounds and reviewed by the user on pull request #10 (two findings fixed, section 10); the user accepted the phase plan on 2026-10-26. The step plans P7.01 to P7.12 were written on the user's instruction of 2026-10-26 (section 5) and Codex-reviewed to 0 findings in five rounds (section 10). The user accepted the P7 plans (this phase plan and the step plans P7.01 to P7.12) on 2026-10-26 after the two pull-request review rounds on pull request #10 (section 10). P7 started on 2026-10-26 on the user's instruction on branch `features/develop/P7` from `develop` `8009f1c` ([P7 handoff](docs/p6/P7_HANDOFF.md)); P7.01 (foundation check) complete with outcome READY ([record](docs/p7/P7_01_FOUNDATION_CHECK.md)). The rows of section 3 are planning proposals; the contract approved in P7.02 is binding and wins where it refines them.** This plan refines the P7 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P7 handoff](docs/p6/P7_HANDOFF.md). Planning inputs: the P2 forecast-run decisions C-66 to C-81 ([P2 export contract](docs/p2/P2_EXPORT_CONTRACT.md) section 11), the MOSMIX rows SC-04, SC-05, SC-09, SC-12, SC-18 and SC-20 to SC-23 and the source records of sections 2 and 3 of the [P4 selection contract](docs/p4/P4_SELECTION_CONTRACT.md) (MOSMIX files and the binding extension schema as retrieved on 2026-10-21), and the repository code on `develop` after the P6 merge `de9d4ba`.
 
 ## 1. First step: check P6 completion and adjust this plan
 
@@ -182,22 +182,22 @@ New records under `docs/p7/`; production code under `src/WeatherParser.Parsing/F
 
 ## 9. P7 acceptance and P8 handoff checklist
 
-- [ ] P7.01 foundation check recorded
-- [ ] MOSMIX forecast contract approved by the user after Codex review
-- [ ] every mandatory T-P7 row has passing tests and recorded evidence; the optional live check T-P7-22 is either passed or recorded as skipped with its limitation
-- [ ] both parsers return complete runs with separate `issued_at`, `retrieved_at` and `valid_at`, never `measured_at` (DEVELOPMENT_PLAN.md P7 acceptance, through the library API)
-- [ ] wrong IDs, stale runs, corrupt structure and missing parameters tested (DEVELOPMENT_PLAN.md P7 acceptance)
-- [ ] both exports equivalent and valid against the v1 schema
-- [ ] no export contract change without a recorded additive decision
-- [ ] the two products independent in API, options, registration and state
-- [ ] DI and same-run package consumption proven
-- [ ] coverage gate passed on Windows and the NanoPi R76S, platform outcomes separate
-- [ ] source conditions and attribution documented
-- [ ] limitations with owners
-- [ ] user acceptance recorded
-- [ ] status documents consistent
-- [ ] pull request ready for review, review findings resolved, merged into `develop` by the user
-- [ ] P8 handoff written
+- [x] P7.01 foundation check recorded ([record](docs/p7/P7_01_FOUNDATION_CHECK.md))
+- [x] MOSMIX forecast contract approved by the user after Codex review (2026-10-26)
+- [x] every mandatory T-P7 row has passing tests and recorded evidence; the live check T-P7-22 passed once per product ([acceptance record](docs/p7/P7_12_ACCEPTANCE.md) section 2)
+- [x] both parsers return complete runs with separate `issued_at`, `retrieved_at` and `valid_at`, never `measured_at` (T-P7-12, T-P7-14)
+- [x] wrong IDs, stale runs, corrupt structure and missing parameters tested (T-P7-01, T-P7-04, T-P7-05, T-P7-11, T-P7-13)
+- [x] both exports equivalent and valid against the v1 schema (T-P7-16)
+- [x] no export contract change without a recorded additive decision (C-120 to C-127)
+- [x] the two products independent in API, options, registration and state (T-P7-15)
+- [x] DI and same-run package consumption proven (T-P7-18)
+- [x] coverage gate passed on Windows and the NanoPi R76S, platform outcomes separate (P7.11 on `a36d15a` and `2f1115b`)
+- [x] source conditions and attribution documented (README, MF-16)
+- [x] limitations with owners (acceptance record section 4)
+- [x] user acceptance recorded (2026-10-28, candidate `2f1115b`)
+- [x] status documents consistent (A8)
+- [x] pull request ready for review, review findings resolved, merged into `develop` by the user (merge commit `20b2ef0`, 2026-10-28)
+- [x] P8 handoff written ([P8 handoff](docs/p7/P8_HANDOFF.md))
 
 ## 10. Plan authorship and review
 
