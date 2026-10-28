@@ -1,12 +1,12 @@
 # P7.12 – P7 Acceptance Record
 
-**Status (2026-10-28): the evidence audit (section 5) accepts the implementation candidate `a36d15a`. The user's acceptance (A7, section 6) is pending; the pull request stays a draft until the user instructs otherwise (A9); P7 is complete only once the user merges pull request #11 (A11).** Plan: [P7_12_ACCEPTANCE_HANDOFF_PLAN.md](P7_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P8_HANDOFF.md](P8_HANDOFF.md).
+**Status (2026-10-28): the evidence audit (section 5) accepts the implementation candidate `a36d15a`; after the PR #11 review fixes (section 11) the candidate is `2f1115b`, with P7.11 S1 and S2 repeated and passed and the S3 NanoPi rerun awaiting the user's new authorization. The user's acceptance (A7, section 6) is pending; the pull request stays a draft until the user instructs otherwise (A9); P7 is complete only once the user merges pull request #11 (A11).** Plan: [P7_12_ACCEPTANCE_HANDOFF_PLAN.md](P7_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P8_HANDOFF.md](P8_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
 | Item | Value |
 |---|---|
-| Implementation candidate | `a36d15a538e6ddc9cdf01d47b2ff45073a36cd95` (`a36d15a`), branch `features/develop/P7`: the P7.11 S0 commit (test-support code only; the library is unchanged since the P7.08 commit `0c3d39e`) |
+| Implementation candidate | first `a36d15a538e6ddc9cdf01d47b2ff45073a36cd95` (`a36d15a`), branch `features/develop/P7`: the P7.11 S0 commit (test-support code only; the library unchanged since the P7.08 commit `0c3d39e`); after the PR #11 review fixes `2f1115b8b89275b42408a6ee7b61b55c73219440` (`2f1115b`, section 11), which replaces it |
 | Pull request | [#11](https://github.com/witalij-schrajer/WeatherParser/pull/11) into `develop`, draft until A9 (section 8) |
 | Integration target | PR base `8009f1c413ead6b150f2c71bec8f669e81be5558`; checked on 2026-10-28 (`gh pr view 11` `baseRefOid` and `git rev-parse origin/develop` after `git fetch`): unchanged since P7.01 |
 | Head before this record | `14b7696` (the P7.11 record and status passages, documentation only on top of `a36d15a`); this record and the P8 handoff change documentation only (no production code, tests, build, CI, package or schema files) |
@@ -110,3 +110,5 @@ Status passages read "P7.11 READY on candidate `a36d15a`; not yet accepted or me
 - Green (qwen, one file each, applied without correction): the pipeline constructs the result, runs `Checkpoint` and then returns (four lines); the mapper compares `t.Ticks` with the period ticks and throws `MosmixForecastFormatException` with `MosmixForecastErrorIds.FormatInvalid` naming the element and the time step, then subtracts the `TimeSpan` (the pipeline already translates and logs that exception).
 - Checks: Release build 0 errors and 0 warnings; Parsing 2946 of 2953 passed (the 7 opt-in tests not executed); no other test changed; pre-commit coverage gate 10246/10249 (the guard's new blocks covered on both sides) above the baseline 8486/8489 (TestResults/p7-precommit-20261028T172916Z, gitignored).
 - Codex five-angle review of the fixes (`p712/codex_fix_r1.md`, outside the repository): 0 findings.
+- Rerun of P7.11 on `2f1115b`: S1 Windows ci-local exit 0 and S2 hosted CI run 40736417671 success on all three jobs, both with 2946 Parsing tests and the gate 10246/10249 ([P7.11 record](P7_11_INTEGRATED_VERIFICATION.md) section 9); the S3 NanoPi R76S rerun awaits the user's new authorization. The two review threads were answered with the fix commit and this evidence.
+- README package check after the status change (CONTRIBUTING.md section 4, working tree): packed README (SHA-256 `da5fa7c1d859a16faa844be9eb4fba58648e676e2e3781bfd55d2902e12413f5`), LICENSE and schema identical to the repository files, packed SHA-512 `pENTd3+8bjH4B5TCH1xYwf78e1KJ2LDggnsLvC5U3PvUEm7cZfQQ9CLb3DY+UZzxlnIbWswUjzrm9Nw4X1lOCQ==` equals the restored package, Package tests 47 passed, consumer exit 0; the consumer lock is not committed.
