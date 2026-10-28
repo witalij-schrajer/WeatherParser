@@ -38,6 +38,7 @@ No slice changes behavior, so there is no Red step.
 - Write MQ-01 to MQ-15 from section 3 of the phase plan, refined by S1; every number traceable to a specification section; every planning name marked (Proposed) or fixed.
 
 ### S3 Codex review loop
+- Since the user decision dated 2026-10-28 (AGENTS.md "Phase implementation"): the loop runs through the automatic Codex review of pull request #14 (marked ready for review; draft while fixing; repeated until a round reports 0 findings), and each round is recorded in the contract section 6; the user is asked for the approval only after the 0-finding round; after the approval the pull request returns to draft for P8.03 onwards.
 - Five-angle read-only review of the draft; each finding verified against the specifications, the requirements and the code; confirmed findings fixed by the orchestrating agent; rounds and counts recorded in the contract until 0 findings or the tenth round (then the remaining findings go to the user with the agent's assessment).
 
 ### S4 User approval
