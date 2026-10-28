@@ -64,6 +64,19 @@ Candidate `4373399b278e65097452fe18d7029fee5461bdb1` against PR base `8d8079a423
 | GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40284717931 on `12e7205`; run 40255069498 on `4373399`) | All jobs succeeded; recorded separately and not counted as target evidence |
 | Windows x64 (developer machine), live OsthessenWetter page | Explicitly enabled live check (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=osthessen`), one authorized run on candidate `4373399`, not repeated for `12e7205` | 1 request of a budget of 1, HTTP 200; 20 stations matched, 16 datasets, 4 offline station failures; every dataset schema-valid, JSON and XML equivalent; placeholder coordinates; snapshot of 2026-10-26, not repeated (OW-15) |
 
+## P7 scope (P7.11, 2026-10-28)
+
+Candidate `a36d15a538e6ddc9cdf01d47b2ff45073a36cd95` against PR base `8009f1c413ead6b150f2c71bec8f669e81be5558` (pull request #11). Details are in the [P7.11 record](p7/P7_11_INTEGRATED_VERIFICATION.md), sections 3 to 7.
+
+| Platform | Evidence class | Result |
+|---|---|---|
+| Windows x64 (developer machine), SDK 10.0.402 | Local two-pass `ci-local.ps1` | Exit 0; tests 2935 passed (7 opt-in live and resource tests not executed), 99, 56, 46, consumer 47; block coverage 10228/10231 against baseline 8486/8489; gate passed |
+| Windows x64 (developer machine) | Offline MOSMIX_S resource check (synthetic file with the recorded 5648 placemarks × 40 elements × 240 steps, measured alone in a fresh process) | Duration 6,900 ms; process peak 117,379,072 bytes (informative; the readiness figure is the target measurement) |
+| NanoPi R76S, Debian 13.3 (trixie), `linux-arm64`, SDK 10.0.402, ICU 76 | Class B target run (CONTRIBUTING.md section 7), authorized by the user | Exit 0; same tests, outcomes, block counters and gate result as Windows |
+| NanoPi R76S | Offline MOSMIX_S resource check on the target (MF-05, MF-07 readiness) | Duration 58,710 ms of the 300,000 ms deadline; process peak 143,413,248 bytes of the 268,435,456-byte threshold; within both |
+| GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40615010706 on `a36d15a`) | All jobs succeeded; recorded separately and not counted as target evidence |
+| Windows x64 (developer machine), live DWD MOSMIX files | Explicitly enabled live checks (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=mosmix-l` and `mosmix-s`), one authorized run per product on candidate `a36d15a` | MOSMIX_L: 1 request of a budget of 1, HTTP 200, 247 steps, fresh, schema-valid, no omissions; MOSMIX_S: 1 request, HTTP 200, 35,966,201 bytes, 240 steps, fresh, schema-valid, no omissions, parse 8,967 ms; forecast values not recorded (MF-17) |
+
 ## Limits
 
 - Class B proves the package foundation on ARM64 at P1 scope only, not release readiness (P9).
@@ -71,5 +84,6 @@ Candidate `4373399b278e65097452fe18d7029fee5461bdb1` against PR base `8d8079a423
 - P4 scope (coordinates, geodesy, CDC and MOSMIX catalogs and availability, the retrieval boundary with mocked HTTP, the MOSMIX_S evidence cache, selection services, DI and package consumption) is verified on the target by P4.11; live retrieval was checked once on Windows only, not on the target; CLI and MQTT are not yet covered (later phases).
 - P5 scope (DWD station resolution, observation file reading, quantity mapping, the observation retrieval boundary with mocked HTTP, the parser service, export equivalence, DI and package consumption) is verified on the target by P5.10; the live observation parse was checked once on Windows only, not on the target; CLI and MQTT are not yet covered (later phases).
 - P6 scope (station name patterns, OsthessenWetter page reading, quantity mapping, identity and times, the page retrieval boundary with mocked HTTP, the parser service, export equivalence, DI and package consumption) is verified on the target by P6.10; the live check ran once on Windows only, not on the target; production use of OsthessenWetter values is open until the source conditions are clarified (OW-14); CLI and MQTT are not yet covered (later phases).
+- P7 scope (MOSMIX forecast reading with the secure KML/KMZ reader, element mapping, the retrieval boundary with mocked HTTP, the MOSMIX_L and MOSMIX_S parser services, product independence, export equivalence, DI and package consumption) is verified on the target by P7.11, including the MOSMIX_S duration and peak-memory measurement on the target; the live parses ran once per product on Windows only, not on the target; CLI and MQTT are not yet covered (later phases).
 - Windows-versus-ARM64 block counters are descriptive only, gating always uses a baseline measured on the same platform.
 - Emulation or x64 results never count as ARM64 evidence.

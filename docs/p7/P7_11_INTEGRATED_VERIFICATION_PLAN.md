@@ -1,6 +1,6 @@
 # P7.11 – Integrated Coverage and Platform Verification: Implementation Plan
 
-**Status: in execution since 2026-10-28 (reconciled with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) in P7.02 S6; [record](P7_11_INTEGRATED_VERIFICATION.md)).** Refines the P7.11 row of section 5 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: complete on 2026-10-28, outcome READY on candidate `a36d15a` (reconciled with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) in P7.02 S6; [record](P7_11_INTEGRATED_VERIFICATION.md)).** Refines the P7.11 row of section 5 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: verify one fixed candidate of the complete P7 implementation through the integrated coverage gate on Windows, hosted CI and the NanoPi R76S, measure the MOSMIX_S stream duration and peak memory on the target, optionally run one authorized live parse per product, and record READY or NOT_READY.
@@ -62,8 +62,8 @@ Out of scope with owner: acceptance → P7.12; release hardware acceptance → P
 - (c) A production change after S1 makes a new candidate and repeats S1 to S3
 
 ## 9. Acceptance Criteria
-- [ ] S0 test-first and reviewed; candidate fixed afterwards
-- [ ] Windows, hosted CI and NanoPi runs passed with recorded evidence
-- [ ] MOSMIX_S duration and peak memory within the approved values on the target, or NOT_READY reported
-- [ ] Live parses passed or recorded as skipped
-- [ ] Outcome recorded; Codex 0 findings or reported
+- [x] S0 test-first and reviewed; candidate fixed afterwards (`a36d15a`)
+- [x] Windows, hosted CI and NanoPi runs passed with recorded evidence
+- [x] MOSMIX_S duration and peak memory within the approved values on the target (58,710 ms; 143,413,248 bytes)
+- [x] Live parses passed (one per product, authorized)
+- [x] Outcome recorded (READY); Codex review of the record in section 8 of the record
