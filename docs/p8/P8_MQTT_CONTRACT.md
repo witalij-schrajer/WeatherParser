@@ -1,6 +1,6 @@
 # WeatherParser MQTT Message Contract (P8)
 
-**Status (2026-10-28): draft for the user's decision (P8.02 S2 and S3); not approved. No row is binding until the user approves it (section 1).** Plan: [P8_02_PROTOCOL_FACTS_AND_CONTRACT_PLAN.md](P8_02_PROTOCOL_FACTS_AND_CONTRACT_PLAN.md); phase plan [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md) section 3.
+**Status (2026-10-28): approved by the user on 2026-10-28 (section 1): MQ-01 to MQ-15 with the recommended option in every row, after two rounds of the automatic pull-request review (2 and 0 findings, section 6). Binding for P8.03 to P8.10; the phase plan and the step plans are reconciled with it (P8.02 S5).** Plan: [P8_02_PROTOCOL_FACTS_AND_CONTRACT_PLAN.md](P8_02_PROTOCOL_FACTS_AND_CONTRACT_PLAN.md); phase plan [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md) section 3.
 
 Written by the orchestrating agent from its own retrieval of the two OASIS specifications on 2026-10-28 (section 2), REQUIREMENTS.md (REQ-015, REQ-016, REQ-050, REQ-061, REQ-062, REQ-069, REQ-072, REQ-075, REQ-105), the export contract ([P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md): C-01, C-10, C-11, C-15, C-18, C-27, C-50, C-55, C-68, C-88, C-90, C-92, C-107 to C-109), the selection contract ([P4_SELECTION_CONTRACT.md](../p4/P4_SELECTION_CONTRACT.md) SC-13), the OsthessenWetter contract ([P6_OSTHESSEN_CONTRACT.md](../p6/P6_OSTHESSEN_CONTRACT.md) OW-03, OW-14), the forecast contract ([P7_FORECAST_CONTRACT.md](../p7/P7_FORECAST_CONTRACT.md) MF-03, MF-04) and the repository code on `features/develop/P8` (`JsonExportSerializer`, `SupportedExportRoots`, `RequiredMember<T>`, the export roots and their `ValidateForExport`). The specification files are kept outside the repository; this record holds URLs, times, sizes, hashes, section references and short paraphrases only. No broker was contacted.
 
@@ -8,7 +8,7 @@ Written by the orchestrating agent from its own retrieval of the two OASIS speci
 
 | Date | Scope | Decision | Wording |
 | ---- | ----- | -------- | ------- |
-| – | MQ-01 to MQ-15 | Pending | – |
+| 2026-10-28 | MQ-01 to MQ-15 (after the automatic review rounds 1 and 2 of pull request #14 with 2 and 0 findings, section 6), including the refinements of the planning rows named in MQ-04, MQ-06, MQ-07, MQ-11 and MQ-13 | Approved, the recommended option in every row | User message "Approve all", in answer to the question "Do you approve MQ-01 to MQ-15 with the recommended option in every row?" |
 
 ## 2. Source register
 
@@ -83,3 +83,4 @@ Codex five-angle review (read-only) of this draft through the automatic review o
 | Round | Findings | Disposition |
 | --- | --- | --- |
 | 1 (head `3547d6f`, run 40778435386) | 2: [P2] the new approval gate (0 findings before approval) and the ten-round escalation of contract reviews prescribed incompatible actions after a tenth round with findings; [P3] the status lines of PHASE_P8_PLAN.md and the P8.01 and P8.02 step plans contradicted the verification record | Both confirmed against AGENTS.md, the step plans and the record and fixed: AGENTS.md "Phase implementation" step 2 and P8.02 S3 now say that after a tenth round with findings the user only decides how to continue (no approval request) and that approval follows a 0-finding round or the user's explicit decision on named findings; the three status lines updated |
+| 2 (head `62187c4`, run 40778826441) | 0 | – |

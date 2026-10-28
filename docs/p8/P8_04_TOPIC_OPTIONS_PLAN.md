@@ -1,6 +1,6 @@
 # P8.04 – Topic Options and Validation: Implementation Plan
 
-**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; not started; to be reconciled with the approved P8.02 contract before it starts.** Refines the P8.04 row of section 5 and the "Configuration" row of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; reconciled on 2026-10-28 with the P8.02 contract MQ-01 to MQ-15 approved by the user on 2026-10-28 (P8.02 S5); not started.** Refines the P8.04 row of section 5 and the "Configuration" row of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the consumer-registered topic configuration and its complete validation without broker access, so that a configuration mistake fails when the serializer is first resolved, not when the first message is built.
@@ -39,7 +39,7 @@ Every slice: roles and checks as in P8.03 section 5.
 **Green**: the rules of MQ-05.
 
 ### S3 Payload bound
-**Red**: `Validate_MaxPayloadBytesDefault_EqualsMq11Value`, `Validate_MaxPayloadBytesAtProtocolLimit_Accepted`, `Validate_MaxPayloadBytesAbove_ThrowsOptionsInvalid`, `Validate_MaxPayloadBytesZeroOrNegative_ThrowsOptionsInvalid`.
+**Red** (MQ-11 as approved: `MaxPayloadBytes` is `int?`, null means the protocol bound): `Validate_MaxPayloadBytesNull_MeansProtocolBound`, `Validate_MaxPayloadBytesAtProtocolLimit_Accepted` (268 435 450), `Validate_MaxPayloadBytesAbove_ThrowsOptionsInvalid` (268 435 451), `Validate_MaxPayloadBytesZeroOrNegative_ThrowsOptionsInvalid` (0, −1; 1 accepted).
 **Green**: the bound.
 
 **Refactor**: with all tests green.

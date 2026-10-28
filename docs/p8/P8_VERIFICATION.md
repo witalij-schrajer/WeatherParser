@@ -1,6 +1,6 @@
 # P8 Verification Record
 
-**Status (2026-10-28): P8.01 complete, outcome READY (section 1); P8.02 in progress: contract draft under the automatic pull-request review (section 2).**
+**Status (2026-10-28): P8.01 complete, outcome READY (section 1); P8.02 complete: contract MQ-01 to MQ-15 approved by the user on 2026-10-28, plans reconciled (section 2).**
 
 - Integration target: `8ed51c725333168d6e072369343c4eb449f8356c` (merge of pull request #12; successor of the P7 merge `20b2ef0` without library change).
 - Branch `features/develop/P8`, draft pull request #14 into `develop`.
@@ -27,3 +27,9 @@
 - S2: contract draft [P8_MQTT_CONTRACT.md](P8_MQTT_CONTRACT.md) MQ-01 to MQ-15, written by the orchestrating agent (no qwen output). Refinements of the planning rows: the `{provider}` failure for a list `source` without `:` (MQ-04), Unicode non-characters rejected (MQ-06, MQ-07, from F4), the template length check (MQ-07), the bound 268 435 450 − T (MQ-11, section 4) and therefore the payload-size check after topic resolution (MQ-13, changing the P8.05 precedence).
 - S3: the review loop runs through the automatic Codex review of pull request #14 (contract section 6).
 - Review round 1 (automatic review of `3547d6f`, run 40778435386): 2 findings, both confirmed and fixed (contract section 6); status passages "P8.02 in progress" added in AGENTS.md, README.md, DEVELOPMENT_PLAN.md and PHASE_P1_PLAN.md; README package check on the working tree: README.md SHA-256 `E98242F6018E6A47C815EC503B70D2D9BE98EF458E68F87054EF667DE5EF49F6` identical in the package with LICENSE and the export schema, packed SHA-512 `txd07wa3bITA+ru6Uf2H6mAOdiYiU/hIUs4iIp+VC1W5Ne1Sicf6ijAZ68qRaH8oSi0TwSRP/QM1fa1kxepZlg==` equals the restored hash, package consumer 47/47.
+- Review round 2 (automatic review of `62187c4`, run 40778826441): 0 findings.
+- S4: the user approved MQ-01 to MQ-15 on 2026-10-28 with the recommended option in every row ("Approve all"; contract section 1). Pull request #14 converted to draft for P8.03 onwards (AGENTS.md "Phase implementation" step 3).
+- S5: `PHASE_P8_PLAN.md` ("Approved contract" paragraph after section 3, T-P8-02 and T-P8-08, status line) and the step plans P8.03 to P8.08 reconciled (status lines; P8.03 S2 and S3 tests for non-characters, the template length limit and disallowed code points in topics; P8.04 S3 bound tests for `int?` `MaxPayloadBytes`; P8.05 precedence and tests for the effective bound, the topic-before-size order and list sources without a provider prefix); P8.09 and P8.10 need no change.
+- Codex five-angle review of S5 (`p802/codex_s5_r<n>.md`, outside the repository): round 1, 1 finding, confirmed and fixed by the orchestrating agent: [P2] P8.05 "Size enforcement" and S3 still failed at `MaxPayloadBytes + 1` during copying, which contradicts the nullable default (MQ-11) and the size-last precedence (MQ-13); now a capped destination that never throws, the exact bound enforced last, with tests for the null default and for an oversized payload with an invalid placeholder. Round 2: 0 findings.
+- README package check on the S5 working tree: README.md SHA-256 `CD1031BD05B6AB8269DD2403CEF1342394F326848BBFDE1300628E5C520EFF9E` identical in the package with LICENSE and the export schema; packed SHA-512 `hS3lfPhVT/TSrVDbIy4rF58zBjOijlNlbrGJbfmPSCgHWBSfCRCimS039ASwrjKjOcBlWpBRq2Is34wL9iru+Q==` equals the restored hash; package consumer 47/47.
+- P8.02 complete.

@@ -1,6 +1,6 @@
 # P8.02 – Protocol Facts and MQTT Message Contract: Implementation Plan
 
-**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; started on 2026-10-28: S1 (protocol facts) and S2 (contract draft) done, S3 review loop on pull request #14 in progress, S4 approval and S5 reconciliation pending ([P8.02 section of the verification record](P8_VERIFICATION.md#2-p802--protocol-facts-and-mqtt-message-contract)).** Refines section 3 and the P8.02 row of section 5 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; complete on 2026-10-28: contract MQ-01 to MQ-15 approved by the user after two automatic review rounds (2 and 0 findings), plans reconciled ([P8.02 section of the verification record](P8_VERIFICATION.md#2-p802--protocol-facts-and-mqtt-message-contract)).** Refines section 3 and the P8.02 row of section 5 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: record the MQTT protocol facts the library must respect, decide MQ-01 to MQ-15 with the user, and reconcile the phase plan and the step plans P8.03 to P8.10 with the approved contract.
