@@ -117,6 +117,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IOsthessenWetterParser, OsthessenWetterParser>();
         services.AddSingleton<IMqttTopicTemplateParser, MqttTopicTemplateParser>();
         services.AddSingleton<IMqttTopicValidator, MqttTopicValidator>();
+        services.AddSingleton<IMqttTopicOptionsValidator, MqttTopicOptionsValidator>();
 
         return services;
     }

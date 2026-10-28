@@ -63,7 +63,7 @@ public sealed class MqttTopicValidator : IMqttTopicValidator
             throw TopicFailure("The topic contains an empty topic level.");
         }
 
-        if (Encoding.UTF8.GetByteCount(topic) > 65535)
+        if (Encoding.UTF8.GetByteCount(topic) > MqttProtocolLimits.MaxTopicBytes)
         {
             throw TopicFailure("The topic is longer than 65 535 UTF-8 bytes.");
         }

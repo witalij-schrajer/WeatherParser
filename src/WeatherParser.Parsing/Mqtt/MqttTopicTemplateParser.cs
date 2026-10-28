@@ -113,7 +113,7 @@ public sealed class MqttTopicTemplateParser : IMqttTopicTemplateParser
             }
         }
 
-        if (totalLength > 65535)
+        if (totalLength > MqttProtocolLimits.MaxTopicBytes)
         {
             throw Fail(messageType, "The topic template is longer than the 65 535-byte topic limit.");
         }
