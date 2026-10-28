@@ -74,7 +74,7 @@ Executed checks: shellcheck on the detection script found nothing. The script wa
 
 Local Codex review of this change (CLI 0.163.0, read-only, five-angle format): round 1 reported 3 findings, all confirmed. (1) The CI and coverage-gate classifications differ: documented in CONTRIBUTING.md and AGENTS.md, gate unchanged. (2) `--name-only` hides the old path of a rename: fixed with `--no-renames` and verified with the rename case above. (3) The consistency table requires `DEPENDENCIES.md`: updated. Round 2 reported 0 findings.
 
-The hosted behaviour (skipped jobs on a documentation-only push) is not yet observed; this record is to be completed with the first such run.
+Hosted runs: [40760414865](https://github.com/witalij-schrajer/WeatherParser/actions/runs/40760414865) on `06369f0`, a push that changes `ci.yml`. `changes` succeeded and the three CI jobs ran and passed (Windows x64, Ubuntu x64, Debian 13 ARM64). The next push changes only this record and is the first documentation-only push; its run is the evidence for skipped jobs and is named in the pull request conversation.
 
 ## Limits
 
