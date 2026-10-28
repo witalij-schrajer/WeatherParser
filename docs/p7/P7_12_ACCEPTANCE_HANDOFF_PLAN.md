@@ -1,6 +1,6 @@
 # P7.12 – Acceptance and P8 Handoff: Implementation Plan
 
-**Status: planned (2026-10-26); reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6); not started.** Refines the P7.12 row of section 5 and section 9 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: in execution since 2026-10-28 (A1 to A6 drafted in the [acceptance record](P7_12_ACCEPTANCE.md) and the [P8 handoff](P8_HANDOFF.md); A7 awaits the user's decision; reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6)).** Refines the P7.12 row of section 5 and section 9 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: audit the P7 evidence of the READY candidate, record the limitations with owners, obtain the user's acceptance, update the status documents, write the P8 handoff, take the pull request through review and record the merge done by the user.
