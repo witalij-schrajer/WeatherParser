@@ -1,6 +1,6 @@
 # P8.02 – Protocol Facts and MQTT Message Contract: Implementation Plan
 
-**Status: planned on 2026-10-28; not started.** Refines section 3 and the P8.02 row of section 5 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; not started.** Refines section 3 and the P8.02 row of section 5 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: record the MQTT protocol facts the library must respect, decide MQ-01 to MQ-15 with the user, and reconcile the phase plan and the step plans P8.03 to P8.10 with the approved contract.

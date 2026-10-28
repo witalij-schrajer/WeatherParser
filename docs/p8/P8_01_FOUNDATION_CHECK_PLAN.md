@@ -1,6 +1,6 @@
 # P8.01 – Foundation Check and Plan Adjustment: Implementation Plan
 
-**Status: planned on 2026-10-28; not started (P8 starts only on a separate instruction of the user).** Refines section 1 and the P8.01 row of section 5 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; not started (P8 starts only on a separate instruction of the user).** Refines section 1 and the P8.01 row of section 5 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: confirm that P7 is accepted and merged, classify every commit on `develop` since the P7 merge, extract the accepted foundation, map every inherited limitation to a P8 step or a carried-forward owner, remeasure the native block-coverage baseline of the integration target on the first committed revision of the P8 branch, and adjust `PHASE_P8_PLAN.md` where the extraction contradicts it.

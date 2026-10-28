@@ -1,6 +1,6 @@
 # P8.05 – MQTT Message Serializer: Implementation Plan
 
-**Status: planned on 2026-10-28; not started; to be reconciled with the approved P8.02 contract before it starts.** Refines the P8.05 row of section 5 and the "Genericity", "Payload" and "Failures" rows of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; not started; to be reconciled with the approved P8.02 contract before it starts.** Refines the P8.05 row of section 5 and the "Genericity", "Payload" and "Failures" rows of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the public generic MQTT serializer that turns one supported export root into one `MqttMessage` with the configured topic, the JSON export bytes as payload, QoS and retain, with defined failures and without any broker access.

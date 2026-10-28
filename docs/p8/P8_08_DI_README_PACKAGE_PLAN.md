@@ -1,6 +1,6 @@
 # P8.08 – DI, README and Package Documentation: Implementation Plan
 
-**Status: planned on 2026-10-28; not started; to be reconciled with the approved P8.02 contract before it starts.** Refines the P8.08 row of section 5 and section 8 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; not started; to be reconciled with the approved P8.02 contract before it starts.** Refines the P8.08 row of section 5 and section 8 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: document the MQTT serializer and the complete library for consumers and bring the status documents in line with the implemented state.

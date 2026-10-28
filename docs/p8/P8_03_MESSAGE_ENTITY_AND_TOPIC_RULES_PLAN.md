@@ -1,6 +1,6 @@
 # P8.03 – Message Entity and Topic Rules: Implementation Plan
 
-**Status: planned on 2026-10-28; not started; to be reconciled with the approved P8.02 contract before it starts.** Refines the P8.03 row of section 5 and the "Topics" row of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; not started; to be reconciled with the approved P8.02 contract before it starts.** Refines the P8.03 row of section 5 and the "Topics" row of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the data types of an MQTT message and the two rule services every later step builds on: parsing and checking a topic template, and checking a placeholder value and a resolved topic against the protocol and the MQ rules.

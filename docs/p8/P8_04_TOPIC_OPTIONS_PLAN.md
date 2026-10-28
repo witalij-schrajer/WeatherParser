@@ -1,6 +1,6 @@
 # P8.04 – Topic Options and Validation: Implementation Plan
 
-**Status: planned on 2026-10-28; not started; to be reconciled with the approved P8.02 contract before it starts.** Refines the P8.04 row of section 5 and the "Configuration" row of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; not started; to be reconciled with the approved P8.02 contract before it starts.** Refines the P8.04 row of section 5 and the "Configuration" row of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the consumer-registered topic configuration and its complete validation without broker access, so that a configuration mistake fails when the serializer is first resolved, not when the first message is built.
