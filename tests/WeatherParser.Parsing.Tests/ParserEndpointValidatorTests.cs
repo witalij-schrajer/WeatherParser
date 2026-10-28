@@ -24,6 +24,15 @@ public sealed class ParserEndpointValidatorTests
     }
 
     [TestMethod]
+    public void Constructor_WithNullUriValidator_ThrowsArgumentNullException()
+    {
+        var act = () => new ParserEndpointValidator(null!);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("uriValidator");
+    }
+
+    [TestMethod]
     public void ValidateAndMap_WithSingleValidEndpoint_ReturnsMapContainingEndpoint()
     {
         var endpoint = new ParserEndpointDefinition("Mosmix", new Uri("https://example.org/mosmix"));
