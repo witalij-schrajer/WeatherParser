@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Net;
 using WeatherParser.Parsing.Exceptions;
+using WeatherParser.Parsing.Export;
+using WeatherParser.Parsing.Forecasts.Mosmix;
 
 namespace WeatherParser.Parsing.Catalogs;
 
@@ -33,7 +35,10 @@ public sealed class CatalogDownloader : ICatalogDownloader
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(read);
 
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(RequestTimeoutSeconds), _timeProvider);
+        if (request.RequestTimeout is { } bound && bound <= TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(request), "RequestTimeout must be greater than zero.");
+
+        using var timeout = new CancellationTokenSource(request.RequestTimeout ?? TimeSpan.FromSeconds(RequestTimeoutSeconds), _timeProvider);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, request.DeadlineToken, timeout.Token);
         try
         {
@@ -73,7 +78,12 @@ public sealed class CatalogDownloader : ICatalogDownloader
         }
     }
 
-    private static string Sanitize(Uri uri) =>
+    /// <summary>
+    /// Returns the scheme, host, non-default port and path of <paramref name="uri"/>; user information, query and fragment are never included (contracts SC-09, MF-15).
+    /// </summary>
+    /// <param name="uri">The URI to sanitize.</param>
+    /// <returns>The scheme, host, non-default port and path of <paramref name="uri"/>.</returns>
+    internal static string Sanitize(Uri uri) =>
         uri.Scheme + "://" + uri.Host + (uri.IsDefaultPort ? string.Empty : ":" + uri.Port.ToString(CultureInfo.InvariantCulture)) + uri.AbsolutePath;
 
     private static CatalogRetrievalException TooLarge(CatalogRequest request) =>
@@ -97,6 +107,10 @@ public sealed class CatalogDownloader : ICatalogDownloader
                     return new ObservationLimitException(ObservationLimitException.DeadlineExceededErrorId, message + " The observation deadline was exceeded (contract OC-09).");
                 case CatalogDeadlineKind.OsthessenWetter:
                     return new OsthessenWetterException(OsthessenWetterException.DeadlineExceededErrorId, message + " The OsthessenWetter page deadline was exceeded (contract OW-10).");
+                case CatalogDeadlineKind.MosmixL:
+                    return new MosmixForecastException(MosmixForecastErrorIds.DeadlineExceeded, MosmixProduct.MosmixL, message + " The MOSMIX_L parse deadline was exceeded (contract MF-05).");
+                case CatalogDeadlineKind.MosmixS:
+                    return new MosmixForecastException(MosmixForecastErrorIds.DeadlineExceeded, MosmixProduct.MosmixS, message + " The MOSMIX_S parse deadline was exceeded (contract MF-05).");
                 default: // Refresh
                     return new EvidenceCacheException(EvidenceCacheException.RefreshDeadlineExceededErrorId, message + " The MOSMIX_S refresh deadline was exceeded (contract SC-22).");
             }

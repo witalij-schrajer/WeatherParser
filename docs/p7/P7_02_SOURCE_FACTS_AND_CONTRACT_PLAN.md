@@ -1,6 +1,6 @@
 # P7.02 – Source Facts and MOSMIX Forecast Contract: Implementation Plan
 
-**Status: planned (2026-10-26); not started.** Refines section 3 and the P7.02 row of section 5 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: executed on 2026-10-26: S1 to S6 done; contract approved by the user on 2026-10-26 and the plans reconciled ([contract](P7_FORECAST_CONTRACT.md), [verification record](P7_VERIFICATION.md) section 2).** Refines section 3 and the P7.02 row of section 5 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: record the MOSMIX source facts from official DWD documents and the actual published files, settle the technical questions the phase plan leaves to this step (archive CRC behavior, request bound, retained-size bounds, timing), write the contract decisions MF-01 to MF-18 in `docs/p7/P7_FORECAST_CONTRACT.md`, have them reviewed by Codex and approved by the user, and reconcile the phase plan and the step plans P7.03 to P7.12 with the approved contract.

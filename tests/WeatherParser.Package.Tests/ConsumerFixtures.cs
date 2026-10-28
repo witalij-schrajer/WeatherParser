@@ -258,4 +258,62 @@ internal static class ConsumerFixtures
         }
         return stream.ToArray();
     }
+
+    public static byte[] MosmixLForecastKmz(string id, string description, params (string Element, string Values)[] forecasts)
+    {
+        var steps = "";
+        for (int i = 0; i < 3; i++)
+        {
+            steps += $"          <dwd:TimeStep>2026-10-21T{(4 + i):00}:00:00.000Z</dwd:TimeStep>\n";
+        }
+
+        var forecastElements = forecasts.Select(f => Forecast(f.Element, f.Values)).ToArray();
+
+        var sb = new StringBuilder();
+        sb.Append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>\n");
+        sb.Append($"<kml:kml xmlns:dwd=\"{DwdNs}\" xmlns:kml=\"{KmlNs}\">\n");
+        sb.Append("  <kml:Document>\n");
+        sb.Append("    <kml:ExtendedData>\n");
+        sb.Append("      <dwd:ProductDefinition>\n");
+        sb.Append("        <dwd:Issuer>Example issuer</dwd:Issuer>\n");
+        sb.Append("        <dwd:ProductID>MOSMIX</dwd:ProductID>\n");
+        sb.Append($"        <dwd:IssueTime>{DefaultIssueTime}</dwd:IssueTime>\n");
+        sb.Append("        <dwd:ForecastTimeSteps>\n");
+        sb.Append(steps);
+        sb.Append("        </dwd:ForecastTimeSteps>\n");
+        sb.Append("      </dwd:ProductDefinition>\n");
+        sb.Append("    </kml:ExtendedData>\n");
+        sb.Append("    <kml:Placemark>\n");
+        sb.Append($"      <kml:name>{id}</kml:name>\n");
+        sb.Append($"      <kml:description>{description}</kml:description>\n");
+        sb.Append("      <kml:ExtendedData>\n");
+        foreach (var forecast in forecastElements)
+        {
+            sb.Append("        ").Append(forecast).Append('\n');
+        }
+        sb.Append("      </kml:ExtendedData>\n");
+        sb.Append("      <kml:Point>\n");
+        sb.Append("        <kml:coordinates>9.6,50.5,250.0</kml:coordinates>\n");
+        sb.Append("      </kml:Point>\n");
+        sb.Append("    </kml:Placemark>\n");
+        sb.Append("  </kml:Document>\n");
+        sb.Append("</kml:kml>\n");
+
+        var kml = sb.ToString();
+        return Kmz(kml);
+    }
+
+    public static byte[] MosmixSForecastKmz(string selectedId, string description, params (string Element, string Values)[] forecasts)
+    {
+        // First placemark: P0001
+        var forecastElementsP0001 = new[] { Forecast("TTT", "281.15 281.05 280.95") };
+        var placemarkP0001 = MosmixSPlacemark("P0001", forecastElementsP0001);
+
+        // Second placemark: selectedId
+        var forecastElementsSelected = forecasts.Select(f => Forecast(f.Element, f.Values)).ToArray();
+        var placemarkSelected = MosmixSPlacemark(selectedId, forecastElementsSelected);
+
+        var kml = MosmixSKml(placemarks: new[] { placemarkP0001, placemarkSelected });
+        return MosmixSZip(kml, "MOSMIX_S_2026102103_240.kml");
+    }
 }

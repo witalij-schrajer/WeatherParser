@@ -102,6 +102,7 @@
       <xs:element minOccurs="1" maxOccurs="1" name="issued_at" type="tns:UtcTimestamp" />
       <xs:element minOccurs="1" maxOccurs="1" name="retrieved_at" type="tns:UtcTimestamp" />
       <xs:element minOccurs="1" maxOccurs="1" name="forecasts" type="tns:ArrayOfForecastStep" />
+      <xs:element minOccurs="0" maxOccurs="1" name="run_age_exceeded" type="xs:boolean" />
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="ForecastLocation">
@@ -141,6 +142,8 @@
       <xs:element minOccurs="0" maxOccurs="1" name="illuminance_lux" type="xs:decimal" />
       <xs:element minOccurs="0" maxOccurs="1" name="solar_irradiance_w_m2" type="tns:IntervalValue" />
       <xs:element minOccurs="0" maxOccurs="1" name="rain_rate_mm_h" type="tns:IntervalValue" />
+      <xs:element minOccurs="0" maxOccurs="1" name="wind_gust_kmh" type="tns:IntervalValue" />
+      <xs:element minOccurs="0" maxOccurs="1" name="precipitation_amount_mm" type="tns:IntervalValue" />
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="IntervalValue">
@@ -154,6 +157,8 @@
   <xs:simpleType name="IntervalAggregation">
     <xs:restriction base="xs:string">
       <xs:enumeration value="mean" />
+      <xs:enumeration value="maximum" />
+      <xs:enumeration value="sum" />
     </xs:restriction>
   </xs:simpleType>
   <xs:complexType name="ArrayOfExportError">

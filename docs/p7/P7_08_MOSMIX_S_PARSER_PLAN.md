@@ -1,6 +1,6 @@
 # P7.08 – MOSMIX_S Parser Service and Product Independence: Implementation Plan
 
-**Status: planned (2026-10-26); not started. Written before the P7.02 contract; it is reconciled with the approved contract in P7.02 S6 before its first Red test.** Refines the P7.08 row of section 5 and the "Separation", "Archive and XML" and "Run" rows of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: executed on 2026-10-27 (reconciled with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) in P7.02 S6; [verification record](P7_VERIFICATION.md) section 8).** Refines the P7.08 row of section 5 and the "Separation", "Archive and XML" and "Run" rows of section 4 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the public MOSMIX_S parser with the structure of P7.07 over the streamed all-stations file, and the proof that both parsers configured at once stay independent in endpoints, options, results and state.
@@ -8,7 +8,7 @@ In scope: `IMosmixSParser`/`MosmixSParser` with `ParseAsync(string mosmixId, Can
 Out of scope with owner: several IDs per download (not offered, MF-06); the MOSMIX_S evidence refresh of SC-22 (unchanged); wire form → P7.09; README and package → P7.10; target timing → P7.11.
 
 ## 2. Preconditions and Inputs
-- P7.03 to P7.06 complete; P7.07 complete (its patterns and helpers); P7.02 approved MF-03, MF-05, MF-06, MF-09, MF-14 and MF-15.
+- P7.03 to P7.06 complete; P7.07 complete (its patterns and helpers); P7.02 approved MF-03, MF-05, MF-06, MF-09, MF-14 and MF-15 on 2026-10-26 (MOSMIX_S `ParseDeadline` default 5 minutes, request bound equal to it).
 - Existing: `IMosmixSForecastSource`, `IMosmixForecastDocumentReader.ReadAllStationsAsync`, `IMosmixElementMapper`, `IForecastRunBuilder`, the P7.07 tests as the case list.
 
 ## 3. Decisions Required
@@ -30,7 +30,7 @@ Out of scope with owner: several IDs per download (not offered, MF-06); the MOSM
 Every slice: roles and checks as in P7.03 section 5. The P7.07 tests stay green after the extraction of shared helpers (characterization of the refactoring).
 
 ### S1 Validation, deadline, request bound and precedence
-**Red**: the P7.07 S1 case list for MOSMIX_S (`ParseAsync_InvalidId_ThrowsBeforeRequestAndTimer` with the MOSMIX_S grammar, `ParseAsync_DeadlineFromOptionsAndTimeProvider`, cancellation and deadline during retrieval and after reading, precedence during build, timer disposal, failures propagate with no fallback to MOSMIX_L), plus `ParseAsync_StreamLongerThan30Seconds_WithinRequestBound_Succeeds` and `ParseAsync_RequestBoundShorterThanDeadline_ClassifiedAsTimeout` (fake clock, real downloader), `AddWeatherParsing_ResolvesMosmixSParser`; `ServiceRegistrationCompletenessTests` red while unregistered.
+**Red**: the P7.07 S1 case list for MOSMIX_S (`ParseAsync_InvalidId_ThrowsBeforeRequestAndTimer` with the MOSMIX_S grammar, `ParseAsync_DeadlineFromOptionsAndTimeProvider`, cancellation and deadline during retrieval and after reading, precedence during build, timer disposal, failures propagate with no fallback to MOSMIX_L), plus `ParseAsync_StreamLongerThan30Seconds_WithinDeadline_Succeeds` and `ParseAsync_StalledBeyondDeadline_ClassifiedDeadlineNotTimeout` (fake clock, real downloader; the request bound equals the deadline, MF-05), `AddWeatherParsing_ResolvesMosmixSParser`; `ServiceRegistrationCompletenessTests` red while unregistered.
 **Green**: validation, deadline and precedence; registration; S1 green before S2.
 
 ### S2 Streamed run
@@ -38,7 +38,7 @@ Every slice: roles and checks as in P7.03 section 5. The P7.07 tests stay green 
 **Green**: streamed parse.
 
 ### S3 Diagnostics and independence
-**Red**: the P7.07 S3 diagnostics cases for MOSMIX_S; `BothParsers_OneContainer_EachUsesOwnEndpointAndOptions` (requests counted per endpoint; each parser's deadline and `MaxRunAge` independent), `BothParsers_SameId_DistinctSourcesAndProducts`, `BothParsers_FailureOfOne_DoesNotAffectOther`, `BothParsers_ConcurrentParses_NoSharedState` (one parse of each product at once with distinct results), `PublicApi_NoProductSwitch` (no public parser type accepts a product parameter; reflection over the public forecast types), and `NoSharedStateTests` extended to the new services.
+**Red**: the P7.07 S3 diagnostics cases for MOSMIX_S, including `ParseAsync_MemberName_NeverInLogsOrMessages`; `BothParsers_OneContainer_EachUsesOwnEndpointAndOptions` (requests counted per endpoint; each parser's deadline and `MaxRunAge` independent), `BothParsers_SameId_DistinctSourcesAndProducts`, `BothParsers_FailureOfOne_DoesNotAffectOther`, `BothParsers_ConcurrentParses_NoSharedState` (one parse of each product at once with distinct results), `PublicApi_NoProductSwitch` (no public parser type accepts a product parameter; reflection over the public forecast types), and `NoSharedStateTests` extended to the new services.
 **Green**: fixes only where a case fails.
 
 **Refactor**: remove duplication with all tests green.

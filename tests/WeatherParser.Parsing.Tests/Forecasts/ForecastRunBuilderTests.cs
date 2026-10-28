@@ -110,6 +110,11 @@ public sealed class ForecastRunBuilderTests
         result.Run.Forecasts[0].Values.RainRateMmH!.PeriodStartUtc.Should().Be(Utc(11, 50));
         result.Run.Forecasts[0].Values.RainRateMmH!.PeriodEndUtc.Should().Be(Utc(12, 0));
         result.Run.Forecasts[0].Values.RainRateMmH!.Aggregation.Should().Be(IntervalAggregation.Mean);
+        result.Run.Forecasts[0].Values.PrecipitationAmountMm.Should().NotBeNull();
+        result.Run.Forecasts[0].Values.PrecipitationAmountMm!.Value.Should().Be(0.5m);
+        result.Run.Forecasts[0].Values.PrecipitationAmountMm!.PeriodStartUtc.Should().Be(Utc(11, 50));
+        result.Run.Forecasts[0].Values.PrecipitationAmountMm!.PeriodEndUtc.Should().Be(Utc(12, 0));
+        result.Run.Forecasts[0].Values.PrecipitationAmountMm!.Aggregation.Should().Be(IntervalAggregation.Sum);
     }
 
     [TestMethod]
@@ -204,7 +209,7 @@ public sealed class ForecastRunBuilderTests
         var input = Input(
             new[] { Utc(12, 0) },
             Series(QuantityKind.Temperature, 20.0),
-            Series(QuantityKind.WindGust, 40.0));
+            new ForecastSeries { Kind = QuantityKind.WindGust, Values = new double?[] { 40.0 }, Periods = new AveragingPeriod?[] { new AveragingPeriod(Utc(11, 0), Utc(12, 0)) }, WindSpeedUnit = WindSpeedUnit.KilometresPerHour, Product = MosmixProduct.MosmixL, MosmixId = "10637", IssuedAtUtc = IssuedAt });
 
         // Act
         var result = _subject.Build(input);
@@ -213,8 +218,9 @@ public sealed class ForecastRunBuilderTests
         result.Run.Forecasts.Should().HaveCount(1);
         result.Run.Forecasts[0].ValidAtUtc.Should().Be(Utc(12, 0));
         result.Run.Forecasts[0].Values.WindSpeedKmh.Should().BeNull();
-        result.OmittedValues.Should().ContainSingle();
-        result.OmittedValues[0].Should().Be(new OmittedForecastValue(Utc(12, 0), QuantityKind.WindGust, OmissionReason.NotExportable));
+        result.Run.Forecasts[0].Values.WindGustKmh!.Value.Should().Be(40m);
+        result.Run.Forecasts[0].Values.WindGustKmh!.Aggregation.Should().Be(IntervalAggregation.Maximum);
+        result.OmittedValues.Should().BeEmpty();
     }
 
     [TestMethod]

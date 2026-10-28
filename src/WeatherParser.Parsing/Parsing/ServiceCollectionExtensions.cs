@@ -4,6 +4,7 @@ using WeatherParser.Parsing.Evidence.MosmixL;
 using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Forecasts;
+using WeatherParser.Parsing.Forecasts.Mosmix;
 using WeatherParser.Parsing.Geography;
 using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Observations.Dwd;
@@ -43,11 +44,14 @@ public static class ServiceCollectionExtensions
     /// The catalog downloader is also registered; the consumer registers the <see cref="HttpClient"/> and the <see cref="TimeProvider"/>.
     /// The CDC endpoints validator and the CDC and MOSMIX catalog sources are also registered; the consumer registers <see cref="CdcCatalogEndpoints"/> and <see cref="WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints"/>.
     /// The MOSMIX_S evidence refresher is also registered; its timing is controlled externally (no scheduler).
+    /// The MOSMIX_L and MOSMIX_S forecast sources are also registered; the consumer registers <see cref="MosmixLForecastEndpoints"/>, <see cref="MosmixSForecastEndpoints"/>, <see cref="MosmixLForecastOptions"/> and <see cref="MosmixSForecastOptions"/> (contracts MF-04, MF-05, MF-09).
     /// The DWD station resolver is also registered.
     /// The DWD observation mapper is also registered.
     /// The DWD observation source is also registered; the consumer registers <see cref="DwdObservationOptions"/>.
     /// The DWD observation parser is also registered.
     /// The CDC request composer is also registered.
+    /// The MOSMIX_L and MOSMIX_S parsers are also registered, each behind its own interface without a product switch (REQ-109); they log through <see cref="Microsoft.Extensions.Logging.ILogger{TCategoryName}"/> of <see cref="MosmixLParser"/> and <see cref="MosmixSParser"/> (contract MF-02).
+    /// The shared parse pipeline <see cref="IMosmixParsePipeline"/> they both use is also registered.
     /// </summary>
     /// <param name="services">The service collection to register the services with.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
@@ -69,6 +73,14 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWindSpeedConverter, WindSpeedConverter>();
         services.AddSingleton<IObservationDatasetBuilder, ObservationDatasetBuilder>();
         services.AddSingleton<IForecastRunBuilder, ForecastRunBuilder>();
+        services.AddSingleton<IMosmixForecastDocumentReader, MosmixForecastDocumentReader>();
+        services.AddSingleton<IMosmixUnitScaler, MosmixUnitScaler>();
+        services.AddSingleton<IMosmixElementMapper, MosmixElementMapper>();
+        services.AddSingleton<IMosmixLForecastSource, MosmixLForecastSource>();
+        services.AddSingleton<IMosmixSForecastSource, MosmixSForecastSource>();
+        services.AddSingleton<IMosmixParsePipeline, MosmixParsePipeline>();
+        services.AddSingleton<IMosmixLParser, MosmixLParser>();
+        services.AddSingleton<IMosmixSParser, MosmixSParser>();
         services.AddSingleton<ICoordinateParser, CoordinateParser>();
         services.AddSingleton<ISearchParameterFactory, SearchParameterFactory>();
         services.AddSingleton<IDistanceCalculator, DistanceCalculator>();

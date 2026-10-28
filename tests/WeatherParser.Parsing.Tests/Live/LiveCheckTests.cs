@@ -182,4 +182,131 @@ public sealed class LiveCheckTests
             }
         }
     }
+
+    [TestMethod]
+    [TestCategory("Live")]
+    [Timeout(600000)]
+    public async Task LiveCheck_MosmixL_OnlyWhenExplicitlyEnabled()
+    {
+        if (!LiveCheckRunner.IsMosmixLMode(Environment.GetEnvironmentVariable))
+        {
+            Assert.Inconclusive($"MosmixL live check skipped: set {LiveCheckRunner.EnableVariable}=1 and {LiveCheckRunner.ModeVariable}={LiveCheckRunner.MosmixLMode} to run one request against the DWD MOSMIX_L (contract OC-13).");
+        }
+
+        var cache = Path.Combine(Path.GetTempPath(), "wp-live-cache-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(cache);
+        var output = Path.Combine(Path.GetTempPath(), "wp-live-mosmix-l-" + DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture));
+        Directory.CreateDirectory(output);
+
+        try
+        {
+            var settings = LiveCheckSettings.Dwd(cache);
+            using var transport = LiveCheckRunner.CreateTransport();
+            var result = await LiveCheckRunner.RunMosmixAsync(MosmixProduct.MosmixL, settings, transport, TimeProvider.System, CancellationToken.None);
+
+            await LiveMosmixArtifacts.WriteAsync(result, settings, output, CancellationToken.None);
+            Console.WriteLine(output);
+
+            result.Requests.Count.Should().BeLessThanOrEqualTo(LiveCheckSettings.MosmixRequestBudget);
+            result.ErrorId.Should().BeNull();
+            result.Run.Should().NotBeNull();
+            result.Run!.Product.Should().Be(MosmixProduct.MosmixL);
+            result.SchemaEvents.Should().BeEmpty();
+
+            result.Json.Should().NotBeNull();
+            result.Xml.Should().NotBeNull();
+            ExportEquivalence.AssertEquivalent(JsonDocument.Parse(result.Json!).RootElement, XDocument.Parse(Encoding.UTF8.GetString(result.Xml!)).Root!, "forecast_run");
+        }
+        finally
+        {
+            if (Directory.Exists(cache))
+            {
+                Directory.Delete(cache, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    [TestCategory("Live")]
+    [Timeout(600000)]
+    public async Task LiveCheck_MosmixS_OnlyWhenExplicitlyEnabled()
+    {
+        if (!LiveCheckRunner.IsMosmixSMode(Environment.GetEnvironmentVariable))
+        {
+            Assert.Inconclusive($"MosmixS live check skipped: set {LiveCheckRunner.EnableVariable}=1 and {LiveCheckRunner.ModeVariable}={LiveCheckRunner.MosmixSMode} to run one request against the DWD MOSMIX_S (contract OC-13).");
+        }
+
+        var cache = Path.Combine(Path.GetTempPath(), "wp-live-cache-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(cache);
+        var output = Path.Combine(Path.GetTempPath(), "wp-live-mosmix-s-" + DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture));
+        Directory.CreateDirectory(output);
+
+        try
+        {
+            var settings = LiveCheckSettings.Dwd(cache);
+            using var transport = LiveCheckRunner.CreateTransport();
+            var result = await LiveCheckRunner.RunMosmixAsync(MosmixProduct.MosmixS, settings, transport, TimeProvider.System, CancellationToken.None);
+
+            await LiveMosmixArtifacts.WriteAsync(result, settings, output, CancellationToken.None);
+            Console.WriteLine(output);
+
+            result.Requests.Count.Should().BeLessThanOrEqualTo(LiveCheckSettings.MosmixRequestBudget);
+            result.ErrorId.Should().BeNull();
+            result.Run.Should().NotBeNull();
+            result.Run!.Product.Should().Be(MosmixProduct.MosmixS);
+            result.SchemaEvents.Should().BeEmpty();
+            result.Duration.Should().BeLessThanOrEqualTo(ResourceCheckRunner.DeadlineThreshold);
+
+            result.Json.Should().NotBeNull();
+            result.Xml.Should().NotBeNull();
+            ExportEquivalence.AssertEquivalent(JsonDocument.Parse(result.Json!).RootElement, XDocument.Parse(Encoding.UTF8.GetString(result.Xml!)).Root!, "forecast_run");
+        }
+        finally
+        {
+            if (Directory.Exists(cache))
+            {
+                Directory.Delete(cache, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    [TestCategory("ResourceCheck")]
+    [Timeout(1800000)]
+    public async Task ResourceCheck_Generate_OnlyWhenExplicitlyEnabled()
+    {
+        if (ResourceCheckRunner.Mode(Environment.GetEnvironmentVariable) != ResourceCheckRunner.GenerateMode)
+        {
+            Assert.Inconclusive($"Resource check generate skipped: set {ResourceCheckRunner.Variable}={ResourceCheckRunner.GenerateMode} to run it.");
+        }
+
+        var directory = ResourceCheckRunner.Directory(Environment.GetEnvironmentVariable) ?? throw new InvalidOperationException($"{ResourceCheckRunner.DirectoryVariable} must name the run directory.");
+        var path = await ResourceCheckRunner.GenerateAsync(directory, ResourceCheckRunner.RecordedPlacemarks, ResourceCheckRunner.RecordedElements, ResourceCheckRunner.RecordedSteps, CancellationToken.None);
+        Console.WriteLine(path);
+        new FileInfo(path).Length.Should().BeGreaterThan(1_000_000);
+    }
+
+    [TestMethod]
+    [TestCategory("ResourceCheck")]
+    [Timeout(1800000)]
+    public async Task ResourceCheck_Measure_OnlyWhenExplicitlyEnabled()
+    {
+        if (ResourceCheckRunner.Mode(Environment.GetEnvironmentVariable) != ResourceCheckRunner.MeasureMode)
+        {
+            Assert.Inconclusive($"Resource check measure skipped: set {ResourceCheckRunner.Variable}={ResourceCheckRunner.MeasureMode} to run it; run it alone in a fresh test process: dotnet test --filter FullyQualifiedName~ResourceCheck_Measure_OnlyWhenExplicitlyEnabled");
+        }
+
+        var directory = ResourceCheckRunner.Directory(Environment.GetEnvironmentVariable) ?? throw new InvalidOperationException($"{ResourceCheckRunner.DirectoryVariable} must name the run directory.");
+        var result = await ResourceCheckRunner.MeasureAsync(directory, TimeProvider.System, CancellationToken.None);
+        await ResourceCheckRunner.WriteAsync(result, directory, CancellationToken.None);
+        Console.WriteLine($"duration_ms={result.Duration.TotalMilliseconds:F0} peak_working_set_bytes={result.PeakWorkingSetBytes} within_deadline={result.WithinDeadline} within_peak={result.WithinPeak} start_peak_working_set_bytes={result.StartPeakWorkingSetBytes}");
+
+        result.Placemarks.Should().Be(ResourceCheckRunner.RecordedPlacemarks);
+        result.Elements.Should().Be(ResourceCheckRunner.RecordedElements);
+        result.Steps.Should().Be(ResourceCheckRunner.RecordedSteps);
+
+        result.ParseSteps.Should().Be(result.Steps);
+        result.WithinDeadline.Should().BeTrue();
+        result.WithinPeak.Should().BeTrue();
+    }
 }

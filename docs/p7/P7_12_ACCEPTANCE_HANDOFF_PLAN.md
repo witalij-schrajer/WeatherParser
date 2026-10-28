@@ -1,6 +1,6 @@
 # P7.12 – Acceptance and P8 Handoff: Implementation Plan
 
-**Status: planned (2026-10-26); not started. Written before the P7.02 contract; it is reconciled with the approved contract in P7.02 S6.** Refines the P7.12 row of section 5 and section 9 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: in execution since 2026-10-28 (A1 to A10 recorded in the [acceptance record](P7_12_ACCEPTANCE.md) and the [P8 handoff](P8_HANDOFF.md); P7 accepted by the user on 2026-10-28 on candidate `2f1115b`; A11, the merge by the user, pending; reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6)).** Refines the P7.12 row of section 5 and section 9 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: audit the P7 evidence of the READY candidate, record the limitations with owners, obtain the user's acceptance, update the status documents, write the P8 handoff, take the pull request through review and record the merge done by the user.
@@ -30,8 +30,8 @@ No action changes behavior. The orchestrating agent writes all records; Codex re
 
 - **A1**: candidate and base verified against the P7.11 record and `gh pr view`.
 - **A2**: every T-P7 row with its evidence; OPEN only with a user-approved amendment; the live row separately.
-- **A3**: MF-01 to MF-18 with their implementation; the additive export decisions of P7.03 listed with the regenerated schema checksum, or "export contract unchanged".
-- **A4**: limitations with owners: the MOSMIX_S download per parse and its measured cost; the compressed archive held in memory; the first interval before `issued_at` (MF-13); the CRC-32 check enforced on the forecast paths only, unless the user approved the P4 amendment (P7.04); elements not exported (probabilities, codes, cloud cover, derived humidity unless approved); the registration consequence for consumers; the schema compatibility note (C-105); the inherited items (builder duplication guard, XML cancellation, hosted ARM64 evidence, package reproducibility, DI under load, the MOSMIX_S evidence-refresh CLI exposure, the OsthessenWetter source conditions OW-14); any MF-18 amendment proposal for the user.
+- **A3**: MF-01 to MF-18 with their implementation; the additive export decisions of P7.03 (MF-09 `run_age_exceeded`, MF-11 `wind_gust_kmh`, `precipitation_amount_mm`, the `IntervalAggregation` members and the builder amendments, MF-02 `OmittedValues` on the rejection) listed with their C numbers and the regenerated schema checksum.
+- **A4**: limitations with owners: the MOSMIX_S download per parse and its measured cost; the compressed archive held in memory; the first interval before `issued_at` (MF-13); the CRC-32 check enforced on the forecast paths only, unless the user approved the P4 amendment (P7.04); elements not exported (probabilities, longer totals and gusts, codes, cloud cover, visibility, sunshine; no humidity derived from the dew point, MF-10); `pressure_reference` `unknown` for MOSMIX pressure until a DWD source states the reduction level (MF-10); the registration consequence for consumers; the schema compatibility note (C-105); the inherited items (builder duplication guard, XML cancellation, hosted ARM64 evidence, package reproducibility, DI under load, the MOSMIX_S evidence-refresh CLI exposure, the OsthessenWetter source conditions OW-14); any MF-18 amendment proposal for the user.
 - **A5**: audit decision ACCEPTED or NOT ACCEPTED with the gaps.
 - **A6**: P8 handoff: the parsers, results, options, IDs, the product-specific sources of C-68 for P8 topics, complete-run retained semantics of REQ-062 as a P8 obligation, and the OW-14 redistribution restriction carried forward.
 - **A7**: the user's acceptance wording and date recorded.
