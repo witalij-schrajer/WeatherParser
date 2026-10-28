@@ -50,8 +50,31 @@ Codex CLI 0.163.0, `codex exec --sandbox read-only --ephemeral`, run against the
 | Run | Head | Result | Findings | Disposition |
 |---|---|---|---|---|
 | [40758968836](https://github.com/witalij-schrajer/WeatherParser/actions/runs/40758968836) (ready for review, 2026-10-28) | `b4e09ae` | Success. The review job took 1 min 7 s and the comment job posted [comment 6479186819](https://github.com/witalij-schrajer/WeatherParser/pull/13#issuecomment-6479186819). Classification: implementation (2 of 7 files are not documentation). The brief was read from the head commit, the intended bootstrap case, and the artifact `codex-review` was uploaded. Codex version 0.162.1. | 2 | Angle 2, P2: 0.162.1 contradicted the latest-stable rule of the P0 clarifications. Confirmed; pinned to 0.165.0, the npm `latest` of both packages. Angle 5, P2: review dispositions and the workflow authorship exception were not recorded. Confirmed; this record. |
+| [40759491202](https://github.com/witalij-schrajer/WeatherParser/actions/runs/40759491202) (converted to draft and marked ready again, 2026-10-28) | `5944184` | Success, with Codex 0.165.0. Codex posted [comment 6479258707](https://github.com/witalij-schrajer/WeatherParser/pull/13#issuecomment-6479258707). Classification: implementation (2 of 8 files are not documentation). | 0 | – |
 
-The fixes for the hosted findings have not yet been reviewed by a hosted Codex run, and Codex 0.165.0 has not yet run. A new review starts when the pull request is converted to draft and marked ready for review again; this record is to be completed with that run.
+The second hosted run reviewed the fixes for the first run's findings with Codex 0.165.0 and reported no findings.
+
+## CI only for code changes (2026-10-28)
+
+At the user's request, `.github/workflows/ci.yml` has a new first job, `changes`, written by the orchestrating LLM. Under the same exception as the review workflow, it depends on the user's decision and on the repository's packaging (the root `README.md` is packed). The three CI jobs run only when code changed; the rules are in CONTRIBUTING.md section 6 and AGENTS.md. `cancel-in-progress` was removed, so that a documentation-only push cannot cancel a run that still verifies code.
+
+Executed checks: shellcheck on the detection script found nothing. The script was run locally against real history with the following results:
+
+| Case | Range | Result |
+|---|---|---|
+| Push of a test file | `230205c..b4e09ae` | run |
+| Push of workflow and Markdown files | `b4e09ae..5944184` | run |
+| Documentation-only push | `717b3f5..28a1858` | skip |
+| Pull request #12 opened (changes the root `README.md`) | `20b2ef0...28a1858` | run |
+| Pull request #13 marked ready | `20b2ef0...5944184` | run |
+| Force push with an unknown previous head | whole pull request | run |
+| Commit `58813a3` touching `README.md` | `58813a3~1..58813a3` | run |
+| Manual run | – | run |
+| Code file renamed into `docs/` (temporary local commit) | rename | run |
+
+Local Codex review of this change (CLI 0.163.0, read-only, five-angle format): round 1 reported 3 findings, all confirmed. (1) The CI and coverage-gate classifications differ: documented in CONTRIBUTING.md and AGENTS.md, gate unchanged. (2) `--name-only` hides the old path of a rename: fixed with `--no-renames` and verified with the rename case above. (3) The consistency table requires `DEPENDENCIES.md`: updated. Round 2 reported 0 findings.
+
+The hosted behaviour (skipped jobs on a documentation-only push) is not yet observed; this record is to be completed with the first such run.
 
 ## Limits
 

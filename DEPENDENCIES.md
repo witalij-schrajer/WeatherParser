@@ -35,7 +35,7 @@ Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The lib
 
 ## GitHub Actions
 
-The repository uses a GitHub Actions workflow `.github/workflows/ci.yml` which runs the local CI script with pinned actions by full commit SHA and has no secrets or write permissions.
+The repository uses a GitHub Actions workflow `.github/workflows/ci.yml` which runs the local CI script with pinned actions by full commit SHA and has no secrets or write permissions. Since 2026-10-28 its first job `changes` (actions/checkout only, plus git and awk on the runner) decides whether the three CI jobs run; documentation-only changes skip them (CONTRIBUTING.md section 6).
 
 | Action | Version | Commit | License |
 |---|---|---|---|
