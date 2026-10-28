@@ -35,15 +35,18 @@ Review date: 2026-10-15. P1.02 review complete; SDK update remains open. The lib
 
 ## GitHub Actions
 
-The repository uses a GitHub Actions workflow `.github/workflows/ci.yml` which runs the local CI script with pinned actions by full commit SHA and has no secrets or write permissions.
+The repository uses a GitHub Actions workflow `.github/workflows/ci.yml` which runs the local CI script with pinned actions by full commit SHA and has no secrets or write permissions. Since 2026-10-28 its first job `changes` (actions/checkout only, plus git and awk on the runner) decides whether the three CI jobs run; documentation-only changes skip them (CONTRIBUTING.md section 6).
 
 | Action | Version | Commit | License |
 |---|---|---|---|
 | actions/checkout | v7.0.1 | 3d3c42e5aac5ba805825da76410c181273ba90b1 | MIT |
 | actions/setup-dotnet | v6.0.0 | a98b56852c35b8e3190ac28c8c2271da59106c68 | MIT |
 | actions/upload-artifact | v7.0.2 | cf430e030ddbb5b0abf93d22962f4752f3646cd9 | MIT |
+| openai/codex-action | v1.13 | bdf19a4a223ec2549a3e2274a0cf61556bc07675 | Apache-2.0 |
 
-Versions and commits checked on 2026-10-20 against the GitHub releases.
+Versions and commits checked on 2026-10-20 against the GitHub releases; openai/codex-action checked on 2026-10-28 against its tags (v1.13, 2026-10-05, is the latest tag).
+
+The review workflow `.github/workflows/review.yml` (CONTRIBUTING.md section 6) uses actions/checkout, actions/upload-artifact and openai/codex-action at the commits above. It is the only workflow with a secret (`OPENAI_API_KEY`, passed to openai/codex-action only) and the only one with write permissions (`issues: write` and `pull-requests: write`, in its comment job alone, which checks out no code). openai/codex-action itself installs Node.js 24 with actions/setup-node (pinned by the action to v6.3.0) and, at runtime, the npm packages `@openai/codex` and `@openai/codex-responses-api-proxy` at the version the workflow passes as `codex-version`: **0.165.0** (published 2026-10-27; both Apache-2.0), the latest stable release (npm dist-tag `latest` of both packages) checked on 2026-10-28, chosen under the latest-stable rule of the P0 clarifications in AGENTS.md. The local reviews of this workflow used the installed CLI 0.163.0; 0.165.0 runs only in the hosted review workflow; its runs are recorded in [docs/ci/CODEX_REVIEW_WORKFLOW_VERIFICATION.md](docs/ci/CODEX_REVIEW_WORKFLOW_VERIFICATION.md).
 
 ## Local .NET tools
 
