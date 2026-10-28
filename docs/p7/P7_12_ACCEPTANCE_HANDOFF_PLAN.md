@@ -1,6 +1,6 @@
 # P7.12 – Acceptance and P8 Handoff: Implementation Plan
 
-**Status: in execution since 2026-10-28 (A1 to A10 recorded in the [acceptance record](P7_12_ACCEPTANCE.md) and the [P8 handoff](P8_HANDOFF.md); P7 accepted by the user on 2026-10-28 on candidate `2f1115b`; A11, the merge by the user, pending; reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6)).** Refines the P7.12 row of section 5 and section 9 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
+**Status: complete on 2026-10-28 (A1 to A11 recorded in the [acceptance record](P7_12_ACCEPTANCE.md) and the [P8 handoff](P8_HANDOFF.md); P7 accepted by the user on 2026-10-28 on candidate `2f1115b` and pull request #11 merged into `develop` the same day, merge commit `20b2ef0`; reconciled on 2026-10-26 with the approved [P7 forecast contract](P7_FORECAST_CONTRACT.md) (P7.02 S6)).** Refines the P7.12 row of section 5 and section 9 of [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: audit the P7 evidence of the READY candidate, record the limitations with owners, obtain the user's acceptance, update the status documents, write the P8 handoff, take the pull request through review and record the merge done by the user.
@@ -51,7 +51,7 @@ No new automated test; the audit covers T-P7-01 to T-P7-23.
 - (b) The user accepts with amendments — recorded as amendments with their owners
 
 ## 9. Acceptance Criteria
-- [ ] Every T-P7 row with evidence; limitations with owners
-- [ ] Audit decision and the user's acceptance recorded
-- [ ] P8 handoff written; status documents consistent
-- [ ] Pull request reviewed, findings resolved, merged by the user; post-merge state recorded
+- [x] Every T-P7 row with evidence; limitations with owners
+- [x] Audit decision and the user's acceptance recorded
+- [x] P8 handoff written; status documents consistent
+- [x] Pull request reviewed, findings resolved, merged by the user; post-merge state recorded (section 12 of the record)
