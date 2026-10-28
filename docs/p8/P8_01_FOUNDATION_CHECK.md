@@ -1,6 +1,6 @@
 # P8.01 – Foundation Check
 
-**Status (2026-10-28): in progress (S1 to S3 recorded; baseline run S4 and outcome S5 pending).** Plan: [P8_01_FOUNDATION_CHECK_PLAN.md](P8_01_FOUNDATION_CHECK_PLAN.md).
+**Status (2026-10-28): complete, outcome READY (section 5).** Plan: [P8_01_FOUNDATION_CHECK_PLAN.md](P8_01_FOUNDATION_CHECK_PLAN.md).
 
 User instruction (2026-10-28, chat): "P8 implementation".
 
@@ -81,9 +81,17 @@ No item is without a disposition.
 ## 4. Branch, seed commit and baseline run (S3, S4)
 
 - Branch `features/develop/P8` from `origin/develop` `8ed51c7`; status passages "P8 started" in AGENTS.md, README.md, DEVELOPMENT_PLAN.md and PHASE_P1_PLAN.md.
-- README package check (CONTRIBUTING.md section 4) on the seed working tree (Windows CRLF working-tree bytes, `core.autocrlf=true`): README.md (SHA-256 `5A8EC9B869FF304861BC4A8C8F46D31AC9391F712FDE1F3AFDB3B00A421F1BCB`), LICENSE and the export schema byte-identical in the package; packed SHA-512 `uWJObFon4fM1v7B3VCZiS7q7CJaC/Vk3VUntRUorv7x8+aOQjYwBly3ePfYFQv3kayLS9yD8QJntHcGxc/vf+w==` equals the restored hash; package consumer 47/47; the consumer lock was not committed. The committed-revision check is the `ci-local.ps1` run of S4.
-- Seed commit, draft pull request and baseline run: recorded after the run.
+- README package check (CONTRIBUTING.md section 4) on the seed working tree (LF bytes, identical to the committed blob of the seed commit): README.md (SHA-256 `5A8EC9B869FF304861BC4A8C8F46D31AC9391F712FDE1F3AFDB3B00A421F1BCB`), LICENSE and the export schema byte-identical in the package; packed SHA-512 `uWJObFon4fM1v7B3VCZiS7q7CJaC/Vk3VUntRUorv7x8+aOQjYwBly3ePfYFQv3kayLS9yD8QJntHcGxc/vf+w==` equals the restored hash; package consumer 47/47; the consumer lock was not committed. The committed-revision check is the `ci-local.ps1` run of S4.
+- Seed commit `5525ea11073c9cb5d347bbf889119fd592d635ca` (status passages and the S1 to S3 record), pushed; draft pull request #14 into `develop` opened; Auto-fix on.
+- `pwsh ./scripts/ci-local.ps1 -Commit 5525ea11073c9cb5d347bbf889119fd592d635ca -TargetRef 8ed51c725333168d6e072369343c4eb449f8356c -RunSettings coverage.runsettings`: exit 0, 2026-10-28T22:06:07Z to 22:07:26Z, run directory artifacts/ci/5525ea1-20261028T220607Z (gitignored); commits.json: commit `5525ea1...`, targetCommit `8ed51c7...`, two-pass.
+- Tests: Parsing 2947 of 2954 passed, 0 failed (the seven opt-in live and resource checks not executed), SchemaGeneration 46, Coverage 99, Coverage.Runner 56, package consumer 47.
+- Gate passed: 10248/10249 (99.99 %) at or above the baseline 10248/10249 of `8ed51c7` (the candidate changes Markdown files only); gate-result.json SHA-256 `79b88132aead3f0704190e94548ba313491fd7fa9b4d7a6e677569d537ea5ab9`; packed SHA-512 `ERtQChZQsl8OFFChz06Z/9vna3MHBHgYgTgQSy9PuBeAPQoMtGkRQ4WRQMnSikp4TcBeywUJqQEMdLP9WUfRCg==`.
+- Hosted CI for the seed commit `5525ea1`: run 40777302720 (`pull_request`, created 2026-10-28T22:06:02Z; the jobs run because the commit changes `README.md`).
+- Baseline for the P8 code steps: **10248/10249** native blocks for target `8ed51c7`. It is two covered blocks above the P7 gate 10246/10249 on `2f1115b`, with the same total: the test added by pull request #13 (`b4e09ae`, the null guard of the `ParserEndpointValidator` constructor) covers two blocks of unchanged production code. The baseline is valid while the pull-request base is `8ed51c7` and `coverage.runsettings` is unchanged; every P8 code step must strictly improve the unrounded ratio (one uncovered block remains).
 
 ## 5. Plan adjustments and outcome (S5)
 
-- Pending.
+- `PHASE_P8_PLAN.md` section 1 receives the "P8.01 extraction" table; status line updated.
+- Adjustment: the integration target is `8ed51c7` (the merge of pull request #12) instead of "`20b2ef0` or its documentation-only successor": the successor also contains CI-configuration and test changes (section 1) but no library change, so the contracts and the handoff foundation stand; the baseline is the remeasured 10248/10249 instead of the P7 gate 10246/10249.
+- Recorded for the user (not a plan adjustment): SDK 10.0.403 / runtime 10.0.14 is available since 2026-10-25; P8 stays on the pinned 10.0.402 unless the user decides an update (it would change `global.json`, `DEPENDENCIES.md` and CONTRIBUTING.md section 1 and require a new baseline).
+- Outcome: **READY**. Every field is resolved, the baseline run passed, no library code changed since `20b2ef0`, and every inherited limitation has a disposition.
