@@ -34,7 +34,7 @@ Every slice: roles and checks as in P8.03 section 5. Behavior already implemente
 **Tests**: `MosmixLRun_OneMessageWithEveryStep` (the step count of the payload equals the run), `MosmixSRun_OneMessageWithEveryStep`, `SameIdBothProducts_DistinctTopics`, `TwoLocations_DistinctTopics`, `ForecastPayload_HasNoMeasuredAt`, `ForecastRun_AlwaysForecastType`, `ObservationAndForecastTopics_NeverEqual_ForExampleConfiguration`, `StaleRun_MarkerInPayload` (`run_age_exceeded`), `LargestRunPayloadSize_Recorded` (a MOSMIX_L run with the maximum MF-07 time steps; the size is written to the test output and recorded).
 
 ### S3 Genericity
-**Tests**: `MqttTypes_ContainNoProviderLiterals` (a source-text scan of `src/WeatherParser.Parsing/Mqtt/`, case-insensitive: no occurrence of `dwd`, `osthessen`, `mosmix` or `haus/weather` outside XML documentation comments), `MqttSerializer_DependsOnlyOnMqttRulesAndJsonSerializer` (constructor parameter types).
+**Tests**: `MqttTypes_ContainNoProviderLiterals` (a source-text scan of the string literals in `src/WeatherParser.Parsing/Mqtt/`: no literal contains a provider token of C-50, C-68 or OW-03 (`dwd:`, `dwd-mosmix-s`, `dwd-mosmix-l`, `osthessenwetter`) or `haus/weather`; references to the approved entity types and members (`MosmixLocationList`, `ForecastRun.MosmixId`, `MosmixProduct`) and the approved placeholder names of MQ-04 (`mosmix_id`, `product`) are allowed; no comparison of a root's `Source` or provider value with a literal), `MqttSerializer_DependsOnlyOnMqttRulesAndJsonSerializer` (constructor parameter types).
 
 ## 6. Tests and Test IDs
 | Step-local case | T-P8 ID | Requirement IDs | Behavior and boundary |
