@@ -33,6 +33,9 @@ Every slice: roles and checks as in P8.03 section 5. Behavior already implemente
 ### S2 Forecast runs
 **Tests**: `MosmixLRun_OneMessageWithEveryStep` (the step count of the payload equals the run), `MosmixSRun_OneMessageWithEveryStep`, `SameIdBothProducts_DistinctTopics`, `TwoLocations_DistinctTopics`, `ForecastPayload_HasNoMeasuredAt`, `ForecastRun_AlwaysForecastType`, `ObservationAndForecastTopics_NeverEqual_ForExampleConfiguration`, `StaleRun_MarkerInPayload` (`run_age_exceeded`), `LargestRunPayloadSize_Recorded` (a MOSMIX_L run with the maximum MF-07 time steps; the size is written to the test output and recorded).
 
+### S2a Duplicate identity (MQ-15)
+**Tests**: `IdenticalDatasets_ByteIdenticalPayloads` (two builds from the same input), `SameDatasetMeasuredAt_ChangedQuantityMeasuredAt_DifferentPayloads` (the C-55 example: temperature at 12:00 in both, humidity at 11:50 and 11:55; same `source`, same dataset `measured_at`, different payload bytes and different per-quantity `measured_at`), `SameForecastRun_DifferentRetrievedAt_SameSourceAndIssuedAt` (two parses of one fixture at different clock times: same topic, `source` and `issued_at`, different `retrieved_at`).
+
 ### S3 Genericity
 **Tests**: `MqttTypes_ContainNoProviderLiterals` (a source-text scan of the string literals in `src/WeatherParser.Parsing/Mqtt/`: no literal contains a provider token of C-50, C-68 or OW-03 (`dwd:`, `dwd-mosmix-s`, `dwd-mosmix-l`, `osthessenwetter`) or `haus/weather`; references to the approved entity types and members (`MosmixLocationList`, `ForecastRun.MosmixId`, `MosmixProduct`) and the approved placeholder names of MQ-04 (`mosmix_id`, `product`) are allowed; no comparison of a root's `Source` or provider value with a literal), `MqttSerializer_DependsOnlyOnMqttRulesAndJsonSerializer` (constructor parameter types).
 
@@ -41,6 +44,7 @@ Every slice: roles and checks as in P8.03 section 5. Behavior already implemente
 |---|---|---|---|
 | S1 | T-P8-07, T-P8-11 | REQ-050, REQ-015 | Observations and lists from every source |
 | S2 | T-P8-09, T-P8-10 | REQ-061, REQ-062, REQ-105 | Forecast separation, topics and completeness |
+| S2a | T-P8-17 | REQ-062, C-55 | Duplicate identity |
 | S3 | T-P8-11 | REQ-015 | Generic serializer |
 | all | T-P8-16 | REQ-085, REQ-086 | Evidence; coverage |
 

@@ -4,7 +4,7 @@
 
 ## 1. Goal and Scope
 Goal: audit the P8 evidence, summarize the acceptance of the complete library across P2 and P4 to P8 as the gate for P3, obtain the user's acceptance, update the status documents, write the P3 handoff and bring the pull request through review to the user's merge.
-In scope: `docs/p8/P8_10_ACCEPTANCE.md` with A1 review identity, A2 evidence matrix T-P8-01 to T-P8-16, A3 contract summary (MQ-01 to MQ-14), A4 limitations and open items with owners, A5 audit decision, a library acceptance summary (one row per library capability with the accepting phase, acceptance record and candidate), A7 user decision, A8 status updates, A9 to A11 ready for review, review fixes and merge; `docs/p8/P3_HANDOFF.md`; status passages.
+In scope: `docs/p8/P8_10_ACCEPTANCE.md` with A1 review identity, A2 evidence matrix T-P8-01 to T-P8-17, A3 contract summary (MQ-01 to MQ-15), A4 limitations and open items with owners, A5 audit decision, a library acceptance summary (one row per library capability with the accepting phase, acceptance record and candidate), A7 user decision, A8 status updates, A9 to A11 ready for review, review fixes and merge; `docs/p8/P3_HANDOFF.md`; status passages.
 Out of scope with owner: P3 itself; publication → P9.
 
 ## 2. Preconditions and Inputs
@@ -38,7 +38,7 @@ Out of scope with owner: P3 itself; publication → P9.
 ## 6. Tests and Test IDs
 | Step-local case | T-P8 ID | Requirement IDs | Behavior and boundary |
 |---|---|---|---|
-| S1 | T-P8-01 to T-P8-16 | all P8 rows | Evidence audit |
+| S1 | T-P8-01 to T-P8-17 | all P8 rows | Evidence audit |
 
 ## 7. Evidence to Record
 - Audit decision, user wording and date, review rounds and fixes, merge commit

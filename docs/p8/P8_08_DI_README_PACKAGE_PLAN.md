@@ -4,7 +4,7 @@
 
 ## 1. Goal and Scope
 Goal: document the MQTT serializer and the complete library for consumers and bring the status documents in line with the implemented state.
-In scope: README section "MQTT serializer (library)": message types and supported roots, templates and placeholders, validation rules, QoS and retain defaults, payload equality with the JSON export, the payload bound and its limit (it bounds message acceptance, not the memory of JSON serialization, C-10), error IDs, the DI registration (`MqttTopicOptions` registered by every consumer of `AddWeatherParsing`, as the other options types), the transport boundary (no broker, credentials or TLS in the library; P3), the OW-14 restriction; the README list of options types every consumer registers; the schema compatibility note (C-105, C-121) restated for consumers; README feature status of the MQTT serializer from planned to implemented; the status passages of AGENTS.md, DEVELOPMENT_PLAN.md and PHASE_P1_PLAN.md; package check.
+In scope: README section "MQTT serializer (library)": message types and supported roots, templates and placeholders, validation rules, QoS and retain defaults, payload equality with the JSON export, the payload bound and its limit (it bounds message acceptance, not the memory of JSON serialization, C-10), error IDs, the DI registration (`MqttTopicOptions` registered by every consumer of `AddWeatherParsing`, as the other options types), the transport boundary (no broker, credentials or TLS in the library; P3), the duplicate-handling rule of MQ-15 (observations: compare the per-quantity `measured_at` values or the payload bytes, never the dataset `measured_at` alone, C-55; forecasts: `source` and `issued_at` identify the run), the OW-14 restriction; the README list of options types every consumer registers; the schema compatibility note (C-105, C-121) restated for consumers; README feature status of the MQTT serializer from planned to implemented; the status passages of AGENTS.md, DEVELOPMENT_PLAN.md and PHASE_P1_PLAN.md; package check.
 Out of scope with owner: CLI documentation → P3; release notes → P9.
 
 ## 2. Preconditions and Inputs
@@ -35,7 +35,7 @@ Out of scope with owner: CLI documentation → P3; release notes → P9.
 ## 6. Tests and Test IDs
 | Step-local case | T-P8 ID | Requirement IDs | Behavior and boundary |
 |---|---|---|---|
-| S1, S2 | T-P8-15 | REQ-090, REQ-092 | README content and status; package check |
+| S1, S2 | T-P8-15, T-P8-17 (README rule) | REQ-090, REQ-092, REQ-062 | README content and status; duplicate rule; package check |
 
 ## 7. Evidence to Record
 - README diff summary, package check result, test result, Codex rounds

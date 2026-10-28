@@ -3,17 +3,17 @@
 **Status: planned on 2026-10-28; not started.** Refines section 3 and the P8.02 row of section 5 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
-Goal: record the MQTT protocol facts the library must respect, decide MQ-01 to MQ-14 with the user, and reconcile the phase plan and the step plans P8.03 to P8.10 with the approved contract.
-In scope: retrieval and record of the official MQTT 3.1.1 and 5.0 specifications (URL, date, size, SHA-256; not committed); the contract record `docs/p8/P8_MQTT_CONTRACT.md` with MQ-01 to MQ-14, options, recommendation and rationale; the Codex review loop of the contract draft (up to 10 rounds, AGENTS.md "Contract decisions"); user approval; reconciliation; the P8.02 section of `docs/p8/P8_VERIFICATION.md`.
+Goal: record the MQTT protocol facts the library must respect, decide MQ-01 to MQ-15 with the user, and reconcile the phase plan and the step plans P8.03 to P8.10 with the approved contract.
+In scope: retrieval and record of the official MQTT 3.1.1 and 5.0 specifications (URL, date, size, SHA-256; not committed); the contract record `docs/p8/P8_MQTT_CONTRACT.md` with MQ-01 to MQ-15, options, recommendation and rationale; the Codex review loop of the contract draft (up to 10 rounds, AGENTS.md "Contract decisions"); user approval; reconciliation; the P8.02 section of `docs/p8/P8_VERIFICATION.md`.
 Out of scope with owner: production code and tests → P8.03 onwards; broker behavior, TLS and authentication → P3.
 
 ## 2. Preconditions and Inputs
 - P8.01 READY.
-- Inputs: REQ-015, REQ-016, REQ-050, REQ-061, REQ-062, REQ-069, REQ-075; C-01, C-11, C-15, C-50, C-68, C-88, C-90, C-92, C-107 to C-109; OW-03, OW-14; MF-03; the export entities and `IJsonExportSerializer`; the OASIS specifications MQTT Version 3.1.1 (OASIS Standard, 2014) and MQTT Version 5.0 (OASIS Standard, 2019).
+- Inputs: REQ-015, REQ-016, REQ-050, C-55 (duplicate handling left to P8), REQ-061, REQ-062, REQ-069, REQ-075; C-01, C-11, C-15, C-50, C-68, C-88, C-90, C-92, C-107 to C-109; OW-03, OW-14; MF-03; the export entities and `IJsonExportSerializer`; the OASIS specifications MQTT Version 3.1.1 (OASIS Standard, 2014) and MQTT Version 5.0 (OASIS Standard, 2019).
 - One retrieval per specification document, authorized by this step plan; no broker contact.
 
 ## 3. Decisions Required
-The decisions are the rows MQ-01 to MQ-14 of PHASE_P8_PLAN.md section 3; each is decided by the user in this step. The contract states, for every row, the options, the recommendation, the rejected options with the reason and the step it blocks. The orchestrating agent additionally records:
+The decisions are the rows MQ-01 to MQ-15 of PHASE_P8_PLAN.md section 3; each is decided by the user in this step. The contract states, for every row, the options, the recommendation, the rejected options with the reason and the step it blocks. The orchestrating agent additionally records:
 
 | Decision | Options | Recommended | Decided by | Blocks |
 |---|---|---|---|---|
@@ -23,7 +23,7 @@ The decisions are the rows MQ-01 to MQ-14 of PHASE_P8_PLAN.md section 3; each is
 ## 4. Artifacts
 | Path | Action | Content |
 |---|---|---|
-| `docs/p8/P8_MQTT_CONTRACT.md` | Create | Section 1 approval record, section 2 protocol facts with sources, section 3 decisions MQ-01 to MQ-14, section 4 review rounds |
+| `docs/p8/P8_MQTT_CONTRACT.md` | Create | Section 1 approval record, section 2 protocol facts with sources, section 3 decisions MQ-01 to MQ-15, section 4 review rounds |
 | `PHASE_P8_PLAN.md` | Change | "Approved contract" paragraph after section 3; status line |
 | `docs/p8/P8_03_*` to `docs/p8/P8_10_*` | Change | Reconciliation with the approved rows (names, IDs, defaults) |
 | `docs/p8/P8_VERIFICATION.md` | Change | P8.02 section |
@@ -35,7 +35,7 @@ No slice changes behavior, so there is no Red step.
 - Retrieve both specifications from docs.oasis-open.org into a scratch directory outside the repository; record URL, date, size and SHA-256; extract with section references: UTF-8 string encoding and its prohibited code points, topic name length, wildcard characters, the `$` prefix rule, empty levels, the remaining-length maximum, the PUBLISH header fields per QoS, the retain flag semantics.
 
 ### S2 Contract draft
-- Write MQ-01 to MQ-14 from section 3 of the phase plan, refined by S1; every number traceable to a specification section; every planning name marked (Proposed) or fixed.
+- Write MQ-01 to MQ-15 from section 3 of the phase plan, refined by S1; every number traceable to a specification section; every planning name marked (Proposed) or fixed.
 
 ### S3 Codex review loop
 - Five-angle read-only review of the draft; each finding verified against the specifications, the requirements and the code; confirmed findings fixed by the orchestrating agent; rounds and counts recorded in the contract until 0 findings or the tenth round (then the remaining findings go to the user with the agent's assessment).
@@ -60,5 +60,5 @@ No slice changes behavior, so there is no Red step.
 
 ## 9. Acceptance Criteria
 - [ ] Protocol facts recorded with sources and hashes
-- [ ] MQ-01 to MQ-14 approved by the user, wording and date recorded
+- [ ] MQ-01 to MQ-15 approved by the user, wording and date recorded
 - [ ] Phase plan and step plans reconciled; Codex 0 findings or reported
