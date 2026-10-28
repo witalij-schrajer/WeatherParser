@@ -1,6 +1,6 @@
 # P8.02 – Protocol Facts and MQTT Message Contract: Implementation Plan
 
-**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; not started.** Refines section 3 and the P8.02 row of section 5 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; started on 2026-10-28: S1 (protocol facts) and S2 (contract draft) done, S3 review loop on pull request #14 in progress, S4 approval and S5 reconciliation pending ([P8.02 section of the verification record](P8_VERIFICATION.md#2-p802--protocol-facts-and-mqtt-message-contract)).** Refines section 3 and the P8.02 row of section 5 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: record the MQTT protocol facts the library must respect, decide MQ-01 to MQ-15 with the user, and reconcile the phase plan and the step plans P8.03 to P8.10 with the approved contract.
@@ -38,7 +38,7 @@ No slice changes behavior, so there is no Red step.
 - Write MQ-01 to MQ-15 from section 3 of the phase plan, refined by S1; every number traceable to a specification section; every planning name marked (Proposed) or fixed.
 
 ### S3 Codex review loop
-- Since the user decision dated 2026-10-28 (AGENTS.md "Phase implementation"): the loop runs through the automatic Codex review of pull request #14 (marked ready for review; draft while fixing; repeated until a round reports 0 findings), and each round is recorded in the contract section 6; the user is asked for the approval only after the 0-finding round; after the approval the pull request returns to draft for P8.03 onwards.
+- Since the user decision dated 2026-10-28 (AGENTS.md "Phase implementation"): the loop runs through the automatic Codex review of pull request #14 (marked ready for review; draft while fixing; repeated until a round reports 0 findings), and each round is recorded in the contract section 6; the user is asked for the approval only after the 0-finding round; if the tenth round still reports findings, the remaining findings and the agent's check of each go to the user, who decides how to continue (not an approval; AGENTS.md "Phase implementation" step 2); after the approval the pull request returns to draft for P8.03 onwards.
 - Five-angle read-only review of the draft; each finding verified against the specifications, the requirements and the code; confirmed findings fixed by the orchestrating agent; rounds and counts recorded in the contract until 0 findings or the tenth round (then the remaining findings go to the user with the agent's assessment).
 
 ### S4 User approval

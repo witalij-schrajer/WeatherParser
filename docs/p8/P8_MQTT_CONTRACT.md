@@ -82,3 +82,4 @@ Codex five-angle review (read-only) of this draft through the automatic review o
 
 | Round | Findings | Disposition |
 | --- | --- | --- |
+| 1 (head `3547d6f`, run 40778435386) | 2: [P2] the new approval gate (0 findings before approval) and the ten-round escalation of contract reviews prescribed incompatible actions after a tenth round with findings; [P3] the status lines of PHASE_P8_PLAN.md and the P8.01 and P8.02 step plans contradicted the verification record | Both confirmed against AGENTS.md, the step plans and the record and fixed: AGENTS.md "Phase implementation" step 2 and P8.02 S3 now say that after a tenth round with findings the user only decides how to continue (no approval request) and that approval follows a 0-finding round or the user's explicit decision on named findings; the three status lines updated |
