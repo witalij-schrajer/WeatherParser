@@ -15,7 +15,7 @@ Out of scope with owner: per-source message evidence → P8.06; package consumpt
 | Decision | Options | Recommended | Decided by | Blocks |
 |---|---|---|---|---|
 | Failure precedence | Caller cancellation → unsupported type → missing mapping → placeholder value → topic → serialization → payload size / any other order | As stated: cheap configuration checks before serialization, so an unmapped type never serializes; cancellation observed before any work and passed to the JSON serializer | Orchestrator, recorded (MQ-13) | S2 |
-| Size enforcement | A bounded write stream that fails at `MaxPayloadBytes + 1` / measure after writing | A bounded write stream, so an oversized payload is never fully buffered; the bound counts bytes exactly | Orchestrator, recorded (MQ-11) | S3 |
+| Size enforcement | A: a bounded destination stream that fails at `MaxPayloadBytes + 1` / B: changing `JsonExportSerializer` to enforce the bound while serializing | A, with its limit stated: `JsonExportSerializer` serializes the whole document into its own buffer before copying it to the destination (C-10 buffer-then-copy, so nothing partial is ever written), so `MaxPayloadBytes` bounds the accepted message and the second copy, not the memory used during JSON serialization. That memory is bounded by the root the caller supplies; the library's own parsers produce bounded roots (MF-07 retained-size bounds, the P5 and P6 limits). B would change the export serializer contract (C-10, C-92) and is out of P8's scope; it needs a recorded contract decision if a consumer need appears | Orchestrator, recorded (MQ-11) | S3 |
 | Test doubles | Strict mocks of the rule services in unit tests / real rule services | Unit tests with the real rule services and a strict mock of `IJsonExportSerializer` only where a failure must be injected; contract tests with the real JSON serializer (REQ-077) | Orchestrator, recorded | S1 to S3 |
 
 ## 4. Artifacts
@@ -39,7 +39,7 @@ Every slice: roles and checks as in P8.03 section 5.
 **Green**: payload buffering and failure mapping.
 
 ### S3 Payload bound and diagnostics
-**Red**: `SerializeAsync_PayloadAtBound_Accepted`, `SerializeAsync_PayloadOneByteAbove_ThrowsPayloadTooLarge`, `SerializeAsync_PayloadTooLarge_NeverBufferedBeyondBound`, `SerializeAsync_FailureMessages_NoPayloadContent` (a root with a distinctive marker in the location name: the marker appears in no exception message), `MqttMessageSerializer_HasNoLoggerDependency`.
+**Red**: `SerializeAsync_PayloadAtBound_Accepted`, `SerializeAsync_PayloadOneByteAbove_ThrowsPayloadTooLarge`, `SerializeAsync_PayloadTooLarge_DestinationNeverExceedsBoundPlusOne` (the bounded destination stops copying at `MaxPayloadBytes + 1` bytes; JSON serialization itself still buffers the whole document, as documented), `SerializeAsync_FailureMessages_NoPayloadContent` (a root with a distinctive marker in the location name: the marker appears in no exception message), `MqttMessageSerializer_HasNoLoggerDependency`.
 **Green**: bounded stream and messages.
 
 **Refactor**: with all tests green.
@@ -56,7 +56,7 @@ Every slice: roles and checks as in P8.03 section 5.
 - Red names and failures, counts, coverage counters, authorship, Codex rounds; the list of updated container setups
 
 ## 8. Risks and Limitations
-- (a) The payload is buffered in memory up to the bound; for the largest expected payload (a MOSMIX_L run) the size is recorded in P8.06
+- (a) The JSON serializer buffers the complete document before the bound is checked (C-10), so `MaxPayloadBytes` limits message acceptance, not peak serialization memory; peak memory follows the size of the caller's root. The largest payload the library's parsers can produce (a MOSMIX_L run at the MF-07 bounds) is measured and recorded in P8.06, and the README states the limit (P8.08)
 
 ## 9. Acceptance Criteria
 - [ ] Every listed test green with recorded Red
