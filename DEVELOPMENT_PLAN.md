@@ -150,6 +150,8 @@ Verify the generic, configurable-topic MQTT serializer without broker connection
 
 **Acceptance:** Complete library functions for DWD observations, OsthessenWetter and both MOSMIX products verified through the package API. Independently consume the library without a CLI or broker. Begin P3 only after this library acceptance; example transport, broker acknowledgment tests and five-command integration belong to P3.
 
+Phase plan and step plans (written on 2026-10-28 on the user's instruction, under review, not yet accepted): [PHASE_P8_PLAN.md](PHASE_P8_PLAN.md). P8 starts only on a separate instruction of the user.
+
 ### P3 – CLI and export pipeline
 
 Prerequisite: P8 and complete library acceptance. Implement the CLI solely as a consumer of the completed package, including example MQTT transport, QoS-1 acknowledgment handling and all five commands. Library-phase acceptance uses direct API tests; command spellings in those phases identify the corresponding library behavior and do not require an earlier CLI.
