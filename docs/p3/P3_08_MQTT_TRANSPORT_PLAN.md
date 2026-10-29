@@ -33,7 +33,7 @@ Every slice: roles and checks as in P3.03 section 5.
 
 ### S1 Publication and acknowledgment
 **Red**: `Publish_SendsTopicPayloadQosRetainUnchanged` (byte comparison with the `MqttMessage`), `Publish_SuccessOnlyAfterAcknowledgment` (the adapter mock completes the acknowledgment later: no success is reported before it), `Publish_NegativeAcknowledgment_FailsWithMqttPublishFailed`, `Publish_MessageWithQosOtherThanOne_RefusedBeforeConnect`, `Publish_StationListRetained_RefusedBeforeConnect`, `Publish_ObservationNotRetained_RefusedBeforeConnect`, `Connect_TlsByDefault`, `Connect_Unencrypted_OnlyWithAllowUnencrypted_AndWarning`, `Connect_CustomCaFile_Used`, `Connect_CertificateValidationNeverDisabled` (no configuration path sets an accept-all validation callback), `Connect_CredentialsFromProvider_NeverLogged`.
-**Green**: publisher and adapter.
+**Green**: the publisher against the adapter interface (connection options such as TLS, CA file and credentials are passed to the adapter as data and asserted on the strict mock); the real adapter over the client package is not written in S1, S2 or S3: the composition root registers a placeholder adapter (Proposed: `NotImplementedMqttClientAdapter`) that fails every call with `MQTT-CONNECT-FAILED` until S4.
 
 ### S2 Timeouts and attempts
 **Red**: `Connect_Timeout_FailsWithMqttConnectFailed`, `Publish_Timeout_RetriedWithinBound`, `Publish_AttemptsExhausted_FailsWithMqttPublishTimeout`, `Publish_AcknowledgedMessage_NeverRepublished` (a connection drop after the acknowledgment of message 1 of 3: messages 2 and 3 are retried, message 1 is not), `Publish_AuthorizationFailure_NotRetried`, `Delays_UseInjectedTimeProvider` (no real sleeping in unit tests).
@@ -44,8 +44,8 @@ Every slice: roles and checks as in P3.03 section 5.
 **Green**: summary and outcome wiring.
 
 ### S4 Broker integration test (opt-in)
-**Red** (run with the variable set against the developer test broker authorized for this step; this run is the step's own Red → Green evidence and is distinct from the candidate run of P3.11 S4): `Broker_PublishAndSubscribe_RetainedObservationReceivedOnce`, `Broker_StationList_NotRetained`, `Broker_SecondRunSameSource_ReplacesRetainedMessage`, `Broker_WrongCredentials_Rejected`, `Broker_TlsWithCustomCa` (if the authorized broker offers TLS); without the variable every test is skipped with the reason.
-**Green**: the adapter against the real client.
+**Red** (run with the variable set against the developer test broker authorized for this step; this run is the step's own Red → Green evidence and is distinct from the candidate run of P3.11 S4): `Broker_PublishAndSubscribe_RetainedObservationReceivedOnce`, `Broker_StationList_NotRetained`, `Broker_SecondRunSameSource_ReplacesRetainedMessage`, `Broker_WrongCredentials_Rejected`, `Broker_TlsWithCustomCa` (if the authorized broker offers TLS); without the variable every test is skipped with the reason. The expected Red: with the placeholder adapter of S1 every test fails with `MQTT-CONNECT-FAILED`, because no real client exists yet; the run with this failure is recorded before the adapter is written. In addition, offline adapter tests are written first and fail against the placeholder: `Adapter_MapsConnectOptions_ToClientOptions` (host, port, protocol version, TLS, CA file, credentials, keep-alive, clean session), `Adapter_PublishAwaitsAcknowledgment` and `Adapter_CancellationTokenPassedToClient` (through the client package's in-process or loopback facilities where it offers them, otherwise recorded as opt-in only, section 8).
+**Green**: the adapter over the real client package replaces the placeholder; the opt-in run against the authorized developer broker and the offline adapter tests pass.
 
 **Refactor**: with all tests green.
 
