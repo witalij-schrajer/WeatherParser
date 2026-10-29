@@ -1,16 +1,19 @@
 using FluentAssertions;
 using Moq;
+using WeatherParser.Cli.Arguments;
 
 namespace WeatherParser.Cli.Tests;
 
 /// <summary>
-/// Tests the <see cref="Program.Run"/> method.
+/// Verifies the argument handling of the entry point before any container exists: help, usage errors and validated commands (CL-03, CL-07, T-P3-04).
 /// </summary>
 [TestClass]
 public sealed class ProgramRunTests
 {
     private MockRepository _mocks = null!;
     private Mock<IHelpWriter> _help = null!;
+    private Mock<ICommandLineParser> _parser = null!;
+    private Mock<ICommandRequestValidator> _validator = null!;
     private StringWriter _stdout = null!;
     private StringWriter _stderr = null!;
 
@@ -22,6 +25,8 @@ public sealed class ProgramRunTests
     {
         _mocks = new MockRepository(MockBehavior.Strict);
         _help = _mocks.Create<IHelpWriter>();
+        _parser = _mocks.Create<ICommandLineParser>();
+        _validator = _mocks.Create<ICommandRequestValidator>();
         _stdout = new StringWriter();
         _stderr = new StringWriter();
     }
@@ -35,55 +40,94 @@ public sealed class ProgramRunTests
         _mocks.VerifyAll();
     }
 
+    private int Run(params string[] args) => Program.Run(args, _stdout, _stderr, _help.Object, _parser.Object, _validator.Object);
+
     /// <summary>
     /// Verifies that help is written to stdout and returns zero.
     /// </summary>
     [TestMethod]
-    public void Run_Help_WritesHelpToStdout_ReturnsZero()
+    [TestCategory("T-P3-04")]
+    public void Run_HelpRequest_WritesHelpToStdout_ReturnsZero()
     {
+        _parser.Setup(p => p.Parse(It.Is<IReadOnlyList<string>>(a => a.SequenceEqual(new[] { "--Help" }))))
+            .Returns(new HelpRequest(null));
         _help.Setup(h => h.WriteHelp(_stdout));
 
-        var exitCode = Program.Run(new[] { "--Help" }, _stdout, _stderr, _help.Object);
+        var exitCode = Run("--Help");
         exitCode.Should().Be(0);
 
         _stderr.ToString().Should().BeEmpty();
     }
 
     /// <summary>
-    /// Verifies that help in other case is accepted.
+    /// Verifies that help for a command is written to stdout and returns zero.
     /// </summary>
     [TestMethod]
-    public void Run_HelpInOtherCase_Accepted()
+    [TestCategory("T-P3-04")]
+    public void Run_HelpRequestForCommand_WritesCommandHelp()
     {
-        _help.Setup(h => h.WriteHelp(_stdout));
+        _parser.Setup(p => p.Parse(It.Is<IReadOnlyList<string>>(a => a.SequenceEqual(new[] { "--ParseDWD", "--Help" }))))
+            .Returns(new HelpRequest(CliCommand.ParseDwd));
+        _help.Setup(h => h.WriteCommandHelp(_stdout, CliCommand.ParseDwd));
 
-        var exitCode = Program.Run(new[] { "--help" }, _stdout, _stderr, _help.Object);
+        var exitCode = Run("--ParseDWD", "--Help");
         exitCode.Should().Be(0);
 
         _stderr.ToString().Should().BeEmpty();
     }
 
     /// <summary>
-    /// Verifies that no arguments writes help to stderr and returns one.
+    /// Verifies that a parser usage error is written to stderr and help is written to stderr, then returns one.
     /// </summary>
     [TestMethod]
-    public void Run_NoArguments_WritesHelpToStderr_ReturnsOne()
+    [TestCategory("T-P3-04")]
+    public void Run_ParserUsageError_WritesErrorLineAndHelpToStderr_ReturnsOne()
     {
+        _parser.Setup(p => p.Parse(It.Is<IReadOnlyList<string>>(a => a.SequenceEqual(new[] { "--ParseDWD", "--Bogus" }))))
+            .Returns(new UsageError("CLI-ARGUMENT-INVALID", "Unknown option '--Bogus'."));
         _help.Setup(h => h.WriteHelp(_stderr));
 
-        var exitCode = Program.Run(Array.Empty<string>(), _stdout, _stderr, _help.Object);
+        var exitCode = Run("--ParseDWD", "--Bogus");
         exitCode.Should().Be(1);
 
+        _stderr.ToString().Should().StartWith("CLI-ARGUMENT-INVALID: Unknown option '--Bogus'." + Environment.NewLine);
         _stdout.ToString().Should().BeEmpty();
     }
 
     /// <summary>
-    /// Verifies that other arguments result in not implemented and returns one.
+    /// Verifies that a validator usage error is written to stderr and help is written to stderr, then returns one.
     /// </summary>
     [TestMethod]
-    public void Run_OtherArguments_NotImplemented_ReturnsOne()
+    [TestCategory("T-P3-04")]
+    public void Run_ValidatorUsageError_WritesErrorLineAndHelpToStderr_ReturnsOne()
     {
-        var exitCode = Program.Run(new[] { "--ParseDWD" }, _stdout, _stderr, _help.Object);
+        var parsed = new ParsedCommandLine(CliCommand.SelectDwd, new Dictionary<string, string>(), new HashSet<string>());
+        _parser.Setup(p => p.Parse(It.Is<IReadOnlyList<string>>(a => a.SequenceEqual(new[] { "--SelectDWD" }))))
+            .Returns(parsed);
+        _validator.Setup(v => v.Validate(parsed))
+            .Returns(new UsageError("COORDINATE-INVALID", "Latitude out of range."));
+        _help.Setup(h => h.WriteHelp(_stderr));
+
+        var exitCode = Run("--SelectDWD");
+        exitCode.Should().Be(1);
+
+        _stderr.ToString().Should().StartWith("COORDINATE-INVALID: Latitude out of range." + Environment.NewLine);
+    }
+
+    /// <summary>
+    /// Verifies that a valid command results in 'not implemented' error and returns one.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-04")]
+    public void Run_ValidCommand_NotImplemented_ReturnsOne()
+    {
+        var parsed = new ParsedCommandLine(CliCommand.ParseDwd, new Dictionary<string, string>(), new HashSet<string>());
+        _parser.Setup(p => p.Parse(It.Is<IReadOnlyList<string>>(a => a.SequenceEqual(new[] { "--ParseDWD" }))))
+            .Returns(parsed);
+        _validator.Setup(v => v.Validate(parsed))
+            .Returns(new ValidatedCommand(new ParseDwdRequest(new CommonOptions(OutputFormat.Mqtt, null, null, false), "00044")));
+
+        var exitCode = Run("--ParseDWD");
         exitCode.Should().Be(1);
 
         _stderr.ToString().Should().Be("The command is not implemented yet." + Environment.NewLine);
@@ -107,6 +151,26 @@ public sealed class ProgramRunTests
         finally
         {
             Console.SetOut(originalOut);
+        }
+    }
+
+    /// <summary>
+    /// Verifies that main with invalid arguments writes error to console error and returns one.
+    /// </summary>
+    [TestMethod]
+    public void Main_InvalidArguments_WritesErrorToConsoleError_ReturnsOne()
+    {
+        var originalErr = Console.Error;
+        try
+        {
+            Console.SetError(_stderr);
+            var exitCode = Program.Main(new[] { "--ParseDWD", "--Langitude", "1" });
+            exitCode.Should().Be(1);
+            _stderr.ToString().Should().StartWith("CLI-ARGUMENT-INVALID: Unknown option '--Langitude'." + Environment.NewLine);
+        }
+        finally
+        {
+            Console.SetError(originalErr);
         }
     }
 }

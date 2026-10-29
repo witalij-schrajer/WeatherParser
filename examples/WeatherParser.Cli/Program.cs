@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using WeatherParser.Cli.Arguments;
+using WeatherParser.Parsing.Geography;
 
 namespace WeatherParser.Cli;
 
@@ -14,38 +16,50 @@ public static class Program
     /// <returns>The process exit code.</returns>
     public static int Main(string[] args)
     {
-        return Run(args, Console.Out, Console.Error, new HelpWriter());
+        return Run(args, Console.Out, Console.Error, new HelpWriter(), new CommandLineParser(), new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()));
     }
 
     /// <summary>
-    /// Handles the invocations that need no container: help and, provisionally until P3.04, every other invocation (CL-07).
+    /// Handles every invocation before the container exists: arguments, help and usage errors (CL-03, CL-07); valid commands report 'not implemented' until P3.05 to P3.07.
     /// </summary>
     /// <param name="args">The command-line arguments.</param>
     /// <param name="standardOutput">The standard output writer.</param>
     /// <param name="standardError">The standard error writer.</param>
     /// <param name="helpWriter">The help writer.</param>
+    /// <param name="parser">The command-line parser.</param>
+    /// <param name="validator">The command request validator.</param>
     /// <returns>The process exit code.</returns>
-    public static int Run(string[] args, TextWriter standardOutput, TextWriter standardError, IHelpWriter helpWriter)
+    public static int Run(string[] args, TextWriter standardOutput, TextWriter standardError, IHelpWriter helpWriter, ICommandLineParser parser, ICommandRequestValidator validator)
     {
         ArgumentNullException.ThrowIfNull(args);
         ArgumentNullException.ThrowIfNull(standardOutput);
         ArgumentNullException.ThrowIfNull(standardError);
         ArgumentNullException.ThrowIfNull(helpWriter);
+        ArgumentNullException.ThrowIfNull(parser);
+        ArgumentNullException.ThrowIfNull(validator);
 
-        if (args.Length == 1 && string.Equals(args[0], "--Help", StringComparison.OrdinalIgnoreCase))
+        var result = parser.Parse(args);
+        if (result is ParsedCommandLine parsed)
         {
-            helpWriter.WriteHelp(standardOutput);
-            return 0;
+            result = validator.Validate(parsed);
         }
 
-        if (args.Length == 0)
+        switch (result)
         {
-            helpWriter.WriteHelp(standardError);
-            return 1;
+            case HelpRequest { Command: null }:
+                helpWriter.WriteHelp(standardOutput);
+                return 0;
+            case HelpRequest help:
+                helpWriter.WriteCommandHelp(standardOutput, help.Command.Value);
+                return 0;
+            case UsageError error:
+                standardError.WriteLine($"{error.ErrorId}: {error.Message}");
+                helpWriter.WriteHelp(standardError);
+                return 1;
+            default:
+                standardError.WriteLine("The command is not implemented yet.");
+                return 1;
         }
-
-        standardError.WriteLine("The command is not implemented yet.");
-        return 1;
     }
 
     /// <summary>

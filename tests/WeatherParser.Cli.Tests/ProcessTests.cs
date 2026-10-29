@@ -111,4 +111,23 @@ public sealed class ProcessTests
         result.TimedOut.Should().BeTrue();
         sw.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(25));
     }
+
+    /// <summary>
+    /// Verifies that invalid arguments fail with a usage error before any configuration is read and without creating a file (REQ-010, CL-03).
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-03")]
+    [DataRow("--ParseDWD --Langitude 1", "CLI-ARGUMENT-INVALID")]
+    [DataRow("--SelectDWD --Latitude 91 --Longitude 9 --Altitude 1 --MaxDistance 1 --MaxAltDifference 1", "COORDINATE-INVALID")]
+    [DataRow("--ParseDWD --Output json --OutputFile out.json --Config missing-config.json --Bogus x", "CLI-ARGUMENT-INVALID")]
+    [DataRow("--ParseDWD --ParseOstHessen", "CLI-COMMAND-CONFLICT")]
+    public async Task Process_InvalidArguments_NoConfigurationRead_NoFile(string arguments, string errorId)
+    {
+        var result = await CliProcess.RunCliAsync(arguments.Split(' '), _workingDirectory, _timeout);
+        result.TimedOut.Should().BeFalse();
+        result.ExitCode.Should().NotBe(0);
+        result.StandardOutput.Should().BeEmpty();
+        result.StandardError.Should().StartWith(errorId + ":");
+        Directory.EnumerateFileSystemEntries(_workingDirectory).Should().BeEmpty();
+    }
 }
