@@ -1,6 +1,6 @@
 # P3.05 – Configuration and Secrets: Implementation Plan
 
-**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.05 row of section 5 and the "Configuration" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); reconciled on 2026-10-29 with the [P3 CLI contract](P3_CLI_CONTRACT.md) approved by the user on 2026-10-29 ("Approve all"), section 10 of this plan; where this plan's earlier text differs, section 10 and the contract win.** Refines the P3.05 row of section 5 and the "Configuration" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: load one configuration deterministically, validate it before any retrieval, forward its values unchanged to the library's consumer registrations, resolve the DWD station by the approved precedence and keep credentials out of arguments, files in Git and logs.
@@ -63,3 +63,9 @@ Every slice: roles and checks as in P3.03 section 5.
 - [ ] Every listed test green with recorded Red
 - [ ] Every configuration error detected before retrieval; no credential in arguments, Git, logs or exceptions
 - [ ] Example configuration valid and free of private data; coverage gate passed; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract (P3.02 S5)
+
+- CL-04 A and CL-05: the section and member names of the approved CL-05 row (`Dwd`, `OsthessenWetter`, `Mosmix`, `Mqtt`, `Limits`, `Http`; member names equal to the library property names); `Topics` entries have only `TopicTemplate`; durations in the `[d.]hh:mm:ss` form; comments and trailing commas rejected.
+- CL-05 topic preflight: added tests `Mqtt_MissingMappingForCommand_ConfigError_ExitTwo_ZeroRequests` (one case per command and message type) and `JsonMode_MqttSectionAbsent_EmptyTopicOptionsRegistered`.
+- CL-06 A: both environment variables or neither; environment variables and `CredentialsFile` together give `CLI-CREDENTIALS-INVALID`; the credential file has exactly `Username` and `Password`; the Linux check requires ownership by the current user and no group or other permission bits; `.gitignore` entries `weatherparser.json`, `*.local.json`, `*.credentials.json`; example file `examples/weatherparser.example.json`.

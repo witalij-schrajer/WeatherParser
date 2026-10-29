@@ -1,6 +1,6 @@
 # P3.09 – Cancellation, Deadlines and Process Behavior: Implementation Plan
 
-**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.09 row of section 5 and the "Single command" and "Cancellation" rows of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); reconciled on 2026-10-29 with the [P3 CLI contract](P3_CLI_CONTRACT.md) approved by the user on 2026-10-29 ("Approve all"), section 10 of this plan; where this plan's earlier text differs, section 10 and the contract win.** Refines the P3.09 row of section 5 and the "Single command" and "Cancellation" rows of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: a signal or the overall command deadline cancels all work through one token, removes temporary files, logs a summary and ends the process with the approved exit code, never with a success claim; and process tests prove single execution and termination on both platforms.
@@ -56,3 +56,8 @@ Every slice: roles and checks as in P3.03 section 5.
 - [ ] Every listed test green with recorded Red on its platform
 - [ ] No success claim and no partial file after cancellation; the process always ends
 - [ ] Coverage gate passed; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract (P3.02 S5)
+
+- CL-18: `Limits.ShutdownGracePeriod` default 5 s (1 s to 30 s); a second signal ends the process immediately with `4`.
+- CL-14: a `CommandDeadline` shorter than the selected command's library deadline logs one warning before retrieval; added test `Deadline_ShorterThanLibraryDeadline_WarningLogged`.

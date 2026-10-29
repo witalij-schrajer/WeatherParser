@@ -1,6 +1,6 @@
 # P3.06 – Logging, Error IDs and Exit Codes: Implementation Plan
 
-**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.06 row of section 5 and the "Failures and status" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); reconciled on 2026-10-29 with the [P3 CLI contract](P3_CLI_CONTRACT.md) approved by the user on 2026-10-29 ("Approve all"), section 10 of this plan; where this plan's earlier text differs, section 10 and the contract win.** Refines the P3.06 row of section 5 and the "Failures and status" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: every diagnostic of the CLI and of the library goes to stderr in one line with UTC, severity, stable ID, command and source or station; every outcome ends with the approved exit code; nothing secret or payload-like is ever written.
@@ -55,3 +55,9 @@ Every slice: roles and checks as in P3.03 section 5.
 - [ ] Every listed test green with recorded Red
 - [ ] Every library exception type mapped; every exit code of CL-11 reachable and tested
 - [ ] Coverage gate passed; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract (P3.02 S5)
+
+- CL-08 A: the line format `<yyyy-MM-ddTHH:mm:ss> UTC <LEVEL> <ID> command=<command> [source=<source>] <message>`, `-` when no ID, CR and LF replaced by spaces; `Microsoft.Extensions.Logging` 10.0.13 (CL-22 A) added to `Directory.Packages.props` and `DEPENDENCIES.md` in this step.
+- CL-10: the transport IDs are `CLI-MQTT-CONNECT-FAILED`, `CLI-MQTT-PUBLISH-FAILED`, `CLI-MQTT-PUBLISH-TIMEOUT` and `CLI-MQTT-MESSAGE-REFUSED`, plus the summary event `CLI-PUBLICATION-SUMMARY`; tests that name the former `MQTT-` transport IDs use these.
+- CL-11 A: the library pre-request validation IDs `COORDINATE-INVALID`, `SEARCH-PARAMETER-INVALID`, `STATION-ID-INVALID`, `MOSMIX-ID-INVALID` and `OSTHESSEN-PATTERN-INVALID` map to exit `2`; `CLI-OUTPUT-FAILED` for a missing destination directory maps to `2`; cancellation maps to `4` also after successful items.

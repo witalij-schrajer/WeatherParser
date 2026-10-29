@@ -1,6 +1,6 @@
 # P3.04 – Argument Grammar and Validation: Implementation Plan
 
-**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.04 row of section 5 and the "Validation first" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); reconciled on 2026-10-29 with the [P3 CLI contract](P3_CLI_CONTRACT.md) approved by the user on 2026-10-29 ("Approve all"), section 10 of this plan; where this plan's earlier text differs, section 10 and the contract win.** Refines the P3.04 row of section 5 and the "Validation first" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: turn the argument vector into exactly one validated command request, or a usage error, before any configuration, network, file or broker access.
@@ -60,3 +60,8 @@ Every slice: roles and checks as in P3.03 section 5.
 - [ ] Every listed test green with recorded Red
 - [ ] No invalid argument reaches configuration, network, file or broker
 - [ ] Coverage gate passed; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract (P3.02 S5)
+
+- CL-02 A and CL-03: the grammar has no aliases, no `=` or `:` delimiters, no response files and no `--` token; `--RefreshMosmixSEvidence` (flag, `--SelectMOSMIX` only) and `--Verbose` (global flag) join the grammar; `--Help` with anything but one command is `CLI-ARGUMENT-INVALID`.
+- CL-03 refinement: the S2 cases `Validate_MosmixIdShape`, `Validate_DwdStationIdShape` and `Validate_StationNamePattern` do not test a CLI copy of the grammars. They are replaced by `Validate_IdsAndPattern_PassedUnchanged` (the CLI forwards the strings unchanged, leading zeros kept) and, in P3.07 S2, by process tests that an invalid DWD station ID, MOSMIX ID or pattern fails through the parser's pre-request validation (`STATION-ID-INVALID`, `MOSMIX-ID-INVALID`, `OSTHESSEN-PATTERN-INVALID`) with exit `2` and zero HTTP requests; the five search values are validated through `ICoordinateParser` and `ISearchParameterFactory` (`SEARCH-PARAMETER-INVALID`).

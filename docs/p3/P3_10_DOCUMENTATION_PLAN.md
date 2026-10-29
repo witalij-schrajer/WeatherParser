@@ -1,6 +1,6 @@
 # P3.10 – README, CONTRIBUTING and Example Configuration: Implementation Plan
 
-**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.10 row of section 5 and section 8 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); reconciled on 2026-10-29 with the [P3 CLI contract](P3_CLI_CONTRACT.md) approved by the user on 2026-10-29 ("Approve all"), section 10 of this plan; where this plan's earlier text differs, section 10 and the contract win.** Refines the P3.10 row of section 5 and section 8 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the README describes the example CLI as implemented, exactly as tested: commands, options, configuration, environment variables, secrets, output modes, exit codes, the MQTT transport, the OW-14 restriction and external scheduling; the developer documents and status passages match the repository.
@@ -50,3 +50,7 @@ Out of scope with owner: release documentation, deployment and operating guides 
 - [ ] README test green with recorded Red
 - [ ] README, CONTRIBUTING, DEPENDENCIES and status passages consistent; package check passed
 - [ ] Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract (P3.02 S5)
+
+- The README documents the approved values: the commands and options of CL-03 (including `--RefreshMosmixSEvidence` and `--Verbose`), the configuration sections of CL-05, the environment variables `WEATHERPARSER_CONFIG`, `WEATHERPARSER_MQTT_USERNAME`, `WEATHERPARSER_MQTT_PASSWORD` and `WEATHERPARSER_TEST_BROKER`, the exit codes of CL-11, the CLI error IDs of CL-10, the HTTP settings of CL-21, the MQTT 3.1.1 limitation of CL-13, the OW-14 rule of CL-16, the whole-document buffering of CL-12 and the CL-22 version note; CONTRIBUTING.md and DEPENDENCIES.md record MQTTnet 5.2.0.1603 and `Microsoft.Extensions.Logging` 10.0.13 with the documented 10.0.14 conflict.

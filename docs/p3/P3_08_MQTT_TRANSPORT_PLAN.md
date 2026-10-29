@@ -1,6 +1,6 @@
 # P3.08 – MQTT Transport: Implementation Plan
 
-**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.08 row of section 5 and the "Transport" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); reconciled on 2026-10-29 with the [P3 CLI contract](P3_CLI_CONTRACT.md) approved by the user on 2026-10-29 ("Approve all"), section 10 of this plan; where this plan's earlier text differs, section 10 and the contract win.** Refines the P3.08 row of section 5 and the "Transport" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the example broker transport that publishes the library's `MqttMessage` unchanged, over TLS by default, with credentials from the approved source, reports success only after the QoS-1 acknowledgment, bounds connection and publication time and attempts, and summarizes partial failures.
@@ -69,3 +69,10 @@ Every slice: roles and checks as in P3.03 section 5.
 - [ ] Every listed test green with recorded Red, S4 in the opt-in run against the developer test broker authorized for this step (authorization recorded)
 - [ ] Success only after acknowledgment; TLS by default; bounded timeouts and attempts; QoS and retain enforced
 - [ ] Package pinned and documented; coverage gate passed; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract (P3.02 S5)
+
+- CL-13 A: MQTTnet 5.2.0.1603 (added to `Directory.Packages.props`, lock files and `DEPENDENCIES.md` in S4 together with the real adapter); `ProtocolVersion` `5.0` default or `3.1.1`; default `ClientId` `weatherparser` followed by 10 lowercase hexadecimal characters (a test checks length 23 and the character set), a configured `ClientId` has 1 to 23 letters and digits; `KeepAlive` default 30 s (5 s to 5 min); TLS with an optional `CaFile` as the only trust anchor; `AllowUnencrypted` with one warning; no setting disables certificate or host-name validation; the message check before connecting (QoS 1, retain per message type) fails with `CLI-UNEXPECTED`; the connection opens only after results exist.
+- CL-14: `ConnectTimeout`, `PublishTimeout`, `MaxPublishAttempts`, `RetryDelay` and `CommandDeadline` with the approved defaults and ranges; a PUBACK failure reason code (5.0) is final (`CLI-MQTT-MESSAGE-REFUSED`); added test `Publish_V5FailureReasonCode_NotRetried_MessageRefused`.
+- CL-10 and CL-15: transport IDs with the `CLI-MQTT-` prefix; the summary event `CLI-PUBLICATION-SUMMARY` with published, failed and not attempted counts.
+- CL-20: the broker integration test is enabled by `WEATHERPARSER_TEST_BROKER` naming a test configuration file outside the repository.
