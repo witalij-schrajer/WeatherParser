@@ -31,3 +31,5 @@
 - Review round 3 (automatic review of `0f389f9`, run 40952723405): 1 finding, confirmed and fixed (contract section 6).
 - Review round 4 (automatic review of `d6682e5`, run 40953016321): 1 finding, confirmed and fixed (contract section 6).
 - Review round 5 (automatic review of `34cc9a8`, run 40953343035): 0 findings; the contract is presented to the user for approval.
+- Review of the recording commit `743ae20` (run 40953658797): 0 findings.
+- S4: the user approved CL-01 to CL-22 on 2026-10-29 ("Approve all", in answer to "Do you approve CL-01 to CL-22 with the recommended option in every row?"); recorded in contract section 1; the CL-19 option C amendment of REQ-086 written into REQUIREMENTS.md, AGENTS.md "Tests" and DEVELOPMENT_PLAN.md in the same commit; pull request #16 converted to draft.
