@@ -42,7 +42,7 @@ No slice changes behavior, so there is no Red step; a defect found here is fixed
 - With authorization, one run per command in JSON mode (`--SelectDWD`, `--ParseDWD`, `--ParseOstHessen`, `--SelectMOSMIX` (MOSMIX_L availability; MOSMIX_S per CL-17), `--ParseMOSMIX --Product MOSMIX_L` and `--Product MOSMIX_S`), and one MQTT run against the test broker; exit code, root, counts, sources and timestamps per run.
 
 ### S6 Outcome
-- READY when S1 to S3 pass with identical test outcomes and gate counters, S4 and S5 pass as authorized and no defect is open; otherwise NOT_READY with the open items; Codex review of the record.
+- READY when, on each of S1 to S3, every test applicable to that platform passes (none failed; the skipped tests are exactly the documented opt-in and platform-specific ones: for example the Linux-only signal and file-permission tests on Windows and the Windows trigger test on Linux, each named with its reason) and every coverage gate of CL-19 passes on that platform; the tests shared by all platforms are compared separately and must have identical outcomes; differences in counts or gate counters are recorded and explained by the documented platform-specific tests and code paths; S4 and S5 pass as authorized and no defect is open; otherwise NOT_READY with the open items; Codex review of the record.
 
 ## 6. Tests and Test IDs
 | Step-local case | T-P3 ID | Requirement IDs | Behavior and boundary |
