@@ -1,6 +1,6 @@
 # P8 Verification Record
 
-**Status (2026-10-29): P8.01 complete, outcome READY (section 1); P8.02 complete: contract MQ-01 to MQ-15 approved by the user on 2026-10-28, plans reconciled (section 2); P8.03 complete (section 3); P8.04 complete (section 4); P8.05 complete (section 5); P8.06 complete (section 6); P8.07 complete (section 7); P8.08 complete (section 8); P8.09 READY on `290a0eb` (section 9); P8.10 in progress: audit ACCEPTED, user acceptance pending (section 10).**
+**Status (2026-10-29): P8.01 complete, outcome READY (section 1); P8.02 complete: contract MQ-01 to MQ-15 approved by the user on 2026-10-28, plans reconciled (section 2); P8.03 complete (section 3); P8.04 complete (section 4); P8.05 complete (section 5); P8.06 complete (section 6); P8.07 complete (section 7); P8.08 complete (section 8); P8.09 READY on `290a0eb` and again on `ce166eb` (section 9); P8.10 complete: audit ACCEPTED, P8 accepted by the user on 2026-10-29 on `ce166eb` (section 10); merge by the user pending.**
 
 - Integration target: `8ed51c725333168d6e072369343c4eb449f8356c` (merge of pull request #12; successor of the P7 merge `20b2ef0` without library change).
 - Branch `features/develop/P8`, draft pull request #14 into `develop`.
@@ -126,3 +126,4 @@
 - Codex five-angle review of the P8.10 drafts (`p810/codex_r<n>.md`, outside the repository): round 1, 1 finding, confirmed and fixed: [P2] the package check of the changed README was not recorded (this entry). Round 2: 0 findings.
 - `pwsh ./scripts/ci-local.ps1 -Commit 5bfddc26eb0eb12a09c1b7dd67b2ddd33cb36563 -TargetRef 8ed51c725333168d6e072369343c4eb449f8356c -RunSettings coverage.runsettings` on the committed P8.10 revision: exit 0, run directory artifacts/ci/5bfddc2-20261029T071853Z (gitignored); Parsing 3213 of 3220 passed, package consumer 61; gate 11102/11103 above the baseline; packed SHA-512 `XjICOn/bX0P3upX+eKScV8bz/g4eRQlY/Irsy/8NVdDU8JTdX/khCOmBg7MLtX+vNsmGt84KmC9swvXrKsxOmA==`.
 - Pull-request review round 1 and its fix: [P8_10_ACCEPTANCE.md](P8_10_ACCEPTANCE.md) section 8.
+- Acceptance (2026-10-29): after PR #14 review round 5 (0 findings) the user answered "Accept, rerun NanoPi"; recorded in [P8_10_ACCEPTANCE.md](P8_10_ACCEPTANCE.md) section 7; the authorized NanoPi rerun on `ce166eb` passed ([P8.09 record](P8_09_INTEGRATED_VERIFICATION.md) section 6).

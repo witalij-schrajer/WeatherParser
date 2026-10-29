@@ -1,6 +1,6 @@
 # P3 Handoff – From the Complete Library to the Example CLI
 
-**Status (2026-10-29): draft, written with the P8.10 acceptance record; in effect only once the user has accepted P8 and the complete library and pull request #14 is merged into `develop`. P3 starts only on a separate instruction of the user.**
+**Status (2026-10-29): written with the P8.10 acceptance record; the user accepted P8 and the complete library on 2026-10-29 on candidate `ce166eb`; in effect once pull request #14 is merged into `develop`. P3 starts only on a separate instruction of the user.**
 
 ## 1. Foundation
 

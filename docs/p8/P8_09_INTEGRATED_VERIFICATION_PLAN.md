@@ -1,6 +1,6 @@
 # P8.09 – Integrated Coverage and Platform Verification: Implementation Plan
 
-**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; complete on 2026-10-29 with outcome READY ([record](P8_09_INTEGRATED_VERIFICATION.md)).** Refines the P8.09 row of section 5 and section 7 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; complete on 2026-10-29 with outcome READY on `290a0eb` and, after the PR #14 review fixes, on `ce166eb` ([record](P8_09_INTEGRATED_VERIFICATION.md)).** Refines the P8.09 row of section 5 and section 7 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: verify the P8 candidate as a whole on Windows, in hosted CI and on the NanoPi R76S, and decide READY or NOT_READY.
