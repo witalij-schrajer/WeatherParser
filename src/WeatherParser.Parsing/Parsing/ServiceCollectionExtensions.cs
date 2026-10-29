@@ -118,6 +118,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMqttTopicTemplateParser, MqttTopicTemplateParser>();
         services.AddSingleton<IMqttTopicValidator, MqttTopicValidator>();
         services.AddSingleton<IMqttTopicOptionsValidator, MqttTopicOptionsValidator>();
+        services.AddSingleton<IMqttMessageSerializer, MqttMessageSerializer>();
 
         return services;
     }
