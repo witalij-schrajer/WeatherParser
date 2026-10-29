@@ -1,6 +1,7 @@
 namespace WeatherParser.Cli.Arguments;
 
 using System.Globalization;
+using System.Text.RegularExpressions;
 using WeatherParser.Parsing.Exceptions;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Geography;
@@ -12,6 +13,7 @@ public sealed class CommandRequestValidator : ICommandRequestValidator
 {
     private readonly ICoordinateParser _coordinateParser;
     private readonly ISearchParameterFactory _searchParameterFactory;
+    private static readonly Regex DecimalNumber = new(@"\A[+-]?[0-9]{1,15}(\.[0-9]{1,20})?\z", RegexOptions.CultureInvariant);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommandRequestValidator"/> class.
@@ -86,12 +88,13 @@ public sealed class CommandRequestValidator : ICommandRequestValidator
 
     private static decimal ParseDecimal(IReadOnlyDictionary<string, string> values, string name)
     {
-        if (decimal.TryParse(values[name], NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var result))
+        var text = values[name];
+        if (!DecimalNumber.IsMatch(text))
         {
-            return result;
+            throw new ArgumentValueException($"Option '--{name}' requires a decimal number such as 300 or -12.5.");
         }
 
-        throw new ArgumentValueException($"Option '--{name}' requires a decimal number such as 300 or -12.5.");
+        return decimal.Parse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
     }
 
     private sealed class ArgumentValueException(string message) : Exception(message);

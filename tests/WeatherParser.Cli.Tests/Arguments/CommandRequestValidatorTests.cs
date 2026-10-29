@@ -262,6 +262,19 @@ public class CommandRequestValidatorTests
     [TestCategory("T-P3-03")]
     public void Validate_NegativeDistance_UsageError()
     {
+        foreach (var name in new[] { "MaxDistance", "MaxAltDifference" })
+        {
+            var underflow = Parsed(CliCommand.SelectDwd,
+                ("Latitude", "50.5549"),
+                ("Longitude", "9.6738"),
+                ("Altitude", "300"),
+                ("MaxDistance", name == "MaxDistance" ? "-0.00000000000000000000000000001" : "50"),
+                ("MaxAltDifference", name == "MaxAltDifference" ? "-0.00000000000000000000000000001" : "200"));
+            var underflowError = ValidError(_validator.Validate(underflow));
+            underflowError.ErrorId.Should().Be("CLI-ARGUMENT-INVALID");
+            underflowError.Message.Should().Be($"Option '--{name}' requires a decimal number such as 300 or -12.5.");
+        }
+
         var parsed = Parsed(CliCommand.SelectDwd,
             ("Latitude", "50.5549"),
             ("Longitude", "9.6738"),
