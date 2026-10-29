@@ -34,6 +34,9 @@ public sealed class MqttForecastMessageTests
     private ManualTimeProvider _clock = null!;
     private readonly List<Uri> _requests = new();
 
+    private ServiceProvider _provider = null!;
+    private IMqttMessageSerializer _serializer = null!;
+
     public TestContext TestContext { get; set; } = null!;
 
     [TestInitialize]
@@ -43,11 +46,14 @@ public sealed class MqttForecastMessageTests
         _handler = _mocks.Create<HttpMessageHandler>();
         _http = new HttpClient(_handler.Object, disposeHandler: false);
         _clock = new ManualTimeProvider(new DateTimeOffset(2026, 10, 26, 16, 16, 30, TimeSpan.Zero));
+        _provider = Provider();
+        _serializer = _provider.GetRequiredService<IMqttMessageSerializer>();
     }
 
     [TestCleanup]
     public void TestCleanup()
     {
+        _provider.Dispose();
         _http.Dispose();
         _mocks.VerifyAll();
     }
@@ -92,13 +98,11 @@ public sealed class MqttForecastMessageTests
     [TestMethod]
     public async Task MosmixLRun_OneMessageWithEveryStep()
     {
-        using var provider = Provider();
-        var parser = provider.GetRequiredService<IMosmixLParser>();
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
+        var parser = _provider.GetRequiredService<IMosmixLParser>();
         Respond(MosmixForecastKmzBuilder.Kmz(MosmixForecastKmzBuilder.Single("10637", "BEISPIELSTADT", "9.6,50.5,250.0", Ttt)));
 
         var result = await parser.ParseAsync("10637", CancellationToken.None);
-        var message = await serializer.SerializeAsync(result.Run, CancellationToken.None);
+        var message = await _serializer.SerializeAsync(result.Run, CancellationToken.None);
 
         message.MessageType.Should().Be(MqttMessageType.Forecast);
         message.Topic.Should().Be("haus/weather/forecasts/dwd-mosmix-l:10637/state");
@@ -114,9 +118,7 @@ public sealed class MqttForecastMessageTests
     [TestMethod]
     public async Task MosmixSRun_OneMessageWithEveryStep()
     {
-        using var provider = Provider();
-        var parser = provider.GetRequiredService<IMosmixSParser>();
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
+        var parser = _provider.GetRequiredService<IMosmixSParser>();
         Respond(MosmixForecastKmzBuilder.Kmz(
             MosmixForecastKmzBuilder.Document(
                 MosmixForecastKmzBuilder.ProductDefinition(),
@@ -125,7 +127,7 @@ public sealed class MqttForecastMessageTests
             memberName: MosmixForecastKmzBuilder.AllStationsMemberName));
 
         var result = await parser.ParseAsync("10637", CancellationToken.None);
-        var message = await serializer.SerializeAsync(result.Run, CancellationToken.None);
+        var message = await _serializer.SerializeAsync(result.Run, CancellationToken.None);
 
         message.MessageType.Should().Be(MqttMessageType.Forecast);
         message.Topic.Should().Be("haus/weather/forecasts/dwd-mosmix-s:10637/state");
@@ -141,16 +143,14 @@ public sealed class MqttForecastMessageTests
     [TestMethod]
     public async Task SameIdBothProducts_DistinctTopics()
     {
-        using var provider = Provider();
-        var lParser = provider.GetRequiredService<IMosmixLParser>();
-        var sParser = provider.GetRequiredService<IMosmixSParser>();
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
+        var lParser = _provider.GetRequiredService<IMosmixLParser>();
+        var sParser = _provider.GetRequiredService<IMosmixSParser>();
         Respond(MosmixForecastKmzBuilder.Kmz(MosmixForecastKmzBuilder.Single("10637", "BEISPIELSTADT", "9.6,50.5,250.0", Ttt)));
 
         var lResult = await lParser.ParseAsync("10637", CancellationToken.None);
         var sResult = await sParser.ParseAsync("10637", CancellationToken.None);
-        var lMessage = await serializer.SerializeAsync(lResult.Run, CancellationToken.None);
-        var sMessage = await serializer.SerializeAsync(sResult.Run, CancellationToken.None);
+        var lMessage = await _serializer.SerializeAsync(lResult.Run, CancellationToken.None);
+        var sMessage = await _serializer.SerializeAsync(sResult.Run, CancellationToken.None);
 
         lMessage.Topic.Should().NotBe(sMessage.Topic);
     }
@@ -158,9 +158,7 @@ public sealed class MqttForecastMessageTests
     [TestMethod]
     public async Task TwoLocations_DistinctTopics()
     {
-        using var provider = Provider();
-        var parser = provider.GetRequiredService<IMosmixLParser>();
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
+        var parser = _provider.GetRequiredService<IMosmixLParser>();
         _handler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .Callback((HttpRequestMessage request, CancellationToken _) => _requests.Add(request.RequestUri!))
             .ReturnsAsync((HttpRequestMessage request, CancellationToken _) =>
@@ -174,8 +172,8 @@ public sealed class MqttForecastMessageTests
 
         var result1 = await parser.ParseAsync("10637", CancellationToken.None);
         var result2 = await parser.ParseAsync("P0489", CancellationToken.None);
-        var message1 = await serializer.SerializeAsync(result1.Run, CancellationToken.None);
-        var message2 = await serializer.SerializeAsync(result2.Run, CancellationToken.None);
+        var message1 = await _serializer.SerializeAsync(result1.Run, CancellationToken.None);
+        var message2 = await _serializer.SerializeAsync(result2.Run, CancellationToken.None);
 
         message1.Topic.Should().NotBe(message2.Topic);
     }
@@ -183,13 +181,11 @@ public sealed class MqttForecastMessageTests
     [TestMethod]
     public async Task ForecastPayload_HasNoMeasuredAt()
     {
-        using var provider = Provider();
-        var parser = provider.GetRequiredService<IMosmixLParser>();
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
+        var parser = _provider.GetRequiredService<IMosmixLParser>();
         Respond(MosmixForecastKmzBuilder.Kmz(MosmixForecastKmzBuilder.Single("10637", "BEISPIELSTADT", "9.6,50.5,250.0", Ttt)));
 
         var result = await parser.ParseAsync("10637", CancellationToken.None);
-        var message = await serializer.SerializeAsync(result.Run, CancellationToken.None);
+        var message = await _serializer.SerializeAsync(result.Run, CancellationToken.None);
 
         var payload = Encoding.UTF8.GetString(message.Payload.Span);
         payload.Should().NotContain("\"measured_at\"");
@@ -199,16 +195,14 @@ public sealed class MqttForecastMessageTests
     [TestMethod]
     public async Task ForecastRun_AlwaysForecastType()
     {
-        using var provider = Provider();
-        var lParser = provider.GetRequiredService<IMosmixLParser>();
-        var sParser = provider.GetRequiredService<IMosmixSParser>();
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
+        var lParser = _provider.GetRequiredService<IMosmixLParser>();
+        var sParser = _provider.GetRequiredService<IMosmixSParser>();
         Respond(MosmixForecastKmzBuilder.Kmz(MosmixForecastKmzBuilder.Single("10637", "BEISPIELSTADT", "9.6,50.5,250.0", Ttt)));
 
         var lResult = await lParser.ParseAsync("10637", CancellationToken.None);
         var sResult = await sParser.ParseAsync("10637", CancellationToken.None);
-        var lMessage = await serializer.SerializeAsync(lResult.Run, CancellationToken.None);
-        var sMessage = await serializer.SerializeAsync(sResult.Run, CancellationToken.None);
+        var lMessage = await _serializer.SerializeAsync(lResult.Run, CancellationToken.None);
+        var sMessage = await _serializer.SerializeAsync(sResult.Run, CancellationToken.None);
 
         lMessage.MessageType.Should().Be(MqttMessageType.Forecast);
         sMessage.MessageType.Should().Be(MqttMessageType.Forecast);
@@ -217,14 +211,12 @@ public sealed class MqttForecastMessageTests
     [TestMethod]
     public async Task ObservationAndForecastTopics_NeverEqual_ForExampleConfiguration()
     {
-        using var provider = Provider();
-        var lParser = provider.GetRequiredService<IMosmixLParser>();
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
+        var lParser = _provider.GetRequiredService<IMosmixLParser>();
         Respond(MosmixForecastKmzBuilder.Kmz(MosmixForecastKmzBuilder.Single("10637", "BEISPIELSTADT", "9.6,50.5,250.0", Ttt)));
 
         var lResult = await lParser.ParseAsync("10637", CancellationToken.None);
-        var lMessage = await serializer.SerializeAsync(lResult.Run, CancellationToken.None);
-        var obsMessage = await serializer.SerializeAsync(ObservationTestData.ValidDataset(), CancellationToken.None);
+        var lMessage = await _serializer.SerializeAsync(lResult.Run, CancellationToken.None);
+        var obsMessage = await _serializer.SerializeAsync(ObservationTestData.ValidDataset(), CancellationToken.None);
 
         lMessage.Topic.Should().NotBe(obsMessage.Topic);
         lMessage.Topic.Should().StartWith("haus/weather/forecasts/");
@@ -234,14 +226,12 @@ public sealed class MqttForecastMessageTests
     [TestMethod]
     public async Task StaleRun_MarkerInPayload()
     {
-        using var provider = Provider();
-        var parser = provider.GetRequiredService<IMosmixLParser>();
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
+        var parser = _provider.GetRequiredService<IMosmixLParser>();
         Respond(MosmixForecastKmzBuilder.Kmz(MosmixForecastKmzBuilder.Single("10637", "BEISPIELSTADT", "9.6,50.5,250.0", Ttt)));
         _clock.Advance(TimeSpan.FromHours(9));
 
         var result = await parser.ParseAsync("10637", CancellationToken.None);
-        var message = await serializer.SerializeAsync(result.Run, CancellationToken.None);
+        var message = await _serializer.SerializeAsync(result.Run, CancellationToken.None);
 
         result.Run.RunAgeExceeded.Should().BeTrue();
         var payload = Encoding.UTF8.GetString(message.Payload.Span);
@@ -251,9 +241,7 @@ public sealed class MqttForecastMessageTests
     [TestMethod]
     public async Task LargestRunPayloadSize_Recorded()
     {
-        using var provider = Provider();
-        var parser = provider.GetRequiredService<IMosmixLParser>();
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
+        var parser = _provider.GetRequiredService<IMosmixLParser>();
         static string Series(string value) => string.Join(" ", Enumerable.Repeat(value, 1000));
         Respond(MosmixForecastKmzBuilder.Kmz(
             MosmixForecastKmzBuilder.Document(
@@ -268,7 +256,7 @@ public sealed class MqttForecastMessageTests
                     MosmixForecastKmzBuilder.Forecast("Rad1h", Series("1234.5"))))));
 
         var result = await parser.ParseAsync("10637", CancellationToken.None);
-        var message = await serializer.SerializeAsync(result.Run, CancellationToken.None);
+        var message = await _serializer.SerializeAsync(result.Run, CancellationToken.None);
 
         StepCount(message).Should().Be(1000);
         TestContext.WriteLine($"payload bytes: {message.Payload.Length}");
@@ -279,16 +267,14 @@ public sealed class MqttForecastMessageTests
     [TestMethod]
     public async Task SameForecastRun_DifferentRetrievedAt_SameSourceAndIssuedAt()
     {
-        using var provider = Provider();
-        var parser = provider.GetRequiredService<IMosmixLParser>();
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
+        var parser = _provider.GetRequiredService<IMosmixLParser>();
         Respond(MosmixForecastKmzBuilder.Kmz(MosmixForecastKmzBuilder.Single("10637", "BEISPIELSTADT", "9.6,50.5,250.0", Ttt)));
 
         var result1 = await parser.ParseAsync("10637", CancellationToken.None);
         _clock.Advance(TimeSpan.FromMinutes(1));
         var result2 = await parser.ParseAsync("10637", CancellationToken.None);
-        var message1 = await serializer.SerializeAsync(result1.Run, CancellationToken.None);
-        var message2 = await serializer.SerializeAsync(result2.Run, CancellationToken.None);
+        var message1 = await _serializer.SerializeAsync(result1.Run, CancellationToken.None);
+        var message2 = await _serializer.SerializeAsync(result2.Run, CancellationToken.None);
 
         message1.Topic.Should().Be(message2.Topic);
         result1.Run.Source.Should().Be(result2.Run.Source);

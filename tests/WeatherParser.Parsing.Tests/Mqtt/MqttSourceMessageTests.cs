@@ -35,6 +35,24 @@ namespace WeatherParser.Parsing.Tests.Mqtt;
 [TestClass]
 public sealed class MqttSourceMessageTests
 {
+    private StaticHttpHandler _handler = null!;
+    private ServiceProvider _provider = null!;
+    private IMqttMessageSerializer _serializer = null!;
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _handler = new StaticHttpHandler();
+        _provider = DwdProvider(_handler);
+        _serializer = _provider.GetRequiredService<IMqttMessageSerializer>();
+    }
+
+    [TestCleanup]
+    public void TestCleanup()
+    {
+        _provider.Dispose();
+    }
+
     [TestMethod]
     public async Task DwdObservation_MessageTopicPayloadQosRetain()
     {
@@ -63,11 +81,8 @@ public sealed class MqttSourceMessageTests
         dataset2.Source = "dwd:01766";
         dataset2.Location.StationId = "01766";
 
-        var handler = new StaticHttpHandler();
-        using var provider = DwdProvider(handler);
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
-        var message1 = await serializer.SerializeAsync(dataset1, CancellationToken.None);
-        var message2 = await serializer.SerializeAsync(dataset2, CancellationToken.None);
+        var message1 = await _serializer.SerializeAsync(dataset1, CancellationToken.None);
+        var message2 = await _serializer.SerializeAsync(dataset2, CancellationToken.None);
 
         message1.Topic.Should().NotBe(message2.Topic);
     }
@@ -78,8 +93,7 @@ public sealed class MqttSourceMessageTests
         using var fixture = new SelectionPipelineFixture(new DateTimeOffset(2026, 10, 21, 12, 0, 0, 500, TimeSpan.Zero), ExampleOptions());
         fixture.ArrangeCdc();
         var list = await fixture.SelectCdcAsync(SelectionPipelineFixture.Parameters());
-        var serializer = fixture.Provider.GetRequiredService<IMqttMessageSerializer>();
-        var message = await serializer.SerializeAsync(list, CancellationToken.None);
+        var message = await fixture.Provider.GetRequiredService<IMqttMessageSerializer>().SerializeAsync(list, CancellationToken.None);
 
         message.Topic.Should().Be("haus/weather/stations/dwd/selection");
         message.Retain.Should().BeFalse();
@@ -93,8 +107,7 @@ public sealed class MqttSourceMessageTests
         using var fixture = new SelectionPipelineFixture(new DateTimeOffset(2026, 10, 21, 12, 0, 0, 500, TimeSpan.Zero), ExampleOptions());
         await fixture.ArrangeMosmixAsync();
         var list = await fixture.SelectMosmixAsync(SelectionPipelineFixture.Parameters());
-        var serializer = fixture.Provider.GetRequiredService<IMqttMessageSerializer>();
-        var message = await serializer.SerializeAsync(list, CancellationToken.None);
+        var message = await fixture.Provider.GetRequiredService<IMqttMessageSerializer>().SerializeAsync(list, CancellationToken.None);
 
         message.Topic.Should().Be("haus/weather/stations/mosmix/selection");
         message.Retain.Should().BeFalse();
@@ -141,11 +154,8 @@ public sealed class MqttSourceMessageTests
         var dataset1 = ObservationTestData.ValidDataset();
         var dataset2 = ObservationTestData.ValidDataset();
 
-        var handler = new StaticHttpHandler();
-        using var provider = DwdProvider(handler);
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
-        var message1 = await serializer.SerializeAsync(dataset1, CancellationToken.None);
-        var message2 = await serializer.SerializeAsync(dataset2, CancellationToken.None);
+        var message1 = await _serializer.SerializeAsync(dataset1, CancellationToken.None);
+        var message2 = await _serializer.SerializeAsync(dataset2, CancellationToken.None);
 
         message1.Payload.ToArray().Should().Equal(message2.Payload.ToArray());
         message1.Topic.Should().Be(message2.Topic);
@@ -162,11 +172,8 @@ public sealed class MqttSourceMessageTests
         datasetB.Measurements.TemperatureC = ObservationTestData.Value(12.0m, new DateTime(2026, 7, 15, 12, 0, 0, DateTimeKind.Utc));
         datasetB.Measurements.HumidityPercent = ObservationTestData.Value(80m, new DateTime(2026, 7, 15, 11, 55, 0, DateTimeKind.Utc));
 
-        var handler = new StaticHttpHandler();
-        using var provider = DwdProvider(handler);
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
-        var messageA = await serializer.SerializeAsync(datasetA, CancellationToken.None);
-        var messageB = await serializer.SerializeAsync(datasetB, CancellationToken.None);
+        var messageA = await _serializer.SerializeAsync(datasetA, CancellationToken.None);
+        var messageB = await _serializer.SerializeAsync(datasetB, CancellationToken.None);
 
         messageA.Topic.Should().Be(messageB.Topic);
         messageA.Payload.ToArray().Should().NotEqual(messageB.Payload.ToArray());
@@ -189,11 +196,8 @@ public sealed class MqttSourceMessageTests
         var datasetB = ObservationTestData.ValidDataset();
         datasetB.Measurements.TemperatureC!.Value = 20.4m;
 
-        var handler = new StaticHttpHandler();
-        using var provider = DwdProvider(handler);
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
-        var messageA = await serializer.SerializeAsync(datasetA, CancellationToken.None);
-        var messageB = await serializer.SerializeAsync(datasetB, CancellationToken.None);
+        var messageA = await _serializer.SerializeAsync(datasetA, CancellationToken.None);
+        var messageB = await _serializer.SerializeAsync(datasetB, CancellationToken.None);
 
         messageA.Topic.Should().Be(messageB.Topic);
         messageA.Payload.ToArray().Should().NotEqual(messageB.Payload.ToArray());
@@ -206,11 +210,8 @@ public sealed class MqttSourceMessageTests
         var datasetB = ObservationTestData.ValidDataset();
         datasetB.RetrievedAtUtc = datasetA.RetrievedAtUtc.AddMinutes(1);
 
-        var handler = new StaticHttpHandler();
-        using var provider = DwdProvider(handler);
-        var serializer = provider.GetRequiredService<IMqttMessageSerializer>();
-        var messageA = await serializer.SerializeAsync(datasetA, CancellationToken.None);
-        var messageB = await serializer.SerializeAsync(datasetB, CancellationToken.None);
+        var messageA = await _serializer.SerializeAsync(datasetA, CancellationToken.None);
+        var messageB = await _serializer.SerializeAsync(datasetB, CancellationToken.None);
 
         messageA.Topic.Should().Be(messageB.Topic);
         messageA.Payload.ToArray().Should().NotEqual(messageB.Payload.ToArray());
@@ -250,28 +251,27 @@ public sealed class MqttSourceMessageTests
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
     }
 
-    private static async Task<(ObservationDataset Dataset, MqttMessage Message)> DwdMessage()
+    private async Task<(ObservationDataset Dataset, MqttMessage Message)> DwdMessage()
     {
-        var handler = new StaticHttpHandler();
-        using var provider = DwdProvider(handler);
-        var endpoints = provider.GetRequiredService<CdcCatalogEndpoints>();
+        var endpoints = _provider.GetRequiredService<CdcCatalogEndpoints>();
         var list = CdcStationListBuilder.Stream(new[] { CdcStationListBuilder.Line("00044", "20000101", "20261024", "44", "52.9336", "8.2370", "Grossenkneten", "Niedersachsen") }).ToArray();
-        handler.Add(endpoints.AirTemperatureStationList!, list);
-        handler.Add(endpoints.WindStationList!, list);
-        handler.Add(endpoints.PrecipitationStationList!, list);
-        handler.Add(endpoints.SolarStationList!, list);
+        _handler.Add(endpoints.AirTemperatureStationList!, list);
+        _handler.Add(endpoints.WindStationList!, list);
+        _handler.Add(endpoints.PrecipitationStationList!, list);
+        _handler.Add(endpoints.SolarStationList!, list);
 
-        handler.Add(new Uri(endpoints.AirTemperatureNowDirectory!, "10minutenwerte_TU_00044_now.zip"), Archive("tu", CdcNowArchiveBuilder.Row("44", "202610241200", "1001.2", "12.3", "10.1", "85.0", "8.9")));
-        handler.Add(new Uri(endpoints.WindNowDirectory!, "10minutenwerte_wind_00044_now.zip"), Archive("ff", CdcNowArchiveBuilder.Row("44", "202610241200", "3.0", "270")));
-        handler.Add(new Uri(endpoints.PrecipitationNowDirectory!, "10minutenwerte_nieder_00044_now.zip"), Archive("rr", CdcNowArchiveBuilder.Row("44", "202610241200", "10", "0.6", "1")));
-        handler.Add(new Uri(endpoints.SolarNowDirectory!, "10minutenwerte_SOLAR_00044_now.zip"), Archive("sd", CdcNowArchiveBuilder.Row("44", "202610241200", "1.0", "36.0", "0.1", "20.0")));
+        _handler.Add(new Uri(endpoints.AirTemperatureNowDirectory!, "10minutenwerte_TU_00044_now.zip"), Archive("tu", CdcNowArchiveBuilder.Row("44", "202610241200", "1001.2", "12.3", "10.1", "85.0", "8.9")));
+        _handler.Add(new Uri(endpoints.WindNowDirectory!, "10minutenwerte_wind_00044_now.zip"), Archive("ff", CdcNowArchiveBuilder.Row("44", "202610241200", "3.0", "270")));
+        _handler.Add(new Uri(endpoints.PrecipitationNowDirectory!, "10minutenwerte_nieder_00044_now.zip"), Archive("rr", CdcNowArchiveBuilder.Row("44", "202610241200", "10", "0.6", "1")));
+        _handler.Add(new Uri(endpoints.SolarNowDirectory!, "10minutenwerte_SOLAR_00044_now.zip"), Archive("sd", CdcNowArchiveBuilder.Row("44", "202610241200", "1.0", "36.0", "0.1", "20.0")));
 
-        var dataset = await provider.GetRequiredService<IDwdObservationParser>().ParseAsync("00044", CancellationToken.None);
-        var message = await provider.GetRequiredService<IMqttMessageSerializer>().SerializeAsync(dataset, CancellationToken.None);
+        var dataset = await _provider.GetRequiredService<IDwdObservationParser>().ParseAsync("00044", CancellationToken.None);
+        var message = await _serializer.SerializeAsync(dataset, CancellationToken.None);
         return (dataset, message);
     }
 
     private static byte[] Archive(string productCode, string row) => CdcNowArchiveBuilder.Zip((CdcNowArchiveBuilder.MemberName(productCode, "00044"), CdcNowArchiveBuilder.Content(CdcNowArchiveBuilder.Header(productCode), new[] { row })));
+
 
     private static async Task<(ObservationDataset Dataset, MqttMessage Message)> OsthessenMessage()
     {

@@ -26,24 +26,36 @@ public sealed class PackageConcurrencyTests
 {
     private const string BaseUri = "https://a.example.invalid/";
     private static readonly string[] Ids = { "10637", "10865", "P0489", "01001" };
+    private ConsumerSelectionHost _host = null!;
+    private Services _services = null!;
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _host = ArrangedHost();
+        _services = Services.From(_host.Provider);
+    }
+
+    [TestCleanup]
+    public void TestCleanup()
+    {
+        _host.Dispose();
+    }
 
     [TestMethod]
     public async Task Library_ParallelParsesAndSerializations_EqualSequentialResults()
     {
-        using var host = ArrangedHost();
-        var services = Services.From(host.Provider);
-
         var sequential = new List<IReadOnlyList<byte[]>>();
         for (var i = 0; i < 16; i++)
         {
-            sequential.Add(await RunWorkload(services, i));
+            sequential.Add(await RunWorkload(_services, i));
         }
 
         var participants = Math.Clamp(Environment.ProcessorCount, 2, 4);
         var gate = new OverlapGate(participants);
-        host.Handler.OnRequest = _ => gate.Enter();
+        _host.Handler.OnRequest = _ => gate.Enter();
 
-        var parallel = await Task.WhenAll(Enumerable.Range(0, 16).Select(i => Task.Run(() => RunWorkload(services, i))));
+        var parallel = await Task.WhenAll(Enumerable.Range(0, 16).Select(i => Task.Run(() => RunWorkload(_services, i))));
 
         gate.MaxInside.Should().BeGreaterThanOrEqualTo(participants);
         for (var i = 0; i < 16; i++)
@@ -59,17 +71,14 @@ public sealed class PackageConcurrencyTests
     [TestMethod]
     public async Task Library_ParallelUse_NoCrossTalkBetweenRequests()
     {
-        using var host = ArrangedHost();
-        var services = Services.From(host.Provider);
-
         var participants = Math.Clamp(Environment.ProcessorCount, 2, 4);
         var gate = new OverlapGate(participants);
-        host.Handler.OnRequest = _ => gate.Enter();
+        _host.Handler.OnRequest = _ => gate.Enter();
 
         var tasks = Enumerable.Range(0, 16).Select(i => Ids[i % Ids.Length]).Select(id => Task.Run(async () =>
         {
-            var result = await services.MosmixL.ParseAsync(id, CancellationToken.None);
-            var message = await services.Mqtt.SerializeAsync(result.Run, CancellationToken.None);
+            var result = await _services.MosmixL.ParseAsync(id, CancellationToken.None);
+            var message = await _services.Mqtt.SerializeAsync(result.Run, CancellationToken.None);
             return (RequestedId: id, result.Run, Message: message);
         }));
 
@@ -87,7 +96,7 @@ public sealed class PackageConcurrencyTests
         }
 
         var expected = Ids.SelectMany(id => Enumerable.Repeat(ConsumerLibrary.MosmixLUri(BaseUri, id).AbsoluteUri, 4));
-        host.Handler.Requests.Should().BeEquivalentTo(expected);
+        _host.Handler.Requests.Should().BeEquivalentTo(expected);
     }
 
     private static async Task<IReadOnlyList<byte[]>> RunWorkload(Services services, int index)

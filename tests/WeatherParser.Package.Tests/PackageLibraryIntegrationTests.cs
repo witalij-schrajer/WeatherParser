@@ -21,18 +21,30 @@ namespace WeatherParser.Package.Tests;
 public sealed class PackageLibraryIntegrationTests
 {
     private const string BaseUri = "https://a.example.invalid/";
+    private ConsumerSelectionHost _host = null!;
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _host = ConsumerLibrary.Host(BaseUri);
+    }
+
+    [TestCleanup]
+    public void TestCleanup()
+    {
+        _host.Dispose();
+    }
 
     [TestMethod]
     public async Task Library_SelectDwd_ToJsonXmlMqtt()
     {
-        using var host = ConsumerLibrary.Host(BaseUri);
-        host.ArrangeCdc();
+        _host.ArrangeCdc();
 
-        var list = await host.Provider.GetRequiredService<ICdcStationSelector>().SelectAsync(ConsumerSelectionHost.Parameters(), CancellationToken.None);
+        var list = await _host.Provider.GetRequiredService<ICdcStationSelector>().SelectAsync(ConsumerSelectionHost.Parameters(), CancellationToken.None);
 
-        var json = await host.JsonAsync(list);
-        var xml = await host.XmlAsync(list);
-        var mqtt = await ConsumerLibrary.Mqtt(host, list);
+        var json = await _host.JsonAsync(list);
+        var xml = await _host.XmlAsync(list);
+        var mqtt = await ConsumerLibrary.Mqtt(_host, list);
 
         var jsonText = Encoding.UTF8.GetString(json);
         jsonText.Should().Contain("\"source\":\"dwd:cdc-10min-now\"");
@@ -44,31 +56,30 @@ public sealed class PackageLibraryIntegrationTests
         mqtt.MessageType.Should().Be(MqttMessageType.CdcStationList);
         mqtt.Payload.ToArray().Should().Equal(json);
 
-        host.Handler.Requests.Should().BeEquivalentTo(new[]
+        _host.Handler.Requests.Should().BeEquivalentTo(new[]
         {
-            host.Cdc.AirTemperatureStationList!.AbsoluteUri,
-            host.Cdc.WindStationList!.AbsoluteUri,
-            host.Cdc.PrecipitationStationList!.AbsoluteUri,
-            host.Cdc.SolarStationList!.AbsoluteUri,
-            new Uri(host.Cdc.AirTemperatureNowDirectory!, "10minutenwerte_TU_00044_now.zip").AbsoluteUri,
-            new Uri(host.Cdc.WindNowDirectory!, "10minutenwerte_wind_00044_now.zip").AbsoluteUri,
-            new Uri(host.Cdc.PrecipitationNowDirectory!, "10minutenwerte_nieder_00044_now.zip").AbsoluteUri,
-            new Uri(host.Cdc.SolarNowDirectory!, "10minutenwerte_SOLAR_00044_now.zip").AbsoluteUri
+            _host.Cdc.AirTemperatureStationList!.AbsoluteUri,
+            _host.Cdc.WindStationList!.AbsoluteUri,
+            _host.Cdc.PrecipitationStationList!.AbsoluteUri,
+            _host.Cdc.SolarStationList!.AbsoluteUri,
+            new Uri(_host.Cdc.AirTemperatureNowDirectory!, "10minutenwerte_TU_00044_now.zip").AbsoluteUri,
+            new Uri(_host.Cdc.WindNowDirectory!, "10minutenwerte_wind_00044_now.zip").AbsoluteUri,
+            new Uri(_host.Cdc.PrecipitationNowDirectory!, "10minutenwerte_nieder_00044_now.zip").AbsoluteUri,
+            new Uri(_host.Cdc.SolarNowDirectory!, "10minutenwerte_SOLAR_00044_now.zip").AbsoluteUri
         });
     }
 
     [TestMethod]
     public async Task Library_SelectMosmix_ToJsonXmlMqtt()
     {
-        using var host = ConsumerLibrary.Host(BaseUri);
-        host.ArrangeMosmix();
-        await host.Provider.GetRequiredService<IMosmixSEvidenceRefresher>().RefreshAsync(CancellationToken.None);
+        _host.ArrangeMosmix();
+        await _host.Provider.GetRequiredService<IMosmixSEvidenceRefresher>().RefreshAsync(CancellationToken.None);
 
-        var list = await host.Provider.GetRequiredService<IMosmixLocationSelector>().SelectAsync(ConsumerSelectionHost.Parameters(), CancellationToken.None);
+        var list = await _host.Provider.GetRequiredService<IMosmixLocationSelector>().SelectAsync(ConsumerSelectionHost.Parameters(), CancellationToken.None);
 
-        var json = await host.JsonAsync(list);
-        var xml = await host.XmlAsync(list);
-        var mqtt = await ConsumerLibrary.Mqtt(host, list);
+        var json = await _host.JsonAsync(list);
+        var xml = await _host.XmlAsync(list);
+        var mqtt = await ConsumerLibrary.Mqtt(_host, list);
 
         var jsonText = Encoding.UTF8.GetString(json);
         jsonText.Should().Contain("\"source\":\"dwd:mosmix-stationskatalog\"");
@@ -80,20 +91,19 @@ public sealed class PackageLibraryIntegrationTests
         mqtt.MessageType.Should().Be(MqttMessageType.MosmixLocationList);
         mqtt.Payload.ToArray().Should().Equal(json);
 
-        host.Handler.Requests.Count.Should().Be(4);
+        _host.Handler.Requests.Count.Should().Be(4);
     }
 
     [TestMethod]
     public async Task Library_ParseDwd_ToJsonXmlMqtt()
     {
-        using var host = ConsumerLibrary.Host(BaseUri);
-        host.ArrangeCdcFullStation();
+        _host.ArrangeCdcFullStation();
 
-        var dataset = await host.Provider.GetRequiredService<IDwdObservationParser>().ParseAsync("00044", CancellationToken.None);
+        var dataset = await _host.Provider.GetRequiredService<IDwdObservationParser>().ParseAsync("00044", CancellationToken.None);
 
-        var json = await host.JsonAsync(dataset);
-        var xml = await host.XmlAsync(dataset);
-        var mqtt = await ConsumerLibrary.Mqtt(host, dataset);
+        var json = await _host.JsonAsync(dataset);
+        var xml = await _host.XmlAsync(dataset);
+        var mqtt = await ConsumerLibrary.Mqtt(_host, dataset);
 
         mqtt.Topic.Should().Be("haus/weather/measurements/dwd:00044/state");
         mqtt.Retain.Should().BeTrue();
@@ -102,21 +112,20 @@ public sealed class PackageLibraryIntegrationTests
 
         ConsumerSelectionHost.ValidateAgainstPackagedSchema(xml).Should().BeEmpty();
 
-        host.Handler.Requests.Count.Should().Be(8);
+        _host.Handler.Requests.Count.Should().Be(8);
     }
 
     [TestMethod]
     public async Task Library_ParseOsthessenWetter_Synthetic_ToJsonXmlMqtt()
     {
-        using var host = ConsumerLibrary.Host(BaseUri);
-        ConsumerLibrary.ArrangeOsthessen(host, BaseUri);
+        ConsumerLibrary.ArrangeOsthessen(_host, BaseUri);
 
-        var result = await host.Provider.GetRequiredService<IOsthessenWetterParser>().ParseAsync("Bimbach", CancellationToken.None);
+        var result = await _host.Provider.GetRequiredService<IOsthessenWetterParser>().ParseAsync("Bimbach", CancellationToken.None);
         var dataset = result.Datasets.Single();
 
-        var json = await host.JsonAsync(dataset);
-        var xml = await host.XmlAsync(dataset);
-        var mqtt = await ConsumerLibrary.Mqtt(host, dataset);
+        var json = await _host.JsonAsync(dataset);
+        var xml = await _host.XmlAsync(dataset);
+        var mqtt = await ConsumerLibrary.Mqtt(_host, dataset);
 
         mqtt.Topic.Should().Be("haus/weather/measurements/osthessenwetter:bimbach/state");
         mqtt.Retain.Should().BeTrue();
@@ -125,20 +134,19 @@ public sealed class PackageLibraryIntegrationTests
 
         ConsumerSelectionHost.ValidateAgainstPackagedSchema(xml).Should().BeEmpty();
 
-        host.Handler.Requests.Should().Equal(new[] { ConsumerLibrary.PageUri(BaseUri).AbsoluteUri });
+        _host.Handler.Requests.Should().Equal(new[] { ConsumerLibrary.PageUri(BaseUri).AbsoluteUri });
     }
 
     [TestMethod]
     public async Task Library_ParseMosmixL_ToJsonXmlMqtt()
     {
-        using var host = ConsumerLibrary.Host(BaseUri);
-        ConsumerLibrary.ArrangeMosmixL(host, BaseUri, "10637");
+        ConsumerLibrary.ArrangeMosmixL(_host, BaseUri, "10637");
 
-        var result = await host.Provider.GetRequiredService<IMosmixLParser>().ParseAsync("10637", CancellationToken.None);
+        var result = await _host.Provider.GetRequiredService<IMosmixLParser>().ParseAsync("10637", CancellationToken.None);
 
-        var json = await host.JsonAsync(result.Run);
-        var xml = await host.XmlAsync(result.Run);
-        var mqtt = await ConsumerLibrary.Mqtt(host, result.Run);
+        var json = await _host.JsonAsync(result.Run);
+        var xml = await _host.XmlAsync(result.Run);
+        var mqtt = await ConsumerLibrary.Mqtt(_host, result.Run);
 
         mqtt.Topic.Should().Be("haus/weather/forecasts/dwd-mosmix-l:10637/state");
         mqtt.Retain.Should().BeTrue();
@@ -150,20 +158,19 @@ public sealed class PackageLibraryIntegrationTests
 
         ConsumerSelectionHost.ValidateAgainstPackagedSchema(xml).Should().BeEmpty();
 
-        host.Handler.Requests.Should().Equal(new[] { ConsumerLibrary.MosmixLUri(BaseUri, "10637").AbsoluteUri });
+        _host.Handler.Requests.Should().Equal(new[] { ConsumerLibrary.MosmixLUri(BaseUri, "10637").AbsoluteUri });
     }
 
     [TestMethod]
     public async Task Library_ParseMosmixS_ToJsonXmlMqtt()
     {
-        using var host = ConsumerLibrary.Host(BaseUri);
-        ConsumerLibrary.ArrangeMosmixS(host, BaseUri, "10637");
+        ConsumerLibrary.ArrangeMosmixS(_host, BaseUri, "10637");
 
-        var result = await host.Provider.GetRequiredService<IMosmixSParser>().ParseAsync("10637", CancellationToken.None);
+        var result = await _host.Provider.GetRequiredService<IMosmixSParser>().ParseAsync("10637", CancellationToken.None);
 
-        var json = await host.JsonAsync(result.Run);
-        var xml = await host.XmlAsync(result.Run);
-        var mqtt = await ConsumerLibrary.Mqtt(host, result.Run);
+        var json = await _host.JsonAsync(result.Run);
+        var xml = await _host.XmlAsync(result.Run);
+        var mqtt = await ConsumerLibrary.Mqtt(_host, result.Run);
 
         mqtt.Topic.Should().Be("haus/weather/forecasts/dwd-mosmix-s:10637/state");
         mqtt.Retain.Should().BeTrue();
@@ -175,7 +182,7 @@ public sealed class PackageLibraryIntegrationTests
 
         ConsumerSelectionHost.ValidateAgainstPackagedSchema(xml).Should().BeEmpty();
 
-        host.Handler.Requests.Should().Equal(new[] { ConsumerLibrary.MosmixSUri(BaseUri).AbsoluteUri });
+        _host.Handler.Requests.Should().Equal(new[] { ConsumerLibrary.MosmixSUri(BaseUri).AbsoluteUri });
     }
 
     [TestMethod]

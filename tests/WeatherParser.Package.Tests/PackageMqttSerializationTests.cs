@@ -15,12 +15,27 @@ namespace WeatherParser.Package.Tests;
 [TestClass]
 public sealed class PackageMqttSerializationTests
 {
+    private ConsumerSelectionHost _host = null!;
+    private IMqttMessageSerializer _serializer = null!;
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _host = ConsumerLibrary.Host();
+        _serializer = _host.Provider.GetRequiredService<IMqttMessageSerializer>();
+    }
+
+    [TestCleanup]
+    public void TestCleanup()
+    {
+        _host.Dispose();
+    }
+
     [TestMethod]
     public async Task Package_ResolvesMqttMessageSerializer()
     {
-        using var host = ConsumerLibrary.Host();
-        var serializer1 = host.Provider.GetRequiredService<IMqttMessageSerializer>();
-        var serializer2 = host.Provider.GetRequiredService<IMqttMessageSerializer>();
+        var serializer1 = _host.Provider.GetRequiredService<IMqttMessageSerializer>();
+        var serializer2 = _host.Provider.GetRequiredService<IMqttMessageSerializer>();
         serializer1.Should().BeOfType<MqttMessageSerializer>();
         serializer1.Should().BeSameAs(serializer2);
     }
@@ -28,36 +43,33 @@ public sealed class PackageMqttSerializationTests
     [TestMethod]
     public async Task Package_MqttMessage_ForEveryRoot()
     {
-        using var host = ConsumerLibrary.Host();
-        var serializer = host.Provider.GetRequiredService<IMqttMessageSerializer>();
-
         var dataset = ConsumerTestData.ValidDataset();
-        var message = await serializer.SerializeAsync(dataset, CancellationToken.None);
+        var message = await _serializer.SerializeAsync(dataset, CancellationToken.None);
         message.Topic.Should().Be("haus/weather/measurements/dwd:00044/state");
         message.Retain.Should().BeTrue();
         message.MessageType.Should().Be(MqttMessageType.Observation);
-        message.Payload.ToArray().Should().Equal(await host.JsonAsync(dataset));
+        message.Payload.ToArray().Should().Equal(await _host.JsonAsync(dataset));
 
         var run = ConsumerTestData.ValidRun();
-        message = await serializer.SerializeAsync(run, CancellationToken.None);
+        message = await _serializer.SerializeAsync(run, CancellationToken.None);
         message.Topic.Should().Be("haus/weather/forecasts/" + run.Source + "/state");
         message.MessageType.Should().Be(MqttMessageType.Forecast);
         message.Retain.Should().BeTrue();
-        message.Payload.ToArray().Should().Equal(await host.JsonAsync(run));
+        message.Payload.ToArray().Should().Equal(await _host.JsonAsync(run));
 
         var cdcList = ConsumerTestData.ValidCdcList();
         cdcList.Source = "dwd:cdc-10min-now";
-        message = await serializer.SerializeAsync(cdcList, CancellationToken.None);
+        message = await _serializer.SerializeAsync(cdcList, CancellationToken.None);
         message.Topic.Should().Be("haus/weather/stations/dwd/selection");
         message.Retain.Should().BeFalse();
-        message.Payload.ToArray().Should().Equal(await host.JsonAsync(cdcList));
+        message.Payload.ToArray().Should().Equal(await _host.JsonAsync(cdcList));
 
         var mosmixList = ConsumerTestData.ValidMosmixList();
         mosmixList.Source = "dwd:mosmix-stationskatalog";
-        message = await serializer.SerializeAsync(mosmixList, CancellationToken.None);
+        message = await _serializer.SerializeAsync(mosmixList, CancellationToken.None);
         message.Topic.Should().Be("haus/weather/stations/mosmix/selection");
         message.Retain.Should().BeFalse();
-        message.Payload.ToArray().Should().Equal(await host.JsonAsync(mosmixList));
+        message.Payload.ToArray().Should().Equal(await _host.JsonAsync(mosmixList));
     }
 
     [TestMethod]
