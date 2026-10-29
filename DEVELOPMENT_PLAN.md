@@ -162,6 +162,8 @@ Prepare `--Output mqtt|json|xml` and `--OutputFile` under the contract. JSON/XML
 
 **Acceptance:** Process/command tests demonstrate single execution and termination, with no external side effects from invalid input. Test files, stdout, write errors, existing destinations and partial failure.
 
+Phase plan (written on 2026-10-29 on the user's instruction, under review, not yet accepted): [PHASE_P3_PLAN.md](PHASE_P3_PLAN.md), reviewed through the automatic Codex review of pull request #15; the step plans follow after its review loop (user instruction of 2026-10-29). P3 starts only on a separate instruction.
+
 ### P9 – ARM64 acceptance and operation
 
 Run release artifacts on the documented Debian/ARM64 system: noninteractive execution, real serializers, UTF-8, UTC/source timezones, file permissions, exit codes, signals and cleanup. Report offline fixtures, live sources and test-broker results separately.
