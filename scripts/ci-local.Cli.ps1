@@ -199,7 +199,7 @@ function Invoke-CliTargetStage([string]$TargetDir, [string]$ToolVersion) {
 
     Invoke-Native 75 'dotnet' @('pack', 'src/WeatherParser.Parsing', '-c', 'Release', '--no-build', '-o', $packageDir) -WorkingDirectory $TargetDir -AllowedExitCodes @(0)
 
-    $nupkgFiles = Get-ChildItem -Path $packageDir -Filter "*.nupkg" -File
+    $nupkgFiles = @(Get-ChildItem -Path $packageDir -Filter "*.nupkg" -File)
     if ($nupkgFiles.Count -ne 1) {
         Fail 75 "Expected exactly one .nupkg file, found $($nupkgFiles.Count)"
     }

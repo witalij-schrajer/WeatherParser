@@ -103,7 +103,7 @@ public sealed class ProcessTests
         var sw = Stopwatch.StartNew();
         var result = await CliProcess.RunAsync(
             "pwsh",
-            new[] { "-NoProfile", "-Command", "Start-Process -FilePath pwsh -ArgumentList '-NoProfile','-Command','Start-Sleep -Seconds 40' -NoNewWindow; exit 0" },
+            new[] { "-NoProfile", "-Command", "Start-Process -FilePath pwsh -ArgumentList '-NoProfile','-Command','Start-Sleep -Seconds 12' -NoNewWindow; exit 0" },
             _workingDirectory,
             TimeSpan.FromSeconds(5));
         sw.Stop();
