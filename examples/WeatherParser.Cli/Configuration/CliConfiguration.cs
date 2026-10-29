@@ -9,98 +9,98 @@ namespace WeatherParser.Cli.Configuration;
 
 public sealed class CliConfiguration
 {
-    public DwdSection? Dwd { get; init; }
-    public OsthessenWetterSection? OsthessenWetter { get; init; }
-    public MosmixSection? Mosmix { get; init; }
-    public MqttSection? Mqtt { get; init; }
-    public LimitsSection? Limits { get; init; }
-    public HttpSection? Http { get; init; }
+    public DwdSection? Dwd { get; set; }
+    public OsthessenWetterSection? OsthessenWetter { get; set; }
+    public MosmixSection? Mosmix { get; set; }
+    public MqttSection? Mqtt { get; set; }
+    public LimitsSection? Limits { get; set; }
+    public HttpSection? Http { get; set; }
 }
 
 public sealed class DwdSection
 {
-    public string? ReferenceStationId { get; init; }
-    public CdcCatalogEndpoints? Catalog { get; init; }
-    public DwdObservationOptions? Observation { get; init; }
+    public string? ReferenceStationId { get; set; }
+    public CdcCatalogEndpoints? Catalog { get; set; }
+    public DwdObservationOptions? Observation { get; set; }
 }
 
 public sealed class OsthessenWetterSection
 {
-    public Uri? PageUri { get; init; }
-    public TimeSpan? PageDeadline { get; init; }
-    public List<OsthessenWetterStationMetadata>? Stations { get; init; }
-    public bool PublicationPermitted { get; init; }
+    public Uri? PageUri { get; set; }
+    public TimeSpan? PageDeadline { get; set; }
+    public List<OsthessenWetterStationMetadata>? Stations { get; set; }
+    public bool PublicationPermitted { get; set; }
 }
 
 public sealed class MosmixSection
 {
-    public MosmixCatalogEndpoints? Catalog { get; init; }
-    public MosmixLSection? L { get; init; }
-    public MosmixSSection? S { get; init; }
+    public MosmixCatalogEndpoints? Catalog { get; set; }
+    public MosmixLSection? L { get; set; }
+    public MosmixSSection? S { get; set; }
 }
 
 public sealed class MosmixLSection
 {
-    public Uri? SingleStationsDirectory { get; init; }
-    public TimeSpan? ParseDeadline { get; init; }
-    public TimeSpan? MaxRunAge { get; init; }
+    public Uri? SingleStationsDirectory { get; set; }
+    public TimeSpan? ParseDeadline { get; set; }
+    public TimeSpan? MaxRunAge { get; set; }
 }
 
 public sealed class MosmixSSection
 {
-    public Uri? AllStationsUri { get; init; }
-    public TimeSpan? ParseDeadline { get; init; }
-    public TimeSpan? MaxRunAge { get; init; }
+    public Uri? AllStationsUri { get; set; }
+    public TimeSpan? ParseDeadline { get; set; }
+    public TimeSpan? MaxRunAge { get; set; }
 }
 
 public sealed class MqttSection
 {
-    public BrokerSection? Broker { get; init; }
-    public TopicsSection? Topics { get; init; }
-    public int? MaxPayloadBytes { get; init; }
+    public BrokerSection? Broker { get; set; }
+    public TopicsSection? Topics { get; set; }
+    public int? MaxPayloadBytes { get; set; }
 }
 
 public sealed class BrokerSection
 {
-    public string? Host { get; init; }
-    public int? Port { get; init; }
-    public string? ProtocolVersion { get; init; }
-    public string? ClientId { get; init; }
-    public TimeSpan? KeepAlive { get; init; }
-    public string? CredentialsFile { get; init; }
-    public TlsSection? Tls { get; init; }
-    public bool AllowUnencrypted { get; init; }
+    public string? Host { get; set; }
+    public int? Port { get; set; }
+    public string? ProtocolVersion { get; set; }
+    public string? ClientId { get; set; }
+    public TimeSpan? KeepAlive { get; set; }
+    public string? CredentialsFile { get; set; }
+    public TlsSection? Tls { get; set; }
+    public bool AllowUnencrypted { get; set; }
 }
 
 public sealed class TlsSection
 {
-    public string? CaFile { get; init; }
+    public string? CaFile { get; set; }
 }
 
 public sealed class TopicsSection
 {
-    public TopicSection? Observation { get; init; }
-    public TopicSection? Forecast { get; init; }
-    public TopicSection? CdcStationList { get; init; }
-    public TopicSection? MosmixLocationList { get; init; }
+    public TopicSection? Observation { get; set; }
+    public TopicSection? Forecast { get; set; }
+    public TopicSection? CdcStationList { get; set; }
+    public TopicSection? MosmixLocationList { get; set; }
 }
 
 public sealed class TopicSection
 {
-    public string? TopicTemplate { get; init; }
+    public string? TopicTemplate { get; set; }
 }
 
 public sealed class LimitsSection
 {
-    public TimeSpan? ConnectTimeout { get; init; }
-    public TimeSpan? PublishTimeout { get; init; }
-    public int? MaxPublishAttempts { get; init; }
-    public TimeSpan? RetryDelay { get; init; }
-    public TimeSpan? CommandDeadline { get; init; }
-    public TimeSpan? ShutdownGracePeriod { get; init; }
+    public TimeSpan? ConnectTimeout { get; set; }
+    public TimeSpan? PublishTimeout { get; set; }
+    public int? MaxPublishAttempts { get; set; }
+    public TimeSpan? RetryDelay { get; set; }
+    public TimeSpan? CommandDeadline { get; set; }
+    public TimeSpan? ShutdownGracePeriod { get; set; }
 }
 
 public sealed class HttpSection
 {
-    public string? UserAgent { get; init; }
+    public string? UserAgent { get; set; }
 }
