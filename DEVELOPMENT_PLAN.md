@@ -162,7 +162,7 @@ Prepare `--Output mqtt|json|xml` and `--OutputFile` under the contract. JSON/XML
 
 **Acceptance:** Process/command tests demonstrate single execution and termination, with no external side effects from invalid input. Test files, stdout, write errors, existing destinations and partial failure.
 
-Phase plan (written on 2026-10-29 on the user's instruction, under review, not yet accepted): [PHASE_P3_PLAN.md](PHASE_P3_PLAN.md), reviewed through the automatic Codex review of pull request #15; the step plans follow after its review loop (user instruction of 2026-10-29). P3 starts only on a separate instruction.
+Phase plan (written on 2026-10-29 on the user's instruction, under review, not yet accepted): [PHASE_P3_PLAN.md](PHASE_P3_PLAN.md), reviewed through the automatic Codex review of pull request #15 to 0 findings; the step plans under `docs/p3/`, written after that loop (user instruction of 2026-10-29), are under review on the same pull request. P3 starts only on a separate instruction.
 
 ### P9 – ARM64 acceptance and operation
 
