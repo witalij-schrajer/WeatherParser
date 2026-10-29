@@ -28,12 +28,14 @@ No slice changes behavior, so there is no Red step; a defect found here is fixed
 
 ### S1 Windows
 - `pwsh ./scripts/ci-local.ps1 -Commit <candidate-sha> -TargetRef <integration-target-sha> -RunSettings coverage.runsettings`; exit code, counts, both gate results per CL-19, packed SHA-512.
+- App-host smoke test (the P3.03 decision): the built app host `WeatherParser.exe` of the candidate runs `--Help` (expected: usage on stdout, nothing on stderr, exit 0) and one command in JSON mode against the loopback fake source (expected: one complete document on stdout, exit 0); command lines, exit codes and output sizes recorded.
+- Real Ctrl+C check (P3.09 section 8): the app host runs a JSON command with `--OutputFile` against the loopback fake source that delays its response, in its own console; a real console Ctrl+C is delivered (pressed by the user or sent to the console's process group with `GenerateConsoleCtrlEvent` by a helper in that console; the method is recorded); expected: exit code 4 per CL-11 (or as approved), the cancellation summary on stderr, no destination file and no temporary file.
 
 ### S2 Hosted CI
 - The CI run of the candidate push: every job and its conclusion; the hosted `debian13-arm64` container is not target evidence.
 
 ### S3 NanoPi R76S
-- With authorization: Git bundle, hash check on the device, detached checkout at the candidate, `scripts/prepare-debian-arm64.sh`, `ci-local.ps1`; then the built CLI on the device: `--Help`, one command in JSON mode against the fake source, the Linux signal tests; device, OS, SDK and runtime versions.
+- With authorization: Git bundle, hash check on the device, detached checkout at the candidate, `scripts/prepare-debian-arm64.sh`, `ci-local.ps1`; then the built CLI on the device through its app host `./WeatherParser` (the P3.03 app-host smoke test: `--Help` exit 0 with usage on stdout, one command in JSON mode against the fake source with one complete document and exit 0), the Linux signal tests, and one real SIGINT and one real SIGTERM sent with `kill` to the app host during a delayed JSON command (expected: exit 4, summary on stderr, no destination or temporary file); device, OS, SDK and runtime versions.
 
 ### S4 Test broker
 - With authorization: the opt-in integration tests of P3.08 S4 against the named test broker; broker product and version; results.
@@ -42,12 +44,12 @@ No slice changes behavior, so there is no Red step; a defect found here is fixed
 - With authorization, one run per command in JSON mode (`--SelectDWD`, `--ParseDWD`, `--ParseOstHessen`, `--SelectMOSMIX` (MOSMIX_L availability; MOSMIX_S per CL-17), `--ParseMOSMIX --Product MOSMIX_L` and `--Product MOSMIX_S`), and one MQTT run against the test broker; exit code, root, counts, sources and timestamps per run.
 
 ### S6 Outcome
-- READY when, on each of S1 to S3, every test applicable to that platform passes (none failed; the skipped tests are exactly the documented opt-in and platform-specific ones: for example the Linux-only signal and file-permission tests on Windows and the Windows trigger test on Linux, each named with its reason) and every coverage gate of CL-19 passes on that platform; the tests shared by all platforms are compared separately and must have identical outcomes; differences in counts or gate counters are recorded and explained by the documented platform-specific tests and code paths; S4 and S5 pass as authorized and no defect is open; otherwise NOT_READY with the open items; Codex review of the record.
+- READY when, on each of S1 to S3, every test applicable to that platform passes (none failed; the skipped tests are exactly the documented opt-in and platform-specific ones: for example the Linux-only signal and file-permission tests on Windows and the Windows trigger test on Linux, each named with its reason) and every coverage gate of CL-19 passes on that platform; the tests shared by all platforms are compared separately and must have identical outcomes; differences in counts or gate counters are recorded and explained by the documented platform-specific tests and code paths; the app-host smoke tests (S1 and S3), the real Windows Ctrl+C check (S1) and the real SIGINT and SIGTERM checks on the NanoPi (S3) passed with their expected outcomes; S4 and S5 pass as authorized and no defect is open; otherwise NOT_READY with the open items; Codex review of the record.
 
 ## 6. Tests and Test IDs
 | Step-local case | T-P3 ID | Requirement IDs | Behavior and boundary |
 |---|---|---|---|
-| S1 to S3 | T-P3-20, T-P3-01, T-P3-18 | REQ-017, REQ-084, REQ-086 | Platforms, package consumption, process behavior |
+| S1 to S3 | T-P3-20, T-P3-01, T-P3-18 | REQ-006, REQ-007, REQ-017, REQ-084, REQ-086 | Platforms, package consumption, app host, real signals, process behavior |
 | S4 | T-P3-19, T-P3-14 | REQ-062, REQ-063, REQ-083 | Real broker behavior |
 | S5 | T-P3-19, T-P3-10, T-P3-11 | REQ-084, REQ-092 | Live runs, recorded separately |
 
@@ -59,5 +61,5 @@ No slice changes behavior, so there is no Red step; a defect found here is fixed
 - (b) Without an authorized test broker S4 stays open and P3 cannot be accepted with broker evidence; the record says so
 
 ## 9. Acceptance Criteria
-- [ ] S1 to S3 passed with recorded evidence; S4 and S5 passed as authorized or explicitly open
+- [ ] S1 to S3 passed with recorded evidence, including the app-host smoke tests and the real Ctrl+C, SIGINT and SIGTERM checks; S4 and S5 passed as authorized or explicitly open
 - [ ] Outcome READY or NOT_READY recorded; Codex 0 findings or reported
