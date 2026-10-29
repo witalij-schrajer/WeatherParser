@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using WeatherParser.Parsing.Catalogs;
 using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Forecasts.Mosmix;
+using WeatherParser.Parsing.Mqtt;
 using WeatherParser.Parsing.Observations.Dwd;
 using WeatherParser.Parsing.Observations.Osthessen;
 using WeatherParser.Parsing.Parsing;
@@ -122,6 +123,7 @@ internal static class ResourceCheckRunner
         services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(240) });
         services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://resource-check.invalid/MOSMIX_S_LATEST_240.kmz") });
         services.AddSingleton(new MosmixSForecastOptions { ParseDeadline = TimeSpan.FromMinutes(5), MaxRunAge = TimeSpan.FromHours(240) });
+        services.AddSingleton(new MqttTopicOptions());
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
 

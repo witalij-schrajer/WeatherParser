@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using WeatherParser.Parsing.Catalogs;
 using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Export;
+using WeatherParser.Parsing.Mqtt;
 using WeatherParser.Parsing.Parsing;
 using WeatherParser.Parsing.Selection;
 using WeatherParser.Parsing.Serialization;
@@ -34,7 +35,7 @@ internal sealed class SelectionPipelineFixture : IDisposable
     public CdcCatalogEndpoints CdcOptions { get; }
     public MosmixCatalogEndpoints MosmixOptions { get; }
 
-    public SelectionPipelineFixture(DateTimeOffset start)
+    public SelectionPipelineFixture(DateTimeOffset start, MqttTopicOptions? mqttOptions = null)
     {
         Directory = Path.Combine(Path.GetTempPath(), "wp-selection-" + Guid.NewGuid().ToString("N"));
         System.IO.Directory.CreateDirectory(Directory);
@@ -52,6 +53,10 @@ internal sealed class SelectionPipelineFixture : IDisposable
         services.AddSingleton<ILogger<MosmixLocationSelector>>(MosmixLogger);
         services.AddSingleton<ILogger<MosmixLocationCatalogReader>>(ReaderLogger);
         services.AddSingleton(MosmixEvidenceIndexTestData.Options(Directory));
+        if (mqttOptions is not null)
+        {
+            services.AddSingleton(mqttOptions);
+        }
 
         Provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         CdcOptions = Provider.GetRequiredService<CdcCatalogEndpoints>();

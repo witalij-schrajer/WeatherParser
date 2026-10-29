@@ -6,6 +6,7 @@ using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Observations.Dwd;
 using WeatherParser.Parsing.Observations.Osthessen;
 using WeatherParser.Parsing.Forecasts.Mosmix;
+using WeatherParser.Parsing.Mqtt;
 
 namespace WeatherParser.Package.Tests;
 
@@ -46,6 +47,7 @@ internal static class TestConsumerServices
         services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") });
         services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) });
         services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
+        services.AddSingleton(new MqttTopicOptions());
         return services;
     }
 }

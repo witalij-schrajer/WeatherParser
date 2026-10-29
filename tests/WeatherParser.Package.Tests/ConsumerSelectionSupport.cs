@@ -19,6 +19,7 @@ using WeatherParser.Parsing.Serialization;
 using WeatherParser.Parsing.Observations.Dwd;
 using WeatherParser.Parsing.Observations.Osthessen;
 using WeatherParser.Parsing.Forecasts.Mosmix;
+using WeatherParser.Parsing.Mqtt;
 
 namespace WeatherParser.Package.Tests;
 
@@ -115,7 +116,8 @@ internal sealed class ConsumerSelectionHost : IDisposable
             .AddSingleton(new MosmixLForecastEndpoints { SingleStationsDirectory = new Uri("https://mosmix.example/single_stations/") })
             .AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") })
             .AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) })
-            .AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
+            .AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) })
+            .AddSingleton(new MqttTopicOptions());
     }
 
     public void ArrangeCdc()

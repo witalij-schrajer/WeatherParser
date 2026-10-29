@@ -1,6 +1,6 @@
 # P8.10 – Acceptance of P8 and of the Complete Library, P3 Handoff: Implementation Plan
 
-**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; not started.** Refines the P8.10 row of section 5 and section 9 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; complete on 2026-10-29: audit ACCEPTED, P8 accepted by the user on candidate `ce166eb` ([record](P8_10_ACCEPTANCE.md)); merge by the user pending.** Refines the P8.10 row of section 5 and section 9 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: audit the P8 evidence, summarize the acceptance of the complete library across P2 and P4 to P8 as the gate for P3, obtain the user's acceptance, update the status documents, write the P3 handoff and bring the pull request through review to the user's merge.

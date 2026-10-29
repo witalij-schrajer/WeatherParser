@@ -21,6 +21,7 @@ using WeatherParser.Parsing.Observations.Osthessen;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using WeatherParser.Parsing.Exceptions;
 using WeatherParser.Parsing.Forecasts.Mosmix;
+using WeatherParser.Parsing.Mqtt;
 using WeatherParser.Parsing.Forecasts;
 using System.Diagnostics;
 
@@ -123,6 +124,7 @@ internal static class LiveCheckRunner
         services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = settings.MosmixSAllStationsUri });
         services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = settings.MosmixLMaxRunAge });
         services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = settings.MosmixSMaxRunAge });
+        services.AddSingleton(new MqttTopicOptions());
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
@@ -222,6 +224,7 @@ internal static class LiveCheckRunner
         services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") });
         services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) });
         services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
+        services.AddSingleton(new MqttTopicOptions());
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
@@ -293,6 +296,7 @@ internal static class LiveCheckRunner
         services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") });
         services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) });
         services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
+        services.AddSingleton(new MqttTopicOptions());
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
@@ -346,6 +350,7 @@ internal static class LiveCheckRunner
         services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") });
         services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) });
         services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
+        services.AddSingleton(new MqttTopicOptions());
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         var parser = provider.GetRequiredService<IOsthessenWetterParser>();

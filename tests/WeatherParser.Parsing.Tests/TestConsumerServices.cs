@@ -6,11 +6,12 @@ using WeatherParser.Parsing.Evidence.MosmixS;
 using WeatherParser.Parsing.Observations.Dwd;
 using WeatherParser.Parsing.Observations.Osthessen;
 using WeatherParser.Parsing.Forecasts.Mosmix;
+using WeatherParser.Parsing.Mqtt;
 
 namespace WeatherParser.Parsing.Tests;
 
 /// <summary>
-/// Registers what a consumer must register next to AddWeatherParsing (SC-08, SC-09, SC-12, SC-13): logging (a no-op logger here), an HttpClient that is never used to send in these tests, the system TimeProvider and valid CDC and MOSMIX catalog endpoint options with placeholder URIs and the default DWD observation options, OsthessenWetter options with one synthetic station and a placeholder OsthessenWetter page endpoint, and placeholder MOSMIX_L and MOSMIX_S forecast endpoints with valid forecast options.
+/// Registers what a consumer must register next to AddWeatherParsing (SC-08, SC-09, SC-12, SC-13): logging (a no-op logger here), an HttpClient that is never used to send in these tests, the system TimeProvider and valid CDC and MOSMIX catalog endpoint options with placeholder URIs and the default DWD observation options, OsthessenWetter options with one synthetic station and a placeholder OsthessenWetter page endpoint, and placeholder MOSMIX_L and MOSMIX_S forecast endpoints with valid forecast options, and empty MQTT topic options (no mapping, contract MQ-09).
 /// Tests that observe log calls use strict mocks instead.
 /// </summary>
 internal static class TestConsumerServices
@@ -46,6 +47,7 @@ internal static class TestConsumerServices
         services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = new Uri("https://mosmix.example/MOSMIX_S_LATEST_240.kmz") });
         services.AddSingleton(new MosmixLForecastOptions { MaxRunAge = TimeSpan.FromHours(8) });
         services.AddSingleton(new MosmixSForecastOptions { MaxRunAge = TimeSpan.FromHours(2) });
+        services.AddSingleton(new MqttTopicOptions());
         return services;
     }
 }

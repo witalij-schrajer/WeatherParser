@@ -6,6 +6,7 @@ using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Forecasts;
 using WeatherParser.Parsing.Forecasts.Mosmix;
 using WeatherParser.Parsing.Geography;
+using WeatherParser.Parsing.Mqtt;
 using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Observations.Dwd;
 using WeatherParser.Parsing.Observations.Osthessen;
@@ -114,6 +115,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IOsthessenWetterObservationMapper, OsthessenWetterObservationMapper>();
         services.AddSingleton<IOsthessenWetterPageSource, OsthessenWetterPageSource>();
         services.AddSingleton<IOsthessenWetterParser, OsthessenWetterParser>();
+        services.AddSingleton<IMqttTopicTemplateParser, MqttTopicTemplateParser>();
+        services.AddSingleton<IMqttTopicValidator, MqttTopicValidator>();
+        services.AddSingleton<IMqttTopicOptionsValidator, MqttTopicOptionsValidator>();
+        services.AddSingleton<IMqttMessageSerializer, MqttMessageSerializer>();
 
         return services;
     }

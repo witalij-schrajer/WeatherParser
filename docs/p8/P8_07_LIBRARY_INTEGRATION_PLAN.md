@@ -1,6 +1,6 @@
 # P8.07 – Complete Library Integration through the Package: Implementation Plan
 
-**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; not started; to be reconciled with the approved P8.02 contract before it starts.** Refines the P8.07 row of section 5 and the "Integration" row of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; reconciled on 2026-10-28 with the P8.02 contract MQ-01 to MQ-15 approved by the user on 2026-10-28 (P8.02 S5); complete on 2026-10-29 ([verification record](P8_VERIFICATION.md#7-p807--complete-library-integration-through-the-package)).** Refines the P8.07 row of section 5 and the "Integration" row of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: prove the DEVELOPMENT_PLAN.md P8 acceptance — the complete library functions for DWD observations, OsthessenWetter and both MOSMIX products, with station selection, export and MQTT serialization, consumed independently from the same-run package without CLI or broker — and close the inherited "DI under load" item (MQ-12).
