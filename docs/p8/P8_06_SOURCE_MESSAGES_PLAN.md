@@ -1,6 +1,6 @@
 # P8.06 – Messages for Every Source and Root: Implementation Plan
 
-**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; reconciled on 2026-10-28 with the P8.02 contract MQ-01 to MQ-15 approved by the user on 2026-10-28 (P8.02 S5); not started.** Refines the P8.06 row of section 5 and the "Separation" and "Semantics" rows of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; reconciled on 2026-10-28 with the P8.02 contract MQ-01 to MQ-15 approved by the user on 2026-10-28 (P8.02 S5); complete on 2026-10-29 ([verification record](P8_VERIFICATION.md#6-p806--messages-for-every-source-and-root)).** Refines the P8.06 row of section 5 and the "Separation" and "Semantics" rows of section 4 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: prove with the real serializers that every result the library produces becomes the right MQTT message: DWD observations, OsthessenWetter observations (synthetic), MOSMIX_L and MOSMIX_S forecast runs and both station lists, with distinct topics where retained state must not collide.
