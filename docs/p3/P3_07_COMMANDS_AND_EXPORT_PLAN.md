@@ -39,7 +39,7 @@ Every slice: roles and checks as in P3.03 section 5.
 **Green**: the three parse handlers and the result building.
 
 ### S3 File and stdout output
-**Red**: `Stdout_ContainsOnlyTheDocument` (process test), `Stdout_DocumentWrittenAfterCompleteSerialization` (a serializer double that fails midway: stdout stays empty), `OutputFile_ExistingDestination_RejectedBeforeRetrieval` (zero fake-server requests), `OutputFile_MissingDirectory_RejectedBeforeRetrieval`, `OutputFile_Success_Utf8WithoutBom_NoTemporaryFileLeft`, `OutputFile_DestinationCreatedDuringRun_NotOverwritten_TemporaryFileDeleted`, `OutputFile_WriteFailure_NoDestinationNoTemporaryFile`, `OutputFile_IdenticalInput_IdenticalBytes`, `JsonXmlMode_NoBrokerSettingsNeeded_NoConnection` (the fake publisher records no call).
+**Red**: `Stdout_ContainsOnlyTheDocument` (process test), `Process_StdoutEmpty_WhenNoExportIsProduced` (destination failures, failures of the selection commands, which have no envelope, and, with the fake publisher, MQTT-mode failures: stdout stays empty), `Process_PartialOrItemFailure_StdoutHoldsCompleteEnvelope` (a parse command in JSON mode with one succeeded and one failed item, and one with only failed items: stdout holds exactly one complete `export_document` with observations or forecast runs and `errors`, the exit code is partial or complete failure per CL-11, nothing else on stdout), `Stdout_DocumentWrittenAfterCompleteSerialization` (a serializer double that fails midway: stdout stays empty), `OutputFile_ExistingDestination_RejectedBeforeRetrieval` (zero fake-server requests), `OutputFile_MissingDirectory_RejectedBeforeRetrieval`, `OutputFile_Success_Utf8WithoutBom_NoTemporaryFileLeft`, `OutputFile_DestinationCreatedDuringRun_NotOverwritten_TemporaryFileDeleted`, `OutputFile_WriteFailure_NoDestinationNoTemporaryFile`, `OutputFile_IdenticalInput_IdenticalBytes`, `JsonXmlMode_NoBrokerSettingsNeeded_NoConnection` (the fake publisher records no call).
 **Green**: output writer.
 
 ### S4 OsthessenWetter restriction
@@ -53,7 +53,7 @@ Every slice: roles and checks as in P3.03 section 5.
 |---|---|---|---|
 | S1 | T-P3-10, T-P3-17 | REQ-002, REQ-023, REQ-101, SC-22 | Selection results |
 | S2 | T-P3-11, T-P3-13, T-P3-06 | REQ-030 to REQ-032, REQ-040, REQ-041, REQ-067, REQ-103, REQ-105, REQ-111 | Parse results, separation, equivalence |
-| S3 | T-P3-12 | REQ-065 to REQ-069, REQ-073 | Output |
+| S3 | T-P3-12, T-P3-08, T-P3-09 | REQ-063, REQ-065 to REQ-069, REQ-073 | Output, stdout per outcome, exit codes of partial and item failures |
 | S4 | T-P3-16 | OW-14 | Restriction |
 | all | T-P3-20 | REQ-085, REQ-086 | Red evidence; coverage |
 
