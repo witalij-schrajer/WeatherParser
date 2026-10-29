@@ -1,6 +1,6 @@
 # P3 Verification Record
 
-**Status (2026-10-29): P3.01 in progress (section 1).**
+**Status (2026-10-29): P3.01 complete, outcome READY (section 1); P3.02 in progress.**
 
 - Integration target: `e623a834bdb2902cec930258a62a48302f626716` (merge of pull request #15; documentation-only successor of the P8 merge `21b7210`).
 - Branch `features/develop/P3`.
@@ -11,3 +11,11 @@
 - Record: [P3_01_FOUNDATION_CHECK.md](P3_01_FOUNDATION_CHECK.md), written by the orchestrating agent; no qwen output in this step (documentation and repository operations only, AGENTS.md).
 - S1 and S2 recorded (merge checks, commit classification of `21b7210..e623a83`, extraction, item mapping).
 - S3: branch `features/develop/P3` from `origin/develop` `e623a83`; status passages "P3 started"; README package check on the working tree passed (README.md SHA-256 `1280DDCF3E9992C913F030DD6B01798AFD771524CDE6E0B34E103B253344D3C3`, package consumer 61/61).
+- Seed commit `0c54a0a4c90807a3e9011dbfba3ea03e0694f9e2`, pushed; draft pull request #16 into `develop` opened; Auto-fix on. Hosted CI for `0c54a0a`: run 40949977254 (`pull_request`), completed with conclusion success (jobs changes, windows-x64, ubuntu-x64, debian13-arm64 all success).
+- S4: `pwsh ./scripts/ci-local.ps1 -Commit 0c54a0a4c90807a3e9011dbfba3ea03e0694f9e2 -TargetRef e623a834bdb2902cec930258a62a48302f626716 -RunSettings coverage.runsettings`: exit 0, run directory artifacts/ci/0c54a0a-20261029T203244Z (gitignored), two-pass; Parsing 3213 of 3220 passed, 0 failed (seven opt-in checks not executed), SchemaGeneration 46, Coverage 99, Coverage.Runner 56, package consumer 61; gate passed with 11102/11103 at or above the baseline 11102/11103 (gate-result.json SHA-256 `6c3c1112dbe482712cee5205a84b266ea71ed626db9743550c0a9ab183073308`).
+- Baseline for the P3 code steps: **11102/11103** native blocks for target `e623a83`; the one uncovered block (`FileSystemMosmixEvidenceCache.DeleteTemporaryFile` `catch`) is reachable by a test without a library change on Windows only (deny-delete access control list, experiment in record section 5), not on Linux.
+- S5: `PHASE_P3_PLAN.md` section 1 table "P3.01 extraction" and status line; status passages "P3.01 complete" in AGENTS.md, README.md, DEVELOPMENT_PLAN.md and PHASE_P1_PLAN.md; four plan adjustments for P3.02 (record section 6).
+- Codex five-angle review of P3.01 (`p301/codex_r1.md`, outside the repository; seed commit and S5 working tree), round 1: 4 findings, each verified: [P2] the inherited-item table missed the P8.10 row "payload bound limits message acceptance, not peak memory": confirmed, row added together with the other P8.10 and P7.12 rows checked one by one; [P2] the assessment that the `DeleteTemporaryFile` `catch` needs a race or a library change overlooked Windows access control lists: confirmed by an experiment (write succeeds, move and delete fail with `UnauthorizedAccessException`), record section 5 and the plan table corrected (reachable on Windows only, not on Linux); [P3] the verification header still said "in progress": fixed; [P3] the hosted CI conclusion was not recorded: run 40949977254 recorded as success.
+- Round 2 (`p301/codex_r2.md`): 2 findings, both confirmed: [P2] the README package check recorded for the seed commit did not cover the README with the "P3.01 complete" passage: rerun on the S5 working tree: README.md SHA-256 `A3C101B6562D2F0071EA9FD5B242A3669DAF958B83A1A13E090F0993BD3303B1` identical in the package with LICENSE and the export schema, packed SHA-512 `xYFiCaGTsJZoTC+C8nklCCA0s1gtfWQaJWc3bZ1c+tAaxKP0IU9wkiNfDsSMR0UiyMhJkq2o/uxYwgyjkJiiHg==` equals the restored hash, package consumer 61/61; the `ci-local.ps1` run on the P3.01 record commit is recorded with the first P3.02 commit; [P3] the header referred to a P3.02 section that did not exist yet: reference removed.
+- Round 3 (`p301/codex_r3.md`): 0 findings.
+- P3.01 complete, outcome READY.
