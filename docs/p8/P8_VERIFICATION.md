@@ -1,6 +1,6 @@
 # P8 Verification Record
 
-**Status (2026-10-29): P8.01 complete, outcome READY (section 1); P8.02 complete: contract MQ-01 to MQ-15 approved by the user on 2026-10-28, plans reconciled (section 2); P8.03 complete (section 3); P8.04 complete (section 4); P8.05 complete (section 5); P8.06 complete (section 6); P8.07 complete (section 7); P8.08 complete (section 8); P8.09 READY on `290a0eb` and again on `ce166eb` (section 9); P8.10 complete: audit ACCEPTED, P8 accepted by the user on 2026-10-29 on `ce166eb` (section 10); merge by the user pending.**
+**Status (2026-10-29): P8.01 complete, outcome READY (section 1); P8.02 complete: contract MQ-01 to MQ-15 approved by the user on 2026-10-28, plans reconciled (section 2); P8.03 complete (section 3); P8.04 complete (section 4); P8.05 complete (section 5); P8.06 complete (section 6); P8.07 complete (section 7); P8.08 complete (section 8); P8.09 READY on `290a0eb` and again on `ce166eb` (section 9); P8.10 complete: audit ACCEPTED, P8 accepted by the user on 2026-10-29 on `ce166eb` (section 10); P8 complete: pull request #14 merged into `develop` on 2026-10-29 (merge commit `21b7210`).**
 
 - Integration target: `8ed51c725333168d6e072369343c4eb449f8356c` (merge of pull request #12; successor of the P7 merge `20b2ef0` without library change).
 - Branch `features/develop/P8`, draft pull request #14 into `develop`.

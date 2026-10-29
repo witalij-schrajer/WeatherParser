@@ -1,6 +1,6 @@
 # Phase P8 – MQTT Serializer and Complete Library Integration: Implementation Plan
 
-**Status: planned on 2026-10-28; the user accepted the P8 plans (this phase plan and the step plans P8.01 to P8.10) on 2026-10-28 (section 10); P8 started on 2026-10-28 on the user's instruction ("P8 implementation") on branch `features/develop/P8` from `develop` `8ed51c7`, draft pull request #14; P8.01 complete with outcome READY ([record](docs/p8/P8_01_FOUNDATION_CHECK.md)); P8.02 complete: contract [P8_MQTT_CONTRACT.md](docs/p8/P8_MQTT_CONTRACT.md) MQ-01 to MQ-15 approved by the user on 2026-10-28 and this plan and the step plans reconciled with it; P8.03 (message entity and topic rules), P8.04 (topic options), P8.05 (message serializer), P8.06 (messages for every source), P8.07 (library integration through the package) and P8.08 (README and status) complete; P8.09 READY on candidate `290a0eb` and again on `ce166eb` ([record](docs/p8/P8_09_INTEGRATED_VERIFICATION.md)); P8.10: audit ACCEPTED, and P8 and the complete library accepted by the user on 2026-10-29 on candidate `ce166eb` ([record](docs/p8/P8_10_ACCEPTANCE.md)); P8 is complete once the user has merged pull request #14. This phase plan was written on the user's instruction of 2026-10-28 ("Generate the P8 Plan") on the post-merge documentation branch `features/develop/P7-post-merge` (pull request #12) and is reviewed through the automatic Codex review of that pull request (section 10). The step plans P8.01 to P8.10 were written on the user's instruction of 2026-10-28 ("Generate all P8 step plans") together with this phase plan (section 5). P8 starts only on a separate instruction of the user. The rows of section 3 are planning proposals; the contract approved in P8.02 is binding and wins where it refines them.** This plan refines the P8 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P8 handoff](docs/p7/P8_HANDOFF.md). Planning inputs: REQ-008, REQ-012 to REQ-016, REQ-050, REQ-060 to REQ-069, REQ-072, REQ-073, REQ-082 and REQ-105 of [REQUIREMENTS.md](REQUIREMENTS.md); the [P2 export contract](docs/p2/P2_EXPORT_CONTRACT.md) (C-01: the standalone `observation_dataset` and `forecast_run` roots are the MQTT JSON payloads of P8; C-50 and C-68: the `source` grammar; C-88: the supported roots; C-107 to C-109: registration, missing dependencies and static state); the limitations with owner P8 in the acceptance records of [P2](docs/p2/P2_12_ACCEPTANCE.md), [P4](docs/p4/P4_12_ACCEPTANCE.md), [P5](docs/p5/P5_11_ACCEPTANCE.md), [P6](docs/p6/P6_11_ACCEPTANCE.md) and [P7](docs/p7/P7_12_ACCEPTANCE.md); and the repository code on `develop` after the P7 merge `20b2ef0`.
+**Status: planned on 2026-10-28; the user accepted the P8 plans (this phase plan and the step plans P8.01 to P8.10) on 2026-10-28 (section 10); P8 started on 2026-10-28 on the user's instruction ("P8 implementation") on branch `features/develop/P8` from `develop` `8ed51c7`, draft pull request #14; P8.01 complete with outcome READY ([record](docs/p8/P8_01_FOUNDATION_CHECK.md)); P8.02 complete: contract [P8_MQTT_CONTRACT.md](docs/p8/P8_MQTT_CONTRACT.md) MQ-01 to MQ-15 approved by the user on 2026-10-28 and this plan and the step plans reconciled with it; P8.03 (message entity and topic rules), P8.04 (topic options), P8.05 (message serializer), P8.06 (messages for every source), P8.07 (library integration through the package) and P8.08 (README and status) complete; P8.09 READY on candidate `290a0eb` and again on `ce166eb` ([record](docs/p8/P8_09_INTEGRATED_VERIFICATION.md)); P8.10: audit ACCEPTED, and P8 and the complete library accepted by the user on 2026-10-29 on candidate `ce166eb` ([record](docs/p8/P8_10_ACCEPTANCE.md)); it is complete: pull request #14 merged into `develop` on 2026-10-29 (merge commit `21b7210`); P3 starts only on a separate instruction. This phase plan was written on the user's instruction of 2026-10-28 ("Generate the P8 Plan") on the post-merge documentation branch `features/develop/P7-post-merge` (pull request #12) and is reviewed through the automatic Codex review of that pull request (section 10). The step plans P8.01 to P8.10 were written on the user's instruction of 2026-10-28 ("Generate all P8 step plans") together with this phase plan (section 5). P8 starts only on a separate instruction of the user. The rows of section 3 are planning proposals; the contract approved in P8.02 is binding and wins where it refines them.** This plan refines the P8 section of [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) on the foundation of the [P8 handoff](docs/p7/P8_HANDOFF.md). Planning inputs: REQ-008, REQ-012 to REQ-016, REQ-050, REQ-060 to REQ-069, REQ-072, REQ-073, REQ-082 and REQ-105 of [REQUIREMENTS.md](REQUIREMENTS.md); the [P2 export contract](docs/p2/P2_EXPORT_CONTRACT.md) (C-01: the standalone `observation_dataset` and `forecast_run` roots are the MQTT JSON payloads of P8; C-50 and C-68: the `source` grammar; C-88: the supported roots; C-107 to C-109: registration, missing dependencies and static state); the limitations with owner P8 in the acceptance records of [P2](docs/p2/P2_12_ACCEPTANCE.md), [P4](docs/p4/P4_12_ACCEPTANCE.md), [P5](docs/p5/P5_11_ACCEPTANCE.md), [P6](docs/p6/P6_11_ACCEPTANCE.md) and [P7](docs/p7/P7_12_ACCEPTANCE.md); and the repository code on `develop` after the P7 merge `20b2ef0`.
 
 ## 1. First step: check P7 completion and adjust this plan
 
@@ -167,21 +167,21 @@ New records under `docs/p8/`; production code under `src/WeatherParser.Parsing/M
 
 ## 9. P8 acceptance and P3 handoff checklist
 
-- [ ] P8.01 foundation check recorded
-- [ ] MQTT message contract approved by the user after Codex review
-- [ ] every T-P8 row has passing tests and recorded evidence
-- [ ] the serializer is generic: no provider logic, no hardcoded topic, no broker dependency (T-P8-11)
-- [ ] missing mappings, unresolved placeholders, unsafe placeholder values and invalid topics fail without broker access (T-P8-01 to T-P8-06)
-- [ ] payloads equal the JSON export of the same roots; forecasts never as observations (T-P8-07, T-P8-09)
-- [ ] complete forecast runs in one message with product- and location-specific topics (T-P8-10)
-- [ ] the complete library consumed from the same-run package without CLI or broker, concurrently usable (T-P8-13, T-P8-14)
-- [ ] coverage gate passed on Windows and the NanoPi R76S, platform outcomes separate
-- [ ] README MQTT section, OW-14 restriction and status documented
-- [ ] limitations with owners
-- [ ] user acceptance of P8 and of the complete library recorded
-- [ ] status documents consistent
-- [ ] pull request ready for review, review findings resolved, merged into `develop` by the user
-- [ ] P3 handoff written
+- [x] P8.01 foundation check recorded
+- [x] MQTT message contract approved by the user after Codex review
+- [x] every T-P8 row has passing tests and recorded evidence
+- [x] the serializer is generic: no provider logic, no hardcoded topic, no broker dependency (T-P8-11)
+- [x] missing mappings, unresolved placeholders, unsafe placeholder values and invalid topics fail without broker access (T-P8-01 to T-P8-06)
+- [x] payloads equal the JSON export of the same roots; forecasts never as observations (T-P8-07, T-P8-09)
+- [x] complete forecast runs in one message with product- and location-specific topics (T-P8-10)
+- [x] the complete library consumed from the same-run package without CLI or broker, concurrently usable (T-P8-13, T-P8-14)
+- [x] coverage gate passed on Windows and the NanoPi R76S, platform outcomes separate
+- [x] README MQTT section, OW-14 restriction and status documented
+- [x] limitations with owners
+- [x] user acceptance of P8 and of the complete library recorded
+- [x] status documents consistent
+- [x] pull request ready for review, review findings resolved, merged into `develop` by the user
+- [x] P3 handoff written
 
 ## 10. Plan authorship and review
 
