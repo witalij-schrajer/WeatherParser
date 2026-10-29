@@ -1,10 +1,10 @@
 # P3 Handoff – From the Complete Library to the Example CLI
 
-**Status (2026-10-29): written with the P8.10 acceptance record; the user accepted P8 and the complete library on 2026-10-29 on candidate `ce166eb`; in effect once pull request #14 is merged into `develop`. P3 starts only on a separate instruction of the user.**
+**Status (2026-10-29): written with the P8.10 acceptance record; the user accepted P8 and the complete library on 2026-10-29 on candidate `ce166eb`; in effect since pull request #14 was merged into `develop` on 2026-10-29 (merge commit `21b7210`). P3 starts only on a separate instruction of the user.**
 
 ## 1. Foundation
 
-- Integration target for P3: the `develop` merge commit of pull request #14 (recorded after the merge) or its documentation-only successor; the accepted implementation candidate is named in the [P8.10 acceptance record](P8_10_ACCEPTANCE.md).
+- Integration target for P3: the `develop` merge commit of pull request #14, `21b72106b3fd422c1a04020dd1d4288e6f99df74` (`21b7210`), or its documentation-only successor; the accepted implementation candidate is named in the [P8.10 acceptance record](P8_10_ACCEPTANCE.md).
 - Platform: .NET SDK 10.0.402 (`global.json`), `net10.0`; verified on Windows x64, in hosted CI and on the NanoPi R76S (Debian 13, `linux-arm64`), [P8.09 record](P8_09_INTEGRATED_VERIFICATION.md).
 - Contracts in force: the [P2 export contract](../p2/P2_EXPORT_CONTRACT.md) (v1 frozen, additive changes only), the [P4 selection contract](../p4/P4_SELECTION_CONTRACT.md), the [P5 observation contract](../p5/P5_OBSERVATION_CONTRACT.md), the [P6 OsthessenWetter contract](../p6/P6_OSTHESSEN_CONTRACT.md), the [P7 forecast contract](../p7/P7_FORECAST_CONTRACT.md) and the [P8 MQTT contract](P8_MQTT_CONTRACT.md) MQ-01 to MQ-15.
 - Package: `WeatherParser.Parsing` `0.1.0-initial`, unpublished; the CLI consumes it as a package reference (REQ-012, C-112), never as copied source.

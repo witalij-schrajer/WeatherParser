@@ -1,6 +1,6 @@
 # P8.10 – P8 Acceptance Record
 
-**Status (2026-10-29): P8 and the complete library accepted by the user on 2026-10-29 on candidate `ce166eb` (A7, section 7), after the automatic Codex review of pull request #14 reached 0 findings (round 5, section 8) and the integrated verification was repeated READY on `ce166eb` on Windows, hosted CI and the NanoPi R76S ([P8.09 record](P8_09_INTEGRATED_VERIFICATION.md) section 6); P8 is complete only once the user has merged pull request #14 (A11).** Plan: [P8_10_ACCEPTANCE_HANDOFF_PLAN.md](P8_10_ACCEPTANCE_HANDOFF_PLAN.md).
+**Status (2026-10-29): P8 and the complete library accepted by the user on 2026-10-29 on candidate `ce166eb` (A7, section 7), after the automatic Codex review of pull request #14 reached 0 findings (round 5, section 8) and the integrated verification was repeated READY on `ce166eb` on Windows, hosted CI and the NanoPi R76S ([P8.09 record](P8_09_INTEGRATED_VERIFICATION.md) section 6); P8 is complete: the user merged pull request #14 into `develop` on 2026-10-29 (merge commit `21b7210`, A11, section 8).** Plan: [P8_10_ACCEPTANCE_HANDOFF_PLAN.md](P8_10_ACCEPTANCE_HANDOFF_PLAN.md).
 
 ## 1. Review identity (A1)
 
@@ -98,7 +98,7 @@ With the user's acceptance of P8 (A7), the complete library of DEVELOPMENT_PLAN.
 - A10 round 5 (automatic review of `ce166eb`, run 40838662078): 0 findings; the review loop ended and the user was asked for the acceptance (section 7). The commit recording the acceptance goes through one more review round, recorded in its pull request comment only.
 - New candidate: the fix changes tests only (the library is unchanged since `290a0eb`), but under the P8.09 plan any later code change makes a new candidate; S1 and S2 were repeated on `ce166eb`, and S3 (NanoPi R76S) after the user's authorization with the acceptance; all READY ([P8.09 record](P8_09_INTEGRATED_VERIFICATION.md) section 6).
 - Acceptance commit (2026-10-29): records section 7, the P8.09 rerun and the status passages; README package check on its working tree (README status passage changed): README.md SHA-256 `CCFAADEDA7818A71375DA1BB4DB96170067933782D9BA08273DF7F83CEDEE7E4` identical in the package with LICENSE and the export schema, packed SHA-512 equals the restored hash, package consumer 61/61; `ci-local.ps1` on the committed revision is run before the push.
-- A11: the merge by the user: pending.
+- A11 (merge): the user merged pull request #14 into `develop` on 2026-10-29T13:37:50Z ("PR merged."): merge commit `21b72106b3fd422c1a04020dd1d4288e6f99df74` (`21b7210`), parents `8ed51c7` (`develop`) and the head `39061ba`; its tree equals the tree of `39061ba`. The post-merge records are in a separate documentation pull request into `develop` (branch `features/develop/P8-post-merge`), as after P4 to P7. The P3 integration target is `21b7210` or its documentation-only successor after that pull request.
 
 ## 9. Authorship and review
 

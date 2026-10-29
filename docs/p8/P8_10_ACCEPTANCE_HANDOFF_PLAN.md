@@ -1,6 +1,6 @@
 # P8.10 – Acceptance of P8 and of the Complete Library, P3 Handoff: Implementation Plan
 
-**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; complete on 2026-10-29: audit ACCEPTED, P8 accepted by the user on candidate `ce166eb` ([record](P8_10_ACCEPTANCE.md)); merge by the user pending.** Refines the P8.10 row of section 5 and section 9 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
+**Status: planned on 2026-10-28; accepted by the user on 2026-10-28 with the phase plan; complete on 2026-10-29: audit ACCEPTED, P8 accepted by the user on candidate `ce166eb` ([record](P8_10_ACCEPTANCE.md)); pull request #14 merged into `develop` on 2026-10-29 (merge commit `21b7210`).** Refines the P8.10 row of section 5 and section 9 of [PHASE_P8_PLAN.md](../../PHASE_P8_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: audit the P8 evidence, summarize the acceptance of the complete library across P2 and P4 to P8 as the gate for P3, obtain the user's acceptance, update the status documents, write the P3 handoff and bring the pull request through review to the user's merge.
@@ -47,6 +47,6 @@ Out of scope with owner: P3 itself; publication → P9.
 - (a) Review fixes after acceptance can require a new candidate and a new NanoPi authorization
 
 ## 9. Acceptance Criteria
-- [ ] Evidence audit ACCEPTED; user acceptance of P8 and of the complete library recorded
-- [ ] Status documents consistent; P3 handoff written
-- [ ] Pull request reviewed, findings resolved, merged by the user
+- [x] Evidence audit ACCEPTED; user acceptance of P8 and of the complete library recorded
+- [x] Status documents consistent; P3 handoff written
+- [x] Pull request reviewed, findings resolved, merged by the user
