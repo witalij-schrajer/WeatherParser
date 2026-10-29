@@ -59,6 +59,14 @@ public sealed class CoverageGate : ICoverageGate
             var changes = await _changesReader.ReadAsync(request.ChangedFilesPath, cancellationToken);
             var category = _classifier.Classify(changes);
 
+            if (category == PullRequestCategory.Code
+                && request.GatedInputs is { Count: > 0 } gatedInputs
+                && !_classifier.TouchesGatedInputs(changes, gatedInputs))
+            {
+                // REQ-086 amendment (CL-19 option C): a code change outside every gated input may keep equal coverage.
+                category = PullRequestCategory.GatedInputsUnchanged;
+            }
+
             // 4. Read baseline; the reader returns null for a missing path or file and the rule evaluator decides what that means.
             var baseline = await _baselineReader.ReadAsync(request.BaselinePath, cancellationToken);
             RuleResult? comparabilityResult = null;

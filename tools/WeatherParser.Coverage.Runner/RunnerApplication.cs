@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -78,7 +79,8 @@ public sealed class RunnerApplication : IRunnerApplication
             command.ToolName,
             command.ToolVersion,
             command.Exclusions,
-            command.Bootstrap);
+            command.Bootstrap,
+            command.GatedInputs);
 
         var result = await _gate.EvaluateAsync(request, cancellationToken);
         await _resultWriter.WriteAsync(result, cancellationToken);

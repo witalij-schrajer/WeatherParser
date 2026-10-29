@@ -87,6 +87,18 @@ public sealed class RuleEvaluator : IRuleEvaluator
                 results.Add(new RuleResult("Comparison", false, $"Block coverage {current.Covered}/{current.Total} ({currentPercent}%) is below baseline {baseline.Covered}/{baseline.Total} ({baselinePercent}%)."));
             }
         }
+        else if (category == PullRequestCategory.GatedInputsUnchanged)
+        {
+            // Code PR that leaves every gated input unchanged (REQ-086 amendment)
+            if (currentScaled >= baselineScaled)
+            {
+                results.Add(new RuleResult("Comparison", true, $"Block coverage {current.Covered}/{current.Total} ({currentPercent}%) is at or above baseline {baseline.Covered}/{baseline.Total} ({baselinePercent}%); the gated inputs are unchanged, so equal coverage is accepted."));
+            }
+            else
+            {
+                results.Add(new RuleResult("Comparison", false, $"Block coverage {current.Covered}/{current.Total} ({currentPercent}%) is below baseline {baseline.Covered}/{baseline.Total} ({baselinePercent}%)."));
+            }
+        }
         else
         {
             // Code PR
