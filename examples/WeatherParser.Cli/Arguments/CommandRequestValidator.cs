@@ -1,7 +1,6 @@
 namespace WeatherParser.Cli.Arguments;
 
 using System.Globalization;
-using System.Text.RegularExpressions;
 using WeatherParser.Parsing.Exceptions;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Geography;
@@ -13,7 +12,6 @@ public sealed class CommandRequestValidator : ICommandRequestValidator
 {
     private readonly ICoordinateParser _coordinateParser;
     private readonly ISearchParameterFactory _searchParameterFactory;
-    private static readonly Regex DecimalNumber = new(@"\A[+-]?[0-9]{1,15}(\.[0-9]{1,20})?\z", RegexOptions.CultureInvariant);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommandRequestValidator"/> class.
@@ -89,12 +87,28 @@ public sealed class CommandRequestValidator : ICommandRequestValidator
     private static decimal ParseDecimal(IReadOnlyDictionary<string, string> values, string name)
     {
         var text = values[name];
-        if (!DecimalNumber.IsMatch(text))
+        if (!decimal.TryParse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var result))
         {
             throw new ArgumentValueException($"Option '--{name}' requires a decimal number such as 300 or -12.5.");
         }
 
-        return decimal.Parse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+        if (Canonical(text) != Canonical(result.ToString(CultureInfo.InvariantCulture)))
+        {
+            throw new ArgumentValueException($"Option '--{name}' has more digits than a decimal number holds exactly.");
+        }
+
+        return result;
+    }
+
+    // Normalizes a plain decimal number text: no sign for zero, no leading zeros in the integer part, no trailing zeros in the fraction.
+    private static string Canonical(string number)
+    {
+        var negative = number.StartsWith('-');
+        var parts = number.TrimStart('+', '-').Split('.');
+        var integer = parts[0].TrimStart('0');
+        var fraction = parts.Length > 1 ? parts[1].TrimEnd('0') : string.Empty;
+        var body = (integer.Length == 0 ? "0" : integer) + (fraction.Length == 0 ? string.Empty : "." + fraction);
+        return negative && body != "0" ? "-" + body : body;
     }
 
     private sealed class ArgumentValueException(string message) : Exception(message);

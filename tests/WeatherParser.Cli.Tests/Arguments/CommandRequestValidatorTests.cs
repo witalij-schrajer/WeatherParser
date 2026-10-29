@@ -272,7 +272,7 @@ public class CommandRequestValidatorTests
                 ("MaxAltDifference", name == "MaxAltDifference" ? "-0.00000000000000000000000000001" : "200"));
             var underflowError = ValidError(_validator.Validate(underflow));
             underflowError.ErrorId.Should().Be("CLI-ARGUMENT-INVALID");
-            underflowError.Message.Should().Be($"Option '--{name}' requires a decimal number such as 300 or -12.5.");
+            underflowError.Message.Should().Be($"Option '--{name}' has more digits than a decimal number holds exactly.");
         }
 
         var parsed = Parsed(CliCommand.SelectDwd,
@@ -445,5 +445,46 @@ public class CommandRequestValidatorTests
         request.Should().BeOfType<ParseDwdRequest>();
         var parseDwdRequest = (ParseDwdRequest)request;
         parseDwdRequest.Common.Should().Be(new CommonOptions(OutputFormat.Xml, "out.xml", "c.json", true));
+    }
+
+    /// <summary>
+    /// Verifies that long exact decimals are accepted.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-03")]
+    public void Validate_LongExactDecimals_Accepted()
+    {
+        var request = (SelectDwdRequest)ValidOk(_validator.Validate(Parsed(CliCommand.SelectDwd,
+            ("Latitude", "50.5549"), ("Longitude", "9.6738"), ("Altitude", "300.000000000000000000000"),
+            ("MaxDistance", "0.000000000000000000001"), ("MaxAltDifference", "200"))));
+        request.Search.AltitudeM.Should().Be(300m);
+        request.Search.MaxDistanceKm.Should().Be(0.000000000000000000001m);
+    }
+
+    /// <summary>
+    /// Verifies that negative zero is accepted.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-03")]
+    public void Validate_NegativeZero_Accepted()
+    {
+        var request = (SelectDwdRequest)ValidOk(_validator.Validate(Parsed(CliCommand.SelectDwd,
+            ("Latitude", "50.5549"), ("Longitude", "9.6738"), ("Altitude", "-0"),
+            ("MaxDistance", "50"), ("MaxAltDifference", "200"))));
+        request.Search.AltitudeM.Should().Be(0m);
+    }
+
+    /// <summary>
+    /// Verifies that precision loss results in a usage error.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-03")]
+    public void Validate_PrecisionLoss_UsageError()
+    {
+        var error = ValidError(_validator.Validate(Parsed(CliCommand.SelectDwd,
+            ("Latitude", "50.5549"), ("Longitude", "9.6738"), ("Altitude", "300"),
+            ("MaxDistance", "123456789012345.00000000000000000001"), ("MaxAltDifference", "200"))));
+        error.ErrorId.Should().Be("CLI-ARGUMENT-INVALID");
+        error.Message.Should().Be("Option '--MaxDistance' has more digits than a decimal number holds exactly.");
     }
 }
