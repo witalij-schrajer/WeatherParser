@@ -18,6 +18,7 @@ public sealed class MqttMessageSerializerTests
     private IMqttTopicOptionsValidator _optionsValidator = null!;
     private IMqttTopicValidator _topicValidator = null!;
     private IJsonExportSerializer _json = null!;
+    private MqttMessageSerializer _serializer = null!;
 
     [TestInitialize]
     public void TestInitialize()
@@ -26,6 +27,7 @@ public sealed class MqttMessageSerializerTests
         _optionsValidator = new MqttTopicOptionsValidator(new MqttTopicTemplateParser());
         _topicValidator = new MqttTopicValidator();
         _json = new JsonExportSerializer();
+        _serializer = Create(AllTypes());
     }
 
     [TestCleanup]
@@ -37,8 +39,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_Observation_TopicFromSourcePlaceholder()
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var dataset = ObservationTestData.ValidDataset();
         var message = await serializer.SerializeAsync(dataset, default);
@@ -52,8 +53,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_Forecast_TopicFromProductAndMosmixId()
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var run = ForecastTestData.ValidRun();
         var message = await serializer.SerializeAsync(run, default);
@@ -67,8 +67,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_Forecast_TopicFromProductAndMosmixId_MosmixS()
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var run = ForecastTestData.ValidRun();
         run.Product = MosmixProduct.MosmixS;
@@ -85,8 +84,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_StationLists_TopicFromLiteralAndProvider()
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var cdc = ListTestData.ValidCdcList();
         cdc.Source = "dwd:cdc-10min-now";
@@ -140,8 +138,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_MessageTypeFromRootType()
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var cdcList = ListTestData.ValidCdcList();
         cdcList.Source = "dwd:cdc-10min-now";
@@ -163,8 +160,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_ExportDocument_ThrowsMessageTypeUnsupported()
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var act = () => serializer.SerializeAsync(new ExportDocument(), default);
         var ex = await ShouldFail(act, MqttMessageErrorIds.MessageTypeUnsupported, null);
@@ -174,8 +170,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_OtherTypes_ThrowMessageTypeUnsupported()
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var act1 = () => serializer.SerializeAsync((object)ObservationTestData.ValidDataset(), default);
         var ex1 = await ShouldFail(act1, MqttMessageErrorIds.MessageTypeUnsupported, null);
@@ -235,8 +230,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_NullRoot_ThrowsArgumentNull()
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var act = () => serializer.SerializeAsync<ObservationDataset>(null!, default);
         var ex = await act.Should().ThrowAsync<ArgumentNullException>();
@@ -276,8 +270,7 @@ public sealed class MqttMessageSerializerTests
     [DataRow("mosmix")]
     public async Task SerializeAsync_PayloadEqualsJsonExportBytes(string type)
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var root = Root(type);
 
@@ -315,8 +308,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_PayloadUtf8WithoutBom()
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var dataset = ObservationTestData.ValidDataset();
         var message = await serializer.SerializeAsync(dataset, default);
@@ -388,8 +380,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_CancelledBeforeStart_ThrowsOperationCanceled_NoSerialization()
     {
-        var options = Options((MqttMessageType.Observation, "o/{source}"));
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var act = () => serializer.SerializeAsync(ObservationTestData.ValidDataset(), new CancellationToken(true));
         await act.Should().ThrowAsync<OperationCanceledException>();
@@ -417,8 +408,7 @@ public sealed class MqttMessageSerializerTests
     [TestMethod]
     public async Task SerializeAsync_SameRootTwice_IdenticalMessages()
     {
-        var options = AllTypes();
-        var serializer = Create(options);
+        var serializer = _serializer;
 
         var run = ForecastTestData.ValidRun();
         var message1 = await serializer.SerializeAsync(run, default);
