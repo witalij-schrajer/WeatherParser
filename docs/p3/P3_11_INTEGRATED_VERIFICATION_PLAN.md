@@ -1,6 +1,6 @@
 # P3.11 – Integrated Verification: Implementation Plan
 
-**Status: planned on 2026-10-29; under review, not yet accepted.** Refines the P3.11 row of section 5 and section 7 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.11 row of section 5 and section 7 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: verify the P3 candidate on Windows, hosted CI and the NanoPi R76S, run the broker integration test against the authorized test broker, and run one authorized live check per command, with READY or NOT_READY.

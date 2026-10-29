@@ -1,6 +1,6 @@
 # P3.05 – Configuration and Secrets: Implementation Plan
 
-**Status: planned on 2026-10-29; under review, not yet accepted.** Refines the P3.05 row of section 5 and the "Configuration" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.05 row of section 5 and the "Configuration" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: load one configuration deterministically, validate it before any retrieval, forward its values unchanged to the library's consumer registrations, resolve the DWD station by the approved precedence and keep credentials out of arguments, files in Git and logs.

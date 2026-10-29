@@ -1,6 +1,6 @@
 # P3.08 – MQTT Transport: Implementation Plan
 
-**Status: planned on 2026-10-29; under review, not yet accepted.** Refines the P3.08 row of section 5 and the "Transport" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.08 row of section 5 and the "Transport" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the example broker transport that publishes the library's `MqttMessage` unchanged, over TLS by default, with credentials from the approved source, reports success only after the QoS-1 acknowledgment, bounds connection and publication time and attempts, and summarizes partial failures.

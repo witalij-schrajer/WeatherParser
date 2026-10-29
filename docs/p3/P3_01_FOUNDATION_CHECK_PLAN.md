@@ -1,6 +1,6 @@
 # P3.01 – Foundation Check and Plan Adjustment: Implementation Plan
 
-**Status: planned on 2026-10-29; under review, not yet accepted.** Refines section 1 and the P3.01 row of section 5 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines section 1 and the P3.01 row of section 5 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: confirm that P8 is accepted and merged, classify every commit on `develop` since the P8 merge, extract the library foundation the CLI consumes, map every inherited item to a P3 step or a carried-forward owner, remeasure the native block-coverage baseline of the integration target on the first committed revision of the P3 branch, and adjust `PHASE_P3_PLAN.md` where the extraction contradicts it.

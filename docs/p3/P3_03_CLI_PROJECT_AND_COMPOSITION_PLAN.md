@@ -1,6 +1,6 @@
 # P3.03 – CLI Project, Package Consumption and Composition Root: Implementation Plan
 
-**Status: planned on 2026-10-29; under review, not yet accepted.** Refines the P3.03 row of section 5 and the "Package boundary" and "Single command" rows of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.03 row of section 5 and the "Package boundary" and "Single command" rows of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: an executable example CLI `WeatherParser` that consumes the same-run package `WeatherParser.Parsing` through a versioned `PackageReference`, builds and validates one DI container per process, runs exactly one command handler and exits, plus its test project, its process-test harness and its integration into the solution, `ci-local.ps1`, hosted CI and the coverage gate of the approved CL-19 option.

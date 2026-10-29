@@ -1,6 +1,6 @@
 # P3.04 – Argument Grammar and Validation: Implementation Plan
 
-**Status: planned on 2026-10-29; under review, not yet accepted.** Refines the P3.04 row of section 5 and the "Validation first" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.04 row of section 5 and the "Validation first" row of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: turn the argument vector into exactly one validated command request, or a usage error, before any configuration, network, file or broker access.
