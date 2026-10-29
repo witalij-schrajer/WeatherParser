@@ -38,7 +38,7 @@ No slice changes behavior, so there is no Red step; a defect found here is fixed
 - With authorization: Git bundle, hash check on the device, detached checkout at the candidate, `scripts/prepare-debian-arm64.sh`, `ci-local.ps1`; then the built CLI on the device through its app host `./WeatherParser` (the P3.03 app-host smoke test: `--Help` exit 0 with usage on stdout, one command in JSON mode against the fake source with one complete document and exit 0), the Linux signal tests, and one real SIGINT and one real SIGTERM sent with `kill` to the app host during a delayed JSON command (expected: exit 4, summary on stderr, no destination or temporary file); device, OS, SDK and runtime versions.
 
 ### S4 Test broker
-- With authorization: the opt-in integration tests of P3.08 S4 against the named test broker; broker product and version; results.
+- With authorization: the opt-in integration tests of P3.08 S4 repeated on the candidate against the named test broker (P3.08 already ran them once during development); broker product and version; results.
 
 ### S5 Live checks
 - With authorization, one run per command in JSON mode (`--SelectDWD`, `--ParseDWD`, `--ParseOstHessen`, `--SelectMOSMIX` (MOSMIX_L availability; MOSMIX_S per CL-17), `--ParseMOSMIX --Product MOSMIX_L` and `--Product MOSMIX_S`), and one MQTT run against the test broker; exit code, root, counts, sources and timestamps per run.

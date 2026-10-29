@@ -4,11 +4,12 @@
 
 ## 1. Goal and Scope
 Goal: the example broker transport that publishes the library's `MqttMessage` unchanged, over TLS by default, with credentials from the approved source, reports success only after the QoS-1 acknowledgment, bounds connection and publication time and attempts, and summarizes partial failures.
-In scope: the publisher of CL-13 (implementing the P3.07 seam) over the approved MQTT client package, added to `Directory.Packages.props`, the lock files and `DEPENDENCIES.md` with its licence; connection settings (host, port, protocol version, client ID, TLS with the system trust store and an optional CA file, `AllowUnencrypted` with a warning, keep-alive, clean session); credentials from P3.05; timeouts, attempts and the "never republish an acknowledged message" rule (CL-14); the per-message QoS and retain check (CL-05, REQ-062); partial-failure handling and summary (CL-15); the explicitly enabled broker integration test (CL-20).
-Out of scope with owner: signals and the command deadline → P3.09; running the integration test against the authorized test broker and the NanoPi → P3.11.
+In scope: the publisher of CL-13 (implementing the P3.07 seam) over the approved MQTT client package, added to `Directory.Packages.props`, the lock files and `DEPENDENCIES.md` with its licence; connection settings (host, port, protocol version, client ID, TLS with the system trust store and an optional CA file, `AllowUnencrypted` with a warning, keep-alive, clean session); credentials from P3.05; timeouts, attempts and the "never republish an acknowledged message" rule (CL-14); the per-message QoS and retain check (CL-05, REQ-062); partial-failure handling and summary (CL-15); the explicitly enabled broker integration test (CL-20) and its first Red → Green run against the developer test broker the user authorizes for this step (S4).
+Out of scope with owner: signals and the command deadline → P3.09; the repeated broker run on the final candidate (from Windows and, if authorized, from the NanoPi) as part of the integrated verification → P3.11.
 
 ## 2. Preconditions and Inputs
 - P3.07 complete; P3.02 approved CL-13, CL-14, CL-15 and CL-20, with the client package facts recorded.
+- The user's authorization of the developer test broker for S4 (broker product, where it runs, whether TLS and credentials are used; never a production broker), recorded verbatim; without it the step stops at S4 and asks the user (AGENTS.md "Phase implementation" step 1: an authorization stops the autonomous work).
 - Inputs: REQ-060, REQ-062, REQ-063, REQ-072, REQ-083; MQ-01, MQ-02, MQ-08, MQ-11, MQ-15; the P8.10 limitation "broker behavior is not shown by message tests".
 
 ## 3. Decisions Required
@@ -43,7 +44,7 @@ Every slice: roles and checks as in P3.03 section 5.
 **Green**: summary and outcome wiring.
 
 ### S4 Broker integration test (opt-in)
-**Red** (run with the variable set against a local test broker on the developer machine, as authorized): `Broker_PublishAndSubscribe_RetainedObservationReceivedOnce`, `Broker_StationList_NotRetained`, `Broker_SecondRunSameSource_ReplacesRetainedMessage`, `Broker_WrongCredentials_Rejected`, `Broker_TlsWithCustomCa` (if the authorized broker offers TLS); without the variable every test is skipped with the reason.
+**Red** (run with the variable set against the developer test broker authorized for this step; this run is the step's own Red → Green evidence and is distinct from the candidate run of P3.11 S4): `Broker_PublishAndSubscribe_RetainedObservationReceivedOnce`, `Broker_StationList_NotRetained`, `Broker_SecondRunSameSource_ReplacesRetainedMessage`, `Broker_WrongCredentials_Rejected`, `Broker_TlsWithCustomCa` (if the authorized broker offers TLS); without the variable every test is skipped with the reason.
 **Green**: the adapter against the real client.
 
 **Refactor**: with all tests green.
@@ -65,6 +66,6 @@ Every slice: roles and checks as in P3.03 section 5.
 - (b) The adapter's own tests need the real client; they run without network by using the client's in-process or loopback facilities where the package offers them, otherwise only in the opt-in run (recorded)
 
 ## 9. Acceptance Criteria
-- [ ] Every listed test green with recorded Red (S4 in an authorized opt-in run)
+- [ ] Every listed test green with recorded Red, S4 in the opt-in run against the developer test broker authorized for this step (authorization recorded)
 - [ ] Success only after acknowledgment; TLS by default; bounded timeouts and attempts; QoS and retain enforced
 - [ ] Package pinned and documented; coverage gate passed; Codex 0 findings or reported
