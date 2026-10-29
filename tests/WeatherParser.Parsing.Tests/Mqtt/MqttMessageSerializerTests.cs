@@ -15,11 +15,17 @@ namespace WeatherParser.Parsing.Tests.Mqtt;
 public sealed class MqttMessageSerializerTests
 {
     private MockRepository _mocks = null!;
+    private IMqttTopicOptionsValidator _optionsValidator = null!;
+    private IMqttTopicValidator _topicValidator = null!;
+    private IJsonExportSerializer _json = null!;
 
     [TestInitialize]
     public void TestInitialize()
     {
         _mocks = new(MockBehavior.Strict);
+        _optionsValidator = new MqttTopicOptionsValidator(new MqttTopicTemplateParser());
+        _topicValidator = new MqttTopicValidator();
+        _json = new JsonExportSerializer();
     }
 
     [TestCleanup]
@@ -638,7 +644,7 @@ public sealed class MqttMessageSerializerTests
         MqttMessageSerializer.PayloadCap(268435450, Parse("\u00E4/{source}", MqttMessageType.Observation)).Should().Be(268435446);
     }
 
-    private static MqttMessageSerializer Create(MqttTopicOptions options, IJsonExportSerializer? json = null) => new(options, new MqttTopicOptionsValidator(new MqttTopicTemplateParser()), new MqttTopicValidator(), json ?? new JsonExportSerializer());
+    private MqttMessageSerializer Create(MqttTopicOptions options, IJsonExportSerializer? json = null) => new(options, _optionsValidator, _topicValidator, json ?? _json);
 
     private static MqttTopicOptions Options(params (MqttMessageType Type, string Template)[] mappings)
     {

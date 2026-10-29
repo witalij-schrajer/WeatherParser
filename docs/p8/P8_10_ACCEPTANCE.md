@@ -84,7 +84,9 @@ Pending.
 ## 8. Ready for review, review and merge (A9 to A11)
 
 - A9: the pull request is marked ready for review by the orchestrating agent under AGENTS.md "Phase implementation" step 3 (the end of the phase); the automatic Codex review rounds and their dispositions are recorded below.
-- A10: review rounds: pending.
+- A9 executed on 2026-10-29: pull request #14 marked ready for review on head `5bfddc2` (the P8.09 outcome and these drafts).
+- A10 round 1 (automatic review of `5bfddc2`, run 40834636986, implementation brief): 1 finding, verified against REQ-081 and the existing tests and partly confirmed: [P2] test subjects and shared dependencies not built in `[TestInitialize]`. Confirmed for `MqttMessageSerializerTests`: its helper wired the options validator, topic validator and JSON serializer anew in every test; they are now built once in `[TestInitialize]`, and each test only varies its options (data, the serializer's constructor input) (test-only change by the orchestrating agent: a mechanical two-place edit of a 650-line file, which qwen would have to reproduce in full; Parsing tests 3213 of 3220 green). Rejected for the container-based tests (`MqttSourceMessageTests`, `MqttForecastMessageTests` and the package tests): each test builds its own `AddWeatherParsing` container because its HTTP fixtures and configuration are its data, a shared container would couple tests through singletons and handler state, and the accepted composed-pipeline and package tests of P4 to P7 follow the same per-test host pattern (for example `PackageDwdObservationTests`). The pull request was converted to draft while fixing.
+- New candidate: the fix changes tests only (the library is unchanged since `290a0eb`), but under the P8.09 plan any later code change makes a new candidate; S1 and S2 are repeated on it, and S3 (NanoPi R76S) needs a new authorization of the user.
 - A11: the merge by the user: pending.
 
 ## 9. Authorship and review
