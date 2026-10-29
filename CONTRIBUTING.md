@@ -68,7 +68,7 @@ dotnet restore WeatherParser.Ci.slnf --locked-mode
 dotnet build WeatherParser.Ci.slnf --configuration Release --no-restore
 ```
 
-`NuGet.Config` lists the project-local package source `artifacts/local-nuget`, which is gitignored and missing in a fresh clone; restores fail with NU1301 until it exists. `WeatherParser.Ci.slnf` contains every project except the package consumer. Do not restore or build the whole `WeatherParser.slnx` from the command line: the committed consumer lock is stale by design (the package embeds the commit ID), so it fails with NU1403; build the consumer as described in [section 4](#4-pack-and-package-consumer).
+`NuGet.Config` lists the project-local package source `artifacts/local-nuget`, which is gitignored and missing in a fresh clone; restores fail with NU1301 until it exists. `WeatherParser.Ci.slnf` contains every project except the package consumer and the example CLI with its tests, which consume the packed library and are built after the pack step ([section 4](#4-pack-and-package-consumer)). Do not restore or build the whole `WeatherParser.slnx` from the command line: the committed consumer locks (package consumer and example CLI) are stale by design (the package embeds the commit ID), so it fails with NU1403; build them as described in [section 4](#4-pack-and-package-consumer).
 
 Lock files are tracked. For a requested package update, resolve once without `--locked-mode` and review the lock changes.
 
@@ -162,6 +162,21 @@ git restore tests/WeatherParser.Package.Tests/packages.lock.json
 
 This is required because the package embeds the commit ID, so a committed consumer lock can never match the package built from its own commit.
 
+### Example CLI `examples/WeatherParser.Cli` (P3)
+
+*Status: Verified (Windows) – [P3.03 verification record](docs/p3/P3_VERIFICATION.md)*
+
+The example CLI (assembly and command `WeatherParser`) consumes the packed library like the package consumer: a versioned `PackageReference` to `WeatherParser.Parsing` from `artifacts/local-nuget`, no `ProjectReference` to the library (CL-01 of the [P3 CLI contract](docs/p3/P3_CLI_CONTRACT.md)). Its two lock files (`examples/WeatherParser.Cli/packages.lock.json`, `tests/WeatherParser.Cli.Tests/packages.lock.json`) contain the package hash and are refreshed locally like the consumer lock above, never committed back. After packing:
+
+```powershell
+dotnet restore tests/WeatherParser.Cli.Tests --force-evaluate
+dotnet build tests/WeatherParser.Cli.Tests --configuration Release --no-restore
+dotnet test tests/WeatherParser.Cli.Tests --configuration Release --no-build
+git restore examples/WeatherParser.Cli/packages.lock.json tests/WeatherParser.Cli.Tests/packages.lock.json
+```
+
+The process tests start the built CLI with `dotnet <output>/WeatherParser.dll` in a temporary working directory, each with a timeout after which the process tree is killed; the harness self-test needs `pwsh` on the `PATH`.
+
 ### README changes
 
 *Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md)*
@@ -186,7 +201,7 @@ dotnet test tests/WeatherParser.Parsing.Tests --configuration Release --no-build
 $raw = @(Get-ChildItem $results -Recurse -Filter *.coverage)
 if ($raw.Count -ne 1) { throw "Expected exactly one .coverage file in $results, found $($raw.Count)" }
 dotnet tool run dotnet-coverage merge $raw[0].FullName -f xml -o "$results/coverage.xml"
-git diff --name-only <target commit sha>...HEAD > "$results/changed-files.txt"
+git diff --name-only --no-renames <target commit sha>...HEAD > "$results/changed-files.txt"
 dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- write-baseline --report <target coverage.xml> --commit <target commit sha> --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --output "$results/baseline.json"
 dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- evaluate --report "$results/coverage.xml" --changed-files "$results/changed-files.txt" --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --baseline "$results/baseline.json" --expected-baseline-commit <target commit sha>
 ```
@@ -197,6 +212,7 @@ Each run writes to a new, timestamped results directory under the gitignored `Te
 - A Markdown-only change may stay equal.
 - Decreases always fail.
 - An exact 100% baseline accepts exactly 100%.
+- Per-assembly gates (REQ-086 amendment of 2026-10-29, CL-19 option C): `evaluate` accepts the repeatable option `--gated-input <path or directory prefix ending with />`; a code change that touches none of the gated inputs is classified `GatedInputsUnchanged` and may keep equal coverage. `ci-local.ps1` passes the library's build inputs (`src/`, `Directory.Build.props`, `Directory.Packages.props`, `global.json`, `NuGet.Config`, `.editorconfig`, `coverage.runsettings`) to the library gate, and evaluates the example CLI assembly (`WeatherParser.dll`, with `--exclude WeatherParser.Parsing.dll`) in a second gate: `--bootstrap` (80 % minimum, no comparison) while the target has no CLI, otherwise against a CLI baseline measured on the target. Both gates must pass.
 
 The binding coverage contract is [PHASE_P1_PLAN.md section 5](PHASE_P1_PLAN.md).
 
@@ -248,6 +264,7 @@ pwsh ./scripts/ci-local.ps1 -TargetRef <comparison commit or branch> -RunSetting
 | 50 | Tests |
 | 60 | Pack or package content |
 | 70 | Package consumer |
+| 75 | Example CLI: lock refresh, restore, build, tests with coverage or conversion (current or target pass) |
 | 80 | Coverage collection or conversion |
 | 85 | Incomparable measurements (collection settings or run-settings copy differ) |
 | 90 | Gate rule failed |
@@ -255,7 +272,7 @@ pwsh ./scripts/ci-local.ps1 -TargetRef <comparison commit or branch> -RunSetting
 
 ### Run directory contents
 
-The run directory `artifacts/ci/<commit>-<UTC timestamp>/` contains `ci.log`, `commits.json`, test results, package and hash, coverage reports, `collection-settings.json` per pass, `changed-files.txt`, `gate-result.json`, `resume/`. The current pass writes one TRX file per test project to `trx/`: `WeatherParser.Parsing.Tests` (with coverage), `WeatherParser.Coverage.Tests`, `WeatherParser.Coverage.Runner.Tests` and, since P2.09, `WeatherParser.SchemaGeneration.Tests`; the target pass runs only `WeatherParser.Parsing.Tests`.
+The run directory `artifacts/ci/<commit>-<UTC timestamp>/` contains `ci.log`, `commits.json`, test results, package and hash, coverage reports, `collection-settings.json` per pass, `changed-files.txt`, `gate-result.json`, `resume/`. The current pass writes one TRX file per test project to `trx/`: `WeatherParser.Parsing.Tests` (with coverage), `WeatherParser.Coverage.Tests`, `WeatherParser.Coverage.Runner.Tests` and, since P2.09, `WeatherParser.SchemaGeneration.Tests`; the target pass runs only `WeatherParser.Parsing.Tests`. When the commit contains the example CLI (P3), the current pass also writes `WeatherParser.Cli.Tests` to `trx/` and its coverage to `current/cli-coverage/`, and the run writes `cli-gate-result.json`; when the target contains the CLI too, the target pass packs its library into `target/package/`, measures `target/cli-coverage/` with a separate package folder and writes `target/cli-baseline.json`. `-CollectOnly` is rejected (exit 20) for a commit that contains the example CLI.
 
 ### Hosted CI (GitHub Actions)
 *Status: Verified (Windows, Debian/ARM64 and Ubuntu x64 hosted runners) – [manual run 39332959206](https://github.com/witalij-schrajer/WeatherParser/actions/runs/39332959206) against the seed `0a2dabe`, all three jobs passed (2026-10-20)*

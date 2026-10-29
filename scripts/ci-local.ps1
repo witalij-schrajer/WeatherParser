@@ -760,7 +760,7 @@ function Write-ChangedFiles() {
     $script:CurrentStageCode = 90
     
     $changedFiles = Join-Path $script:RunDir 'changed-files.txt'
-    Invoke-Native 90 'git' @('diff', '--name-only', "$($script:TargetSha)...$($script:CommitSha)") -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0) -CaptureStdOut $changedFiles
+    Invoke-Native 90 'git' @('diff', '--name-only', '--no-renames', "$($script:TargetSha)...$($script:CommitSha)") -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0) -CaptureStdOut $changedFiles
 }
 
 function New-ResumePackage() {

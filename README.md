@@ -530,14 +530,17 @@ P1 contains only a technical package consumer as an integration test, not a CLI/
 
 
 ## Development
-The solution [WeatherParser.slnx](WeatherParser.slnx) contains nine projects:
+The solution [WeatherParser.slnx](WeatherParser.slnx) contains eleven projects:
 
 ```text
+examples/
+  WeatherParser.Cli/                    # Example CLI `WeatherParser`, consumes the package (P3, in progress)
 src/
   WeatherParser.Parsing/                # Packable net10.0 library (local test package)
 tests/
   WeatherParser.Parsing.Tests/          # MSTest project with source reference
   WeatherParser.Package.Tests/          # Isolated NuGet PackageReference consumer tests
+  WeatherParser.Cli.Tests/              # Example CLI tests (unit and process tests)
   WeatherParser.Coverage.Tests/         # Coverage evaluator tests
   WeatherParser.Coverage.Runner.Tests/  # Coverage runner tests
   WeatherParser.SchemaGeneration.Tests/ # Export schema generator, golden-file and refinement tests

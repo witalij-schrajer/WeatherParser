@@ -60,6 +60,7 @@ internal sealed class CliProcess
         try
         {
             await process.WaitForExitAsync(cts.Token);
+            await Task.WhenAll(stdoutTask, stderrTask).WaitAsync(cts.Token);
         }
         catch (OperationCanceledException)
         {
@@ -68,10 +69,7 @@ internal sealed class CliProcess
             return new CliProcessResult(process.ExitCode, string.Empty, string.Empty, TimedOut: true);
         }
 
-        var stdout = await stdoutTask;
-        var stderr = await stderrTask;
-
-        return new CliProcessResult(process.ExitCode, stdout, stderr, TimedOut: false);
+        return new CliProcessResult(process.ExitCode, await stdoutTask, await stderrTask, TimedOut: false);
     }
 }
 

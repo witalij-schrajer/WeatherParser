@@ -53,6 +53,8 @@ public sealed class ProcessTests
     public async Task Process_Help_WritesNothingToStderr()
     {
         var result = await CliProcess.RunCliAsync(new[] { "--Help" }, _workingDirectory, _timeout);
+        result.TimedOut.Should().BeFalse();
+        result.ExitCode.Should().Be(0);
         result.StandardError.Should().BeEmpty();
     }
 
@@ -90,5 +92,23 @@ public sealed class ProcessTests
         sw.Stop();
         result.TimedOut.Should().BeTrue();
         sw.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(20));
+    }
+
+    /// <summary>
+    /// Verifies that the harness timeout also bounds reading the output when a descendant process keeps the output pipe open after the started process has exited.
+    /// </summary>
+    [TestMethod]
+    public async Task Harness_TimeoutBoundsOutputReading_WhenDescendantKeepsPipeOpen()
+    {
+        var sw = Stopwatch.StartNew();
+        var result = await CliProcess.RunAsync(
+            "pwsh",
+            new[] { "-NoProfile", "-Command", "Start-Process -FilePath pwsh -ArgumentList '-NoProfile','-Command','Start-Sleep -Seconds 40' -NoNewWindow; exit 0" },
+            _workingDirectory,
+            TimeSpan.FromSeconds(5));
+        sw.Stop();
+
+        result.TimedOut.Should().BeTrue();
+        sw.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(25));
     }
 }

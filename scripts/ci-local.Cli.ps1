@@ -152,11 +152,7 @@ function Invoke-CliStage([string]$CloneDir, [string]$PassDir, [string]$NupkgPath
             Fail 75 "Expected exactly one CLI collector .coverage file, found $($allCoverage.Count)"
         }
 
-        # Final verification that exactly one .coverage file remains
-        $coverageFiles = Get-ChildItem -Path $rawDir -Filter "*.coverage" -Recurse -File
-        if ($coverageFiles.Count -ne 1) {
-            Fail 75 "Expected exactly one CLI collector .coverage file, found $($coverageFiles.Count)"
-        }
+
 
         # Read test counts and add to test-counts.json
         $cliTrxPath = Join-Path $trxDir 'WeatherParser.Cli.Tests.trx'
@@ -196,16 +192,16 @@ function Invoke-CliStage([string]$CloneDir, [string]$PassDir, [string]$NupkgPath
 
 function Invoke-CliTargetStage([string]$TargetDir, [string]$ToolVersion) {
     Write-CiLog "=== CLI TARGET ==="
-    $script:CurrentStageCode = 85
+    $script:CurrentStageCode = 75
     $passDir = Join-Path $script:RunDir 'target'
     $packageDir = Join-Path $passDir 'package'
     New-CiDirectory $packageDir
 
-    Invoke-Native 85 'dotnet' @('pack', 'src/WeatherParser.Parsing', '-c', 'Release', '--no-build', '-o', $packageDir) -WorkingDirectory $TargetDir -AllowedExitCodes @(0)
+    Invoke-Native 75 'dotnet' @('pack', 'src/WeatherParser.Parsing', '-c', 'Release', '--no-build', '-o', $packageDir) -WorkingDirectory $TargetDir -AllowedExitCodes @(0)
 
     $nupkgFiles = Get-ChildItem -Path $packageDir -Filter "*.nupkg" -File
     if ($nupkgFiles.Count -ne 1) {
-        Fail 85 "Expected exactly one .nupkg file, found $($nupkgFiles.Count)"
+        Fail 75 "Expected exactly one .nupkg file, found $($nupkgFiles.Count)"
     }
 
     $nupkgPath = $nupkgFiles[0].FullName
@@ -233,7 +229,7 @@ function Invoke-CliGate([string]$ToolVersion) {
         Write-CiLog "CLI gate: comparison with the CLI baseline of the target"
     } else {
         $probe = Invoke-Native 91 'git' @('cat-file', '-e', "$($script:TargetSha):$($script:CliProjectPath)") -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 128)
-        if ($probe.ExitCode -eq 0 -and -not $Bootstrap) {
+        if ($probe.ExitCode -eq 0) {
             Fail 91 "The target contains the example CLI, but no CLI baseline was measured (only the two-pass mode measures it)"
         } else {
             $gateArgs += @('--bootstrap')
