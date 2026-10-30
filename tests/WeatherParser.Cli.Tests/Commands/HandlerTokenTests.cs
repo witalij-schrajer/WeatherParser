@@ -31,6 +31,20 @@ public sealed class HandlerTokenTests
     private CancellationToken _token;
     private StringWriter _stdout = null!;
 
+    private Mock<ICdcStationSelector> _cdcSelector = null!;
+    private Mock<IMosmixLocationSelector> _mosmixSelector = null!;
+    private Mock<IMosmixSEvidenceRefresher> _refresher = null!;
+    private Mock<IDwdObservationParser> _dwdParser = null!;
+    private Mock<IMosmixLParser> _mosmixL = null!;
+    private Mock<IMosmixSParser> _mosmixS = null!;
+    private Mock<IOsthessenWetterParser> _osthessenParser = null!;
+    private Mock<IOsthessenWetterStationIdentity> _identity = null!;
+    private SelectDwdHandler _selectDwd = null!;
+    private SelectMosmixHandler _selectMosmix = null!;
+    private ParseDwdHandler _parseDwd = null!;
+    private ParseMosmixHandler _parseMosmix = null!;
+    private ParseOstHessenHandler _parseOstHessen = null!;
+
     [TestInitialize]
     public void Initialize()
     {
@@ -39,6 +53,21 @@ public sealed class HandlerTokenTests
         _cancellation = new CancellationTokenSource();
         _token = _cancellation.Token;
         _stdout = new StringWriter();
+
+        _cdcSelector = _mocks.Create<ICdcStationSelector>();
+        _mosmixSelector = _mocks.Create<IMosmixLocationSelector>();
+        _refresher = _mocks.Create<IMosmixSEvidenceRefresher>();
+        _dwdParser = _mocks.Create<IDwdObservationParser>();
+        _mosmixL = _mocks.Create<IMosmixLParser>();
+        _mosmixS = _mocks.Create<IMosmixSParser>();
+        _osthessenParser = _mocks.Create<IOsthessenWetterParser>();
+        _identity = _mocks.Create<IOsthessenWetterStationIdentity>();
+
+        _selectDwd = new SelectDwdHandler(_cdcSelector.Object, _writer.Object);
+        _selectMosmix = new SelectMosmixHandler(_mosmixSelector.Object, _writer.Object, _refresher.Object);
+        _parseDwd = new ParseDwdHandler(_dwdParser.Object, _writer.Object, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), NullLogger<ParseDwdHandler>.Instance);
+        _parseMosmix = new ParseMosmixHandler(_mosmixL.Object, _mosmixS.Object, _writer.Object, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), NullLogger<ParseMosmixHandler>.Instance);
+        _parseOstHessen = new ParseOstHessenHandler(_osthessenParser.Object, _identity.Object, _writer.Object, new ExportErrorMessages(), NullLogger<ParseOstHessenHandler>.Instance);
     }
 
     [TestCleanup]
@@ -64,13 +93,11 @@ public sealed class HandlerTokenTests
     [TestMethod]
     public async Task SelectDwd_TokenPassedToSelectorAndWriter()
     {
-        var selector = _mocks.Create<ICdcStationSelector>();
         var search = TestExportData.Search();
-        selector.Setup(s => s.SelectAsync(search, _token)).ReturnsAsync(TestExportData.CdcStations("00044"));
+        _cdcSelector.Setup(s => s.SelectAsync(search, _token)).ReturnsAsync(TestExportData.CdcStations("00044"));
         ExpectWrite<CdcStationList>();
-        var subject = new SelectDwdHandler(selector.Object, _writer.Object);
 
-        var outcome = await subject.HandleAsync(new SelectDwdRequest(Json, search), Context(null), _token);
+        var outcome = await _selectDwd.HandleAsync(new SelectDwdRequest(Json, search), Context(null), _token);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
     }
@@ -81,15 +108,12 @@ public sealed class HandlerTokenTests
     [TestMethod]
     public async Task SelectMosmix_WithRefresh_TokenPassedToRefresherSelectorAndWriter()
     {
-        var selector = _mocks.Create<IMosmixLocationSelector>();
-        var refresher = _mocks.Create<IMosmixSEvidenceRefresher>();
         var search = TestExportData.Search();
-        selector.Setup(s => s.SelectAsync(search, _token)).ReturnsAsync(TestExportData.MosmixLocations("10637"));
-        refresher.Setup(r => r.RefreshAsync(_token)).Returns(Task.CompletedTask);
+        _mosmixSelector.Setup(s => s.SelectAsync(search, _token)).ReturnsAsync(TestExportData.MosmixLocations("10637"));
+        _refresher.Setup(r => r.RefreshAsync(_token)).Returns(Task.CompletedTask);
         ExpectWrite<MosmixLocationList>();
-        var subject = new SelectMosmixHandler(selector.Object, _writer.Object, refresher.Object);
 
-        var outcome = await subject.HandleAsync(new SelectMosmixRequest(Json, search, true), Context(null), _token);
+        var outcome = await _selectMosmix.HandleAsync(new SelectMosmixRequest(Json, search, true), Context(null), _token);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
     }
@@ -100,12 +124,10 @@ public sealed class HandlerTokenTests
     [TestMethod]
     public async Task ParseDwd_TokenPassedToParserAndWriter()
     {
-        var parser = _mocks.Create<IDwdObservationParser>();
-        parser.Setup(p => p.ParseAsync("00044", _token)).ReturnsAsync(TestExportData.Observation("dwd", "00044"));
+        _dwdParser.Setup(p => p.ParseAsync("00044", _token)).ReturnsAsync(TestExportData.Observation("dwd", "00044"));
         ExpectWrite<ExportDocument>();
-        var subject = new ParseDwdHandler(parser.Object, _writer.Object, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), NullLogger<ParseDwdHandler>.Instance);
 
-        var outcome = await subject.HandleAsync(new ParseDwdRequest(Json, "00044"), Context("00044"), _token);
+        var outcome = await _parseDwd.HandleAsync(new ParseDwdRequest(Json, "00044"), Context("00044"), _token);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
     }
@@ -116,14 +138,10 @@ public sealed class HandlerTokenTests
     [TestMethod]
     public async Task ParseMosmixS_TokenPassedToParserAndWriter()
     {
-        var l = _mocks.Create<IMosmixLParser>();
-        var s = _mocks.Create<IMosmixSParser>();
-        var search = TestExportData.Search();
-        s.Setup(p => p.ParseAsync("10637", _token)).ReturnsAsync(Result(TestExportData.Forecast(MosmixProduct.MosmixS, "10637")));
+        _mosmixS.Setup(p => p.ParseAsync("10637", _token)).ReturnsAsync(Result(TestExportData.Forecast(MosmixProduct.MosmixS, "10637")));
         ExpectWrite<ExportDocument>();
-        var subject = new ParseMosmixHandler(l.Object, s.Object, _writer.Object, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), NullLogger<ParseMosmixHandler>.Instance);
 
-        var outcome = await subject.HandleAsync(new ParseMosmixRequest(Json, MosmixProduct.MosmixS, "10637"), Context(null), _token);
+        var outcome = await _parseMosmix.HandleAsync(new ParseMosmixRequest(Json, MosmixProduct.MosmixS, "10637"), Context(null), _token);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
     }
@@ -134,14 +152,10 @@ public sealed class HandlerTokenTests
     [TestMethod]
     public async Task ParseMosmixL_TokenPassedToParserAndWriter()
     {
-        var l = _mocks.Create<IMosmixLParser>();
-        var s = _mocks.Create<IMosmixSParser>();
-        var search = TestExportData.Search();
-        l.Setup(p => p.ParseAsync("10637", _token)).ReturnsAsync(Result(TestExportData.Forecast(MosmixProduct.MosmixL, "10637")));
+        _mosmixL.Setup(p => p.ParseAsync("10637", _token)).ReturnsAsync(Result(TestExportData.Forecast(MosmixProduct.MosmixL, "10637")));
         ExpectWrite<ExportDocument>();
-        var subject = new ParseMosmixHandler(l.Object, s.Object, _writer.Object, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), NullLogger<ParseMosmixHandler>.Instance);
 
-        var outcome = await subject.HandleAsync(new ParseMosmixRequest(Json, MosmixProduct.MosmixL, "10637"), Context(null), _token);
+        var outcome = await _parseMosmix.HandleAsync(new ParseMosmixRequest(Json, MosmixProduct.MosmixL, "10637"), Context(null), _token);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
     }
@@ -152,14 +166,11 @@ public sealed class HandlerTokenTests
     [TestMethod]
     public async Task ParseOstHessen_TokenPassedToParserAndWriter()
     {
-        var parser = _mocks.Create<IOsthessenWetterParser>();
-        var identity = _mocks.Create<IOsthessenWetterStationIdentity>();
         var dataset = TestExportData.Observation("osthessenwetter", "fulda");
-        parser.Setup(p => p.ParseAsync("Fulda*", _token)).ReturnsAsync(new OsthessenWetterParseResult(new[] { dataset }, Array.Empty<OsthessenWetterStationFailure>()));
+        _osthessenParser.Setup(p => p.ParseAsync("Fulda*", _token)).ReturnsAsync(new OsthessenWetterParseResult(new[] { dataset }, Array.Empty<OsthessenWetterStationFailure>()));
         ExpectWrite<ExportDocument>();
-        var subject = new ParseOstHessenHandler(parser.Object, identity.Object, _writer.Object, new ExportErrorMessages(), NullLogger<ParseOstHessenHandler>.Instance);
 
-        var outcome = await subject.HandleAsync(new ParseOstHessenRequest(Json, "Fulda*"), Context(null), _token);
+        var outcome = await _parseOstHessen.HandleAsync(new ParseOstHessenRequest(Json, "Fulda*"), Context(null), _token);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
     }

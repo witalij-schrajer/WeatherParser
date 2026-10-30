@@ -19,17 +19,12 @@ public sealed class ShutdownSignal : IShutdownSignal
     /// </summary>
     public static readonly TimeSpan DefaultGracePeriod = TimeSpan.FromSeconds(5);
 
-    // The longest time the forced termination waits for its log line; a blocked standard error never keeps the process alive (CL-18).
-    private static readonly TimeSpan LogBound = TimeSpan.FromSeconds(1);
-
     private readonly object _gate = new();
     private readonly CancellationTokenSource _source = new();
     private readonly IDisposable[] _registrations;
     private readonly IProcessTerminator _terminator;
     private readonly TimeProvider _timeProvider;
     private readonly bool _holdTerminationSignal;
-    // Set by Dispose; a held Windows SIGTERM handler waits for it, so it is never disposed.
-    private readonly ManualResetEventSlim _finished = new();
     private ITimer? _graceTimer;
     private TimeSpan _gracePeriod = DefaultGracePeriod;
     private ILogger _logger = NullLogger.Instance;
@@ -44,7 +39,7 @@ public sealed class ShutdownSignal : IShutdownSignal
     /// <param name="registrar">The signal registrar.</param>
     /// <param name="terminator">The process terminator.</param>
     /// <param name="timeProvider">The time provider for the grace period.</param>
-    /// <param name="holdTerminationSignal">True on Windows: SIGTERM stands for the shutdown and logoff events there, and Windows ends the process as soon as the handler returns, so the handler holds its thread until the command has finished or the grace period ends the process (CL-18).</param>
+    /// <param name="holdTerminationSignal">True on Windows: SIGTERM stands for the shutdown and logoff events there, and Windows ends the process as soon as the handler returns, so the handler holds its thread until the process ends (CL-18).</param>
     public ShutdownSignal(IPosixSignalRegistrar registrar, IProcessTerminator terminator, TimeProvider timeProvider, bool holdTerminationSignal)
     {
         ArgumentNullException.ThrowIfNull(registrar);
@@ -122,8 +117,8 @@ public sealed class ShutdownSignal : IShutdownSignal
         TryLog(logger, l => l.LogWarning(new EventId(0, CliErrorIds.Cancelled), "Shutdown signal {Signal} received; the command stops within {GracePeriod}.", context.Signal, gracePeriod));
         if (hold)
         {
-            // Held until the command has finished (Dispose) or the grace timer ends the process.
-            _finished.Wait();
+            // Held until the process ends: by the return of Main, or by the grace timer when the command does not stop.
+            Thread.Sleep(Timeout.Infinite);
         }
     }
 
@@ -140,8 +135,8 @@ public sealed class ShutdownSignal : IShutdownSignal
             logger = _logger;
         }
 
-        // The log line gets a bounded chance; the process ends even when standard error blocks (CL-18).
-        Task.Run(() => TryLog(logger, l => l.LogError(new EventId(0, CliErrorIds.Cancelled), "{Message}", message))).Wait(LogBound);
+        // The log line is best effort: it is started, but the process ends at once even when standard error blocks (CL-18).
+        _ = Task.Run(() => TryLog(logger, l => l.LogError(new EventId(0, CliErrorIds.Cancelled), "{Message}", message)));
         _terminator.Terminate(ExitCodes.Cancelled);
     }
 
@@ -173,7 +168,6 @@ public sealed class ShutdownSignal : IShutdownSignal
             holding = _holding;
         }
 
-        _finished.Set();
         if (holding)
         {
             // Windows does not unregister a handler while it runs; like the .NET host, the registrations are left to the ending process.
