@@ -1,5 +1,5 @@
-using Microsoft.Extensions.DependencyInjection;
 using WeatherParser.Cli.Arguments;
+using WeatherParser.Cli.Configuration;
 using WeatherParser.Parsing.Geography;
 
 namespace WeatherParser.Cli;
@@ -16,7 +16,7 @@ public static class Program
     /// <returns>The process exit code.</returns>
     public static int Main(string[] args)
     {
-        return Run(args, Console.Out, Console.Error, new HelpWriter(), new CommandLineParser(), new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()));
+        return Run(args, Console.Out, Console.Error, new HelpWriter(), new CommandLineParser(), new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()), new CommandExecutor(new ConfigurationLoader(new EnvironmentReader()), new ConfigurationRegistrar(), new ConfigurationValidator()));
     }
 
     /// <summary>
@@ -28,8 +28,9 @@ public static class Program
     /// <param name="helpWriter">The help writer.</param>
     /// <param name="parser">The command-line parser.</param>
     /// <param name="validator">The command request validator.</param>
+    /// <param name="executor">The command executor.</param>
     /// <returns>The process exit code.</returns>
-    public static int Run(string[] args, TextWriter standardOutput, TextWriter standardError, IHelpWriter helpWriter, ICommandLineParser parser, ICommandRequestValidator validator)
+    public static int Run(string[] args, TextWriter standardOutput, TextWriter standardError, IHelpWriter helpWriter, ICommandLineParser parser, ICommandRequestValidator validator, ICommandExecutor executor)
     {
         ArgumentNullException.ThrowIfNull(args);
         ArgumentNullException.ThrowIfNull(standardOutput);
@@ -37,6 +38,7 @@ public static class Program
         ArgumentNullException.ThrowIfNull(helpWriter);
         ArgumentNullException.ThrowIfNull(parser);
         ArgumentNullException.ThrowIfNull(validator);
+        ArgumentNullException.ThrowIfNull(executor);
 
         var result = parser.Parse(args);
         if (result is ParsedCommandLine parsed)
@@ -57,25 +59,7 @@ public static class Program
                 helpWriter.WriteHelp(standardError);
                 return 1;
             default:
-                standardError.WriteLine("The command is not implemented yet.");
-                return 1;
+                return executor.Execute(((ValidatedCommand)result).Request, standardOutput, standardError);
         }
-    }
-
-    /// <summary>
-    /// Builds the container, runs exactly one command through ICommandRunner and disposes the container afterwards (CL-07).
-    /// </summary>
-    /// <param name="args">The command-line arguments.</param>
-    /// <param name="buildProvider">The function to build the service provider.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The process exit code.</returns>
-    public static async Task<int> RunAsync(string[] args, Func<ServiceProvider> buildProvider, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(args);
-        ArgumentNullException.ThrowIfNull(buildProvider);
-
-        await using var provider = buildProvider();
-        var runner = provider.GetRequiredService<ICommandRunner>();
-        return await runner.RunAsync(args, cancellationToken);
     }
 }

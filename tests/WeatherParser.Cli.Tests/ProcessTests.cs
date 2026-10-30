@@ -130,4 +130,69 @@ public sealed class ProcessTests
         result.StandardError.Should().StartWith(errorId + ":");
         Directory.EnumerateFileSystemEntries(_workingDirectory).Should().BeEmpty();
     }
+
+    /// <summary>
+    /// Verifies that no configuration fails with a missing config error (CL-04).
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-05")]
+    public async Task Process_NoConfiguration_ConfigMissing_NoFile()
+    {
+        var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--Output", "json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
+        result.TimedOut.Should().BeFalse();
+        result.ExitCode.Should().NotBe(0);
+        result.StandardOutput.Should().BeEmpty();
+        result.StandardError.Should().StartWith("CLI-CONFIG-MISSING:");
+        Directory.EnumerateFileSystemEntries(_workingDirectory).Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Verifies that a valid configuration is loaded and validated before the command is executed (CL-04, CL-05).
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-05")]
+    public async Task Process_ValidConfiguration_ValidatedBeforeCommand()
+    {
+        var configPath = Path.Combine(_workingDirectory, "config.json");
+        await File.WriteAllTextAsync(configPath, MinimalValidConfiguration);
+        var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--Output", "json", "--Config", "config.json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
+        result.TimedOut.Should().BeFalse();
+        result.ExitCode.Should().Be(1);
+        result.StandardOutput.Should().BeEmpty();
+        result.StandardError.Should().Be("The command is not implemented yet." + Environment.NewLine);
+        Directory.EnumerateFileSystemEntries(_workingDirectory).Should().ContainSingle().Which.Should().Be(configPath);
+    }
+
+    /// <summary>
+    /// Verifies that an invalid configuration fails with a validation error (CL-05).
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-05")]
+    public async Task Process_InvalidConfiguration_ConfigInvalid()
+    {
+        var configPath = Path.Combine(_workingDirectory, "config.json");
+        await File.WriteAllTextAsync(configPath, "{\"Dwdd\":{}}");
+        var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--Output", "json", "--Config", "config.json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
+        result.TimedOut.Should().BeFalse();
+        result.ExitCode.Should().NotBe(0);
+        result.StandardOutput.Should().BeEmpty();
+        result.StandardError.Should().StartWith("CLI-CONFIG-INVALID:");
+    }
+
+    private const string MinimalValidConfiguration = """
+        {
+          "Dwd": {
+            "Catalog": {
+              "AirTemperatureStationList": "https://example.invalid/cdc/air_temperature/now/zehn_now_tu_Beschreibung_Stationen.txt",
+              "AirTemperatureNowDirectory": "https://example.invalid/cdc/air_temperature/now/",
+              "WindStationList": "https://example.invalid/cdc/wind/now/zehn_now_ff_Beschreibung_Stationen.txt",
+              "WindNowDirectory": "https://example.invalid/cdc/wind/now/",
+              "PrecipitationStationList": "https://example.invalid/cdc/precipitation/now/zehn_now_rr_Beschreibung_Stationen.txt",
+              "PrecipitationNowDirectory": "https://example.invalid/cdc/precipitation/now/",
+              "SolarStationList": "https://example.invalid/cdc/solar/now/zehn_now_sd_Beschreibung_Stationen.txt",
+              "SolarNowDirectory": "https://example.invalid/cdc/solar/now/"
+            }
+          }
+        }
+        """;
 }

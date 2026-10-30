@@ -14,6 +14,7 @@ public sealed class ProgramRunTests
     private Mock<IHelpWriter> _help = null!;
     private Mock<ICommandLineParser> _parser = null!;
     private Mock<ICommandRequestValidator> _validator = null!;
+    private Mock<ICommandExecutor> _executor = null!;
     private StringWriter _stdout = null!;
     private StringWriter _stderr = null!;
 
@@ -27,6 +28,7 @@ public sealed class ProgramRunTests
         _help = _mocks.Create<IHelpWriter>();
         _parser = _mocks.Create<ICommandLineParser>();
         _validator = _mocks.Create<ICommandRequestValidator>();
+        _executor = _mocks.Create<ICommandExecutor>();
         _stdout = new StringWriter();
         _stderr = new StringWriter();
     }
@@ -40,7 +42,7 @@ public sealed class ProgramRunTests
         _mocks.VerifyAll();
     }
 
-    private int Run(params string[] args) => Program.Run(args, _stdout, _stderr, _help.Object, _parser.Object, _validator.Object);
+    private int Run(params string[] args) => Program.Run(args, _stdout, _stderr, _help.Object, _parser.Object, _validator.Object, _executor.Object);
 
     /// <summary>
     /// Verifies that help is written to stdout and returns zero.
@@ -115,22 +117,25 @@ public sealed class ProgramRunTests
     }
 
     /// <summary>
-    /// Verifies that a valid command results in 'not implemented' error and returns one.
+    /// Verifies that a valid command is executed and returns the exit code.
     /// </summary>
     [TestMethod]
     [TestCategory("T-P3-04")]
-    public void Run_ValidCommand_NotImplemented_ReturnsOne()
+    public void Run_ValidCommand_ExecutedOnce_ReturnsItsExitCode()
     {
         var parsed = new ParsedCommandLine(CliCommand.ParseDwd, new Dictionary<string, string>(), new HashSet<string>());
         _parser.Setup(p => p.Parse(It.Is<IReadOnlyList<string>>(a => a.SequenceEqual(new[] { "--ParseDWD" }))))
             .Returns(parsed);
+        var request = new ParseDwdRequest(new CommonOptions(OutputFormat.Mqtt, null, null, false), "00044");
         _validator.Setup(v => v.Validate(parsed))
-            .Returns(new ValidatedCommand(new ParseDwdRequest(new CommonOptions(OutputFormat.Mqtt, null, null, false), "00044")));
+            .Returns(new ValidatedCommand(request));
+        _executor.Setup(e => e.Execute(request, _stdout, _stderr)).Returns(7);
 
         var exitCode = Run("--ParseDWD");
-        exitCode.Should().Be(1);
+        exitCode.Should().Be(7);
 
-        _stderr.ToString().Should().Be("The command is not implemented yet." + Environment.NewLine);
+        _executor.Verify(e => e.Execute(request, _stdout, _stderr), Times.Once());
+        _stderr.ToString().Should().BeEmpty();
         _stdout.ToString().Should().BeEmpty();
     }
 
