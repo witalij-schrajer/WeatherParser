@@ -55,6 +55,17 @@
           "MSTest.Analyzers": "4.5.1"
         }
       },
+      "WeatherParser.Parsing": {
+        "type": "Direct",
+        "requested": "[0.1.0-initial, )",
+        "resolved": "0.1.0-initial",
+        "contentHash": "FzE5usXmgjoPM6gBrQFOMvdxXqyDlvEk2nq1dGVuWf9gwgkozSQ+TaFrle7rjPVgzbyzmCsOSLSZigahnr1ing==",
+        "dependencies": {
+          "AngleSharp": "1.8.5",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.13"
+        }
+      },
       "Castle.Core": {
         "type": "Transitive",
         "resolved": "5.2.1",
@@ -181,17 +192,6 @@
         "contentHash": "aSZEhEig4fvNiw2zs8Z6NyDlniKtq6YjcF3DyHuqTEHcZ2VKA/6itMPZ+dW+yWABWExlDcQwwdbqX1Rcb7W8WQ==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13"
-        }
-      },
-      "WeatherParser.Parsing": {
-        "type": "CentralTransitive",
-        "requested": "[0.1.0-initial, )",
-        "resolved": "0.1.0-initial",
-        "contentHash": "FzE5usXmgjoPM6gBrQFOMvdxXqyDlvEk2nq1dGVuWf9gwgkozSQ+TaFrle7rjPVgzbyzmCsOSLSZigahnr1ing==",
-        "dependencies": {
-          "AngleSharp": "1.8.5",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
-          "Microsoft.Extensions.Logging.Abstractions": "10.0.13"
         }
       }
     }
