@@ -18,12 +18,19 @@ internal sealed class TestShutdownSignal : IShutdownSignal
 
     public ILogger? Logger { get; private set; }
 
+    public bool LoggerReleased { get; private set; }
+
     public void Raise() => _source.Cancel();
 
     public void Configure(TimeSpan gracePeriod, ILogger logger)
     {
         GracePeriod = gracePeriod;
         Logger = logger;
+    }
+
+    public void ReleaseLogger()
+    {
+        LoggerReleased = true;
     }
 
     public void Dispose() => _source.Dispose();

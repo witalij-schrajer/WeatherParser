@@ -505,7 +505,7 @@ The additional decisions and P0 clarifications dated 2026-10-14 (development env
 
 
 ## Development
-The solution [WeatherParser.slnx](WeatherParser.slnx) contains eleven projects:
+The solution [WeatherParser.slnx](WeatherParser.slnx) contains twelve projects:
 
 ```text
 examples/
@@ -516,6 +516,7 @@ tests/
   WeatherParser.Parsing.Tests/          # MSTest project with source reference
   WeatherParser.Package.Tests/          # Isolated NuGet PackageReference consumer tests
   WeatherParser.Cli.Tests/              # Example CLI tests (unit and process tests)
+  WeatherParser.Cli.SignalHost/         # Signal test host of the CLI process tests (not packed, not a test project)
   WeatherParser.Coverage.Tests/         # Coverage evaluator tests
   WeatherParser.Coverage.Runner.Tests/  # Coverage runner tests
   WeatherParser.SchemaGeneration.Tests/ # Export schema generator, golden-file and refinement tests

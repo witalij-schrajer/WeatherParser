@@ -50,7 +50,7 @@ public sealed class ShutdownSignalTests
         _registrar.Setup(r => r.Register(PosixSignal.SIGTERM, It.IsAny<Action<PosixSignalContext>>()))
             .Callback<PosixSignal, Action<PosixSignalContext>>((signal, handler) => _handlers[signal] = handler)
             .Returns(_sigtermRegistration.Object);
-        _subject = new ShutdownSignal(_registrar.Object, _terminator.Object, _time);
+        _subject = new ShutdownSignal(_registrar.Object, _terminator.Object, _time, false);
     }
 
     [TestCleanup]
@@ -83,9 +83,9 @@ public sealed class ShutdownSignalTests
     [TestMethod]
     public void Constructor_NullArguments_Throw()
     {
-        ((Action)(() => new ShutdownSignal(null!, _terminator.Object, _time))).Should().Throw<ArgumentNullException>().WithParameterName("registrar");
-        ((Action)(() => new ShutdownSignal(_registrar.Object, null!, _time))).Should().Throw<ArgumentNullException>().WithParameterName("terminator");
-        ((Action)(() => new ShutdownSignal(_registrar.Object, _terminator.Object, null!))).Should().Throw<ArgumentNullException>().WithParameterName("timeProvider");
+        ((Action)(() => new ShutdownSignal(null!, _terminator.Object, _time, false))).Should().Throw<ArgumentNullException>().WithParameterName("registrar");
+        ((Action)(() => new ShutdownSignal(_registrar.Object, null!, _time, false))).Should().Throw<ArgumentNullException>().WithParameterName("terminator");
+        ((Action)(() => new ShutdownSignal(_registrar.Object, _terminator.Object, null!, false))).Should().Throw<ArgumentNullException>().WithParameterName("timeProvider");
     }
 
     /// <summary>

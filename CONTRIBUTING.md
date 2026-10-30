@@ -175,7 +175,7 @@ dotnet test tests/WeatherParser.Cli.Tests --configuration Release --no-build
 git restore examples/WeatherParser.Cli/packages.lock.json tests/WeatherParser.Cli.Tests/packages.lock.json
 ```
 
-The process tests start the built CLI with `dotnet <output>/WeatherParser.dll` in a temporary working directory, each with a timeout after which the process tree is killed; the harness self-test needs `pwsh` on the `PATH`.
+The process tests start the built CLI with `dotnet <output>/WeatherParser.dll` in a temporary working directory, each with a timeout after which the process tree is killed; the harness self-test needs `pwsh` on the `PATH`. The signal tests of P3.09 (`ProcessSignalTests`, `ProcessTerminationTests`) send SIGINT and SIGTERM to a child process and run on Linux only; on Windows they end inconclusive. `ProcessTerminationTests` start the signal test host `tests/WeatherParser.Cli.SignalHost` (built through the project reference of the CLI tests), which compiles the CLI's signal handling from its source files and ignores cancellation, so that only a second signal or the end of the grace period can end it. The host references no CLI project and no local package, so its lock file is an ordinary committed lock.
 
 ### Opt-in broker integration test of the example CLI (P3.08)
 

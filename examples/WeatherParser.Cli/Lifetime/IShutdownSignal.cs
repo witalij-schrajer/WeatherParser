@@ -19,4 +19,9 @@ public interface IShutdownSignal : IDisposable
     /// <param name="gracePeriod">The time the command has to stop after the first signal.</param>
     /// <param name="logger">The logger for the signal events.</param>
     void Configure(TimeSpan gracePeriod, ILogger logger);
+
+    /// <summary>
+    /// Stops using the configured logger; called before the logger's output is closed (CL-18).
+    /// </summary>
+    void ReleaseLogger();
 }

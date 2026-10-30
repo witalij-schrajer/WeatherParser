@@ -34,7 +34,7 @@ public static class Program
     public static int Main(string[] args, Stream standardOutputStream, Stream standardErrorStream)
     {
         // Registered before anything else runs, so that a signal at any time cancels the command instead of ending the process (CL-18).
-        using var shutdownSignal = new ShutdownSignal(new PosixSignalRegistrar(), new ProcessTerminator(), TimeProvider.System);
+        using var shutdownSignal = new ShutdownSignal(new PosixSignalRegistrar(), new ProcessTerminator(), TimeProvider.System, OperatingSystem.IsWindows());
         return Main(args, standardOutputStream, standardErrorStream, shutdownSignal);
     }
 

@@ -77,6 +77,8 @@ public sealed class CommandExecutor : ICommandExecutor
         var level = request.Common.Verbose ? LogLevel.Debug : LogLevel.Information;
         using var loggerProvider = new StandardErrorLoggerProvider(standardError, TimeProvider.System, _formatter, level, CommandName(request));
         var logger = loggerProvider.CreateLogger("WeatherParser.Cli");
+        // A signal from now on is logged; the grace period becomes the configured one after the validation phase (CL-18).
+        _shutdownSignal.Configure(ShutdownSignal.DefaultGracePeriod, logger);
         try
         {
             var configuration = _loader.Load(request.Common.ConfigPath);
@@ -129,19 +131,24 @@ public sealed class CommandExecutor : ICommandExecutor
             {
                 // A CLI failure while the command runs is a run-time failure (CL-11).
                 logger.LogError(new EventId(0, exception.ErrorId), "{Message}", exception.Message);
-                return _exitCodePolicy.ForRuntimeError(exception.ErrorId);
+                return CancelledOr(_exitCodePolicy.ForRuntimeError(exception.ErrorId), logger);
             }
             catch (Exception exception) when (_libraryErrors.TryGetErrorId(exception, out var errorId))
             {
                 // A command-level library failure: no document, the ID on stderr; a pre-request ID keeps the usage code (CL-09, CL-11).
                 logger.LogError(new EventId(0, errorId), "{Message}", exception.Message);
-                return _exitCodePolicy.ForError(errorId);
+                return CancelledOr(_exitCodePolicy.ForError(errorId), logger);
             }
         }
         catch (CliException exception)
         {
             logger.LogError(new EventId(0, exception.ErrorId), "{Message}", exception.Message);
-            return _exitCodePolicy.ForError(exception.ErrorId);
+            return CancelledOr(_exitCodePolicy.ForError(exception.ErrorId), logger);
+        }
+        finally
+        {
+            // The logger's standard error writer is closed after Execute; the signal must not write to it any more (CL-18).
+            _shutdownSignal.ReleaseLogger();
         }
     }
 
@@ -177,5 +184,17 @@ public sealed class CommandExecutor : ICommandExecutor
         var report = await services.GetRequiredService<IMessagePublisher>().PublishAllAsync(items, publication, cancellationToken).ConfigureAwait(false);
         var unpublished = report.Failed + report.NotAttempted;
         return new CommandOutcome(Math.Max(0, outcome.Succeeded - unpublished), outcome.Failed + unpublished, outcome.Cancelled);
+    }
+
+    // A failure that ends the command after a shutdown signal is reported as cancelled (CL-11, CL-18).
+    private int CancelledOr(int exitCode, ILogger logger)
+    {
+        if (!_shutdownSignal.Token.IsCancellationRequested)
+        {
+            return exitCode;
+        }
+
+        logger.LogError(new EventId(0, CliErrorIds.Cancelled), "The command was cancelled by a shutdown signal; its output is incomplete and not reported as successful.");
+        return _exitCodePolicy.ForRuntimeError(CliErrorIds.Cancelled);
     }
 }

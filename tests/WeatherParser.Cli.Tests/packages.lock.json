@@ -170,6 +170,12 @@
           "WeatherParser.Parsing": "[0.1.0-initial, )"
         }
       },
+      "weatherparser.cli.signalhost": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.13, )"
+        }
+      },
       "AngleSharp": {
         "type": "CentralTransitive",
         "requested": "[1.8.5, )",
