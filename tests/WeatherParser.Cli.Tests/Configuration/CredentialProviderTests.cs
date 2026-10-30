@@ -6,6 +6,7 @@ using Moq;
 using WeatherParser.Cli.Configuration;
 using WeatherParser.Cli;
 using FluentAssertions;
+using Microsoft.Win32.SafeHandles;
 
 namespace WeatherParser.Cli.Tests.Configuration;
 
@@ -14,6 +15,8 @@ namespace WeatherParser.Cli.Tests.Configuration;
 public sealed class CredentialProviderTests
 {
     private const string Marker = "s3cr3t-Marker-7f2a";
+    private const uint CurrentUser = 1000;
+    private const UnixFileMode Private = UnixFileMode.UserRead | UnixFileMode.UserWrite;
 
     private readonly MockRepository _mocks = new(MockBehavior.Strict);
     private readonly Mock<IEnvironmentReader> _environment;
@@ -57,6 +60,12 @@ public sealed class CredentialProviderTests
         ex.Message.Should().NotContain(Marker);
         ex.Message.Should().NotContain("mqtt-user");
         return ex;
+    }
+
+    private void SetupFileStatus(uint owner, UnixFileMode mode)
+    {
+        _fileMode.Setup(f => f.Read(It.Is<SafeFileHandle>(h => !h.IsInvalid && !h.IsClosed))).Returns(new UnixFileStatus(owner, mode));
+        _fileMode.Setup(f => f.GetEffectiveUserId()).Returns(CurrentUser);
     }
 
     /// <summary>
@@ -107,7 +116,7 @@ public sealed class CredentialProviderTests
         SetEnvironment(null, null);
         var path = Path.Combine(_tempDirectory, "credentials.json");
         File.WriteAllText(path, "{\"Username\":\"mqtt-user\",\"Password\":\"" + Marker + "\"}");
-        _fileMode.Setup(f => f.HasGroupOrOtherAccess(path)).Returns(false);
+        SetupFileStatus(CurrentUser, Private);
         var credentials = new CredentialProvider(_environment.Object, _fileMode.Object).GetCredentials(new BrokerSection { Host = "h", CredentialsFile = path });
         credentials.Should().NotBeNull();
         credentials.Username.Should().Be("mqtt-user");
@@ -135,9 +144,9 @@ public sealed class CredentialProviderTests
         SetEnvironment(null, null);
         var path = Path.Combine(_tempDirectory, "credentials.json");
         File.WriteAllText(path, "{\"Username\":\"mqtt-user\",\"Password\":\"" + Marker + "\"}");
-        _fileMode.Setup(f => f.HasGroupOrOtherAccess(path)).Returns(true);
+        SetupFileStatus(CurrentUser, Private | UnixFileMode.GroupRead);
         var ex = Error(new BrokerSection { Host = "h", CredentialsFile = path });
-        ex.Message.Should().Contain("must not be accessible by group or others");
+        ex.Message.Should().Be("The credential file must be owned by the current user and must not be accessible by group or others.");
     }
 
     /// <summary>
@@ -154,7 +163,7 @@ public sealed class CredentialProviderTests
         SetEnvironment(null, null);
         var path = Path.Combine(_tempDirectory, "credentials.json");
         File.WriteAllText(path, content);
-        _fileMode.Setup(f => f.HasGroupOrOtherAccess(path)).Returns(false);
+        SetupFileStatus(CurrentUser, Private);
         var ex = Error(new BrokerSection { Host = "h", CredentialsFile = path });
         ex.Message.Should().Contain("must contain exactly the members Username and Password");
     }
@@ -214,7 +223,6 @@ public sealed class CredentialProviderTests
         SetEnvironment(null, null);
         var path = Path.Combine(_tempDirectory, "credentials.json");
         File.WriteAllText(path, "{\"Username\":\"mqtt-user\",\"Password\":\"" + Marker + "\"}");
-        _fileMode.Setup(f => f.HasGroupOrOtherAccess(path)).Returns(false);
         using var lockStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
         var ex = Error(new BrokerSection { Host = "h", CredentialsFile = path });
         ex.Message.Should().Contain("The credential file named by 'Mqtt.Broker.CredentialsFile' cannot be read.");
@@ -230,9 +238,84 @@ public sealed class CredentialProviderTests
         SetEnvironment(null, null);
         var path = Path.Combine(_tempDirectory, "credentials.json");
         File.WriteAllText(path, "{\"Username\":\"mqtt-user\",\"Password\":\"" + Marker + "\"}");
-        _fileMode.Setup(f => f.HasGroupOrOtherAccess(path)).Throws(new UnauthorizedAccessException("denied"));
+        _fileMode.Setup(f => f.Read(It.IsAny<SafeFileHandle>())).Throws(new UnauthorizedAccessException("denied"));
         var ex = Error(new BrokerSection { Host = "h", CredentialsFile = path });
         ex.Message.Should().Contain("The credential file named by 'Mqtt.Broker.CredentialsFile' cannot be read.");
         ex.Message.Should().NotContain("denied");
+    }
+
+    /// <summary>
+    /// Verifies that a credential file readable by others is rejected.
+    /// </summary>
+    [TestMethod]
+    public void Credentials_FileReadableByOthers_Rejected()
+    {
+        SetEnvironment(null, null);
+        var path = Path.Combine(_tempDirectory, "credentials.json");
+        File.WriteAllText(path, "{\"Username\":\"mqtt-user\",\"Password\":\"" + Marker + "\"}");
+        SetupFileStatus(CurrentUser, Private | UnixFileMode.OtherRead);
+        var ex = Error(new BrokerSection { Host = "h", CredentialsFile = path });
+        ex.Message.Should().Be("The credential file must be owned by the current user and must not be accessible by group or others.");
+    }
+
+    /// <summary>
+    /// Verifies that a private credential file owned by another user is rejected (CL-06).
+    /// </summary>
+    [TestMethod]
+    public void Credentials_FileOwnedByAnotherUser_Rejected()
+    {
+        SetEnvironment(null, null);
+        var path = Path.Combine(_tempDirectory, "credentials.json");
+        File.WriteAllText(path, "{\"Username\":\"mqtt-user\",\"Password\":\"" + Marker + "\"}");
+        SetupFileStatus(CurrentUser + 1, Private);
+        var ex = Error(new BrokerSection { Host = "h", CredentialsFile = path });
+        ex.Message.Should().Be("The credential file must be owned by the current user and must not be accessible by group or others.");
+    }
+
+    /// <summary>
+    /// Verifies that without a Unix owner and mode (Windows) the credential file is read without a check (CL-06).
+    /// </summary>
+    [TestMethod]
+    public void Credentials_NoUnixStatus_ReadWithoutCheck()
+    {
+        SetEnvironment(null, null);
+        var path = Path.Combine(_tempDirectory, "credentials.json");
+        File.WriteAllText(path, "{\"Username\":\"mqtt-user\",\"Password\":\"" + Marker + "\"}");
+        _fileMode.Setup(f => f.Read(It.IsAny<SafeFileHandle>())).Returns((UnixFileStatus?)null);
+        var credentials = new CredentialProvider(_environment.Object, _fileMode.Object).GetCredentials(new BrokerSection { Host = "h", CredentialsFile = path });
+        credentials.Should().NotBeNull();
+        credentials!.Password.Should().Be(Marker);
+    }
+
+    /// <summary>
+    /// Verifies that the checked file is the file that is read: replacing the path after the check does not change the credentials (CL-06).
+    /// </summary>
+    [TestMethod]
+    public void Credentials_FileReplacedAfterCheck_CheckedFileIsRead()
+    {
+        SetEnvironment(null, null);
+        var path = Path.Combine(_tempDirectory, "credentials.json");
+        File.WriteAllText(path, "{\"Username\":\"mqtt-user\",\"Password\":\"" + Marker + "\"}");
+        var replaced = false;
+        _fileMode.Setup(f => f.Read(It.IsAny<SafeFileHandle>())).Callback(() =>
+        {
+            try
+            {
+                File.Move(path, path + ".old");
+                File.WriteAllText(path, "{\"Username\":\"other-user\",\"Password\":\"other-password\"}");
+                replaced = true;
+            }
+            catch (IOException)
+            {
+                // Windows: the open handle denies the rename, so the checked file cannot be replaced at all.
+            }
+        }).Returns(new UnixFileStatus(CurrentUser, Private));
+        _fileMode.Setup(f => f.GetEffectiveUserId()).Returns(CurrentUser);
+
+        var credentials = new CredentialProvider(_environment.Object, _fileMode.Object).GetCredentials(new BrokerSection { Host = "h", CredentialsFile = path });
+
+        credentials!.Username.Should().Be("mqtt-user");
+        credentials.Password.Should().Be(Marker);
+        replaced.Should().Be(!OperatingSystem.IsWindows());
     }
 }

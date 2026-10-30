@@ -13,6 +13,8 @@ public sealed class CredentialProvider : ICredentialProvider
     private const string UsernameVariable = "WEATHERPARSER_MQTT_USERNAME";
     private const string PasswordVariable = "WEATHERPARSER_MQTT_PASSWORD";
     private const string CredentialsInvalid = "CLI-CREDENTIALS-INVALID";
+    private const UnixFileMode GroupOrOther = UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.GroupExecute
+        | UnixFileMode.OtherRead | UnixFileMode.OtherWrite | UnixFileMode.OtherExecute;
     private static readonly JsonSerializerOptions Options = new() { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
 
     private readonly IEnvironmentReader _environment;
@@ -22,7 +24,7 @@ public sealed class CredentialProvider : ICredentialProvider
     /// Initializes a new instance of the <see cref="CredentialProvider"/> class.
     /// </summary>
     /// <param name="environment">The environment reader to use.</param>
-    /// <param name="fileModeReader">The file mode reader to use.</param>
+    /// <param name="fileMode">Reads the owner and permission bits of the opened credential file.</param>
     public CredentialProvider(IEnvironmentReader environment, IFileModeReader fileMode)
     {
         ArgumentNullException.ThrowIfNull(environment);
@@ -77,12 +79,16 @@ public sealed class CredentialProvider : ICredentialProvider
         string text;
         try
         {
-            if (_fileModeReader.HasGroupOrOtherAccess(path))
+            // The checks and the read use the same opened file, so the file cannot be replaced between them (CL-06).
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var status = _fileModeReader.Read(stream.SafeFileHandle);
+            if (status is { } unix && (unix.OwnerId != _fileModeReader.GetEffectiveUserId() || (unix.Mode & GroupOrOther) != 0))
             {
-                throw new CliException(CredentialsInvalid, "The credential file must not be accessible by group or others.");
+                throw new CliException(CredentialsInvalid, "The credential file must be owned by the current user and must not be accessible by group or others.");
             }
 
-            text = File.ReadAllText(path);
+            using var reader = new StreamReader(stream);
+            text = reader.ReadToEnd();
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

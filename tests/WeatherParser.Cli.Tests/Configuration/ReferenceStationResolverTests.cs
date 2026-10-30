@@ -35,9 +35,17 @@ public sealed class ReferenceStationResolverTests
     }
 
     [TestMethod]
-    public void ResolveStation_EmptyValues_DwdStationMissing()
+    public void ResolveStation_EmptyArgument_ReturnedUnchangedForLibraryValidation()
     {
-        var ex = FluentActions.Invoking(() => _resolver.Resolve("", new CliConfiguration { Dwd = new DwdSection { ReferenceStationId = "" } })).Should().Throw<CliException>().Which;
+        // An explicitly supplied empty ID is not an omitted option; the library parser rejects it with STATION-ID-INVALID.
+        var result = _resolver.Resolve("", new CliConfiguration { Dwd = new DwdSection { ReferenceStationId = "00044" } });
+        result.Should().Be("");
+    }
+
+    [TestMethod]
+    public void ResolveStation_NoArgumentEmptyConfiguration_DwdStationMissing()
+    {
+        var ex = FluentActions.Invoking(() => _resolver.Resolve(null, new CliConfiguration { Dwd = new DwdSection { ReferenceStationId = "" } })).Should().Throw<CliException>().Which;
         ex.ErrorId.Should().Be("CLI-DWD-STATION-MISSING");
         ex.Message.Should().Be("No DWD station given; use --StationID <id> or the setting 'Dwd.ReferenceStationId'.");
     }
