@@ -4,6 +4,7 @@ using WeatherParser.Cli.Diagnostics;
 using WeatherParser.Parsing.Geography;
 using Microsoft.Extensions.Logging;
 using WeatherParser.Cli.Commands;
+using System.Text;
 
 namespace WeatherParser.Cli;
 
@@ -19,6 +20,25 @@ public static class Program
     /// <returns>The process exit code.</returns>
     public static int Main(string[] args)
     {
+        return Main(args, Console.OpenStandardOutput(), Console.OpenStandardError());
+    }
+
+    /// <summary>
+    /// Runs one invocation with the given standard output and standard error streams, written as UTF-8 without byte-order mark (CL-12, REQ-068).
+    /// </summary>
+    /// <param name="args">The command-line arguments.</param>
+    /// <param name="standardOutputStream">The standard output stream.</param>
+    /// <param name="standardErrorStream">The standard error stream.</param>
+    /// <returns>The process exit code.</returns>
+    public static int Main(string[] args, Stream standardOutputStream, Stream standardErrorStream)
+    {
+        ArgumentNullException.ThrowIfNull(standardOutputStream);
+        ArgumentNullException.ThrowIfNull(standardErrorStream);
+
+        // Console.Out uses the console code page when redirected on Windows; the document and the log lines are UTF-8 without byte-order mark (CL-12, REQ-068).
+        using var standardOutput = new StreamWriter(standardOutputStream, new UTF8Encoding(false), leaveOpen: true) { AutoFlush = true };
+        using var standardError = new StreamWriter(standardErrorStream, new UTF8Encoding(false), leaveOpen: true) { AutoFlush = true };
+
         var environment = new EnvironmentReader();
         var exitCodePolicy = new ExitCodePolicy();
         var executor = new CommandExecutor(
@@ -31,8 +51,8 @@ public static class Program
             new LogLineFormatter());
         return Run(
             args,
-            Console.Out,
-            Console.Error,
+            standardOutput,
+            standardError,
             new HelpWriter(),
             new CommandLineParser(),
             new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()),

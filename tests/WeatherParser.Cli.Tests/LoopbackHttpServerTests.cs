@@ -20,4 +20,16 @@ public sealed class LoopbackHttpServerTests
         body.Should().Be("/a/b?c=1");
         server.RequestCount.Should().Be(1);
     }
+
+    [TestMethod]
+    [TestCategory("T-P3-20")]
+    public async Task Server_Redirect_SendsLocationAndRecordsPath()
+    {
+        await using var server = new LoopbackHttpServer { Redirect = path => path == "/moved" ? "/elsewhere" : null };
+        using var client = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false });
+        var response = await client.GetAsync(new Uri(server.BaseUri, "moved"));
+        ((int)response.StatusCode).Should().Be(302);
+        response.Headers.Location!.OriginalString.Should().Be("/elsewhere");
+        server.RequestedPaths.Should().Equal("/moved");
+    }
 }

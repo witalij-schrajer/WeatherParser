@@ -4,6 +4,7 @@ using WeatherParser.Cli.Arguments;
 using WeatherParser.Cli.Configuration;
 using WeatherParser.Cli.Diagnostics;
 using WeatherParser.Cli.Commands;
+using WeatherParser.Cli.Output;
 
 namespace WeatherParser.Cli;
 
@@ -69,6 +70,11 @@ public sealed class CommandExecutor : ICommandExecutor
                 services.AddLogging(builder => builder.ClearProviders().AddProvider(loggerProvider).SetMinimumLevel(level));
             });
             var settings = _validator.Validate(provider, configuration, request);
+            // The destination is checked after the validation phase and before any retrieval (CL-11, CL-12).
+            if (request.Common.OutputFile is not null)
+            {
+                provider.GetRequiredService<IOutputDestination>().Check(request.Common);
+            }
             var context = new CommandContext(request.Common, settings.StationId, standardOutput);
             try
             {

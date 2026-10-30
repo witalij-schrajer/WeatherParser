@@ -46,7 +46,8 @@ internal static class TestConfigurations
                         Latitude = 50.5m,
                         Longitude = 9.7m
                     }
-                }
+                },
+                PublicationPermitted = true
             },
             Mosmix = new MosmixSection
             {

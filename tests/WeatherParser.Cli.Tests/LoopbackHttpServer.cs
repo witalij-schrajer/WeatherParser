@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -10,6 +11,7 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
     private readonly Task _loop;
     private readonly string _baseUri;
     private int _requestCount;
+    private readonly ConcurrentQueue<string> _paths = new();
 
     public LoopbackHttpServer()
     {
@@ -29,7 +31,11 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
 
     public int RequestCount => Volatile.Read(ref _requestCount);
 
+    public IReadOnlyList<string> RequestedPaths => _paths.ToArray();
+
     public Func<string, (int StatusCode, byte[] Body)> Responder { get; set; } = _ => (404, Array.Empty<byte>());
+
+    public Func<string, string?> Redirect { get; set; } = _ => null;
 
     private async Task AcceptLoopAsync()
     {
@@ -46,10 +52,24 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
             }
 
             Interlocked.Increment(ref _requestCount);
-            var (status, body) = Responder(context.Request.Url!.PathAndQuery);
-            context.Response.StatusCode = status;
-            await context.Response.OutputStream.WriteAsync(body);
-            context.Response.Close();
+            var path = context.Request.Url!.PathAndQuery;
+            _paths.Enqueue(path);
+            
+            var redirectTarget = Redirect(path);
+            if (redirectTarget != null)
+            {
+                context.Response.StatusCode = 302;
+                context.Response.Headers.Add("Location", redirectTarget);
+                await context.Response.OutputStream.WriteAsync(Array.Empty<byte>());
+                context.Response.Close();
+            }
+            else
+            {
+                var (status, body) = Responder(path);
+                context.Response.StatusCode = status;
+                await context.Response.OutputStream.WriteAsync(body);
+                context.Response.Close();
+            }
         }
     }
 

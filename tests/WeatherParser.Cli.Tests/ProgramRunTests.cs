@@ -2,6 +2,7 @@ using FluentAssertions;
 using Moq;
 using WeatherParser.Cli.Arguments;
 using WeatherParser.Cli.Diagnostics;
+using System.Text;
 
 namespace WeatherParser.Cli.Tests;
 
@@ -144,43 +145,33 @@ public sealed class ProgramRunTests
     }
 
     /// <summary>
-    /// Verifies that main with help writes to console out and returns zero.
+    /// Verifies that main writes the help as UTF-8 without byte-order mark to standard output and returns zero (CL-12).
     /// </summary>
     [TestMethod]
-    public void Main_Help_WritesToConsoleOut_ReturnsZero()
+    public void Main_Help_WritesUtf8ToStandardOutput_ReturnsZero()
     {
-        var originalOut = Console.Out;
-        try
-        {
-            Console.SetOut(_stdout);
-            var exitCode = Program.Main(new[] { "--Help" });
-            exitCode.Should().Be(0);
-            _stdout.ToString().Should().Contain("Usage: WeatherParser --<command> [options]");
-        }
-        finally
-        {
-            Console.SetOut(originalOut);
-        }
+        using var output = new MemoryStream();
+        using var error = new MemoryStream();
+        var exitCode = Program.Main(new[] { "--Help" }, output, error);
+        exitCode.Should().Be(0);
+        var bytes = output.ToArray();
+        bytes.Take(3).Should().NotEqual(new byte[] { 0xEF, 0xBB, 0xBF });
+        new UTF8Encoding(false, true).GetString(bytes).Should().Contain("Usage: WeatherParser --<command> [options]");
+        error.Length.Should().Be(0);
     }
 
     /// <summary>
-    /// Verifies that main with invalid arguments writes error to console error and returns one.
+    /// Verifies that main with invalid arguments writes one UTF-8 log line to standard error and returns the usage code.
     /// </summary>
     [TestMethod]
     public void Main_InvalidArguments_WritesLogLine_ExitUsage()
     {
-        var originalErr = Console.Error;
-        try
-        {
-            Console.SetError(_stderr);
-            var exitCode = Program.Main(new[] { "--ParseDWD", "--Langitude", "1" });
-            exitCode.Should().Be(2);
-            _stderr.ToString().Should().Contain(" ERROR CLI-ARGUMENT-INVALID command=ParseDWD Unknown option '--Langitude'.");
-        }
-        finally
-        {
-            Console.SetError(originalErr);
-        }
+        using var output = new MemoryStream();
+        using var error = new MemoryStream();
+        var exitCode = Program.Main(new[] { "--ParseDWD", "--Langitude", "1" }, output, error);
+        exitCode.Should().Be(2);
+        new UTF8Encoding(false, true).GetString(error.ToArray()).Should().Contain(" ERROR CLI-ARGUMENT-INVALID command=ParseDWD Unknown option '--Langitude'.");
+        output.Length.Should().Be(0);
     }
 
     /// <summary>

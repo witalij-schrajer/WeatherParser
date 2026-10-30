@@ -9,6 +9,7 @@ using WeatherParser.Cli.Diagnostics;
 using WeatherParser.Cli.Tests.Configuration;
 using WeatherParser.Cli.Commands;
 using WeatherParser.Parsing.Exceptions;
+using WeatherParser.Cli.Output;
 
 namespace WeatherParser.Cli.Tests;
 
@@ -311,5 +312,32 @@ public sealed class CommandExecutorTests
 
         exitCode.Should().Be(2);
         _stderr.ToString().Should().Contain($" ERROR CLI-CONFIG-MISSING command={name} missing");
+    }
+
+
+    /// <summary>
+    /// Verifies that an existing output file is rejected after the validation phase and before the command runs, with the usage code (CL-11, CL-12).
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-12")]
+    public void Execute_OutputFileExists_RejectedBeforeTheHandler_ExitUsage()
+    {
+        var request = new ParseDwdRequest(new CommonOptions(OutputFormat.Json, "out.json", "c.json", false), "00044");
+        var destination = _mocks.Create<IOutputDestination>();
+        destination.Setup(d => d.Check(request.Common)).Throws(new CliException(CliErrorIds.OutputExists, "The output file already exists."));
+        SetupValidConfiguration(request);
+        _commandRegistrar.Setup(r => r.Register(It.IsAny<IServiceCollection>(), request)).Callback<IServiceCollection, CommandRequest>((services, _) =>
+        {
+            services.AddSingleton(_handler.Object);
+            services.AddSingleton(destination.Object);
+        });
+        _validator.Setup(v => v.Validate(It.IsAny<IServiceProvider>(), _configuration, request)).Returns(new ValidatedSettings("00044", null));
+        var subject = CreateSubject();
+
+        var exitCode = subject.Execute(request, _stdout, _stderr);
+
+        exitCode.Should().Be(2);
+        _stderr.ToString().Should().Contain(" ERROR CLI-OUTPUT-EXISTS command=ParseDWD The output file already exists.");
+        _stdout.ToString().Should().BeEmpty();
     }
 }

@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using WeatherParser.Cli.Arguments;
+using WeatherParser.Cli.Diagnostics;
 using WeatherParser.Parsing.Catalogs;
 using WeatherParser.Parsing.Exceptions;
 using WeatherParser.Parsing.Export;
@@ -71,6 +72,12 @@ public sealed class ConfigurationValidator : IConfigurationValidator
         {
             ValidateBroker(configuration.Mqtt?.Broker);
             credentials = _credentialProvider.GetCredentials(configuration.Mqtt!.Broker);
+            
+            // OW-14: OsthessenWetter values are not redistributed over MQTT until the source conditions are clarified (CL-16 A).
+            if (request is ParseOstHessenRequest && configuration.OsthessenWetter?.PublicationPermitted != true)
+            {
+                throw new CliException(CliErrorIds.OsthessenPublicationNotPermitted, "--ParseOstHessen does not publish over MQTT unless 'OsthessenWetter.PublicationPermitted' is true; set it only after the operator's consent or other clarified conditions are recorded (OW-14).");
+            }
         }
 
         string? stationId = null;
