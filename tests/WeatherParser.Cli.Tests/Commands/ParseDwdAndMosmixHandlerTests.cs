@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -236,6 +237,13 @@ public sealed class ParseDwdAndMosmixHandlerTests
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         var events = SchemaValidation.ValidateAgainstPackagedSchema(Encoding.UTF8.GetBytes(_stdout.ToString()));
         events.Should().BeEmpty();
+        var document = XDocument.Parse(
+            _stdout.ToString());
+        document.Root!.Name.LocalName.Should().Be("export_document");
+        var ns = document.Root.Name.Namespace;
+        document.Root.Element(ns + "forecast_runs")!.Elements().Should().ContainSingle();
+        document.Root.Element(ns + "observations")!.Elements().Should().BeEmpty();
+        _stdout.ToString().Should().Contain("dwd-mosmix-l:10637");
     }
 
     [TestMethod]

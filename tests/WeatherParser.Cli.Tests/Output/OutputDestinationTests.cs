@@ -98,6 +98,14 @@ public sealed class OutputDestinationTests
     }
 
     [TestMethod]
+    public async Task Check_InvalidPath_OutputFailed()
+    {
+        _files.Setup(f => f.GetFullPath(" ")).Throws(new ArgumentException("The path is empty."));
+
+        _subject.Invoking(s => s.Check(new CommonOptions(OutputFormat.Json, " ", null, false))).Should().Throw<CliException>().Which.ErrorId.Should().Be("CLI-OUTPUT-FAILED");
+    }
+
+    [TestMethod]
     public async Task WriteAsync_NoOutputFile_WholeDocumentToStdout()
     {
         var context = new CommandContext(new CommonOptions(OutputFormat.Json, null, null, false), null, _stdout);

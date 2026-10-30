@@ -184,7 +184,7 @@ public class ProcessOutputTests
     [TestCategory("CL-21")]
     public async Task Process_Redirect_IsRetrievalFailure_NotFollowed()
     {
-        var server = new LoopbackHttpServer
+        await using var server = new LoopbackHttpServer
         {
             Redirect = path => path == "/osthessen/" ? "/elsewhere/" : null
         };
@@ -321,5 +321,26 @@ public class ProcessOutputTests
         result.StandardError.Should().NotContain("CLI-OSTHESSEN-PUBLICATION-NOT-PERMITTED ");
 
         server.RequestCount.Should().BeGreaterThan(0);
+        result.TimedOut.Should().BeFalse();
+        result.ExitCode.Should().Be(1);
+        result.StandardError.Should().Contain(" ERROR CLI-MQTT-CONNECT-FAILED command=ParseOstHessen ");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-12")]
+    public async Task Process_OutputFile_InvalidPath_ExitTwo_ZeroRequests()
+    {
+        await using var server = OsthessenServer();
+        var config = ProcessFixtures.OsthessenConfiguration(server.BaseUri, mqtt: false, publicationPermitted: false);
+        var configPath = await WriteConfigAsync(config);
+
+        var result = await RunAsync("--ParseOstHessen", "--StationNamePattern", "*", "--Output", "json", "--OutputFile", " ", "--Config", configPath);
+
+        result.TimedOut.Should().BeFalse();
+        result.ExitCode.Should().Be(2);
+        result.StandardError.Should().Contain(" ERROR CLI-OUTPUT-FAILED command=ParseOstHessen ");
+        result.StandardError.Should().NotContain("CLI-UNEXPECTED");
+        server.RequestCount.Should().Be(0);
+        result.StandardOutput.Should().BeEmpty();
     }
 }

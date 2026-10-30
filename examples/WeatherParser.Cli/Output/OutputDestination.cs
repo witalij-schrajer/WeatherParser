@@ -34,7 +34,16 @@ public sealed class OutputDestination : IOutputDestination
             return;
         }
 
-        var destination = _files.GetFullPath(options.OutputFile);
+        string destination;
+        try
+        {
+            destination = _files.GetFullPath(options.OutputFile);
+        }
+        catch (Exception exception) when (exception is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            // An invalid path is a usage error of the caller, detected before any retrieval (CL-11, CL-12).
+            throw new CliException(CliErrorIds.OutputFailed, "The output file path is not a valid path.");
+        }
         if (_files.FileExists(destination) || _files.DirectoryExists(destination))
         {
             throw new CliException(CliErrorIds.OutputExists, "The output file already exists; an existing file is never overwritten.");

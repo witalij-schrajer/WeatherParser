@@ -20,6 +20,7 @@ using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Mqtt;
 using WeatherParser.Parsing.Observations.Osthessen;
 using WeatherParser.Parsing.Serialization;
+using System.Xml.Linq;
 
 [TestCategory("T-P3-11")]
 [TestClass]
@@ -104,6 +105,11 @@ public sealed class ParseOstHessenHandlerTests
         outcome.Should().Be(new CommandOutcome(2, 0, false));
         var xml = _stdout.ToString();
         SchemaValidation.ValidateAgainstPackagedSchema(Encoding.UTF8.GetBytes(xml)).Should().BeEmpty();
+        var document = XDocument.Parse(_stdout.ToString());
+        document.Root!.Name.LocalName.Should().Be("export_document");
+        var ns = document.Root.Name.Namespace;
+        document.Root.Element(ns + "observations")!.Elements().Should().HaveCount(2);
+        _stdout.ToString().Should().Contain("osthessenwetter:fulda").And.Contain("osthessenwetter:fulda-sued");
     }
 
     [TestMethod]
