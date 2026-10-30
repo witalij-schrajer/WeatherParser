@@ -1,10 +1,10 @@
 # P9 Handoff – From the Example CLI to Release Preparation
 
-**Status (2026-10-31): written with the P3.12 acceptance record; P3 accepted by the user on 2026-10-31 on candidate `ec915fc`; in effect once the user has merged the P3 pull request #16 into `develop`. P9 starts only on a separate instruction of the user.**
+**Status (2026-10-31): written with the P3.12 acceptance record; P3 accepted by the user on 2026-10-31 on candidate `ec915fc`; in effect: the user merged pull request #16 into `develop` on 2026-10-31 (merge commit `2ba5502`). P9 starts only on a separate instruction of the user.**
 
 ## 1. Foundation
 
-- Integration target for P9: the `develop` merge commit of pull request #16, or its documentation-only successor; the accepted implementation candidate is named in the [P3.12 acceptance record](P3_12_ACCEPTANCE.md).
+- Integration target for P9: the `develop` merge commit `2ba5502` of pull request #16, or its documentation-only successor; the accepted implementation candidate is named in the [P3.12 acceptance record](P3_12_ACCEPTANCE.md).
 - Platform: .NET SDK 10.0.402 (`global.json`), `net10.0`; verified on Windows x64, in hosted CI (Windows x64, Ubuntu x64, the Debian 13 ARM64 container) and on the NanoPi R76S (Debian 13.3, `linux-arm64`), [P3.11 record](P3_11_INTEGRATED_VERIFICATION.md).
 - Contracts in force: the [P2 export contract](../p2/P2_EXPORT_CONTRACT.md) (v1 frozen, additive changes only), the [P4 selection contract](../p4/P4_SELECTION_CONTRACT.md), the [P5 observation contract](../p5/P5_OBSERVATION_CONTRACT.md), the [P6 OsthessenWetter contract](../p6/P6_OSTHESSEN_CONTRACT.md), the [P7 forecast contract](../p7/P7_FORECAST_CONTRACT.md), the [P8 MQTT contract](../p8/P8_MQTT_CONTRACT.md) and the [P3 CLI contract](P3_CLI_CONTRACT.md) (CL-01 to CL-22, approved on 2026-10-29), with the REQ-086 amendment of CL-19 C (one coverage gate per assembly).
 - Package: `WeatherParser.Parsing` `0.1.0-initial`, unpublished and not byte-reproducible; the example CLI consumes it as a versioned package reference from the local feed `artifacts/local-nuget`.
