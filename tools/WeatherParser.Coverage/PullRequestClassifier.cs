@@ -29,4 +29,15 @@ public sealed class PullRequestClassifier : IPullRequestClassifier
 
     private static bool IsDocumentationPath(string path) =>
         path.EndsWith(".md", StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc />
+    public bool TouchesGatedInputs(ChangedFileList changes, IReadOnlyList<string> gatedInputs)
+    {
+        ArgumentNullException.ThrowIfNull(changes);
+        ArgumentNullException.ThrowIfNull(gatedInputs);
+
+        return changes.Paths.Any(path => gatedInputs.Any(input => input.EndsWith('/')
+            ? path.StartsWith(input, StringComparison.Ordinal)
+            : string.Equals(path, input, StringComparison.Ordinal)));
+    }
 }

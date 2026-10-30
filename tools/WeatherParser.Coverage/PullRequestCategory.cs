@@ -13,5 +13,10 @@ public enum PullRequestCategory
     /// <summary>
     /// Code changes.
     /// </summary>
-    Code
+    Code,
+
+    /// <summary>
+    /// Code changes that leave every gated input unchanged (REQ-086 amendment, CL-19 option C): equal coverage is accepted.
+    /// </summary>
+    GatedInputsUnchanged
 }

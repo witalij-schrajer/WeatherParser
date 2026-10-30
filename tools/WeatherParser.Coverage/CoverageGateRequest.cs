@@ -11,6 +11,7 @@ namespace WeatherParser.Coverage;
 /// <param name="ToolVersion">Tool version used to generate the report.</param>
 /// <param name="Exclusions">List of exclusion patterns for module filtering.</param>
 /// <param name="IsInitialBootstrap">True if this is the initial bootstrap run with no baseline yet.</param>
+/// <param name="GatedInputs">Gated inputs of the gate (REQ-086 amendment); null or empty when every code change requires strict improvement.</param>
 public sealed record CoverageGateRequest(
     string ReportPath,
     string? BaselinePath,
@@ -19,4 +20,5 @@ public sealed record CoverageGateRequest(
     string ToolName,
     string ToolVersion,
     IReadOnlyList<string> Exclusions,
-    bool IsInitialBootstrap);
+    bool IsInitialBootstrap,
+    IReadOnlyList<string>? GatedInputs = null);

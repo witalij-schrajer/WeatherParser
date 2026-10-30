@@ -1,6 +1,6 @@
 # P3.03 – CLI Project, Package Consumption and Composition Root: Implementation Plan
 
-**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.03 row of section 5 and the "Package boundary" and "Single command" rows of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); reconciled on 2026-10-29 with the [P3 CLI contract](P3_CLI_CONTRACT.md) approved by the user on 2026-10-29 ("Approve all"), section 10 of this plan; where this plan's earlier text differs, section 10 and the contract win.** Refines the P3.03 row of section 5 and the "Package boundary" and "Single command" rows of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: an executable example CLI `WeatherParser` that consumes the same-run package `WeatherParser.Parsing` through a versioned `PackageReference`, builds and validates one DI container per process, runs exactly one command handler and exits, plus its test project, its process-test harness and its integration into the solution, `ci-local.ps1`, hosted CI and the coverage gate of the approved CL-19 option.
@@ -69,3 +69,10 @@ Every slice: qwen3-coder generates tests first, then code, from briefs with the 
 - [ ] Every listed test green with recorded Red
 - [ ] The CLI builds and runs against the same-run package on Windows and in hosted CI
 - [ ] `ci-local.ps1` exit 0 with the CL-19 gate result recorded; consistency-table documents updated; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract (P3.02 S5)
+
+- CL-01 A: `examples/WeatherParser.Cli` and `tests/WeatherParser.Cli.Tests` join `WeatherParser.slnx` but not `WeatherParser.Ci.slnf`; they are restored, built and tested in the consumer stage after the pack step, with the package consumer's lock handling.
+- CL-19 C: S4 changes the coverage runner (`tools/WeatherParser.Coverage*`) and `ci-local.ps1` test-first for two gates: the library gate with the REQ-086 amendment (equal library coverage accepted only when none of `src/`, `Directory.Build.props`, `Directory.Packages.props`, `global.json`, `NuGet.Config`, `.editorconfig`, `coverage.runsettings` changed against the target) and the CLI assembly gate (`WeatherParser.dll`, at least 80 % without comparison while the target has no CLI assembly, afterwards the full rules). Red tests in S4: `Gate_LibraryUnchanged_EqualCoverageAccepted`, `Gate_LibraryBuildInputChanged_StrictImprovementRequired` (one case per listed input), `Gate_CliAssembly_BootstrapMinimumWithoutBaseline`, `Gate_CliAssembly_ComparedWhenTargetHasIt`, `Gate_BothGatesMustPass`.
+- CL-21 A: the composition root registers one `HttpClient` over a `SocketsHttpHandler` with `Timeout.InfiniteTimeSpan`, `AllowAutoRedirect` false, `AutomaticDecompression` none and the `User-Agent` `WeatherParser/<informational version>`; S2 adds `CompositionRoot_HttpClient_NoRedirectNoDecompressionInfiniteTimeout` and `CompositionRoot_HttpClient_UserAgent`.
+- CL-22 A: `Microsoft.Extensions.Logging` is pinned at 10.0.13 when first used (P3.06); P3.03 adds no new package pin.

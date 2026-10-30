@@ -747,6 +747,9 @@ function Invoke-BaselinePass() {
         # Write baseline using the current clone's runner
         $baselinePath = Join-Path $script:RunDir 'target/baseline.json'
         Invoke-Native 91 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'write-baseline', '--report', (Join-Path $script:RunDir 'target/coverage/coverage.xml'), '--commit', $script:TargetSha, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $targetSettings.microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--output', $baselinePath) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0)
+        if ($script:CliPresent -and (Test-CliPresent $targetDir)) {
+            Invoke-CliTargetStage -TargetDir $targetDir -ToolVersion $targetSettings.microsoftCodeCoverageVersion
+        }
     }
 
     Write-CiLog "Baseline pass complete"
@@ -757,7 +760,7 @@ function Write-ChangedFiles() {
     $script:CurrentStageCode = 90
     
     $changedFiles = Join-Path $script:RunDir 'changed-files.txt'
-    Invoke-Native 90 'git' @('diff', '--name-only', "$($script:TargetSha)...$($script:CommitSha)") -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0) -CaptureStdOut $changedFiles
+    Invoke-Native 90 'git' @('diff', '--name-only', '--no-renames', "$($script:TargetSha)...$($script:CommitSha)") -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0) -CaptureStdOut $changedFiles
 }
 
 function New-ResumePackage() {
@@ -872,7 +875,7 @@ function Invoke-GateStage() {
         $settingsSha256 = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData([IO.File]::ReadAllBytes($copiedSettings)))
         Write-CiLog "External baseline settings SHA-256: $settingsSha256"
         
-        $gate = Invoke-Native 90 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', $copiedBaseline, '--expected-baseline-commit', $script:TargetSha) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', $copiedBaseline, '--expected-baseline-commit', $script:TargetSha) + (Get-GatedInputArguments)) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
         switch ($gate.ExitCode) {
             1 {
                 $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
@@ -885,7 +888,7 @@ function Invoke-GateStage() {
         }
     } else {
         Write-CiLog "Running gate with two-pass baseline"
-        $gate = Invoke-Native 90 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', (Join-Path $script:RunDir 'target/baseline.json'), '--expected-baseline-commit', $script:TargetSha) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', (Join-Path $script:RunDir 'target/baseline.json'), '--expected-baseline-commit', $script:TargetSha) + (Get-GatedInputArguments)) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
         switch ($gate.ExitCode) {
             1 {
                 $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
@@ -920,6 +923,10 @@ function Invoke-GateStage() {
         if ($baseline.commitId -ne $script:CommitSha) {
             Fail 91 "Bootstrap baseline commit ID does not match expected commit"
         }
+    }
+
+    if ($script:CliPresent) {
+        Invoke-CliGate -ToolVersion $microsoftCodeCoverageVersion
     }
 
     Write-CiLog "Gate complete"
@@ -1159,6 +1166,8 @@ function Invoke-ResumeFrom() {
     Write-CiLog "Gate passed (resumed)"
 }
 
+. (Join-Path $PSScriptRoot 'ci-local.Cli.ps1')
+
 if ($ResumeFrom) {
     $script:ResumeConverterVersion = $null
     $script:ResumeConverterRid = $null
@@ -1341,11 +1350,21 @@ try {
     Invoke-TestStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
     Invoke-PackStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
     Invoke-ConsumerStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
+    $script:CliPresent = Test-CliPresent "$script:WorkDir/src"
+    if ($script:CliPresent -and $CollectOnly) {
+        Fail 20 "-CollectOnly does not support the example CLI coverage gate (CL-19); run the two-pass mode"
+    }
     
     if ($CollectOnly) {
         Write-CollectionSettings "$script:WorkDir/src" (Join-Path $script:RunDir 'current') 'not-run' 'not-run'
     } else {
         Invoke-ConversionStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current')
+    }
+
+    if ($script:CliPresent) {
+        $libraryVersion = Get-LibraryVersion "$script:WorkDir/src"
+        $packageHash = (Get-Content (Join-Path $script:RunDir 'package-hash.txt')).Trim()
+        Invoke-CliStage -CloneDir "$script:WorkDir/src" -PassDir (Join-Path $script:RunDir 'current') -NupkgPath (Join-Path $script:RunDir "WeatherParser.Parsing.$libraryVersion.nupkg") -PackageHash $packageHash -NuGetPackagesPath (Join-Path $script:WorkDir 'nuget-packages') -Version $libraryVersion
     }
     
     Invoke-BaselinePass

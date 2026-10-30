@@ -1,6 +1,6 @@
 # P3.07 – Command Handlers and Export Output: Implementation Plan
 
-**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.07 row of section 5 and the "Output", "Separation" and "Restrictions" rows of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); reconciled on 2026-10-29 with the [P3 CLI contract](P3_CLI_CONTRACT.md) approved by the user on 2026-10-29 ("Approve all"), section 10 of this plan; where this plan's earlier text differs, section 10 and the contract win.** Refines the P3.07 row of section 5 and the "Output", "Separation" and "Restrictions" rows of section 4 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the five command handlers that call the library services with the validated request, build the result of CL-09 and write it as one complete JSON or XML document to stdout or to a new file, with partial results and the restrictions of CL-16 and CL-17; MQTT output is wired through a publisher seam that P3.08 implements.
@@ -68,3 +68,11 @@ Every slice: roles and checks as in P3.03 section 5.
 - [ ] Every listed test green with recorded Red
 - [ ] Every command produces the CL-09 roots in JSON and XML (schema-valid) and the fake-publisher messages for MQTT
 - [ ] No file, broker or retrieval side effect on rejected input; coverage gate passed; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract (P3.02 S5)
+
+- CL-09: OsthessenWetter station failures become `ExportError` records with `osthessenwetter:<IOsthessenWetterStationIdentity.ToStationId(StationName)>`, including those carried by `OSTHESSEN-NO-USABLE-STATION` (envelope with errors only, exit `1`); added tests `ParseOstHessen_StationFailureNameUnmappable_StderrOnly_CountsAsFailed` and `ParseOstHessen_DuplicateFailureSource_StderrOnly`; `OSTHESSEN-STATION-ID-COLLISION`, `OSTHESSEN-FORMAT-CHANGED`, `OSTHESSEN-DEADLINE-EXCEEDED` and `OSTHESSEN-OPTIONS-INVALID` are command-level failures.
+- CL-03 refinement: S2 adds the process tests `ParseDwd_InvalidStationId_ExitTwo_ZeroRequests`, `ParseMosmix_InvalidMosmixId_ExitTwo_ZeroRequests` and `ParseOstHessen_InvalidPattern_ExitTwo_ZeroRequests`.
+- CL-12: temporary file `<destination>.<random>.tmp` created with `FileMode.CreateNew`, moved with `File.Move` without overwrite; a failed deletion of the temporary file is a warning.
+- CL-17 B: `--RefreshMosmixSEvidence` runs the refresh before the selection; added tests `SelectMosmix_Refresh_RunsRefreshThenSelection` and `SelectMosmix_RefreshFails_NoSelection_ExitOne`.
+- CL-21 A: handler tests assert that a redirect response is a retrieval failure (no second request).

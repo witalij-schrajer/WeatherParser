@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" PrivateAssets="all" />
+    <PackageReference Include="MSTest.TestAdapter" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeCoverage" PrivateAssets="all" />
+    <PackageReference Include="FluentAssertions" PrivateAssets="all" />
+    <PackageReference Include="Moq" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../examples/WeatherParser.Cli/WeatherParser.Cli.csproj" />
+    <!-- The signal host is started as a process; the alias keeps its linked copies of the CLI types out of the test code's namespaces. -->
+    <ProjectReference Include="../WeatherParser.Cli.SignalHost/WeatherParser.Cli.SignalHost.csproj" Aliases="SignalHost" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="WeatherParser.Parsing" GeneratePathProperty="true" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(PkgWeatherParser_Parsing)/schemas/export/v1/weatherparser-export-v1.xsd" Link="Schemas/weatherparser-export-v1.xsd" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

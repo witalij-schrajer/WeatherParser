@@ -10,10 +10,11 @@ public sealed class CommandLineParser : ICommandLineParser
     private const string WriteBaseline = "write-baseline";
     private const string Bootstrap = "bootstrap";
     private const string Exclude = "exclude";
+    private const string GatedInput = "gated-input";
 
     private static readonly HashSet<string> EvaluateOptions = new(StringComparer.Ordinal)
     {
-        "report", "baseline", "changed-files", "expected-baseline-commit", "tool-name", "tool-version", Exclude, Bootstrap,
+        "report", "baseline", "changed-files", "expected-baseline-commit", "tool-name", "tool-version", Exclude, Bootstrap, GatedInput,
     };
 
     private static readonly HashSet<string> WriteBaselineOptions = new(StringComparer.Ordinal)
@@ -46,6 +47,7 @@ public sealed class CommandLineParser : ICommandLineParser
 
         var values = new Dictionary<string, string>(StringComparer.Ordinal);
         var exclusions = new List<string>();
+        var gatedInputs = new List<string>();
         var bootstrap = false;
 
         var i = 1;
@@ -89,6 +91,12 @@ public sealed class CommandLineParser : ICommandLineParser
                 continue;
             }
 
+            if (name == GatedInput)
+            {
+                gatedInputs.Add(value);
+                continue;
+            }
+
             if (!values.TryAdd(name, value))
             {
                 return new UsageError($"Option '--{name}' is specified more than once.");
@@ -96,11 +104,11 @@ public sealed class CommandLineParser : ICommandLineParser
         }
 
         return command == Evaluate
-            ? CreateEvaluate(values, exclusions, bootstrap)
+            ? CreateEvaluate(values, exclusions, bootstrap, gatedInputs)
             : CreateWriteBaseline(values, exclusions);
     }
 
-    private static RunnerCommand CreateEvaluate(Dictionary<string, string> values, List<string> exclusions, bool bootstrap)
+    private static RunnerCommand CreateEvaluate(Dictionary<string, string> values, List<string> exclusions, bool bootstrap, List<string> gatedInputs)
     {
         if (FindMissing(values, Evaluate, "report", "changed-files", "tool-name", "tool-version") is { } missing)
         {
@@ -133,7 +141,8 @@ public sealed class CommandLineParser : ICommandLineParser
             values["tool-name"],
             values["tool-version"],
             exclusions,
-            bootstrap);
+            bootstrap,
+            gatedInputs);
     }
 
     private static RunnerCommand CreateWriteBaseline(Dictionary<string, string> values, List<string> exclusions)

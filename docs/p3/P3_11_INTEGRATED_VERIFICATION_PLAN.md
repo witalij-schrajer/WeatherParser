@@ -1,6 +1,6 @@
 # P3.11 – Integrated Verification: Implementation Plan
 
-**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines the P3.11 row of section 5 and section 7 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); reconciled on 2026-10-29 with the [P3 CLI contract](P3_CLI_CONTRACT.md) approved by the user on 2026-10-29 ("Approve all"), section 10 of this plan; where this plan's earlier text differs, section 10 and the contract win.** Refines the P3.11 row of section 5 and section 7 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: verify the P3 candidate on Windows, hosted CI and the NanoPi R76S, run the broker integration test against the authorized test broker, and run one authorized live check per command, with READY or NOT_READY.
@@ -63,3 +63,8 @@ No slice changes behavior, so there is no Red step; a defect found here is fixed
 ## 9. Acceptance Criteria
 - [ ] S1 to S3 passed with recorded evidence, including the app-host smoke tests and the real Ctrl+C, SIGINT and SIGTERM checks; S4 and S5 passed as authorized or explicitly open
 - [ ] Outcome READY or NOT_READY recorded; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract (P3.02 S5)
+
+- CL-19 C: READY needs both coverage gates (the library gate with the REQ-086 amendment and the CLI assembly gate) on Windows, hosted CI and the NanoPi R76S.
+- CL-20: live checks one per command in JSON mode, one MQTT run against the authorized test broker, `--ParseOstHessen` only in JSON mode; the app-host smoke tests and real signal checks of S1 and S3 are unchanged.

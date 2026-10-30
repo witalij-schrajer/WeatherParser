@@ -24,3 +24,8 @@ secrets/
 
 # Local AI-assistant scratch files (prompts, answers, run scripts)
 .copilot/temp/
+
+# Example CLI: local configuration and credential files (never committed; CL-06)
+weatherparser.json
+*.local.json
+*.credentials.json

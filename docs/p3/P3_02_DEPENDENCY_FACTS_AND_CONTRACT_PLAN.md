@@ -1,6 +1,6 @@
 # P3.02 – Dependency Facts and CLI Contract: Implementation Plan
 
-**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); not started: P3 starts only on a separate instruction, and the CL rows are decided in P3.02.** Refines section 3 and the P3.02 row of section 5 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
+**Status: planned on 2026-10-29; accepted by the user on 2026-10-29 with the phase plan ("Accept the plans"); started on 2026-10-29 (P3 started on the user's instruction "P3 Implmentation"): complete: dependency facts recorded, contract CL-01 to CL-22 approved by the user on 2026-10-29 ("Approve all"), plans reconciled ([contract](P3_CLI_CONTRACT.md)).** Refines section 3 and the P3.02 row of section 5 of [PHASE_P3_PLAN.md](../../PHASE_P3_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: record the facts of every candidate dependency of the CLI from official sources, decide CL-01 to CL-20 with the user, and reconcile the phase plan and the step plans P3.03 to P3.12 with the approved contract.

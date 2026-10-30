@@ -1,0 +1,89 @@
+{
+  "Dwd": {
+    "ReferenceStationId": "00000",
+    "Catalog": {
+      "AirTemperatureStationList": "https://dwd.example.invalid/climate_environment/CDC/observations_germany/climate/10_minutes/air_temperature/now/zehn_now_tu_Beschreibung_Stationen.txt",
+      "AirTemperatureNowDirectory": "https://dwd.example.invalid/climate_environment/CDC/observations_germany/climate/10_minutes/air_temperature/now/",
+      "WindStationList": "https://dwd.example.invalid/climate_environment/CDC/observations_germany/climate/10_minutes/wind/now/zehn_now_ff_Beschreibung_Stationen.txt",
+      "WindNowDirectory": "https://dwd.example.invalid/climate_environment/CDC/observations_germany/climate/10_minutes/wind/now/",
+      "PrecipitationStationList": "https://dwd.example.invalid/climate_environment/CDC/observations_germany/climate/10_minutes/precipitation/now/zehn_now_rr_Beschreibung_Stationen.txt",
+      "PrecipitationNowDirectory": "https://dwd.example.invalid/climate_environment/CDC/observations_germany/climate/10_minutes/precipitation/now/",
+      "SolarStationList": "https://dwd.example.invalid/climate_environment/CDC/observations_germany/climate/10_minutes/solar/now/zehn_now_sd_Beschreibung_Stationen.txt",
+      "SolarNowDirectory": "https://dwd.example.invalid/climate_environment/CDC/observations_germany/climate/10_minutes/solar/now/"
+    },
+    "Observation": {
+      "ObservationDeadline": "00:02:00"
+    }
+  },
+  "OsthessenWetter": {
+    "PageUri": "https://osthessen.example.invalid/messwerte/",
+    "PageDeadline": "00:01:00",
+    "Stations": [
+      {
+        "Name": "Example Station",
+        "Latitude": 50.5,
+        "Longitude": 9.7,
+        "AltitudeM": 300
+      }
+    ],
+    "PublicationPermitted": false
+  },
+  "Mosmix": {
+    "Catalog": {
+      "CatalogUri": "https://dwd.example.invalid/weather/lib/mosmix/mosmix_stationskatalog.cfg",
+      "MosmixLSingleStationsDirectory": "https://dwd.example.invalid/weather/local_forecasts/mos/MOSMIX_L/single_stations/",
+      "MosmixSAllStationsUri": "https://dwd.example.invalid/weather/local_forecasts/mos/MOSMIX_S/all_stations/kml/MOSMIX_S_LATEST_240.kmz",
+      "EvidenceCacheDirectory": "/var/lib/weatherparser/mosmix-evidence",
+      "MosmixSEvidenceMaxAge": "06:00:00"
+    },
+    "L": {
+      "SingleStationsDirectory": "https://dwd.example.invalid/weather/local_forecasts/mos/MOSMIX_L/single_stations/",
+      "ParseDeadline": "00:01:00",
+      "MaxRunAge": "08:00:00"
+    },
+    "S": {
+      "AllStationsUri": "https://dwd.example.invalid/weather/local_forecasts/mos/MOSMIX_S/all_stations/kml/MOSMIX_S_LATEST_240.kmz",
+      "ParseDeadline": "00:05:00",
+      "MaxRunAge": "02:00:00"
+    }
+  },
+  "Mqtt": {
+    "Broker": {
+      "Host": "broker.example.invalid",
+      "Port": 8883,
+      "ProtocolVersion": "5.0",
+      "KeepAlive": "00:00:30",
+      "CredentialsFile": "/etc/weatherparser/weatherparser.credentials.json",
+      "Tls": {
+        "CaFile": null
+      },
+      "AllowUnencrypted": false
+    },
+    "Topics": {
+      "Observation": {
+        "TopicTemplate": "haus/weather/measurements/{source}/state"
+      },
+      "Forecast": {
+        "TopicTemplate": "haus/weather/forecasts/{source}/state"
+      },
+      "CdcStationList": {
+        "TopicTemplate": "haus/weather/stations/dwd/selection"
+      },
+      "MosmixLocationList": {
+        "TopicTemplate": "haus/weather/stations/mosmix/selection"
+      }
+    },
+    "MaxPayloadBytes": null
+  },
+  "Limits": {
+    "ConnectTimeout": "00:00:10",
+    "PublishTimeout": "00:00:10",
+    "MaxPublishAttempts": 3,
+    "RetryDelay": "00:00:01",
+    "CommandDeadline": "00:10:00",
+    "ShutdownGracePeriod": "00:00:05"
+  },
+  "Http": {
+    "UserAgent": null
+  }
+}

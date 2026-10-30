@@ -16,6 +16,7 @@ public abstract record RunnerCommand;
 /// <param name="ToolVersion">Tool version used to generate the report.</param>
 /// <param name="Exclusions">List of exclusion patterns for module filtering.</param>
 /// <param name="Bootstrap">True if this is the initial bootstrap run with no baseline yet.</param>
+/// <param name="GatedInputs">List of gated inputs for coverage evaluation.</param>
 public sealed record EvaluateCommand(
     string ReportPath,
     string? BaselinePath,
@@ -24,7 +25,8 @@ public sealed record EvaluateCommand(
     string ToolName,
     string ToolVersion,
     IReadOnlyList<string> Exclusions,
-    bool Bootstrap) : RunnerCommand;
+    bool Bootstrap,
+    IReadOnlyList<string>? GatedInputs = null) : RunnerCommand;
 
 /// <summary>
 /// Command to write a baseline.
