@@ -104,11 +104,12 @@ public sealed class ProcessTests
     [TestMethod]
     public async Task Harness_TimeoutBoundsOutputReading_WhenDescendantKeepsPipeOpen()
     {
+        // The orphaned descendant keeps its working directory open after the test; the shared temporary directory is never deleted, so cleanup cannot fail on Windows.
         var sw = Stopwatch.StartNew();
         var result = await CliProcess.RunAsync(
             "pwsh",
             new[] { "-NoProfile", "-Command", "Start-Process -FilePath pwsh -ArgumentList '-NoProfile','-Command','Start-Sleep -Seconds 12' -NoNewWindow; exit 0" },
-            _workingDirectory,
+            Path.GetTempPath(),
             TimeSpan.FromSeconds(5));
         sw.Stop();
 
