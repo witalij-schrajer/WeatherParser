@@ -2,7 +2,7 @@
 
 The phase status (acceptances, merges and the binding phase sequence) is kept in [PHASE_STATUS.md](PHASE_STATUS.md).
 
-WeatherParser is primarily a planned C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts. The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
+WeatherParser is primarily a C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts (implemented; not yet published). The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
 ## NuGet primary product and example CLI
 
@@ -23,7 +23,7 @@ English is the sole maintained language for project documentation and instructio
 
 ## Project status
 
-As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md); its version 1 is frozen since the P2 acceptance on 2026-10-20 (only additive optional changes, C-03). Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). Since P4.09 (2026-10-23) it also selects CDC stations and MOSMIX forecast locations around a reference point (see [Station and location selection](#station-and-location-selection-library)). Since P5.07 (2026-10-25) it also parses the DWD 10-minute observations of one CDC station into an observation dataset (see [DWD observations](#dwd-observations-library)). Since P6.07 (2026-10-26) it also parses the OsthessenWetter measurement page into one observation dataset per matching station (see [OsthessenWetter observations](#osthessenwetter-observations-library)). **The executable CLI commands and the MQTT broker transport (publishing) are not implemented yet; the library's MQTT message serializer is (see below).** The commands below describe the planned interface and cannot be run yet. No public package publication is claimed. Since P7 (2026-10-28) the library also contains the MOSMIX_L and MOSMIX_S forecast parsers (`IMosmixLParser`, `IMosmixSParser`) with their retrieval sources, the secure KMZ/KML reader, the element mapping and the shared parse pipeline. Since P8 (2026-10-29) the library also contains the generic MQTT message serializer (`IMqttMessageSerializer`) with consumer-configured topic templates, topic and placeholder validation, QoS and retain, without any broker access (see [MQTT serializer](#mqtt-serializer-library)).
+As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md); its version 1 is frozen since the P2 acceptance on 2026-10-20 (only additive optional changes, C-03). Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). Since P4.09 (2026-10-23) it also selects CDC stations and MOSMIX forecast locations around a reference point (see [Station and location selection](#station-and-location-selection-library)). Since P5.07 (2026-10-25) it also parses the DWD 10-minute observations of one CDC station into an observation dataset (see [DWD observations](#dwd-observations-library)). Since P6.07 (2026-10-26) it also parses the OsthessenWetter measurement page into one observation dataset per matching station (see [OsthessenWetter observations](#osthessenwetter-observations-library)). Since P3 (2026-10-30) the repository also contains the [example CLI](#example-cli) with its five commands, JSON/XML output and the MQTT broker transport, verified with local fake sources and a local test broker; its live and target-hardware runs follow in P3.11. No public package publication is claimed. Since P7 (2026-10-28) the library also contains the MOSMIX_L and MOSMIX_S forecast parsers (`IMosmixLParser`, `IMosmixSParser`) with their retrieval sources, the secure KMZ/KML reader, the element mapping and the shared parse pipeline. Since P8 (2026-10-29) the library also contains the generic MQTT message serializer (`IMqttMessageSerializer`) with consumer-configured topic templates, topic and placeholder validation, QoS and retain, without any broker access (see [MQTT serializer](#mqtt-serializer-library)).
 
 ## Workflow role and execution
 
@@ -44,40 +44,152 @@ Binding platform policy (2026-10-14): .NET version 10 or newer and Debian versio
 
 Sources (checked 2026-10-14): [.NET support](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core), [.NET 10 OS matrix](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md), [Debian releases](https://www.debian.org/releases/).
 
-## Planned commands of the example CLI
+## Example CLI
+
+The example CLI `WeatherParser` (project `examples/WeatherParser.Cli`, assembly `WeatherParser.dll`) shows how an application consumes the package: it references `WeatherParser.Parsing` as a versioned package and contains no copied library code. Its contract is the [P3 CLI contract](docs/p3/P3_CLI_CONTRACT.md) (CL-01 to CL-22, approved on 2026-10-29). All commands, output modes, the MQTT transport and the cancellation behavior are implemented and verified with local fake sources and a local test broker on Windows and in the hosted CI jobs (Windows x64, Ubuntu x64, Debian 13 ARM64; [P3 verification record](docs/p3/P3_VERIFICATION.md)); the runs against the live sources and on the NanoPi R76S follow in P3.11. Build and run it as described in [CONTRIBUTING.md](CONTRIBUTING.md#example-cli-examplesweatherparsercli-p3); after a Release build it starts with `dotnet <output>/WeatherParser.dll`.
 
 ```text
 WeatherParser --<command> [options]
 ```
 
-| Command | Purpose | Functional options |
-|---|---|---|
-| `--SelectDWD` | Find suitable DWD stations and publish an MQTT station list | `--Latitude`, `--Longitude`, `--Altitude`, `--MaxDistance`, `--MaxAltDifference` |
-| `--ParseDWD` | Retrieve and publish observations for a DWD station | `--StationID`; otherwise the configured reference station |
-| `--ParseOstHessen` | Retrieve and publish observations for matching OsthessenWetter stations | `--StationNamePattern` |
-| `--SelectMOSMIX` | Find suitable MOSMIX forecast locations | `--Latitude`, `--Longitude`, `--Altitude`, `--MaxDistance`, `--MaxAltDifference` |
-| `--ParseMOSMIX` | Retrieve a forecast for a MOSMIX location | `--MOSMIXID`, `--Product` (`MOSMIX_S`/`MOSMIX_L`) |
+Each invocation runs exactly one command and then exits with an exit code (REQ-006). The CLI has no scheduler, no service mode and no retries across invocations; schedule it externally (see [Scheduling](#scheduling)). It reads nothing from standard input.
 
-Planned usage examples:
+### Commands and options
+
+Commands and options are written with two leading dashes and are matched without regard to case; each option is given at most once, and a value never starts with `--`. Exactly one command is required.
+
+| Command | Required options | Optional options |
+|---|---|---|
+| `--SelectDWD` | `--Latitude`, `--Longitude`, `--Altitude`, `--MaxDistance`, `--MaxAltDifference` | – |
+| `--ParseDWD` | – | `--StationID` |
+| `--ParseOstHessen` | `--StationNamePattern` | – |
+| `--SelectMOSMIX` | `--Latitude`, `--Longitude`, `--Altitude`, `--MaxDistance`, `--MaxAltDifference` | `--RefreshMosmixSEvidence` |
+| `--ParseMOSMIX` | `--Product`, `--MOSMIXID` | – |
+
+- `--SelectDWD` finds CDC stations around a reference point; `--SelectMOSMIX` finds MOSMIX forecast locations with the same filters in the MOSMIX catalog. `--Latitude` and `--Longitude` accept decimal degrees or degrees, minutes and seconds with hemisphere (one argument, for example `"50° 33′ 18″ N"`); `--Altitude` and `--MaxAltDifference` are metres, `--MaxDistance` kilometres, all parsed independently of the culture. An empty selection is a success.
+- `--ParseDWD` parses the 10-minute observations of one DWD station: `--StationID` (five digits with leading zeros) or, without it, `Dwd.ReferenceStationId` of the configuration. Without both the command fails with `CLI-DWD-STATION-MISSING` before any request; the CLI never picks a station itself.
+- `--ParseOstHessen` parses every OsthessenWetter station whose name matches the pattern (`*` and `?`); the coordinates and altitude of each station come from `OsthessenWetter.Stations`.
+- `--ParseMOSMIX` parses the latest forecast run of one MOSMIX location; `--Product` is `MOSMIX_S` or `MOSMIX_L` (no fallback to the other product).
+- `--RefreshMosmixSEvidence` first refreshes the stored MOSMIX_S evidence index (a download of the complete MOSMIX_S file, bounded by `Mosmix.Catalog.MosmixSRefreshDeadline`), then selects; a failed refresh fails the command with the library's ID and no selection runs. Without it the selection uses the stored index and logs `MOSMIX-S-EVIDENCE-MISSING` or `MOSMIX-S-EVIDENCE-STALE` as the library does (CL-17).
+
+Station IDs, MOSMIX IDs and patterns are checked by the library before any request; such a failure is a usage error (exit code 2) with the library's ID.
+
+### Global options
+
+| Option | Meaning |
+|---|---|
+| `--Output mqtt\|json\|xml` | Output mode; default `mqtt` |
+| `--OutputFile <path>` | Write the JSON or XML document to a new file (only with `json` or `xml`); without it the document goes to standard output |
+| `--Config <path>` | Configuration file; otherwise the environment variable `WEATHERPARSER_CONFIG` |
+| `--Verbose` | Also log debug messages |
+| `--Help` | Show the help, alone or with one command, and exit with 0 without reading a configuration |
 
 ```text
-WeatherParser --SelectDWD --Latitude 50.5549 --Longitude 9.6738 --Altitude 300 --MaxDistance 50 --MaxAltDifference 200
+WeatherParser --SelectDWD --Latitude 50.5549 --Longitude 9.6738 --Altitude 300 --MaxDistance 50 --MaxAltDifference 200 --Output json
 WeatherParser --SelectDWD --Latitude "50° 33′ 18″ N" --Longitude "9° 40′ 26″ E" --Altitude 300 --MaxDistance 50 --MaxAltDifference 200
-WeatherParser --ParseDWD --StationID <DWD-STATION-ID>
+WeatherParser --ParseDWD --StationID <DWD-STATION-ID> --Output json --OutputFile weather.json
 WeatherParser --ParseDWD
-WeatherParser --ParseOstHessen --StationNamePattern "Fulda*"
-WeatherParser --SelectMOSMIX --Latitude 50.5549 --Longitude 9.6738 --Altitude 300 --MaxDistance 50 --MaxAltDifference 200
-WeatherParser --ParseMOSMIX --Product MOSMIX_L --MOSMIXID <MOSMIX-ID>
+WeatherParser --ParseOstHessen --StationNamePattern "Fulda*" --Output xml --OutputFile weather.xml
+WeatherParser --SelectMOSMIX --Latitude 50.5549 --Longitude 9.6738 --Altitude 300 --MaxDistance 50 --MaxAltDifference 200 --RefreshMosmixSEvidence
+WeatherParser --ParseMOSMIX --Product MOSMIX_L --MOSMIXID <MOSMIX-ID> --Output json
 WeatherParser --ParseMOSMIX --Product MOSMIX_S --MOSMIXID <MOSMIX-ID>
 ```
 
-The example coordinates demonstrate two input formats and are not exactly equivalent. The altitude is an example value. The station pattern is illustrative and does not guarantee a match. `Longitude` and `AltitudeDifference` are the required spellings; `Langitude` and `AltitudeDiffeference` in the original description are typos.
+The example coordinates show the two input formats and are not exactly equivalent; the pattern is illustrative and does not guarantee a match.
 
-If `ParseDWD` has neither a `StationID` argument nor a configured reference station, the application must log an error and exit unsuccessfully. It must never select a station silently. An explicit CLI value overrides configuration.
+### Output
 
-## JSON and XML export (library implemented, CLI planned)
+- **JSON and XML** (`--Output json|xml`): one complete document per invocation, UTF-8 without byte-order mark, produced by the library's serializers from the same entities as the MQTT payloads. The selection commands write their standalone list (`cdc_station_list`, `mosmix_location_list`); the parse commands write one `export_document` with the observations or forecast runs and an `errors` list for failed items (a failed station with its `source`). A command-level failure writes no document. With `--OutputFile`, the destination must not exist and its directory must exist (checked before any request); the document is written to a temporary file in the same directory and then moved to the destination without overwriting; after a failure or cancellation neither a temporary file nor a destination is left. The document is held in memory completely before it is written. JSON and XML mode never read the `Mqtt` section and never contact a broker.
+- **MQTT** (`--Output mqtt`, default): one message per observation dataset, per complete forecast run or per station list, serialized by the library's MQTT serializer with the configured topic templates (see [Topic templates and placeholders](#topic-templates-and-placeholders)), QoS 1, retained for observations and forecasts, not retained for station lists. The topic mapping of the command's message type is checked before any request (`MQTT-MAPPING-MISSING` → `CLI-CONFIG-INVALID`). The broker connection opens only after the results exist; a message counts as published only after the broker's acknowledgment with a success reason code. After the last message one `CLI-PUBLICATION-SUMMARY` line names the counts published, failed and not attempted.
 
-All five commands support `--Output mqtt|json|xml`, with MQTT as the default. JSON and XML export require no MQTT broker. `--OutputFile <path>` writes a UTF-8 file; without a path, the complete document goes to standard output. Logs remain on standard error. Existing files are not silently overwritten.
+Logs always go to standard error, never to standard output.
+
+### Configuration
+
+The configuration is one JSON file, given by `--Config <path>` or, without it, the environment variable `WEATHERPARSER_CONFIG`; without both the command fails with `CLI-CONFIG-MISSING`. Member names are the property names of the library's option types and are case-sensitive; unknown members, comments and trailing commas are rejected (`CLI-CONFIG-INVALID`); an absent member keeps the library default. The committed example `examples/weatherparser.example.json` shows every section with placeholder hosts (`example.invalid`); copy it to a local file outside the repository or to an ignored name (`weatherparser.json`, `*.local.json`) and set the real endpoints there.
+
+| Section | Members | Used by |
+|---|---|---|
+| `Dwd` | `ReferenceStationId`; `Catalog` (the CDC station-list and directory URIs and limits of `CdcCatalogEndpoints`); `Observation` (`DwdObservationOptions`, for example `ObservationDeadline`) | `--SelectDWD`, `--ParseDWD` |
+| `OsthessenWetter` | `PageUri`, `PageDeadline`, `Stations` (name, latitude, longitude, optional `AltitudeM`), `PublicationPermitted` | `--ParseOstHessen` |
+| `Mosmix` | `Catalog` (`MosmixCatalogEndpoints`, including the evidence cache settings and `MosmixSRefreshDeadline`); `L` (`SingleStationsDirectory`, `ParseDeadline`, `MaxRunAge`); `S` (`AllStationsUri`, `ParseDeadline`, `MaxRunAge`) | `--SelectMOSMIX`, `--ParseMOSMIX` |
+| `Mqtt` | `Broker` (below); `Topics` with `Observation`, `Forecast`, `CdcStationList`, `MosmixLocationList`, each only with `TopicTemplate`; `MaxPayloadBytes` | MQTT mode only |
+| `Limits` | `ConnectTimeout` (default 10 s, 1 s to 2 min), `PublishTimeout` (10 s per attempt, 1 s to 2 min), `MaxPublishAttempts` (3, 1 to 5), `RetryDelay` (1 s, 0 to 30 s), `CommandDeadline` (10 min, 1 min to 1 h), `ShutdownGracePeriod` (5 s, 1 s to 30 s) | every command |
+| `Http` | `UserAgent` (1 to 200 printable ASCII characters; default `WeatherParser/<version>`) | every retrieving command |
+
+The library validates its own settings before any request (for example `ENDPOINT-INVALID`, `OSTHESSEN-OPTIONS-INVALID`, `MOSMIX-OPTIONS-INVALID`); such an ID is logged unchanged with `CLI-CONFIG-INVALID` and exit code 2. QoS and retain are not configurable. HTTP: one client per process without automatic redirects (a redirect is a retrieval failure), without automatic decompression and without a client-side timeout; every request is bounded by the library's own timeouts and deadlines and by `Limits.CommandDeadline`.
+
+### MQTT broker and credentials
+
+`Mqtt.Broker` has `Host` (required in MQTT mode), `Port` (default 8883 with TLS, 1883 without), `ProtocolVersion` (`5.0`, default, or `3.1.1`), `ClientId` (1 to 23 letters and digits; default `weatherparser` followed by 10 random hexadecimal characters per invocation), `KeepAlive` (default 30 s, 5 s to 5 min), `CredentialsFile`, `Tls.CaFile` and `AllowUnencrypted`. The client is MQTTnet 5.2.0.1603; every connection starts with a clean session.
+
+- **TLS** is on by default and validates the certificate chain and the host name; there is no setting that disables the validation. Without `Tls.CaFile` the system trust store is used; with it (a PEM file) that CA is the only trust anchor. `AllowUnencrypted: true` turns TLS off and logs one warning per invocation; use it only on a trusted local network.
+- **Credentials** come either from the environment variables `WEATHERPARSER_MQTT_USERNAME` and `WEATHERPARSER_MQTT_PASSWORD` (both or neither) or from the JSON file named by `Mqtt.Broker.CredentialsFile` with exactly the members `Username` and `Password`; both sources at once fail with `CLI-CREDENTIALS-INVALID`. On Linux the credential file must have no permission bits for group or others (for example mode `0600`); on Windows no permission check is made. Credentials are never accepted as arguments, never written into the configuration file, never logged and are read only in MQTT mode. Name the file `*.credentials.json` (ignored by Git) or keep it outside the repository.
+- **Attempts**: the first connection gets at most `MaxPublishAttempts` attempts, each bounded by `ConnectTimeout`; a refused connection (for example wrong credentials) is final. Each message gets at most `MaxPublishAttempts` attempts, each bounded by `PublishTimeout`, with `RetryDelay` in between and one reconnection when the connection was lost; a refusal by the broker (a failure reason code) is final; an acknowledged message is never sent again. A retried QoS 1 message may reach subscribers twice.
+- **MQTT 3.1.1 limitation**: a 3.1.1 broker acknowledges without a reason code, so it may acknowledge a message that it then drops (for example for a missing permission); with 5.0 such a refusal is reported as `CLI-MQTT-MESSAGE-REFUSED`. Use 5.0 where the broker supports it.
+
+Give the broker user of the CLI only the publish permissions for its configured topics.
+
+### OsthessenWetter values
+
+The source conditions of OsthessenWetter are not clarified (OW-14). `--ParseOstHessen --Output mqtt` therefore fails with `CLI-OSTHESSEN-PUBLICATION-NOT-PERMITTED` (exit code 2) before any request unless `OsthessenWetter.PublicationPermitted` is `true`. Set it only after the operator's consent or other clarified conditions are recorded. JSON and XML output stay possible for the local user; the values must not be redistributed.
+
+### Exit codes
+
+| Exit code | Meaning |
+|---|---|
+| `0` | Complete success, also an empty selection and `--Help` |
+| `1` | Complete failure at run time: no requested item succeeded (retrieval, command-level, output, connection or publication failure, an expired command deadline without a published message, an unexpected failure) |
+| `2` | Usage or configuration error, detected before any retrieval |
+| `3` | Partial failure: at least one requested item was exported or published and at least one failed |
+| `4` | Cancelled by SIGINT, SIGTERM or Ctrl+C, also when some items succeeded before the signal |
+
+An item whose output or publication failed counts as failed. Notices (for example `SELECTION-EMPTY`, `MOSMIX-RUN-STALE`) are logged and do not change the exit code.
+
+### Error IDs
+
+Every log line carries an ID. The CLI's own IDs are listed below; the IDs of the library (for example `STATION-ID-INVALID`, `OSTHESSEN-PAGE-UNAVAILABLE`, `MQTT-MAPPING-MISSING`) are passed through unchanged, in the logs and in `errors[].error_id` of the export document.
+
+| Error ID | Level | Meaning |
+|---|---|---|
+| `CLI-ARGUMENT-INVALID` | Error | Unknown, repeated or misplaced option, missing or invalid value (exit code 2) |
+| `CLI-COMMAND-MISSING` | Error | No command given (exit code 2) |
+| `CLI-COMMAND-CONFLICT` | Error | More than one command given (exit code 2) |
+| `CLI-CONFIG-MISSING` | Error | No configuration file given, or the file does not exist (exit code 2) |
+| `CLI-CONFIG-INVALID` | Error | The configuration is unreadable, malformed or out of range, or the library rejects a setting (exit code 2) |
+| `CLI-CREDENTIALS-INVALID` | Error | Broker credentials missing, incomplete, given twice or not protected (exit code 2) |
+| `CLI-DWD-STATION-MISSING` | Error | `--ParseDWD` without `--StationID` and without `Dwd.ReferenceStationId` (exit code 2) |
+| `CLI-OSTHESSEN-PUBLICATION-NOT-PERMITTED` | Error | `--ParseOstHessen` in MQTT mode without `OsthessenWetter.PublicationPermitted` (exit code 2) |
+| `CLI-OUTPUT-EXISTS` | Error | The output file exists (exit code 2), or was created while the command ran (exit code 1) |
+| `CLI-OUTPUT-FAILED` | Error, Warning | Invalid path or missing directory (exit code 2), write failure (exit code 1); a warning names a temporary file that could not be deleted |
+| `CLI-MQTT-CONNECT-FAILED` | Error, Warning | No connection to the broker after the attempts, or refused; a warning per failed attempt |
+| `CLI-MQTT-PUBLISH-FAILED` | Error, Warning | A message was not published (connection lost or not re-established); a warning per failed attempt |
+| `CLI-MQTT-PUBLISH-TIMEOUT` | Error, Warning | No acknowledgment within `PublishTimeout` in the last attempt; a warning per failed attempt |
+| `CLI-MQTT-MESSAGE-REFUSED` | Error | The broker refused a message with a failure reason code (MQTT 5.0) |
+| `CLI-CANCELLED` | Error, Warning | A shutdown signal cancelled the command (exit code 4); a warning when the signal arrives |
+| `CLI-DEADLINE-EXCEEDED` | Error, Warning | `Limits.CommandDeadline` expired; a warning before the retrieval when it is shorter than the command's library deadline |
+| `CLI-UNEXPECTED` | Error | An unexpected failure, for example a message with an unexpected QoS or retain flag (exit code 1) |
+| `CLI-PUBLICATION-SUMMARY` | Information | The counts published, failed and not attempted after an MQTT publication |
+
+Log lines have the form `<UTC time> UTC <LEVEL> <ID> command=<command> [source=<source>] <message>`, one line per entry (line breaks in a message are replaced by spaces), for example `2026-10-30T06:00:00 UTC ERROR CLI-CONFIG-MISSING command=ParseDWD No configuration file given; use --Config <path> or the environment variable WEATHERPARSER_CONFIG.` A line without an ID shows `-`. Exceptions appear as type and message, never with a stack trace; credentials and configuration objects are never logged. The minimum level is Information; `--Verbose` adds Debug.
+
+### Cancellation and deadlines
+
+SIGINT, SIGTERM and Ctrl+C cancel the running command through one token passed to every library, output and transport call: the temporary file is deleted, the publication summary is logged, `CLI-CANCELLED` is logged and the exit code is 4; an interrupted export or publication is never reported as successful. A second signal, or the end of `Limits.ShutdownGracePeriod` after the first, ends the process at once with 4. On Windows, .NET delivers a system shutdown (`CTRL_SHUTDOWN_EVENT`) as SIGTERM; the CLI then holds the shutdown event until its process ends, so that the command can finish its cleanup. `Limits.CommandDeadline` bounds retrieval, serialization, output and publication together; when it expires, `CLI-DEADLINE-EXCEEDED` is logged and the exit code is 1, or 3 when messages were already published. The library's own deadlines stay in force; a command deadline shorter than the command's library deadline is reported as a warning before the retrieval.
+
+### Scheduling
+
+Run the CLI from a scheduler and evaluate its exit code; no scheduler has to be installed for WeatherParser itself (REQ-007, REQ-008). Example cron entry (every 10 minutes, placeholder paths):
+
+```text
+*/10 * * * * WEATHERPARSER_CONFIG=/etc/weatherparser/weatherparser.json dotnet /opt/weatherparser/WeatherParser.dll --ParseDWD >> /var/log/weatherparser.log 2>&1
+```
+
+In n8n, an "Execute Command" node can run `dotnet /opt/weatherparser/WeatherParser.dll --ParseDWD --Output json`, read the JSON document from standard output and branch on the exit code (0 success, 3 partial, 1, 2 or 4 failure). Choose the interval per source: DWD 10-minute data every 10 minutes at most, `MOSMIX_L` after its runs at 03, 09, 15 and 21 UTC, `MOSMIX_S` hourly, and a MOSMIX_S evidence refresh rarely (it downloads the complete MOSMIX_S file).
+
+## JSON and XML export
+
+All five commands of the [example CLI](#example-cli) support `--Output mqtt|json|xml`, with MQTT as the default. JSON and XML export require no MQTT broker. `--OutputFile <path>` writes a UTF-8 file; without a path, the complete document goes to standard output. Logs remain on standard error. Existing files are never overwritten.
 
 ```text
 WeatherParser --ParseDWD --StationID <DWD-STATION-ID> --Output json --OutputFile weather.json
@@ -85,7 +197,7 @@ WeatherParser --ParseOstHessen --StationNamePattern "Fulda*" --Output xml --Outp
 WeatherParser --SelectDWD --Latitude 50.5549 --Longitude 9.6738 --Altitude 300 --MaxDistance 50 --MaxAltDifference 200 --Output json
 ```
 
-These commands are not implemented yet. Both export formats contain the same observation or forecast data and UTC timestamps as MQTT, including estimated-date markers. Multiple station results, station lists and forecast steps are grouped into one complete document. The library serializer MQTT payloads remain JSON.
+Both export formats contain the same observation or forecast data and UTC timestamps as MQTT, including estimated-date markers. Multiple station results, station lists and forecast steps are grouped into one complete document. The library serializer MQTT payloads remain JSON.
 
 ### Export entities and serialization
 
@@ -103,13 +215,13 @@ hPa and mmHg refer to the same original value and pressure reference. Lux and W/
 
 The inspected OsthessenWetter overview provides only a time of day per station. The project permits deriving the date from retrieval time and the source timezone `Europe/Berlin`, then converting to UTC and **marking the date as estimated**. Daylight-saving transitions and ambiguous times require explicit handling; the retrieval date does not prove that the observation is current.
 
-## MOSMIX forecasts (library implemented, CLI planned)
+## MOSMIX forecasts
 
-The library parsers for both products are implemented and documented in [MOSMIX forecasts (library)](#mosmix-forecasts-library) (P7; verified on Windows, hosted CI and the NanoPi R76S in P7.11 and accepted by the user on 2026-10-28 on candidate `2f1115b`; it is complete: pull request #11 merged into `develop` on 2026-10-28 (merge commit `20b2ef0`)). The CLI commands below remain planned (P3).
+The library parsers for both products are implemented and documented in [MOSMIX forecasts (library)](#mosmix-forecasts-library) (P7; verified on Windows, hosted CI and the NanoPi R76S in P7.11 and accepted by the user on 2026-10-28 on candidate `2f1115b`; it is complete: pull request #11 merged into `develop` on 2026-10-28 (merge commit `20b2ef0`)). The CLI commands `--SelectMOSMIX` and `--ParseMOSMIX` are part of the [example CLI](#example-cli).
 
 `--SelectMOSMIX` uses the same location/filter parameters as `--SelectDWD` but searches the DWD MOSMIX station catalog. Results include MOSMIX ID, name, coordinates, altitude, distance, altitude difference and verified forecast elements. MOSMIX IDs are independent, potentially alphanumeric identifiers and are not derived from CDC observation-station IDs.
 
-`--ParseMOSMIX --Product MOSMIX_S|MOSMIX_L --MOSMIXID <id>` retrieves the latest available forecast run for the location. Issue time (`issued_at`), retrieval time (`retrieved_at`) and forecast times (`forecasts[].valid_at`) remain separate and are output as UTC without a timezone suffix. Interval quantities retain their reference periods. Both product parsers are required; document their parameter mappings and freshness limits before implementation.
+`--ParseMOSMIX --Product MOSMIX_S|MOSMIX_L --MOSMIXID <id>` retrieves the latest available forecast run for the location. Issue time (`issued_at`), retrieval time (`retrieved_at`) and forecast times (`forecasts[].valid_at`) remain separate and are output as UTC without a timezone suffix. Interval quantities retain their reference periods. Both product parsers are required; their element mappings and freshness limits are documented in [MOSMIX forecasts (library)](#mosmix-forecasts-library).
 
 MQTT forecasts use `haus/weather/forecasts/<source>/state`; MOSMIX station lists use `haus/weather/stations/mosmix/selection`. The prefix is configurable. The example CLI configures the library serializer for one retained message per complete run, location and product; separate broker transport sends it. JSON and XML exports use the same normalized forecast contract.
 
@@ -479,7 +591,7 @@ QoS 1 can deliver a message more than once. A message is a duplicate of another 
 
 Station selection, source settings, MQTT connection and topics are configurable. Credentials belong in environment variables or local configuration excluded from Git. The public repository contains only examples without secrets or private operational data.
 
-The example CLI separate broker transport uses dedicated credentials and scoped topic permissions. Sources have separate observation or forecast messages; observations, forecasts and both station-list types use separate topics. Topic behavior is defined in the requirements.
+The example CLI's broker transport uses dedicated credentials and scoped topic permissions. Sources have separate observation or forecast messages; observations, forecasts and both station-list types use separate topics. The CLI's configuration file, environment variables and credential handling are described in [Example CLI](#example-cli).
 
 ## Data sources
 
@@ -509,7 +621,7 @@ The solution [WeatherParser.slnx](WeatherParser.slnx) contains twelve projects:
 
 ```text
 examples/
-  WeatherParser.Cli/                    # Example CLI `WeatherParser`, consumes the package (P3, in progress)
+  WeatherParser.Cli/                    # Example CLI `WeatherParser`, consumes the package (P3)
 src/
   WeatherParser.Parsing/                # Packable net10.0 library (local test package)
 tests/
