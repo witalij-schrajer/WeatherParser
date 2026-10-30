@@ -78,4 +78,20 @@ public class ExitCodePolicyTests
     {
         Assert.AreEqual(ExitCodes.Cancelled, _policy.ForOutcome(new CommandOutcome(2, 0, true)));
     }
+
+    [DataRow("CLI-OUTPUT-EXISTS")]
+    [DataRow("CLI-OUTPUT-FAILED")]
+    [DataRow("CLI-MQTT-PUBLISH-FAILED")]
+    [DataRow("STATION-UNKNOWN")]
+    [TestMethod]
+    public void Map_RuntimeErrors_ExitFailure(string errorId)
+    {
+        Assert.AreEqual(1, _policy.ForRuntimeError(errorId));
+    }
+
+    [TestMethod]
+    public void Map_RuntimeCancelled_ExitCancelled()
+    {
+        Assert.AreEqual(4, _policy.ForRuntimeError("CLI-CANCELLED"));
+    }
 }

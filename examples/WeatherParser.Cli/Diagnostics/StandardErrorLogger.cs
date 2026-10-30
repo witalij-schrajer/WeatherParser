@@ -7,6 +7,7 @@ namespace WeatherParser.Cli.Diagnostics;
 /// </summary>
 public sealed class StandardErrorLogger : ILogger
 {
+    private static readonly string[] SourceKeys = { "Source", "StationId", "MosmixId", "StationName" };
     private readonly TextWriter _standardError;
     private readonly TimeProvider _timeProvider;
     private readonly ILogLineFormatter _formatter;
@@ -44,7 +45,10 @@ public sealed class StandardErrorLogger : ILogger
             return;
         }
 
-        var source = (state as IEnumerable<KeyValuePair<string, object?>>)?.FirstOrDefault(pair => pair.Key == "Source").Value?.ToString();
+        var values = state as IEnumerable<KeyValuePair<string, object?>> ?? Array.Empty<KeyValuePair<string, object?>>();
+        var source = SourceKeys
+            .Select(key => values.FirstOrDefault(pair => pair.Key == key).Value?.ToString())
+            .FirstOrDefault(value => !string.IsNullOrEmpty(value));
         var line = _formatter.Format(_timeProvider.GetUtcNow(), logLevel, eventId.Name, _command, source, formatter(state, exception), exception);
         lock (_standardError)
         {

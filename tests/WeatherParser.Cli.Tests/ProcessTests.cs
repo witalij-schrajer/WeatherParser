@@ -131,7 +131,7 @@ public sealed class ProcessTests
         result.TimedOut.Should().BeFalse();
         result.ExitCode.Should().Be(2);
         result.StandardOutput.Should().BeEmpty();
-        result.StandardError.Should().Contain($" ERROR {errorId} command=- ");
+        result.StandardError.Should().Contain($" ERROR {errorId} command=");
         Directory.EnumerateFileSystemEntries(_workingDirectory).Should().BeEmpty();
     }
 

@@ -90,4 +90,41 @@ public class StandardErrorLoggerProviderTests
         writer.ToString().Should().EndWith($" INFORMATION X-ID command=ParseDWD plain state{Environment.NewLine}");
         writer.ToString().Should().NotContain("source=");
     }
+
+    [TestMethod]
+    [TestCategory("T-P3-08")]
+    public void Logger_LibrarySourceKeys_WrittenAsSource()
+    {
+        var writer = new StringWriter();
+        var provider = new StandardErrorLoggerProvider(writer, new FakeClock(new DateTimeOffset(2026, 10, 29, 19, 5, 7, TimeSpan.Zero)), new LogLineFormatter(), LogLevel.Warning, "ParseDWD");
+        var logger = provider.CreateLogger("Test");
+
+        // Test StationId
+        logger.LogWarning("Station {StationId} unknown.", "00044");
+        writer.ToString().Should().Contain(" command=ParseDWD source=00044 ");
+
+        writer.GetStringBuilder().Clear();
+
+        // Test MosmixId
+        logger.LogWarning("Location {MosmixId} unknown.", "10637");
+        writer.ToString().Should().Contain(" command=ParseDWD source=10637 ");
+
+        writer.GetStringBuilder().Clear();
+
+        // Test StationName
+        logger.LogWarning("Station {StationName} offline.", "Fulda");
+        writer.ToString().Should().Contain(" command=ParseDWD source=Fulda ");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-08")]
+    public void Logger_SourceKeyPreferredOverStationId()
+    {
+        var writer = new StringWriter();
+        var provider = new StandardErrorLoggerProvider(writer, new FakeClock(new DateTimeOffset(2026, 10, 29, 19, 5, 7, TimeSpan.Zero)), new LogLineFormatter(), LogLevel.Warning, "ParseDWD");
+        var logger = provider.CreateLogger("Test");
+
+        logger.LogWarning("{Source} {StationId}", "dwd:00044", "00044");
+        writer.ToString().Should().Contain(" command=ParseDWD source=dwd:00044 ");
+    }
 }

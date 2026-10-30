@@ -115,7 +115,7 @@ public sealed class ProgramRunTests
         var exitCode = Run("--SelectDWD");
         exitCode.Should().Be(2);
 
-        _stderr.ToString().Should().Contain(" ERROR COORDINATE-INVALID command=- Latitude out of range. Use --Help for the commands and options.");
+        _stderr.ToString().Should().Contain(" ERROR COORDINATE-INVALID command=SelectDWD Latitude out of range. Use --Help for the commands and options.");
         _stderr.ToString().TrimEnd().Should().NotContain("\n");
         _stdout.ToString().Should().BeEmpty();
     }
@@ -199,8 +199,52 @@ public sealed class ProgramRunTests
         var exitCode = Run("--ParseDWD");
 
         exitCode.Should().Be(1);
-        _stderr.ToString().Should().Contain(" ERROR CLI-UNEXPECTED command=- The command failed unexpectedly. InvalidOperationException: boom");
+        _stderr.ToString().Should().Contain(" ERROR CLI-UNEXPECTED command=ParseDWD The command failed unexpectedly. InvalidOperationException: boom");
         _stderr.ToString().Should().NotContain(" at ");
         _stdout.ToString().Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-09")]
+    public void Run_ValidatorUsageError_NamesTheCommand()
+    {
+        var parsed = new ParsedCommandLine(CliCommand.SelectDwd, new Dictionary<string, string>(), new HashSet<string>());
+        _parser.Setup(p => p.Parse(It.Is<IReadOnlyList<string>>(a => a.SequenceEqual(new[] { "--SelectDWD" }))))
+            .Returns(parsed);
+        _validator.Setup(v => v.Validate(parsed))
+            .Returns(new UsageError("COORDINATE-INVALID", "Latitude out of range."));
+
+        var exitCode = Run("--SelectDWD");
+        exitCode.Should().Be(2);
+
+        _stderr.ToString().Should().Contain(" ERROR COORDINATE-INVALID command=SelectDWD Latitude out of range.");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-09")]
+    public void Run_ParserThrows_ExitFailureWithCliUnexpected()
+    {
+        _parser.Setup(p => p.Parse(It.IsAny<IReadOnlyList<string>>())).Throws(new InvalidOperationException("parser broke"));
+
+        var exitCode = Run("--ParseDWD");
+        exitCode.Should().Be(1);
+
+        _stderr.ToString().Should().Contain(" ERROR CLI-UNEXPECTED command=- The command failed unexpectedly. InvalidOperationException: parser broke");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-09")]
+    public void Run_ValidatorThrows_ExitFailureNamesTheCommand()
+    {
+        var parsed = new ParsedCommandLine(CliCommand.ParseMosmix, new Dictionary<string, string>(), new HashSet<string>());
+        _parser.Setup(p => p.Parse(It.Is<IReadOnlyList<string>>(a => a.SequenceEqual(new[] { "--ParseMOSMIX" }))))
+            .Returns(parsed);
+        _validator.Setup(v => v.Validate(parsed))
+            .Throws(new InvalidOperationException("validator broke"));
+
+        var exitCode = Run("--ParseMOSMIX");
+        exitCode.Should().Be(1);
+
+        _stderr.ToString().Should().Contain(" ERROR CLI-UNEXPECTED command=ParseMOSMIX The command failed unexpectedly. InvalidOperationException: validator broke");
     }
 }

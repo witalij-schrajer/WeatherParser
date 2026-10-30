@@ -54,4 +54,41 @@ public class LogLineFormatterTests
         result.Should().EndWith("Failed. InvalidOperationException: boom second line");
         result.Should().NotContain(" at ");
     }
+
+    [TestMethod]
+    [TestCategory("T-P3-08")]
+    public void LogLine_AggregateException_NoInnerMessages()
+    {
+        var formatter = new LogLineFormatter();
+        var exception = new AggregateException(new InvalidOperationException("inner-secret-7c1"), new ArgumentException("second"));
+        var result = formatter.Format(_timestamp, LogLevel.Information, null, "-", null, "Failed.", exception);
+        result.Should().EndWith("Failed. AggregateException: 2 inner exception(s)");
+        result.Should().NotContain("inner-secret-7c1");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-08")]
+    public void LogLine_ThrownException_NoStackTrace()
+    {
+        var formatter = new LogLineFormatter();
+
+        static Exception Throw() 
+        { 
+            try 
+            { 
+                throw new InvalidOperationException("boom"); 
+            } 
+            catch (Exception e) 
+            { 
+                return e; 
+            } 
+        }
+
+        var exception = Throw();
+        exception.StackTrace.Should().NotBeNull();
+
+        var result = formatter.Format(_timestamp, LogLevel.Information, null, "-", null, "Failed.", exception);
+        result.Should().EndWith("Failed. InvalidOperationException: boom");
+        result.Should().NotContain(" at ");
+    }
 }

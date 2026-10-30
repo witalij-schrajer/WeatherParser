@@ -28,4 +28,15 @@ public class FailureClassifierTests
     {
         Assert.AreEqual(expected, _classifier.Classify(command, errorId));
     }
+
+    [DataRow(CliCommand.ParseDwd, "CLI-CONFIG-INVALID")]
+    [DataRow(CliCommand.ParseMosmix, "CLI-OUTPUT-FAILED")]
+    [DataRow(CliCommand.ParseOstHessen, "CLI-MQTT-CONNECT-FAILED")]
+    [DataRow(CliCommand.ParseDwd, "CLI-UNEXPECTED")]
+    [DataRow(CliCommand.ParseMosmix, "CLI-DEADLINE-EXCEEDED")]
+    [TestMethod]
+    public void Map_CliFailures_AreCommandLevelForEveryCommand(CliCommand command, string errorId)
+    {
+        Assert.AreEqual(FailureKind.CommandLevel, _classifier.Classify(command, errorId));
+    }
 }

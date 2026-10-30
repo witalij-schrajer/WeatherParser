@@ -11,7 +11,12 @@ public sealed class LogLineFormatter : ILogLineFormatter
     /// <inheritdoc />
     public string Format(DateTimeOffset timestamp, LogLevel level, string? eventName, string command, string? source, string message, Exception? exception)
     {
-        var text = exception is null ? message : $"{message} {exception.GetType().Name}: {exception.Message}";
+        var text = exception switch
+        {
+            null => message,
+            AggregateException aggregate => $"{message} {nameof(AggregateException)}: {aggregate.InnerExceptions.Count} inner exception(s)",
+            _ => $"{message} {exception.GetType().Name}: {exception.Message}",
+        };
         var sourcePart = string.IsNullOrEmpty(source) ? string.Empty : $" source={source}";
         var id = string.IsNullOrEmpty(eventName) ? "-" : eventName;
         var time = timestamp.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);

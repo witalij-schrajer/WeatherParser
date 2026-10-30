@@ -27,4 +27,7 @@ public class ExitCodePolicy : IExitCodePolicy
         : outcome.Failed == 0 ? ExitCodes.Success
         : outcome.Succeeded == 0 ? ExitCodes.Failure
         : ExitCodes.Partial;
+
+    /// <inheritdoc />
+    public int ForRuntimeError(string errorId) => errorId == CliErrorIds.Cancelled ? ExitCodes.Cancelled : ExitCodes.Failure;
 }

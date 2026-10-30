@@ -60,38 +60,50 @@ public static class Program
         ArgumentNullException.ThrowIfNull(executor);
         ArgumentNullException.ThrowIfNull(exitCodePolicy);
 
-        var result = parser.Parse(args);
-        if (result is ParsedCommandLine parsed)
+        var command = "-";
+        try
         {
-            result = validator.Validate(parsed);
-        }
+            var result = parser.Parse(args);
+            if (result is ParsedCommandLine parsed)
+            {
+                command = CommandName(parsed.Command);
+                result = validator.Validate(parsed);
+            }
 
-        switch (result)
-        {
-            case HelpRequest { Command: null }:
-                helpWriter.WriteHelp(standardOutput);
-                return 0;
-            case HelpRequest help:
-                helpWriter.WriteCommandHelp(standardOutput, help.Command.Value);
-                return 0;
-            case UsageError error:
-                using (var provider = new StandardErrorLoggerProvider(standardError, TimeProvider.System, new LogLineFormatter(), LogLevel.Information, "-"))
-                {
-                    provider.CreateLogger("WeatherParser.Cli").LogError(new EventId(0, error.ErrorId), "{Message} Use --Help for the commands and options.", error.Message);
-                }
-
-                return exitCodePolicy.ForError(error.ErrorId);
-            default:
-                try
-                {
+            switch (result)
+            {
+                case HelpRequest { Command: null }:
+                    helpWriter.WriteHelp(standardOutput);
+                    return ExitCodes.Success;
+                case HelpRequest help:
+                    helpWriter.WriteCommandHelp(standardOutput, help.Command.Value);
+                    return ExitCodes.Success;
+                case UsageError error:
+                    Log(standardError, command, logger => logger.LogError(new EventId(0, error.ErrorId), "{Message} Use --Help for the commands and options.", error.Message));
+                    return exitCodePolicy.ForError(error.ErrorId);
+                default:
                     return executor.Execute(((ValidatedCommand)result).Request, standardOutput, standardError);
-                }
-                catch (Exception exception)
-                {
-                    using var provider = new StandardErrorLoggerProvider(standardError, TimeProvider.System, new LogLineFormatter(), LogLevel.Information, "-");
-                    provider.CreateLogger("WeatherParser.Cli").LogError(new EventId(0, CliErrorIds.Unexpected), exception, "The command failed unexpectedly.");
-                    return ExitCodes.Failure;
-                }
+            }
+        }
+        catch (Exception exception)
+        {
+            Log(standardError, command, logger => logger.LogError(new EventId(0, CliErrorIds.Unexpected), exception, "The command failed unexpectedly."));
+            return ExitCodes.Failure;
         }
     }
+
+    private static void Log(TextWriter standardError, string command, Action<ILogger> write)
+    {
+        using var provider = new StandardErrorLoggerProvider(standardError, TimeProvider.System, new LogLineFormatter(), LogLevel.Information, command);
+        write(provider.CreateLogger("WeatherParser.Cli"));
+    }
+
+    private static string CommandName(CliCommand command) => command switch
+    {
+        CliCommand.SelectDwd => "SelectDWD",
+        CliCommand.ParseDwd => "ParseDWD",
+        CliCommand.ParseOstHessen => "ParseOstHessen",
+        CliCommand.SelectMosmix => "SelectMOSMIX",
+        _ => "ParseMOSMIX",
+    };
 }
