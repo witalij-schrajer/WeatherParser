@@ -174,6 +174,8 @@ English guides cover configuration and cron/n8n invocation without installing in
 
 **Acceptance:** Independent NuGet use, public library API, configurable-topic MQTT serialization and DI integration are primary product evidence; the CLI remains an example. ARM64 runtime evidence, successful functional acceptance, complete documentation and explicit limitations. Mocks or cross-publish do not replace target-system acceptance.
 
+Phase plan (written on 2026-10-31 on the user's instruction, without step plans; under review, not yet accepted): [PHASE_P9_PLAN.md](PHASE_P9_PLAN.md). P9 starts only on a separate instruction.
+
 ## Definition of done per change
 
 - Identify requirement and interface/entity contract; no unrequested features.
