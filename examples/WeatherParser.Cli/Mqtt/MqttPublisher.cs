@@ -38,6 +38,13 @@ public sealed class MqttPublisher : IMessagePublisher
         ConnectionGone,
     }
 
+    // One summary line per publication run, also when nothing was published (CL-15).
+    private PublicationReport Summarize(PublicationReport report)
+    {
+        _logger.LogInformation(new EventId(0, CliErrorIds.PublicationSummary), "Publication summary: published={Published} failed={Failed} not_attempted={NotAttempted}.", report.Published, report.Failed, report.NotAttempted);
+        return report;
+    }
+
     /// <inheritdoc/>
     public async Task<PublicationReport> PublishAllAsync(IReadOnlyList<MqttMessage> messages, MqttPublicationSettings settings, CancellationToken cancellationToken)
     {
@@ -45,7 +52,7 @@ public sealed class MqttPublisher : IMessagePublisher
         ArgumentNullException.ThrowIfNull(settings);
         if (messages.Count == 0)
         {
-            return new PublicationReport(0, 0, 0);
+            return Summarize(new PublicationReport(0, 0, 0));
         }
 
         // Every message is checked before the connection opens (REQ-062, CL-13).
@@ -60,7 +67,16 @@ public sealed class MqttPublisher : IMessagePublisher
             _logger.LogWarning("TLS is disabled by 'Mqtt.Broker.AllowUnencrypted'; the broker connection is unencrypted.");
         }
 
-        await ConnectFirstAsync(settings, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await ConnectFirstAsync(settings, cancellationToken).ConfigureAwait(false);
+        }
+        catch (CliException)
+        {
+            // Without a connection no message is attempted (CL-15).
+            Summarize(new PublicationReport(0, 0, messages.Count));
+            throw;
+        }
 
         var published = 0;
         var failed = 0;
@@ -95,7 +111,7 @@ public sealed class MqttPublisher : IMessagePublisher
             _logger.LogDebug("The MQTT disconnect failed: {Message}", exception.Message);
         }
 
-        return new PublicationReport(published, failed, notAttempted);
+        return Summarize(new PublicationReport(published, failed, notAttempted));
     }
 
     // The first connection gets at most MaxPublishAttempts attempts; a refusal is final (CL-14).
