@@ -12,6 +12,7 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
     private readonly string _baseUri;
     private int _requestCount;
     private readonly ConcurrentQueue<string> _paths = new();
+    private readonly ConcurrentQueue<string?> _userAgents = new();
     private readonly CancellationTokenSource _stopping = new();
 
     public LoopbackHttpServer()
@@ -33,6 +34,8 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
     public int RequestCount => Volatile.Read(ref _requestCount);
 
     public IReadOnlyList<string> RequestedPaths => _paths.ToArray();
+
+    public IReadOnlyList<string?> UserAgents => _userAgents.ToArray();
 
     public Func<string, (int StatusCode, byte[] Body)> Responder { get; set; } = _ => (404, Array.Empty<byte>());
 
@@ -58,6 +61,7 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
             Interlocked.Increment(ref _requestCount);
             var path = context.Request.Url!.PathAndQuery;
             _paths.Enqueue(path);
+            _userAgents.Enqueue(context.Request.UserAgent);
             
             try
             {

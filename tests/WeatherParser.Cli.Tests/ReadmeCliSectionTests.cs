@@ -10,6 +10,9 @@ using WeatherParser.Cli.Arguments;
 using WeatherParser.Cli.Configuration;
 using WeatherParser.Cli.Diagnostics;
 using WeatherParser.Cli.Tests.Configuration;
+using WeatherParser.Cli.Commands;
+using WeatherParser.Parsing.Export;
+using WeatherParser.Parsing.Geography;
 
 namespace WeatherParser.Cli.Tests;
 
@@ -58,9 +61,11 @@ public class ReadmeCliSectionTests
         rows.Count.Should().Be(5);
 
         var globalOptions = GlobalOptionNames.ToHashSet();
+        var commandNames = new List<string>();
         foreach (var row in rows)
         {
             var commandName = OptionNames(row[0]).Single();
+            commandNames.Add(commandName);
             var command = ParseCommand(commandName);
             var helpText = HelpText(command);
             var allOptions = OptionNames(helpText).Except(globalOptions).Except(new[] { commandName }).ToHashSet();
@@ -71,6 +76,9 @@ public class ReadmeCliSectionTests
             var documentedOptions = requiredOptions.Union(optionalOptions);
             documentedOptions.Should().Equal(allOptions);
         }
+
+        commandNames.Should().BeEquivalentTo("--SelectDWD", "--ParseDWD", "--ParseOstHessen", "--SelectMOSMIX", "--ParseMOSMIX");
+        commandNames.Should().OnlyHaveUniqueItems();
 
         // Check global options
         section = CliSection("### Global options");
@@ -83,6 +91,31 @@ public class ReadmeCliSectionTests
         foreach (var option in globalOptions)
         {
             OptionNames(fullHelp).Should().Contain(option);
+        }
+
+        // Validate command line parsing for each row
+        var parser = new CommandLineParser();
+        foreach (var row in rows)
+        {
+            var commandName = OptionNames(row[0]).Single();
+            var requiredOptions = string.IsNullOrEmpty(row[1]) || row[1] == "–" ? new List<string>() : OptionNames(row[1]).ToList();
+            var optionalOptions = string.IsNullOrEmpty(row[2]) || row[2] == "–" ? new List<string>() : OptionNames(row[2]).ToList();
+
+            // Test that required options are sufficient
+            parser.Parse(CommandLine(commandName, requiredOptions)).Should().BeOfType<ParsedCommandLine>();
+
+            // Test that missing any required option results in usage error
+            foreach (var option in requiredOptions)
+            {
+                var reducedOptions = requiredOptions.Where(o => o != option).ToList();
+                parser.Parse(CommandLine(commandName, reducedOptions)).Should().BeOfType<UsageError>();
+            }
+
+            // Test that adding optional options works
+            foreach (var option in optionalOptions)
+            {
+                parser.Parse(CommandLine(commandName, requiredOptions.Append(option))).Should().BeOfType<ParsedCommandLine>();
+            }
         }
     }
 
@@ -97,9 +130,34 @@ public class ReadmeCliSectionTests
 
         var configPath = Path.Combine(RepositoryRoot(), "examples", "weatherparser.example.json");
         var configuration = new ConfigurationLoader(new EnvironmentReader()).Load(configPath);
-        foreach (var command in Enum.GetValues<CliCommand>())
+        
+        // The example targets Debian; its evidence cache directory is a Linux path, which is not absolute on Windows.
+        if (OperatingSystem.IsWindows())
         {
-            using var provider = TestConfigurations.Build(configuration, TestConfigurations.Request(command, OutputFormat.Json));
+            configuration.Mosmix!.Catalog!.EvidenceCacheDirectory = Path.GetTempPath();
+        }
+        
+        var requests = new List<CommandRequest>
+        {
+            TestConfigurations.Request(CliCommand.SelectDwd, OutputFormat.Json),
+            TestConfigurations.Request(CliCommand.ParseDwd, OutputFormat.Json),
+            TestConfigurations.Request(CliCommand.ParseOstHessen, OutputFormat.Json),
+            TestConfigurations.Request(CliCommand.SelectMosmix, OutputFormat.Json),
+            TestConfigurations.Request(CliCommand.ParseMosmix, OutputFormat.Json),
+            new ParseMosmixRequest(new CommonOptions(OutputFormat.Json, null, null, false), MosmixProduct.MosmixS, "10637"),
+            new SelectMosmixRequest(new CommonOptions(OutputFormat.Json, null, null, false), new SearchParameterFactory().Create(50.5m, 9.7m, 300m, 50m, 200m), true)
+        };
+
+        foreach (var request in requests)
+        {
+            using var provider = CompositionRoot.Build(services =>
+            {
+                new ConfigurationRegistrar().Register(services, configuration, request);
+                new CommandRegistrar().Register(services, request);
+                services.AddLogging();
+            });
+            var validator = new ConfigurationValidator(new ReferenceStationResolver(), new CredentialProvider(new EnvironmentReader(), new FileModeReader()));
+            ((Action)(() => validator.Validate(provider, configuration, request))).Should().NotThrow($"the example configuration must be valid for {request.GetType().Name}");
         }
     }
 
@@ -231,4 +289,10 @@ public class ReadmeCliSectionTests
             _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
         };
     }
+
+    // A command line of the command with the given options; --Product gets MOSMIX_L, every other value option the value 1, the flag --RefreshMosmixSEvidence none.
+    private static string[] CommandLine(string command, IEnumerable<string> options) =>
+        new[] { command }.Concat(options.SelectMany(option => option == "--RefreshMosmixSEvidence"
+            ? new[] { option }
+            : new[] { option, option == "--Product" ? "MOSMIX_L" : "1" })).ToArray();
 }

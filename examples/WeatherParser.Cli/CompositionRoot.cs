@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using WeatherParser.Parsing.Parsing;
+using WeatherParser.Cli.Configuration;
 
 namespace WeatherParser.Cli;
 
@@ -22,7 +23,8 @@ public static class CompositionRoot
 
         var services = new ServiceCollection();
         services.AddWeatherParsing();
-        services.AddSingleton(_ => CreateHttpClient());
+        // The configuration registrar registers the Http section; without it the default User-Agent is used.
+        services.AddSingleton(provider => CreateHttpClient(provider.GetService<HttpSection>()?.UserAgent));
         services.AddSingleton(TimeProvider.System);
         registerConfiguration(services);
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
@@ -38,17 +40,27 @@ public static class CompositionRoot
     }
 
     /// <summary>
-    /// Creates the HttpClient of CL-21 over CreateHttpHandler with an infinite client timeout and the User-Agent WeatherParser/<informational version>.
+    /// Creates the HttpClient of CL-21 over CreateHttpHandler with an infinite client timeout and the User-Agent Http.UserAgent, or WeatherParser/<informational version> without it.
     /// </summary>
+    /// <param name="userAgent">The configured Http.UserAgent, or null for the default WeatherParser/<informational version> (CL-21).</param>
     /// <returns>The created HttpClient.</returns>
-    public static HttpClient CreateHttpClient()
+    public static HttpClient CreateHttpClient(string? userAgent)
     {
         var handler = CreateHttpHandler();
         var client = new HttpClient(handler, disposeHandler: true) { Timeout = Timeout.InfiniteTimeSpan };
 
         var version = typeof(CompositionRoot).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
 
-        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("WeatherParser", version));
+        if (userAgent is null)
+        {
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("WeatherParser", version));
+        }
+        else
+        {
+            // The configured value is sent exactly as written; the configuration validator allows only 1 to 200 printable ASCII characters (CL-21).
+            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
+        }
+
         return client;
     }
 }

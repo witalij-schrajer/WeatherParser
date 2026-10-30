@@ -84,7 +84,7 @@ public sealed class CompositionRootTests
     [TestMethod]
     public void CompositionRoot_HttpClient_InfiniteTimeoutAndUserAgent()
     {
-        using var client = CompositionRoot.CreateHttpClient();
+        using var client = CompositionRoot.CreateHttpClient(null);
         client.Timeout.Should().Be(Timeout.InfiniteTimeSpan);
         client.DefaultRequestHeaders.UserAgent.ToString().Should().StartWith("WeatherParser/");
         client.DefaultRequestHeaders.UserAgent.ToString().Length.Should().BeGreaterThan("WeatherParser/".Length);

@@ -41,6 +41,7 @@ public sealed class ConfigurationRegistrar : IConfigurationRegistrar
         services.AddSingleton(new MosmixSForecastEndpoints { AllStationsUri = mosmixS?.AllStationsUri });
         services.AddSingleton(mosmixSOptions);
         services.AddSingleton(request.Common.Output == OutputFormat.Mqtt ? CreateTopicOptions(configuration.Mqtt) : new MqttTopicOptions());
+        services.AddSingleton(configuration.Http ?? new HttpSection());
     }
 
     private static MqttTopicOptions CreateTopicOptions(MqttSection? mqtt)
