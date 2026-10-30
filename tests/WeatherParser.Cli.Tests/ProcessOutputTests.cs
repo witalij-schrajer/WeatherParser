@@ -334,7 +334,7 @@ public class ProcessOutputTests
         var config = ProcessFixtures.OsthessenConfiguration(server.BaseUri, mqtt: false, publicationPermitted: false);
         var configPath = await WriteConfigAsync(config);
 
-        var result = await RunAsync("--ParseOstHessen", "--StationNamePattern", "*", "--Output", "json", "--OutputFile", " ", "--Config", configPath);
+        var result = await RunAsync("--ParseOstHessen", "--StationNamePattern", "*", "--Output", "json", "--OutputFile", "", "--Config", configPath);
 
         result.TimedOut.Should().BeFalse();
         result.ExitCode.Should().Be(2);
