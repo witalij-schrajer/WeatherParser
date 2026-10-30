@@ -97,14 +97,38 @@ public sealed class MqttPublicationSummaryTests
     }
 
     [TestMethod]
-    public async Task Summary_MessageCheckFailure_NoSummary()
+    public async Task Summary_MessageCheckFailure_CountsEveryMessageNotAttempted()
     {
         var message = new MqttMessage("t/1", new byte[] { 1 }, MqttQualityOfService.AtMostOnce, true, MqttMessageType.Observation);
 
         Func<Task> act = async () => await _subject.PublishAllAsync(new[] { message }, _settings, CancellationToken.None);
 
         (await act.Should().ThrowAsync<CliException>()).Which.ErrorId.Should().Be("CLI-UNEXPECTED");
-        SummaryLines().Should().Be(0);
+        SummaryLines().Should().Be(1);
+        _stderr.ToString().Should().Contain("Publication summary: published=0 failed=0 not_attempted=1.");
+    }
+
+    [TestMethod]
+    public async Task Summary_CancelledDuringPublication_CountsAndDisconnects()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var first = Message("t/1");
+        var second = Message("t/2");
+
+        _adapter.Setup(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        _adapter.Setup(a => a.PublishAsync(It.Is<MqttMessage>(m => ReferenceEquals(m, first)), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MqttPublishAcknowledgment(true, "Success"));
+        _adapter.Setup(a => a.PublishAsync(It.Is<MqttMessage>(m => ReferenceEquals(m, second)), It.IsAny<CancellationToken>()))
+            .Callback(() => cancellation.Cancel())
+            .Returns(new TaskCompletionSource<MqttPublishAcknowledgment>().Task);
+        _adapter.Setup(a => a.DisconnectAsync(It.Is<CancellationToken>(t => !t.IsCancellationRequested))).Returns(Task.CompletedTask);
+
+        await ((Func<Task>)(() => _subject.PublishAllAsync(new[] { first, second }, _settings, cancellation.Token)))
+            .Should().ThrowAsync<OperationCanceledException>();
+
+        SummaryLines().Should().Be(1);
+        _stderr.ToString().Should().Contain("Publication summary: published=1 failed=0 not_attempted=1.");
+        _adapter.Verify(a => a.DisconnectAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [TestMethod]

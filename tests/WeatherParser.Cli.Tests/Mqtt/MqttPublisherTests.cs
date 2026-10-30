@@ -236,4 +236,45 @@ public sealed class MqttPublisherTests
             .Should().ThrowAsync<ArgumentNullException>()
             .WithParameterName("settings");
     }
+
+    [TestMethod]
+    public async Task Connect_FailureText_CredentialsRedacted()
+    {
+        _settings = Settings(useTls: true, credentials: new BrokerCredentials("marker-user-4711", "marker-pass-4711"));
+        const string Leaky = "failure for marker-user-4711 with marker-pass-4711";
+        _adapter.Setup(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>())).ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionFailed, Leaky));
+        var act = () => _subject.PublishAllAsync(new[] { Message("t/1") }, _settings, CancellationToken.None);
+        var exception = (await act.Should().ThrowAsync<CliException>()).Which;
+        exception.ErrorId.Should().Be("CLI-MQTT-CONNECT-FAILED");
+        exception.Message.Should().NotContain("marker-user-4711").And.NotContain("marker-pass-4711");
+        exception.Message.Should().Contain("[redacted]");
+    }
+
+    [TestMethod]
+    public async Task Publish_FailureText_CredentialsRedacted()
+    {
+        _settings = Settings(useTls: true, credentials: new BrokerCredentials("marker-user-4711", "marker-pass-4711"));
+        SetupConnect();
+        SetupDisconnect();
+        var message = Message("t/1");
+        _adapter.Setup(a => a.PublishAsync(It.Is<MqttMessage>(m => ReferenceEquals(m, message)), It.IsAny<CancellationToken>())).ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionLost, "failure for marker-user-4711 with marker-pass-4711"));
+        var report = await _subject.PublishAllAsync(new[] { message }, _settings, CancellationToken.None);
+        report.Should().Be(new PublicationReport(0, 1, 0));
+        _stderr.ToString().Should().NotContain("marker-user-4711").And.NotContain("marker-pass-4711");
+        _stderr.ToString().Should().Contain("[redacted]");
+    }
+
+    [TestMethod]
+    public async Task Disconnect_FailureText_CredentialsRedacted()
+    {
+        _settings = Settings(useTls: true, credentials: new BrokerCredentials("marker-user-4711", "marker-pass-4711"));
+        SetupConnect();
+        var message = Message("t/1");
+        SetupAcknowledgment(message, true);
+        _adapter.Setup(a => a.DisconnectAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionLost, "failure for marker-user-4711 with marker-pass-4711"));
+        var report = await _subject.PublishAllAsync(new[] { message }, _settings, CancellationToken.None);
+        report.Should().Be(new PublicationReport(1, 0, 0));
+        _stderr.ToString().Should().NotContain("marker-user-4711").And.NotContain("marker-pass-4711");
+        _stderr.ToString().Should().Contain("[redacted]");
+    }
 }

@@ -38,80 +38,97 @@ public sealed class MqttPublisher : IMessagePublisher
         ConnectionGone,
     }
 
-    // One summary line per publication run, also when nothing was published (CL-15).
-    private PublicationReport Summarize(PublicationReport report)
-    {
-        _logger.LogInformation(new EventId(0, CliErrorIds.PublicationSummary), "Publication summary: published={Published} failed={Failed} not_attempted={NotAttempted}.", report.Published, report.Failed, report.NotAttempted);
-        return report;
-    }
-
     /// <inheritdoc/>
     public async Task<PublicationReport> PublishAllAsync(IReadOnlyList<MqttMessage> messages, MqttPublicationSettings settings, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(messages);
         ArgumentNullException.ThrowIfNull(settings);
-        if (messages.Count == 0)
-        {
-            return Summarize(new PublicationReport(0, 0, 0));
-        }
-
-        // Every message is checked before the connection opens (REQ-062, CL-13).
-        foreach (var message in messages)
-        {
-            CheckMessage(message);
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-        if (!settings.Connection.UseTls)
-        {
-            _logger.LogWarning("TLS is disabled by 'Mqtt.Broker.AllowUnencrypted'; the broker connection is unencrypted.");
-        }
-
-        try
-        {
-            await ConnectFirstAsync(settings, cancellationToken).ConfigureAwait(false);
-        }
-        catch (CliException)
-        {
-            // Without a connection no message is attempted (CL-15).
-            Summarize(new PublicationReport(0, 0, messages.Count));
-            throw;
-        }
-
         var published = 0;
         var failed = 0;
-        var notAttempted = 0;
-        var suspect = false;
-        for (var index = 0; index < messages.Count; index++)
-        {
-            var (result, stillSuspect) = await PublishOneAsync(messages[index], settings, suspect, cancellationToken).ConfigureAwait(false);
-            suspect = stillSuspect;
-            if (result == MessageResult.Published)
-            {
-                published++;
-                continue;
-            }
-
-            failed++;
-            if (result == MessageResult.ConnectionGone)
-            {
-                // The connection could not be re-established: the remaining messages are never sent (CL-15).
-                notAttempted = messages.Count - index - 1;
-                break;
-            }
-        }
-
+        var connected = false;
         try
         {
-            await _adapter.DisconnectAsync(cancellationToken).ConfigureAwait(false);
+            if (messages.Count == 0)
+            {
+                return new PublicationReport(0, 0, 0);
+            }
+
+            // Every message is checked before the connection opens (REQ-062, CL-13).
+            foreach (var message in messages)
+            {
+                CheckMessage(message);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!settings.Connection.UseTls)
+            {
+                _logger.LogWarning("TLS is disabled by 'Mqtt.Broker.AllowUnencrypted'; the broker connection is unencrypted.");
+            }
+
+            await ConnectFirstAsync(settings, cancellationToken).ConfigureAwait(false);
+            connected = true;
+            var suspect = false;
+            foreach (var message in messages)
+            {
+                var (result, stillSuspect) = await PublishOneAsync(message, settings, suspect, cancellationToken).ConfigureAwait(false);
+                suspect = stillSuspect;
+                if (result == MessageResult.Published)
+                {
+                    published++;
+                    continue;
+                }
+
+                failed++;
+                if (result == MessageResult.ConnectionGone)
+                {
+                    // The connection could not be re-established: the remaining messages are never sent (CL-15).
+                    break;
+                }
+            }
+
+            return new PublicationReport(published, failed, messages.Count - published - failed);
         }
-        catch (MqttTransportException exception)
+        finally
         {
-            // Every message already has its result; a failed disconnect does not change it.
-            _logger.LogDebug("The MQTT disconnect failed: {Message}", exception.Message);
+            if (connected)
+            {
+                await DisconnectAsync(settings).ConfigureAwait(false);
+            }
+
+            // One summary line per publication run on every exit path; messages neither published nor failed are not attempted (CL-15).
+            _logger.LogInformation(new EventId(0, CliErrorIds.PublicationSummary), "Publication summary: published={Published} failed={Failed} not_attempted={NotAttempted}.", published, failed, messages.Count - published - failed);
+        }
+    }
+
+    // The normal disconnect has its own bound, so that it also runs after a cancellation; a failure does not change the result.
+    private async Task DisconnectAsync(MqttPublicationSettings settings)
+    {
+        using var timer = new CancellationTokenSource(settings.Limits.ConnectTimeout, _timeProvider);
+        try
+        {
+            await _adapter.DisconnectAsync(timer.Token).WaitAsync(timer.Token).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is MqttTransportException or OperationCanceledException)
+        {
+            _logger.LogDebug("The MQTT disconnect failed: {Message}", Redact(exception.Message, settings.Connection));
+        }
+    }
+
+    // Transport texts are forwarded only without the configured credentials (CL-06, REQ-072).
+    private static string Redact(string text, MqttConnectionSettings connection)
+    {
+        if (connection.Credentials is { } credentials)
+        {
+            foreach (var secret in new[] { credentials.Password, credentials.Username })
+            {
+                if (!string.IsNullOrEmpty(secret))
+                {
+                    text = text.Replace(secret, "[redacted]", StringComparison.Ordinal);
+                }
+            }
         }
 
-        return Summarize(new PublicationReport(published, failed, notAttempted));
+        return text;
     }
 
     // The first connection gets at most MaxPublishAttempts attempts; a refusal is final (CL-14).
@@ -128,7 +145,7 @@ public sealed class MqttPublisher : IMessagePublisher
             catch (MqttTransportException exception) when (exception.Failure == MqttTransportFailure.ConnectionRefused || attempt >= limits.MaxPublishAttempts)
             {
                 // The adapter's message never contains credentials (CL-06).
-                throw new CliException(CliErrorIds.MqttConnectFailed, $"The connection to the MQTT broker {settings.Connection.Host}:{settings.Connection.Port} failed after {attempt} attempt(s) ({exception.Failure}): {exception.Message}");
+                throw new CliException(CliErrorIds.MqttConnectFailed, $"The connection to the MQTT broker {settings.Connection.Host}:{settings.Connection.Port} failed after {attempt} attempt(s) ({exception.Failure}): {Redact(exception.Message, settings.Connection)}");
             }
             catch (MqttTransportException exception)
             {
@@ -178,7 +195,7 @@ public sealed class MqttPublisher : IMessagePublisher
                 catch (MqttTransportException exception)
                 {
                     errorId = CliErrorIds.MqttPublishFailed;
-                    reason = $"reconnection failed ({exception.Failure}): {exception.Message}";
+                    reason = $"reconnection failed ({exception.Failure}): {Redact(exception.Message, settings.Connection)}";
                     reconnectFailed = true;
                     if (exception.Failure == MqttTransportFailure.ConnectionRefused)
                     {
@@ -213,7 +230,7 @@ public sealed class MqttPublisher : IMessagePublisher
             catch (MqttTransportException exception)
             {
                 errorId = CliErrorIds.MqttPublishFailed;
-                reason = $"{exception.Failure}: {exception.Message}";
+                reason = $"{exception.Failure}: {Redact(exception.Message, settings.Connection)}";
                 suspect = true;
             }
 
