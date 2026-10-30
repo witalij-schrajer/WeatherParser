@@ -1,6 +1,6 @@
 # P9 Handoff – From the Example CLI to Release Preparation
 
-**Status (2026-10-30): written with the P3.12 acceptance record (draft); in effect once the user has accepted P3 and merged the P3 pull request #16 into `develop`. P9 starts only on a separate instruction of the user.**
+**Status (2026-10-31): written with the P3.12 acceptance record; P3 accepted by the user on 2026-10-31 on candidate `ec915fc`; in effect once the user has merged the P3 pull request #16 into `develop`. P9 starts only on a separate instruction of the user.**
 
 ## 1. Foundation
 

@@ -1,12 +1,12 @@
 # P3.12 – P3 Acceptance Record
 
-**Status (2026-10-31): draft for the user's acceptance; the evidence audit is ACCEPTED (section 5); the automatic Codex review of pull request #16 and the user's decision follow (sections 7 and 8).** Plan: [P3_12_ACCEPTANCE_HANDOFF_PLAN.md](P3_12_ACCEPTANCE_HANDOFF_PLAN.md). Handoff: [P9_HANDOFF.md](P9_HANDOFF.md).
+**Status (2026-10-31): P3 accepted by the user on 2026-10-31 on candidate `ec915fc` ("Accept, no rerun", section 6), after the user's pull request review was fixed and the automatic Codex review of pull request #16 reached 0 findings (section 7); P3 is complete once the user has merged pull request #16; P9 starts only on a separate instruction.** Plan: [P3_12_ACCEPTANCE_HANDOFF_PLAN.md](P3_12_ACCEPTANCE_HANDOFF_PLAN.md). Handoff: [P9_HANDOFF.md](P9_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
 | Item | Value |
 |---|---|
-| Implementation candidate | `60bd2a1`, branch `features/develop/P3`: the fixes of the user's pull request review of `b50d3ef` (the CL-06 owner check on the opened credential file; an explicit empty `--StationID` is validated by the library instead of falling back to the configuration; [verification record](P3_VERIFICATION.md) section 12) on top of `b50d3ef` (the P3.11 review fix: the CLI gate excludes the signal test host). The integrated verification ran READY on `5696357`; on `60bd2a1` S1 (Windows) and S2 (hosted CI) were repeated, S3 to S5 (NanoPi R76S, broker, live checks) were not, because a new candidate needs new authorizations ([P3.11 record](P3_11_INTEGRATED_VERIFICATION.md) section 10) |
+| Implementation candidate | `ec915fc`, branch `features/develop/P3`: `60bd2a1` plus one README sentence from review round 2 (a signal after the output is complete leaves the result unchanged; hosted CI run 41143909734 green on all jobs, README package check passed); `60bd2a1` holds the fixes of the user's pull request review of `b50d3ef` (the CL-06 owner check on the opened credential file; an explicit empty `--StationID` is validated by the library instead of falling back to the configuration; [verification record](P3_VERIFICATION.md) section 12) on top of `b50d3ef` (the P3.11 review fix: the CLI gate excludes the signal test host). The integrated verification ran READY on `5696357`; on `60bd2a1` S1 (Windows) and S2 (hosted CI) were repeated, S3 to S5 (NanoPi R76S, broker, live checks) were not, because a new candidate needs new authorizations ([P3.11 record](P3_11_INTEGRATED_VERIFICATION.md) section 10) |
 | Pull request | [#16](https://github.com/witalij-schrajer/WeatherParser/pull/16) into `develop`, draft since the P3.02 approval |
 | Integration target | PR base `e623a834bdb2902cec930258a62a48302f626716` (`e623a83`), unchanged since P3.01 |
 | Contract | [P3 CLI contract](P3_CLI_CONTRACT.md) CL-01 to CL-22, approved on 2026-10-29 ("Approve all") |
@@ -48,7 +48,7 @@ All rows CL-01 to CL-22 are approved and implemented as recorded in the verifica
 | Item | Owner |
 |---|---|
 | CL-06 owner check: implemented after the pull request review (verification record section 12). Changing a file's owner needs root, so `FileModeReaderTests.Read_FileOwnedByAnotherUser_ReportsThatOwner` and `ProcessCredentialFileTests.Process_CredentialFileOwnedByAnotherUser_*` run only as root (the hosted Debian 13 ARM64 container) and are skipped elsewhere; the owner comparison itself is tested everywhere with a test double. Unix systems other than Linux are not supported targets (no `statx`) | Recorded |
-| P3.11 S3 to S5 (NanoPi R76S run, broker integration tests, live checks) ran on `5696357`, not on the candidate `60bd2a1`; repeating them needs the user's authorization | The user's disposition with the acceptance |
+| P3.11 S3 to S5 (NanoPi R76S run, broker integration tests, live checks) ran on `5696357`, not on the candidate `ec915fc` | Decided by the user with the acceptance: no rerun (section 6) |
 | The CLI-only package pins in `examples/Directory.Packages.props` (`Microsoft.Extensions.Logging` 10.0.13, MQTTnet 5.2.0.1603) need the user's confirmation | The user |
 | CL-19 C asymmetry: the CLI gate has no gated-input exception, so a library-only pull request must strictly improve the CLI gate too; platform-specific CLI code prevents an exact 100 % on every platform | The user |
 | CL-20 wording: the standard process tests use a test-owned fake broker endpoint (`ClosingTcpListener`) instead of a "fake publisher", because a separately started CLI process cannot be handed a fake without a test hook in the product | Reported to the user |
@@ -58,8 +58,8 @@ All rows CL-01 to CL-22 are approved and implemented as recorded in the verifica
 | MQTT 3.1.1 acknowledgment limitation (CL-13, documented) | Recorded |
 | CL-22: SDK 10.0.403 and runtime 10.0.14 (security release) and the `Microsoft.Extensions.*` 10.0.14 update conflict with the 10.0.13 pins; a separate user decision outside P3 | The user |
 | The library's `DeleteTemporaryFile` failure block is reachable only on Windows (library gate 11102/11103 on every platform); the REQ-086 amendment of CL-19 C | Recorded |
-| P3.11 live checks: the second `--SelectMOSMIX` exceeded the authorized one run per command and repeated the same search on the same day (cause: an incomplete live configuration; [P3.11 record](P3_11_INTEGRATED_VERIFICATION.md) section 10) | The user's disposition with the acceptance |
-| P3.11 live checks: the `retrieved_at` of the MQTT run was not recorded (an unmet evidence criterion of the P3.11 plan; the issue time and step count were recorded) | The user's disposition with the acceptance |
+| P3.11 live checks: the second `--SelectMOSMIX` exceeded the authorized one run per command and repeated the same search on the same day (cause: an incomplete live configuration; [P3.11 record](P3_11_INTEGRATED_VERIFICATION.md) section 10) | Presented with the acceptance question; accepted as documented (section 6) |
+| P3.11 live checks: the `retrieved_at` of the MQTT run was not recorded (an unmet evidence criterion of the P3.11 plan; the issue time and step count were recorded) | Presented with the acceptance question; accepted as documented (section 6) |
 | Process deviations, recorded per step: parts written by the orchestrating agent after repeated failed qwen briefs, and small mechanical edits (call sites of changed signatures, comment placement, a restored file) | Recorded |
 | OsthessenWetter values must not be published (OW-14); `PublicationPermitted` stays false in the example | The user |
 | Inherited: the limitations of the [P8.10 acceptance record](../p8/P8_10_ACCEPTANCE.md) section 4 (coarse XML cancellation, builder and root-validation duplication, the hosted ARM64 container not being target evidence, the package not byte-reproducible) | P9 and the user as recorded there |
@@ -69,7 +69,7 @@ All rows CL-01 to CL-22 are approved and implemented as recorded in the verifica
 
 **ACCEPTED** (orchestrating agent's evidence audit, 2026-10-30, renewed on 2026-10-31 for candidate `60bd2a1` after the pull request review fixes):
 - every T-P3 row is PASSED with tests and run evidence; characterization tests are labelled in the verification record;
-- the P3.11 outcome is READY on `5696357` on Windows, hosted CI and the NanoPi R76S with the authorized broker run and live checks; on `60bd2a1` S1 and S2 passed, S3 to S5 await the user's disposition (section 4); no known defect of the CLI is open;
+- the P3.11 outcome is READY on `5696357` on Windows, hosted CI and the NanoPi R76S with the authorized broker run and live checks; on `60bd2a1` and `ec915fc` S1 and S2 passed, S3 to S5 were not repeated (the user's decision, section 6); no known defect of the CLI is open;
 - both coverage gates passed on every platform, the CLI gate on `WeatherParser.dll` alone;
 - every contract row is approved and implemented or its difference is named in section 4, and each limitation has an owner.
 
@@ -77,7 +77,10 @@ This audit decision is not the user's acceptance.
 
 ## 6. User decision (A7)
 
-Pending: the automatic Codex review of pull request #16 reached 0 findings in round 3 (section 7); the user is asked for the acceptance after the review of the commit that records it.
+- Question (2026-10-31, chat): "How do you want to accept P3 on candidate ec915fc?", with the options "Accept, rerun NanoPi" and "Accept, no rerun"; the message presented the open items of section 4 for the user's decision: S3 to S5 not repeated on the new candidate, the extra live `--SelectMOSMIX`, the missing `retrieved_at` of the MQTT run, the CLI-only package pins, the CL-19 C asymmetry and the CL-22 SDK and runtime update.
+- Answer (2026-10-31, chat): "Accept, no rerun".
+- Recorded: P3 (the example CLI) is accepted by the user on candidate `ec915fc`; the NanoPi R76S, broker and live checks are not repeated (their evidence stays that of `5696357`, [P3.11 record](P3_11_INTEGRATED_VERIFICATION.md)); the two live-check deviations of section 4 are accepted as documented. The answer does not decide the CLI-only package pins, the CL-19 C asymmetry or the CL-22 update; they stay open with the user as owner (section 4).
+- The acceptance does not merge pull request #16, does not start P9 and does not lift the OW-14 restriction: P3 is complete once the user has merged the pull request, and P9 starts only on a separate instruction ([P9 handoff](P9_HANDOFF.md)).
 
 ## 7. Ready for review, review and merge (A9 to A11)
 
@@ -88,6 +91,7 @@ Pending: the automatic Codex review of pull request #16 reached 0 findings in ro
   1. [P2] "Cancellation can return success during MQTT cleanup": a signal during the broker disconnect after every message was acknowledged ends with exit 0. Rejected: this is the approved behavior of the accepted P3.09 plan (slice S1, `Cancel_AfterOutputCompleted_StillReportsCompletedOutcome`: a signal after the output is complete does not change a completed outcome); success is reported only after every acknowledgment (CL-13), so the signal interrupts nothing, and CL-11's "also when items succeeded before the signal" applies to a command the signal interrupts. Documentation addition: the README section "Cancellation and deadlines" now states that a signal after the output is complete leaves the result and exit code unchanged although its `CLI-CANCELLED` warning is logged (README tests 6 of 6, package check passed).
   2. [P3] the changed review brief `.github/review/prompt-documentation.md` (status check against `PHASE_STATUS.md` instead of the README) must not govern the current review. Rejected: the change implements the user's instruction of 2026-10-30 to move the phase status into `PHASE_STATUS.md` (commit `8ef553b`, with AGENTS.md and CONTRIBUTING.md); the review workflow already takes its brief from the base commit (`brief from base e623a83`), so the revised brief takes effect only after the user's merge, which is what the finding asks for.
 - Automatic review round 3 (head `ec915fc`, [run 41143919797](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41143919797)): 0 findings in all five angles. The commit recording this round is reviewed once more; that round is recorded in its pull request comment only (AGENTS.md "Plan generation" step 3).
+- Review of the recording commit `85af1a1` ([run 41144157218](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41144157218)): 0 findings; the loop ended and the user was asked for the acceptance (section 6). The commit recording the acceptance goes through one more review round, recorded in its pull request comment only.
 
 ## 8. Authorship and review
 
