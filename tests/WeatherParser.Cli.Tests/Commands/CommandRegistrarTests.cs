@@ -8,6 +8,7 @@ using WeatherParser.Cli.Commands;
 using WeatherParser.Cli.Configuration;
 using WeatherParser.Cli.Output;
 using WeatherParser.Cli.Tests.Configuration;
+using WeatherParser.Cli.Mqtt;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Mqtt;
 
@@ -32,6 +33,7 @@ public class CommandRegistrarTests
         provider.GetRequiredService(HandlerType(request)).Should().NotBeNull();
         provider.GetRequiredService<IResultWriter>().Should().BeOfType<DocumentResultWriter>();
         provider.GetService<IMessagePublisher>().Should().BeNull();
+        provider.GetService<IMqttPublicationSettingsFactory>().Should().BeNull();
     }
 
     [TestMethod]
@@ -57,8 +59,10 @@ public class CommandRegistrarTests
 
         var publisher = provider.GetRequiredService<IMessagePublisher>();
         var message = new MqttMessage("haus/weather/stations/dwd/selection", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, false, MqttMessageType.CdcStationList);
+        publisher.Should().BeOfType<MqttPublisher>();
+        provider.GetRequiredService<IMqttClientAdapter>().Should().BeOfType<UnavailableMqttClientAdapter>();
 
-        (await publisher.Invoking(p => p.PublishAllAsync(new[] { message }, CancellationToken.None)).Should().ThrowAsync<CliException>())
+        (await publisher.Invoking(p => p.PublishAllAsync(new[] { message }, provider.GetRequiredService<IMqttPublicationSettingsFactory>().Create(TestConfigurations.Valid(), null), CancellationToken.None)).Should().ThrowAsync<CliException>())
             .Which.ErrorId.Should().Be("CLI-MQTT-CONNECT-FAILED");
     }
 

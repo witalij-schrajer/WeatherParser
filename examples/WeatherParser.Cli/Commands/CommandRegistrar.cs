@@ -7,6 +7,7 @@ using WeatherParser.Parsing.Catalogs;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Forecasts.Mosmix;
 using WeatherParser.Parsing.Selection;
+using WeatherParser.Cli.Mqtt;
 
 namespace WeatherParser.Cli.Commands;
 
@@ -31,8 +32,10 @@ public sealed class CommandRegistrar : ICommandRegistrar
         if (request.Common.Output == OutputFormat.Mqtt)
         {
             services.AddSingleton<IPublicationQueue, PublicationQueue>();
-            services.AddSingleton<IMessagePublisher, UnavailableMessagePublisher>();
+            services.AddSingleton<IMqttClientAdapter, UnavailableMqttClientAdapter>();
+            services.AddSingleton<IMessagePublisher, MqttPublisher>();
             services.AddSingleton<IResultWriter, MqttResultWriter>();
+            services.AddSingleton<IMqttPublicationSettingsFactory, MqttPublicationSettingsFactory>();
         }
         else
         {
