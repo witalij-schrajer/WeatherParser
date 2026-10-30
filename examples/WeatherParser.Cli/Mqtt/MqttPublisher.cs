@@ -199,12 +199,8 @@ public sealed class MqttPublisher : IMessagePublisher
                     errorId = CliErrorIds.MqttPublishFailed;
                     reason = $"reconnection failed ({exception.Failure}): {Redact(exception.Message, settings.Connection)}";
                     reconnectFailed = true;
-                    if (exception.Failure == MqttTransportFailure.ConnectionRefused)
-                    {
-                        break;
-                    }
-
-                    continue;
+                    // A failed reconnection is not retried (CL-14): the connection is gone and the remaining messages are not attempted.
+                    break;
                 }
             }
 

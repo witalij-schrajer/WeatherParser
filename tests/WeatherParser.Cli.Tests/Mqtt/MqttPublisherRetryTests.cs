@@ -164,6 +164,7 @@ public sealed class MqttPublisherRetryTests
         report.Should().Be(new PublicationReport(0, 1, 2));
         _adapter.Verify(a => a.PublishAsync(It.IsAny<MqttMessage>(), It.IsAny<CancellationToken>()), Times.Once);
         _stderr.ToString().Should().Contain(" ERROR CLI-MQTT-PUBLISH-FAILED command=ParseDWD ");
+        _adapter.Verify(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [TestMethod]
@@ -226,5 +227,19 @@ public sealed class MqttPublisherRetryTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await ((Func<Task>)(() => _subject.PublishAllAsync(Items(Message("t/1")), _settings, cancellation.Token))).Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task Publish_FailedReconnection_NotRetried()
+    {
+        _adapter.SetupSequence(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask).ThrowsAsync(Failed()).Returns(Task.CompletedTask);
+        _adapter.Setup(a => a.IsConnected).Returns(false);
+        _adapter.SetupSequence(a => a.PublishAsync(It.IsAny<MqttMessage>(), It.IsAny<CancellationToken>())).ThrowsAsync(Lost()).ReturnsAsync(Success());
+        SetupDisconnect();
+        var report = await Publish(Message("t/1"), Message("t/2"));
+        report.Should().Be(new PublicationReport(0, 1, 1));
+        _adapter.Verify(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>()), Times.Exactly(2));
+        _adapter.Verify(a => a.PublishAsync(It.IsAny<MqttMessage>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 }
