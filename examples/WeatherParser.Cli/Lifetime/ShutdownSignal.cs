@@ -39,7 +39,7 @@ public sealed class ShutdownSignal : IShutdownSignal
     /// <param name="registrar">The signal registrar.</param>
     /// <param name="terminator">The process terminator.</param>
     /// <param name="timeProvider">The time provider for the grace period.</param>
-    /// <param name="holdTerminationSignal">True on Windows: SIGTERM stands for the shutdown and logoff events there, and Windows ends the process as soon as the handler returns, so the handler holds its thread until the process ends (CL-18).</param>
+    /// <param name="holdTerminationSignal">True on Windows: SIGTERM stands for the shutdown event (CTRL_SHUTDOWN_EVENT) there, and Windows ends the process as soon as the handler returns, so the handler holds its thread until the process ends (CL-18).</param>
     public ShutdownSignal(IPosixSignalRegistrar registrar, IProcessTerminator terminator, TimeProvider timeProvider, bool holdTerminationSignal)
     {
         ArgumentNullException.ThrowIfNull(registrar);
@@ -101,7 +101,7 @@ public sealed class ShutdownSignal : IShutdownSignal
                 _graceTimer = _timeProvider.CreateTimer(_ => Terminate("The command did not stop within the shutdown grace period; the process ends now."), null, gracePeriod, Timeout.InfiniteTimeSpan);
             }
 
-            // On Windows SIGTERM is the shutdown or logoff event: the process ends as soon as this handler returns (CL-18).
+            // On Windows SIGTERM is the shutdown event (CTRL_SHUTDOWN_EVENT): the process ends as soon as this handler returns (CL-18).
             hold = _holdTerminationSignal && context.Signal == PosixSignal.SIGTERM;
             _holding |= hold;
         }
