@@ -195,7 +195,7 @@ The tests in `tests/WeatherParser.Cli.Tests/Mqtt/BrokerIntegrationTests.cs` (cat
 Credentials, if the broker needs them, come only from `WEATHERPARSER_MQTT_USERNAME` and `WEATHERPARSER_MQTT_PASSWORD` (CL-06), never from the file. Then run, after the build of the CLI tests above:
 
 ```powershell
-$env:WEATHERPARSER_TEST_BROKER = '<path outside the repository>	est-broker.json'
+$env:WEATHERPARSER_TEST_BROKER = '<path outside the repository>\test-broker.json'
 dotnet test tests/WeatherParser.Cli.Tests --configuration Release --no-build --filter "TestCategory=Broker"
 Remove-Item Env:WEATHERPARSER_TEST_BROKER
 ```
