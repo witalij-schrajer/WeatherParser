@@ -3,6 +3,7 @@ using WeatherParser.Cli.Configuration;
 using WeatherParser.Cli.Diagnostics;
 using WeatherParser.Parsing.Geography;
 using Microsoft.Extensions.Logging;
+using WeatherParser.Cli.Commands;
 
 namespace WeatherParser.Cli;
 
@@ -23,8 +24,10 @@ public static class Program
         var executor = new CommandExecutor(
             new ConfigurationLoader(environment),
             new ConfigurationRegistrar(),
+            new CommandRegistrar(),
             new ConfigurationValidator(new ReferenceStationResolver(), new CredentialProvider(environment, new FileModeReader())),
             exitCodePolicy,
+            new LibraryErrors(),
             new LogLineFormatter());
         return Run(
             args,

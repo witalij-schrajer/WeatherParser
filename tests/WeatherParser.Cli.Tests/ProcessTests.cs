@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using FluentAssertions;
 using WeatherParser.Cli.Arguments;
 using WeatherParser.Cli.Configuration;
+using System.Text.Json;
 
 namespace WeatherParser.Cli.Tests;
 
@@ -152,19 +153,26 @@ public sealed class ProcessTests
     }
 
     /// <summary>
-    /// Verifies that a valid configuration is loaded and validated before the command is executed (CL-04, CL-05).
+    /// Verifies that a valid configuration runs the command against the configured endpoints: an unavailable source gives an export document with one item failure and the complete-failure exit code (CL-09, CL-11, CL-20).
     /// </summary>
     [TestMethod]
     [TestCategory("T-P3-05")]
-    public async Task Process_ValidConfiguration_ValidatedBeforeCommand()
+    [TestCategory("T-P3-11")]
+    public async Task Process_ValidConfiguration_RunsCommand_SourceUnavailable_ItemFailure()
     {
+        await using var server = new LoopbackHttpServer();
         var configPath = Path.Combine(_workingDirectory, "config.json");
-        await File.WriteAllTextAsync(configPath, MinimalValidConfiguration);
+        await File.WriteAllTextAsync(configPath, DwdConfiguration(server.BaseUri));
         var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--StationID", "00044", "--Output", "json", "--Config", "config.json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
         result.TimedOut.Should().BeFalse();
         result.ExitCode.Should().Be(1);
-        result.StandardOutput.Should().BeEmpty();
-        result.StandardError.Should().Contain(" ERROR - command=ParseDWD The command is not implemented yet.");
+        server.RequestCount.Should().BeGreaterThan(0);
+        using var document = JsonDocument.Parse(result.StandardOutput);
+        var errors = document.RootElement.GetProperty("errors");
+        errors.GetArrayLength().Should().Be(1);
+        errors[0].GetProperty("source").GetString().Should().Be("dwd:00044");
+        document.RootElement.GetProperty("observations").GetArrayLength().Should().Be(0);
+        result.StandardError.Should().Contain("source=dwd:00044");
         Directory.EnumerateFileSystemEntries(_workingDirectory).Should().ContainSingle().Which.Should().Be(configPath);
     }
 
@@ -324,6 +332,23 @@ public sealed class ProcessTests
               "PrecipitationNowDirectory": "https://example.invalid/cdc/precipitation/now/",
               "SolarStationList": "https://example.invalid/cdc/solar/now/zehn_now_sd_Beschreibung_Stationen.txt",
               "SolarNowDirectory": "https://example.invalid/cdc/solar/now/"
+            }
+          }
+        }
+        """;
+
+    private static string DwdConfiguration(Uri baseUri) => $$"""
+        {
+          "Dwd": {
+            "Catalog": {
+              "AirTemperatureStationList": "{{baseUri}}cdc/air_temperature/now/zehn_now_tu_Beschreibung_Stationen.txt",
+              "AirTemperatureNowDirectory": "{{baseUri}}cdc/air_temperature/now/",
+              "WindStationList": "{{baseUri}}cdc/wind/now/zehn_now_ff_Beschreibung_Stationen.txt",
+              "WindNowDirectory": "{{baseUri}}cdc/wind/now/",
+              "PrecipitationStationList": "{{baseUri}}cdc/precipitation/now/zehn_now_rr_Beschreibung_Stationen.txt",
+              "PrecipitationNowDirectory": "{{baseUri}}cdc/precipitation/now/",
+              "SolarStationList": "{{baseUri}}cdc/solar/now/zehn_now_sd_Beschreibung_Stationen.txt",
+              "SolarNowDirectory": "{{baseUri}}cdc/solar/now/"
             }
           }
         }

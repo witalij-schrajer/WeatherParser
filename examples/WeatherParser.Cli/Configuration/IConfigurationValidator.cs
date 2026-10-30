@@ -13,5 +13,6 @@ public interface IConfigurationValidator
     /// <param name="services">The service provider to validate against.</param>
     /// <param name="configuration">The CLI configuration to validate.</param>
     /// <param name="request">The command request to validate.</param>
-    void Validate(IServiceProvider services, CliConfiguration configuration, CommandRequest request);
+    /// <returns>The resolved station and credentials.</returns>
+    ValidatedSettings Validate(IServiceProvider services, CliConfiguration configuration, CommandRequest request);
 }

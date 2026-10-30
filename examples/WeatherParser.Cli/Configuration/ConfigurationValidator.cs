@@ -45,7 +45,8 @@ public sealed class ConfigurationValidator : IConfigurationValidator
     /// <param name="services">The service provider to validate.</param>
     /// <param name="configuration">The CLI configuration to validate.</param>
     /// <param name="request">The command request to validate.</param>
-    public void Validate(IServiceProvider services, CliConfiguration configuration, CommandRequest request)
+    /// <returns>The resolved station and credentials.</returns>
+    public ValidatedSettings Validate(IServiceProvider services, CliConfiguration configuration, CommandRequest request)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -65,15 +66,17 @@ public sealed class ConfigurationValidator : IConfigurationValidator
         }
 
         var mqtt = request.Common.Output == OutputFormat.Mqtt;
+        BrokerCredentials? credentials = null;
         if (mqtt)
         {
             ValidateBroker(configuration.Mqtt?.Broker);
-            _credentialProvider.GetCredentials(configuration.Mqtt!.Broker);
+            credentials = _credentialProvider.GetCredentials(configuration.Mqtt!.Broker);
         }
 
+        string? stationId = null;
         if (request is ParseDwdRequest parseDwd)
         {
-            _stationResolver.Resolve(parseDwd.StationId, configuration);
+            stationId = _stationResolver.Resolve(parseDwd.StationId, configuration);
         }
 
         try
@@ -88,6 +91,8 @@ public sealed class ConfigurationValidator : IConfigurationValidator
         {
             throw Invalid($"{errorId}: {exception.Message}");
         }
+
+        return new ValidatedSettings(stationId, credentials);
     }
 
     /// <summary>
