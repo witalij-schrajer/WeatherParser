@@ -7,7 +7,6 @@ namespace WeatherParser.Cli.Diagnostics;
 /// </summary>
 public sealed class StandardErrorLogger : ILogger
 {
-    private static readonly string[] SourceKeys = { "Source", "StationId", "MosmixId", "StationName" };
     private readonly TextWriter _standardError;
     private readonly TimeProvider _timeProvider;
     private readonly ILogLineFormatter _formatter;
@@ -45,10 +44,15 @@ public sealed class StandardErrorLogger : ILogger
             return;
         }
 
-        var values = state as IEnumerable<KeyValuePair<string, object?>> ?? Array.Empty<KeyValuePair<string, object?>>();
-        var source = SourceKeys
-            .Select(key => values.FirstOrDefault(pair => pair.Key == key).Value?.ToString())
-            .FirstOrDefault(value => !string.IsNullOrEmpty(value));
+        var values = (state as IEnumerable<KeyValuePair<string, object?>> ?? Array.Empty<KeyValuePair<string, object?>>()).ToList();
+        string? Value(string key) => values.FirstOrDefault(pair => pair.Key == key).Value?.ToString();
+        var providerOrSource = Value("Source");
+
+        // A complete C-50 source ("provider:station") wins; a provider-only value yields to the known station identifiers.
+        var source = providerOrSource is { } complete && complete.Contains(':')
+            ? complete
+            : new[] { Value("StationId"), Value("MosmixId"), Value("StationName"), providerOrSource }.FirstOrDefault(value => !string.IsNullOrEmpty(value));
+
         var line = _formatter.Format(_timeProvider.GetUtcNow(), logLevel, eventId.Name, _command, source, formatter(state, exception), exception);
         lock (_standardError)
         {

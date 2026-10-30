@@ -108,22 +108,22 @@ public sealed class CommandLineParser : ICommandLineParser
             .OrderBy(order.IndexOf)
             .FirstOrDefault(option => !required.Contains(option) && !optional.Contains(option) && !GlobalOptions.Contains(option));
         if (notAllowed != null)
-            return new UsageError(ArgumentInvalid, $"Option '--{notAllowed}' is not allowed with '--{commandName}'.");
+            return new UsageError(ArgumentInvalid, $"Option '--{notAllowed}' is not allowed with '--{commandName}'.", selected);
 
         var missing = required.FirstOrDefault(option => !values.ContainsKey(option));
         if (missing != null)
-            return new UsageError(ArgumentInvalid, $"Option '--{missing}' is required with '--{commandName}'.");
+            return new UsageError(ArgumentInvalid, $"Option '--{missing}' is required with '--{commandName}'.", selected);
 
         var output = values.GetValueOrDefault(Output);
         if (output != null && !OutputFormats.Contains(output, StringComparer.OrdinalIgnoreCase))
-            return new UsageError(ArgumentInvalid, $"Unknown output format '{output}'; expected mqtt, json or xml.");
+            return new UsageError(ArgumentInvalid, $"Unknown output format '{output}'; expected mqtt, json or xml.", selected);
 
         if (values.ContainsKey(OutputFile) && (output == null || string.Equals(output, "mqtt", StringComparison.OrdinalIgnoreCase)))
-            return new UsageError(ArgumentInvalid, "Option '--OutputFile' requires '--Output json' or '--Output xml'.");
+            return new UsageError(ArgumentInvalid, "Option '--OutputFile' requires '--Output json' or '--Output xml'.", selected);
 
         var product = values.GetValueOrDefault(Product);
         if (product != null && !Products.Contains(product, StringComparer.OrdinalIgnoreCase))
-            return new UsageError(ArgumentInvalid, $"Unknown product '{product}'; expected MOSMIX_S or MOSMIX_L.");
+            return new UsageError(ArgumentInvalid, $"Unknown product '{product}'; expected MOSMIX_S or MOSMIX_L.", selected);
 
         return new ParsedCommandLine(selected, values, flags);
     }

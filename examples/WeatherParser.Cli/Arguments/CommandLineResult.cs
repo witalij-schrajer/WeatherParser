@@ -10,7 +10,8 @@ public abstract record CommandLineResult;
 /// </summary>
 /// <param name="ErrorId">The identifier of the error.</param>
 /// <param name="Message">The message describing the error.</param>
-public sealed record UsageError(string ErrorId, string Message) : CommandLineResult;
+/// <param name="Command">The command when it is known at the time of the error; otherwise null.</param>
+public sealed record UsageError(string ErrorId, string Message, CliCommand? Command = null) : CommandLineResult;
 
 /// <summary>
 /// Represents a help request encountered during command-line parsing.

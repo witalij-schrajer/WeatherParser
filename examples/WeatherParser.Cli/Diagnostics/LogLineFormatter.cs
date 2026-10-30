@@ -20,7 +20,7 @@ public sealed class LogLineFormatter : ILogLineFormatter
         var sourcePart = string.IsNullOrEmpty(source) ? string.Empty : $" source={source}";
         var id = string.IsNullOrEmpty(eventName) ? "-" : eventName;
         var time = timestamp.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
-        return $"{time} UTC {level.ToString().ToUpperInvariant()} {id} command={command}{sourcePart} {SingleLine(text)}";
+        return SingleLine($"{time} UTC {level.ToString().ToUpperInvariant()} {id} command={command}{sourcePart} {text}");
     }
 
     private static string SingleLine(string text) => text.Replace('\r', ' ').Replace('\n', ' ');

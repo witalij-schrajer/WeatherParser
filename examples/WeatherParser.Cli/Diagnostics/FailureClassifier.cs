@@ -14,12 +14,20 @@ public class FailureClassifier : IFailureClassifier
         "OSTHESSEN-STATION-ID-COLLISION", "OSTHESSEN-DEADLINE-EXCEEDED", "OSTHESSEN-OPTIONS-INVALID",
     };
 
+    private static readonly HashSet<string> PreRequestValidation = new(StringComparer.Ordinal)
+    {
+        "STATION-ID-INVALID",
+        "MOSMIX-ID-INVALID",
+        "OSTHESSEN-PATTERN-INVALID"
+    };
+
     /// <inheritdoc/>
     public FailureKind Classify(CliCommand command, string errorId) => command switch
     {
         _ when errorId.StartsWith("CLI-", StringComparison.Ordinal) => FailureKind.CommandLevel,
         CliCommand.SelectDwd or CliCommand.SelectMosmix => FailureKind.CommandLevel,
         CliCommand.ParseOstHessen when OsthessenCommandLevel.Contains(errorId) => FailureKind.CommandLevel,
+        _ when PreRequestValidation.Contains(errorId) => FailureKind.CommandLevel,
         _ => FailureKind.Item,
     };
 }

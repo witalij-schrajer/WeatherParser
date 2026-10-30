@@ -79,7 +79,8 @@ public static class Program
                     helpWriter.WriteCommandHelp(standardOutput, help.Command.Value);
                     return ExitCodes.Success;
                 case UsageError error:
-                    Log(standardError, command, logger => logger.LogError(new EventId(0, error.ErrorId), "{Message} Use --Help for the commands and options.", error.Message));
+                    var commandForLog = error.Command is { } known ? CommandName(known) : command;
+                    Log(standardError, commandForLog, logger => logger.LogError(new EventId(0, error.ErrorId), "{Message} Use --Help for the commands and options.", error.Message));
                     return exitCodePolicy.ForError(error.ErrorId);
                 default:
                     return executor.Execute(((ValidatedCommand)result).Request, standardOutput, standardError);
