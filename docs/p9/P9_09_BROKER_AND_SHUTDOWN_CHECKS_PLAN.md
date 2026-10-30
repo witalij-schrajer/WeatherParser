@@ -8,7 +8,7 @@ In scope: the opt-in broker tests of `tests/WeatherParser.Cli.Tests` (enabled by
 Out of scope with owner: production broker configuration → the user (REQ-008); new transport features → not planned. A defect found is reported to the user and fixed only on a recorded decision (test-first through qwen).
 
 ## 2. Preconditions and Inputs
-- P9.06 complete; P9.02 approved RL-13 and RL-14.
+- P9.07 complete (fixture host, CLI acceptance artifact verified on the target); P9.02 approved RL-13 and RL-14.
 - The user's authorization of the test broker (product, host reachable from both machines, TLS with a test CA, test credentials supplied by the user outside the repository and outside the chat log where possible, never a production broker), and of the NanoPi run, recorded verbatim; without it the step stops.
 - Inputs: REQ-060, REQ-062, REQ-063, REQ-083; CL-06, CL-13 to CL-15; the P3.11 broker run (without TLS and credentials).
 
@@ -32,7 +32,7 @@ No code change is planned; documentation by the orchestrating agent.
 The user prepares the test broker with TLS, the test CA and a test user with write permission on a test topic tree only; the agent records the authorization.
 
 ### S2 Opt-in tests and CLI runs
-From Windows and from the NanoPi: run the opt-in broker tests with TLS and credentials; then CLI runs in MQTT mode: a successful `--ParseDWD` against a local fake source (QoS 1, retained, observed by a subscriber), a wrong credential (rejected, its ID, exit 1), a wrong CA (TLS failure, its ID, exit 1), the broker's unencrypted port without `AllowUnencrypted` (no plaintext connection is made: the TLS attempt fails with its ID and exit 1); the credential file with mode `0600` owned by the running user.
+From Windows and from the NanoPi: run the opt-in broker tests with TLS and credentials; then CLI runs in MQTT mode: a successful `--ParseDWD` of the CLI acceptance artifact (P9.06) against the P9.07 fixture host (QoS 1, retained, observed by a subscriber), a wrong credential (rejected, its ID, exit 1), a wrong CA (TLS failure, its ID, exit 1), the broker's unencrypted port without `AllowUnencrypted` (no plaintext connection is made: the TLS attempt fails with its ID and exit 1); the credential file with mode `0600` owned by the running user.
 
 ### S3 Windows shutdown
 Record the RL-14 outcome: the limitation text (option A) or the authorized manual check and its result (option B).

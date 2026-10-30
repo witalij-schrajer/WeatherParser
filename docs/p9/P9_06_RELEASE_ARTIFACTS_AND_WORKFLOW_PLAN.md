@@ -4,8 +4,8 @@
 
 ## 1. Goal and Scope
 Goal: a release build procedure that builds the release artifacts once from a candidate commit, tests them, checksums them, stores them with an evidence record and checks before promotion that a later commit's build inputs equal the candidate's, without any publication right.
-In scope: the release build (Proposed: `scripts/build-release.ps1`, and a `workflow_dispatch` workflow `.github/workflows/release-build.yml` if RL-02 and RL-06 approve one) producing the `.nupkg`, the decided symbols, the CLI artifact per RL-08, `SHA256SUMS` and the evidence record; the promotion check (Proposed: `scripts/check-promotion.ps1`): tree equality of the build inputs between the candidate and a given commit and checksum equality of the stored artifacts; a check that the release version equals the decided version source; CONTRIBUTING.md section 6 and `DEPENDENCIES.md` per the consistency table.
-Out of scope with owner: the tag, the GitHub release and the feed push → P9.12 with authorization; the deployment layout → P9.07.
+In scope: the release build (Proposed: `scripts/build-release.ps1`, and a `workflow_dispatch` workflow `.github/workflows/release-build.yml` if RL-02 and RL-06 approve one) producing the `.nupkg`, the decided symbols, the private CLI acceptance artifact of RL-08 (the RL-07 publish of the candidate commit against the same-run package, built in every RL-08 option and attached to the release only under option B), `SHA256SUMS` over all of them and the evidence record; the promotion check (Proposed: `scripts/check-promotion.ps1`): tree equality of the build inputs between the candidate and a given commit and checksum equality of the stored artifacts; a check that the release version equals the decided version source; CONTRIBUTING.md section 6 and `DEPENDENCIES.md` per the consistency table.
+Out of scope with owner: the tag, the GitHub release and the feed push → P9.12 with authorization; the deployment layout → P9.07. The publish command of the CLI acceptance artifact is the RL-07 command as approved in P9.02; P9.07 verifies it on the target and changes it here only through a recorded fix.
 
 ## 2. Preconditions and Inputs
 - P9.05 complete; P9.02 approved RL-02, RL-05, RL-06 and RL-08.
@@ -30,7 +30,7 @@ Out of scope with owner: the tag, the GitHub release and the feed push → P9.12
 Scripts, workflow and tests by qwen from briefs; documentation by the orchestrating agent.
 
 ### S1 Release build
-**Red**: `BuildRelease_ProducesPackageSymbolsSumsAndEvidence`, `BuildRelease_VersionMismatch_Fails` (decided version source versus requested release version), `BuildRelease_TestFailure_ProducesNoArtifacts`, `BuildRelease_EvidenceRecord_NamesCommitTreeSdkAndRuns`, `ReleaseWorkflow_HasReadOnlyPermissionsAndNoSecrets` (a static check of the workflow file, if a workflow is approved).
+**Red**: `BuildRelease_ProducesPackageSymbolsSumsAndEvidence`, `BuildRelease_CliAcceptanceArtifact_BuiltAgainstSameRunPackage` (the published CLI's resolved `WeatherParser.Parsing` equals the same-run `.nupkg` by hash, and the artifact is listed in `SHA256SUMS`), `BuildRelease_VersionMismatch_Fails` (decided version source versus requested release version), `BuildRelease_TestFailure_ProducesNoArtifacts`, `BuildRelease_EvidenceRecord_NamesCommitTreeSdkAndRuns`, `ReleaseWorkflow_HasReadOnlyPermissionsAndNoSecrets` (a static check of the workflow file, if a workflow is approved).
 **Green**: the script (and workflow) building once from the given commit in a clean clone, running the release test set, packing, writing `SHA256SUMS` and the evidence record.
 
 ### S2 Promotion check

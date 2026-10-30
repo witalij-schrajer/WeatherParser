@@ -4,7 +4,7 @@
 
 ## 1. Goal and Scope
 Goal: evidence that the release candidate's stored, checksummed artifacts (RL-06) work on the documented target, the NanoPi R76S with Debian 13 and `linux-arm64`, as a package for independent consumers and as the deployed example CLI, including repeated scheduled invocations (RL-15).
-In scope: the release candidate build (P9.06 procedure) on the candidate commit; transfer of the artifacts to the NanoPi and checksum verification there; the package consumer against the release `.nupkg` from a local folder feed without a source checkout; the CLI installed per RL-07; every command offline against local fake sources; one authorized live run per command in JSON mode (OsthessenWetter JSON only, OW-14); one MQTT run against the P9.09 test broker; SIGINT and SIGTERM during a run; the scheduled series of RL-15; execution of the operating-guide examples (T-P9-09); `docs/COMPATIBILITY.md` rows.
+In scope: the release candidate build (P9.06 procedure) on the candidate commit; transfer of the artifacts to the NanoPi and checksum verification there; the package consumer against the release `.nupkg` from a local folder feed without a source checkout; the CLI acceptance artifact of RL-08 installed per RL-07; every command offline against the P9.07 fixture host; one authorized live run per command in JSON mode (OsthessenWetter JSON only, OW-14); one MQTT run against the P9.09 test broker; SIGINT and SIGTERM during a run; the scheduled series of RL-15; execution of the operating-guide examples (T-P9-09); `docs/COMPATIBILITY.md` rows.
 Out of scope with owner: the full `ci-local.ps1` gate run on the candidate → P9.11 (also on the NanoPi); publication → P9.12.
 
 ## 2. Preconditions and Inputs
@@ -16,7 +16,7 @@ Out of scope with owner: the full `ci-local.ps1` gate run on the candidate → P
 | Decision | Options | Recommended | Decided by | Blocks |
 |---|---|---|---|---|
 | Candidate commit | The phase head after P9.09 / after P9.08 documentation fixes | The phase head after P9.09 with all documentation of P9.08 in place, so that later documentation-only changes stay outside the build inputs where possible (RL-06); a build-input change after this step requires a new candidate and a repeat of this step | Orchestrator, recorded | S1 |
-| Fake sources on the target | The loopback fake server of the CLI tests / static files served locally | The test-owned loopback fake server started from the test build output, outside the installed CLI, recorded as an offline evidence class | Orchestrator, recorded | S3 |
+| Fake sources on the target | The P9.07 fixture host / other local serving | The P9.07 fixture host with its synthetic fixture set, started outside the installed CLI, recorded as an offline evidence class | Orchestrator, recorded | S3 |
 
 ## 4. Artifacts
 | Path | Action | Content |
@@ -36,7 +36,7 @@ Run the release build of P9.06 on the candidate commit; record the evidence reco
 On Windows and the NanoPi: verify the checksums; restore the release `.nupkg` from a local folder feed in a consumer outside any checkout; run the package consumer tests (DI, parsers with local fixtures, JSON/XML with the packaged schema, MQTT serialization).
 
 ### S3 CLI runs
-On the NanoPi, installed per RL-07, as the service user, without a terminal: every command offline (exit codes 0, 2, 1 and 3 provoked as in the P3.11 matrix, stdout and stderr separated, UTF-8, UTC timestamps, `Europe/Berlin` handling of the OsthessenWetter fixture); one live run per command in JSON mode within the authorized request count; one MQTT run against the P9.09 test broker; SIGINT and SIGTERM during a run (exit 4, no temporary file, no success line).
+On the NanoPi, the CLI acceptance artifact installed per RL-07 after its checksum check, as the service user, without a terminal: every command offline against the fixture host (exit codes 0, 2, 1 and 3 provoked as in the P3.11 matrix, stdout and stderr separated, UTF-8, UTC timestamps, `Europe/Berlin` handling of the OsthessenWetter fixture); one live run per command in JSON mode within the authorized request count; one MQTT run against the P9.09 test broker; SIGINT and SIGTERM during a run (exit 4, no temporary file, no success line).
 
 ### S4 Scheduled series
 A cron entry for the service user as authorized; afterwards record per invocation the exit code and stderr, check for overlapping processes, remaining temporary files and open handles, and the peak resident memory per process (from `/usr/bin/time -v` or the cgroup accounting, decided in the record); remove the cron entry and record the removal.

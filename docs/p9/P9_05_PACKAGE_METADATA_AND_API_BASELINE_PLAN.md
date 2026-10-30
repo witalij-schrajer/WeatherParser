@@ -4,7 +4,7 @@
 
 ## 1. Goal and Scope
 Goal: a release package with complete, tested metadata and contents, reproducible as decided in RL-03, and a public API inventory that fails on every unrecorded change.
-In scope: package metadata of `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj` and, where shared, `Directory.Build.props` (RL-01); release build settings, Source Link and symbols (RL-03); the checked-in public API listing and its comparison test, and the configuration of package validation for later releases (RL-04); package-content and metadata tests in `tests/WeatherParser.Package.Tests`; the scripted two-build comparison (Proposed: `scripts/compare-packages.ps1`).
+In scope: package metadata of `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj` and, where shared, `Directory.Build.props` (RL-01); the release version together with the consumer pin `WeatherParser.Parsing` in `Directory.Packages.props` (today `0.1.0-initial`) and the consumer lock files of the CLI and the package tests, regenerated in the same change; the XML documentation file as decided in RL-01 (today not generated), with the missing documentation comments of public members completed first; the exact entry list of `Invoke-PackStage` in `scripts/ci-local.ps1`, extended narrowly by the decided members; release build settings, Source Link and symbols (RL-03); the checked-in public API listing and its comparison test, and the configuration of package validation for later releases (RL-04); package-content and metadata tests in `tests/WeatherParser.Package.Tests`; the scripted two-build comparison (Proposed: `scripts/compare-packages.ps1`).
 Out of scope with owner: artifacts, checksums and promotion → P9.06; any public API change → not planned (the listing records the API as it is).
 
 ## 2. Preconditions and Inputs
@@ -20,7 +20,10 @@ Out of scope with owner: artifacts, checksums and promotion → P9.06; any publi
 ## 4. Artifacts
 | Path | Action | Content |
 |---|---|---|
-| `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj`, `Directory.Build.props` | Change | Metadata, release build settings, Source Link and symbols as decided |
+| `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj`, `Directory.Build.props` | Change | Metadata, version, XML documentation, release build settings, Source Link and symbols as decided |
+| `src/WeatherParser.Parsing/**/*.cs` | Change | Missing XML documentation comments of public members only (English, REQ-009); no behavior change |
+| `Directory.Packages.props`, `examples/WeatherParser.Cli/packages.lock.json`, `tests/*/packages.lock.json` | Change | Consumer pin of the release version; regenerated lock files |
+| `scripts/ci-local.ps1` (`Invoke-PackStage`) | Change | Expected package entries extended by the decided members only; CONTRIBUTING.md section 5 or 6 per the consistency table |
 | `src/WeatherParser.Parsing/PublicApi.txt` (Proposed) | Create | The public API listing |
 | `tests/WeatherParser.Package.Tests/PackageMetadataTests.cs`, `PackageContentsTests.cs`, `PublicApiInventoryTests.cs` (Proposed) | Create | New test files with their own fixtures |
 | `scripts/compare-packages.ps1` (Proposed) | Create | Byte and member comparison of two packages, exit code per result |
@@ -31,12 +34,12 @@ Out of scope with owner: artifacts, checksums and promotion → P9.06; any publi
 Code, tests, scripts and the listing by qwen from briefs with the real declarations; documentation by the orchestrating agent. These are changes to `src/` and possibly `Directory.Build.props` (build settings, metadata and the listing only): the library gate needs strict improvement or a user-approved reconciliation (REQ-086 amendment), and the CLI gate the same under its rule in force (the CLI consumes the same-run package), decided as in P9.03 section 3.
 
 ### S1 Metadata
-**Red**: `Package_Id_Version_Authors_License_AsDecided`, `Package_RepositoryAndProjectUrls_AsDecided`, `Package_DescriptionAndTags_Present`, `Package_ReleaseNotesLink_Present`, `Package_Version_SingleSource` (the version in the `.nuspec` equals the one decided source).
-**Green**: metadata in the project file.
+**Red**: `Package_Id_Version_Authors_License_AsDecided`, `Package_RepositoryAndProjectUrls_AsDecided`, `Package_DescriptionAndTags_Present`, `Package_ReleaseNotesLink_Present`, `Package_Version_SingleSource` (the version in the `.nuspec` equals the one decided source), `Consumers_RestoreExactSameRunPackage` (the CLI and the package tests resolve `WeatherParser.Parsing` at the release version, and the restored package's hash equals the same-run `.nupkg` in `artifacts/local-nuget`; an older cached version fails the check).
+**Green**: metadata and version in the project file; the consumer pin and the regenerated lock files in the same commit.
 
 ### S2 Contents and reproducibility
-**Red**: `Package_Contains_ExactlyExpectedMembers` (assembly, XML documentation, README, LICENSE, export schema, the decided symbol or Source Link data), `Package_Readme_ByteIdenticalToRepository`, `Package_NoTestDataPrivatePathsOrSecrets` (no member outside the expected list; no absolute build path in the `.nuspec` or the PDB as decided), `ComparePackages_IdenticalPackages_ExitZero`, `ComparePackages_DifferentMember_ExitNonZeroAndNamesMember` (script tests over synthetic packages).
-**Green**: `ContinuousIntegrationBuild` and path mapping for release and CI builds, Source Link and symbols as decided; the comparison script. Then two clean packs on Windows and on Linux compared with the script: byte-identical (RL-03 A) or every remaining difference named and recorded (RL-03 B).
+**Red**: `Package_Contains_ExactlyExpectedMembers` (assembly, the XML documentation as decided, README, LICENSE, export schema, the decided symbol or Source Link data), `Package_XmlDocumentation_CoversEveryPublicMember` (if decided: no public member without a summary), `CiLocal_PackStage_AcceptsDecidedEntriesOnly` (the stage accepts the new entry list and still rejects an unexpected member; through the existing script-test practice of `ci-local.ps1`, otherwise by a recorded run against a package with an injected extra member), `Package_Readme_ByteIdenticalToRepository`, `Package_NoTestDataPrivatePathsOrSecrets` (no member outside the expected list; no absolute build path in the `.nuspec` or the PDB as decided), `ComparePackages_IdenticalPackages_ExitZero`, `ComparePackages_DifferentMember_ExitNonZeroAndNamesMember` (script tests over synthetic packages).
+**Green**: the missing documentation comments (qwen, one file per brief, comments only; the diff review rejects any code change), `GenerateDocumentationFile` as decided, `ContinuousIntegrationBuild` and path mapping for release and CI builds, Source Link and symbols as decided, the extended entry list of `Invoke-PackStage`; the comparison script. Then two clean packs on Windows and on Linux compared with the script: byte-identical (RL-03 A) or every remaining difference named and recorded (RL-03 B).
 
 ### S3 API inventory
 **Red**: `PublicApi_PackedAssembly_EqualsCheckedInListing`; `PublicApiInventory_AddedMember_Detected` and `PublicApiInventory_RemovedMember_Detected` (the comparison helper run over a test fixture assembly with a deliberately added and a deliberately removed member); the expected Red: the listing does not exist yet.
@@ -60,6 +63,7 @@ Code, tests, scripts and the listing by qwen from briefs with the real declarati
 ## 8. Risks and Limitations
 - (a) Source Link and `ContinuousIntegrationBuild` can make local builds differ from CI builds; the comparison uses the same settings on both sides
 - (b) A reflection-only API listing may miss compiler-generated details that package validation would see; the listing is the inventory, package validation the later compatibility check (RL-04)
+- (c) Turning on the XML documentation file reports missing comments as warnings (CS1591); if the build treats warnings as errors, the comments must be complete before the switch, which is why they come first
 
 ## 9. Acceptance Criteria
 - [ ] Every listed test green with recorded Red
