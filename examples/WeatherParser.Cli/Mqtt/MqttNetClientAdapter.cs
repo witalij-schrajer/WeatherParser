@@ -10,16 +10,19 @@ public sealed class MqttNetClientAdapter : IMqttClientAdapter
 {
     private readonly IMqttClient _client;
     private readonly IMqttNetOptionsBuilder _optionsBuilder;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MqttNetClientAdapter"/> class.
     /// </summary>
     /// <param name="client">The MQTTnet client to use.</param>
     /// <param name="optionsBuilder">The options builder to use.</param>
-    public MqttNetClientAdapter(IMqttClient client, IMqttNetOptionsBuilder optionsBuilder)
+    /// <param name="timeProvider">The time provider for the wait while a previous connection is still being torn down.</param>
+    public MqttNetClientAdapter(IMqttClient client, IMqttNetOptionsBuilder optionsBuilder, TimeProvider timeProvider)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
         _optionsBuilder = optionsBuilder ?? throw new ArgumentNullException(nameof(optionsBuilder));
+        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
     }
 
     private static readonly HashSet<MqttClientConnectResultCode> RefusedCodes = new()
@@ -31,6 +34,8 @@ public sealed class MqttNetClientAdapter : IMqttClientAdapter
         MqttClientConnectResultCode.ClientIdentifierNotValid,
     };
 
+    private static readonly TimeSpan PendingTeardownDelay = TimeSpan.FromMilliseconds(50);
+
     /// <inheritdoc/>
     public bool IsConnected => _client.IsConnected;
 
@@ -39,13 +44,26 @@ public sealed class MqttNetClientAdapter : IMqttClientAdapter
     {
         var options = _optionsBuilder.BuildClientOptions(settings);
         MqttClientConnectResult result;
-        try
+        while (true)
         {
-            result = await _client.ConnectAsync(options, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception exception) when (IsTransportFailure(exception))
-        {
-            throw new MqttTransportException(MqttTransportFailure.ConnectionFailed, exception.Message);
+            try
+            {
+                result = await _client.ConnectAsync(options, cancellationToken).ConfigureAwait(false);
+                break;
+            }
+            catch (InvalidOperationException) when (!cancellationToken.IsCancellationRequested)
+            {
+                // MQTTnet refuses a connection while the teardown of the lost one is pending; wait within the caller's bound.
+                await Task.Delay(PendingTeardownDelay, _timeProvider, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (cancellationToken.IsCancellationRequested && exception is not OperationCanceledException)
+            {
+                throw new OperationCanceledException(exception.Message, exception, cancellationToken);
+            }
+            catch (Exception exception) when (IsTransportFailure(exception))
+            {
+                throw new MqttTransportException(MqttTransportFailure.ConnectionFailed, exception.Message);
+            }
         }
 
         // MQTTnet returns a refused connection as a result code instead of throwing.
@@ -65,6 +83,11 @@ public sealed class MqttNetClientAdapter : IMqttClientAdapter
             var result = await _client.PublishAsync(applicationMessage, cancellationToken).ConfigureAwait(false);
             return new MqttPublishAcknowledgment(result.IsSuccess, result.ReasonCode.ToString());
         }
+        catch (Exception exception) when (cancellationToken.IsCancellationRequested && exception is not OperationCanceledException)
+        {
+            // MQTTnet reports a cancelled wait for the acknowledgment as a communication timeout; it is a cancellation.
+            throw new OperationCanceledException(exception.Message, exception, cancellationToken);
+        }
         catch (Exception exception) when (IsTransportFailure(exception))
         {
             throw new MqttTransportException(MqttTransportFailure.ConnectionLost, exception.Message);
@@ -82,6 +105,11 @@ public sealed class MqttNetClientAdapter : IMqttClientAdapter
         try
         {
             await _client.DisconnectAsync(new MqttClientDisconnectOptionsBuilder().WithReason(MqttClientDisconnectOptionsReason.NormalDisconnection).Build(), cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (cancellationToken.IsCancellationRequested && exception is not OperationCanceledException)
+        {
+            // MQTTnet reports a cancelled wait for the acknowledgment as a communication timeout; it is a cancellation.
+            throw new OperationCanceledException(exception.Message, exception, cancellationToken);
         }
         catch (Exception exception) when (IsTransportFailure(exception))
         {

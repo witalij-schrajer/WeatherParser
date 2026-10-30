@@ -21,6 +21,7 @@ public sealed class MqttNetClientAdapterTests
     private MockRepository _mocks = null!;
     private Mock<IMqttClient> _client = null!;
     private Mock<IMqttNetOptionsBuilder> _builder = null!;
+    private RecordingTimeProvider _time = null!;
     private MqttNetClientAdapter _subject = null!;
 
     private static readonly MqttConnectionSettings Settings = new("broker.example.invalid", 8883, MqttProtocol.V500, "weatherparser0123456789", TimeSpan.FromSeconds(30), true, null, null);
@@ -34,7 +35,8 @@ public sealed class MqttNetClientAdapterTests
         _mocks = new MockRepository(MockBehavior.Strict);
         _client = _mocks.Create<IMqttClient>();
         _builder = _mocks.Create<IMqttNetOptionsBuilder>();
-        _subject = new MqttNetClientAdapter(_client.Object, _builder.Object);
+        _time = new RecordingTimeProvider();
+        _subject = new MqttNetClientAdapter(_client.Object, _builder.Object, _time);
     }
 
     [TestCleanup]
@@ -122,6 +124,90 @@ public sealed class MqttNetClientAdapterTests
             .Returns(Task.FromException<MqttClientConnectResult>(new OperationCanceledException()));
 
         await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [TestMethod]
+    public async Task Connect_PendingDisconnect_WaitsAndConnects()
+    {
+        _builder.Setup(b => b.BuildClientOptions(Settings)).Returns(_options);
+        _client.SetupSequence(c => c.ConnectAsync(_options, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Not allowed to connect while connect/disconnect is pending."))
+            .ReturnsAsync(new MqttClientConnectResult { ResultCode = MqttClientConnectResultCode.Success });
+
+        await _subject.ConnectAsync(Settings, CancellationToken.None);
+
+        _client.Verify(c => c.ConnectAsync(_options, It.IsAny<CancellationToken>()), Times.Exactly(2));
+        _time.DueTimes.Should().Contain(TimeSpan.FromMilliseconds(50));
+    }
+
+    [TestMethod]
+    public async Task Connect_PendingDisconnectUntilCancelled_Propagates()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var calls = 0;
+
+        _builder.Setup(b => b.BuildClientOptions(Settings)).Returns(_options);
+        _client.Setup(c => c.ConnectAsync(_options, It.IsAny<CancellationToken>()))
+            .Callback(() => { if (++calls == 3) { cancellation.Cancel(); } })
+            .ThrowsAsync(new InvalidOperationException("Not allowed to connect while connect/disconnect is pending."));
+
+        await ((Func<Task>)(() => _subject.ConnectAsync(Settings, cancellation.Token)))
+            .Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [TestMethod]
+    public async Task Publish_FailureAfterCancellation_IsCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        _builder.Setup(b => b.BuildMessage(Message)).Returns(_applicationMessage);
+        _client.Setup(c => c.PublishAsync(_applicationMessage, cancellation.Token))
+            .ThrowsAsync(new MqttCommunicationTimedOutException());
+
+        await ((Func<Task>)(() => _subject.PublishAsync(Message, cancellation.Token)))
+            .Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [TestMethod]
+    public async Task Publish_TimedOutWithoutCancellation_ConnectionLost()
+    {
+        _builder.Setup(b => b.BuildMessage(Message)).Returns(_applicationMessage);
+        _client.Setup(c => c.PublishAsync(_applicationMessage, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new MqttCommunicationTimedOutException());
+
+        (await ((Func<Task>)(() => _subject.PublishAsync(Message, CancellationToken.None))).Should().ThrowAsync<MqttTransportException>())
+            .Which.Failure.Should().Be(MqttTransportFailure.ConnectionLost);
+    }
+
+    [TestMethod]
+    public async Task Connect_FailureAfterCancellation_IsCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        _builder.Setup(b => b.BuildClientOptions(Settings)).Returns(_options);
+        _client.Setup(c => c.ConnectAsync(_options, cancellation.Token))
+            .ThrowsAsync(new MqttCommunicationException("broken", new IOException("broken")));
+
+        await ((Func<Task>)(() => _subject.ConnectAsync(Settings, cancellation.Token)))
+            .Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [TestMethod]
+    public async Task Disconnect_FailureAfterCancellation_IsCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        _client.Setup(c => c.IsConnected).Returns(true);
+        _client.Setup(c => c.DisconnectAsync(
+            It.IsAny<MqttClientDisconnectOptions>(),
+            cancellation.Token))
+            .ThrowsAsync(new MqttCommunicationException("broken", new IOException("broken")));
+
+        await ((Func<Task>)(() => _subject.DisconnectAsync(cancellation.Token)))
+            .Should().ThrowAsync<OperationCanceledException>();
     }
 
     [TestMethod]
@@ -252,11 +338,13 @@ public sealed class MqttNetClientAdapterTests
     [TestMethod]
     public void Constructor_NullArguments_Throw()
     {
-        Action act1 = () => new MqttNetClientAdapter(null!, _builder.Object);
-        Action act2 = () => new MqttNetClientAdapter(_client.Object, null!);
+        Action act1 = () => new MqttNetClientAdapter(null!, _builder.Object, _time);
+        Action act2 = () => new MqttNetClientAdapter(_client.Object, null!, _time);
+        Action act3 = () => new MqttNetClientAdapter(_client.Object, _builder.Object, null!);
 
         act1.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("client");
         act2.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("optionsBuilder");
+        act3.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("timeProvider");
     }
 
     private static MqttClientPublishResult Published(MqttClientPublishReasonCode code) => new(1, code, null, Array.Empty<MqttUserProperty>());
