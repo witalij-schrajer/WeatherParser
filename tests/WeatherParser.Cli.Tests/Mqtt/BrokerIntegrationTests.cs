@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -86,7 +87,9 @@ public sealed class BrokerIntegrationTests
     {
         var settings = new MqttPublicationSettingsFactory().Create(_configuration, credentials ?? _credentials);
         var client = new MqttClientFactory().CreateMqttClient();
-        await client.ConnectAsync(new MqttNetOptionsBuilder(new FileOperations()).BuildClientOptions(settings.Connection));
+        // Auxiliary clients never reuse the publisher's client ID, which may be configured (MQTT takes over a session with the same ID).
+        var options = new MqttNetOptionsBuilder(new FileOperations()).BuildClientOptions(settings.Connection with { ClientId = "wptestsub" + RandomNumberGenerator.GetHexString(10, lowercase: true) });
+        await client.ConnectAsync(options);
         return client;
     }
 
