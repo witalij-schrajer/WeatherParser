@@ -191,10 +191,27 @@ public sealed class BrokerIntegrationTests
             Assert.Inconclusive("The authorized test broker does not require credentials; a wrong-credential check needs a broker that does.");
         }
 
-        _credentials = new BrokerCredentials(_credentials.Username, _credentials.Password + "-wrong");
-        (await FluentActions.Invoking(async () => await PublishAsync(Message("observation", "{}", MqttMessageType.Observation))).Should().ThrowAsync<CliException>())
-            .Which.ErrorId.Should().Be("CLI-MQTT-CONNECT-FAILED");
-        _retainedTopics.Clear();
+        // The valid credentials connect, so a later refusal is caused by the altered password.
+        var valid = _credentials;
+        using (var client = await ConnectSubscriberAsync(valid))
+        {
+            client.IsConnected.Should().BeTrue();
+            await client.DisconnectAsync();
+        }
+
+        _credentials = new BrokerCredentials(valid.Username, valid.Password + "-wrong");
+        try
+        {
+            var exception = (await ((Func<Task>)(() => PublishAsync(Message("observation", "{}", MqttMessageType.Observation)))).Should().ThrowAsync<CliException>()).Which;
+            exception.ErrorId.Should().Be("CLI-MQTT-CONNECT-FAILED");
+            exception.Message.Should().Contain("ConnectionRefused");
+        }
+        finally
+        {
+            // The cleanup uses the valid credentials; nothing was published with the altered ones.
+            _credentials = valid;
+            _retainedTopics.Clear();
+        }
     }
 
     [TestMethod]
