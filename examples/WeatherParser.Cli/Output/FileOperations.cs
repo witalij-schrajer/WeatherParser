@@ -33,4 +33,7 @@ public sealed class FileOperations : IFileOperations
 
     /// <inheritdoc/>
     public void Delete(string path) => File.Delete(path);
+
+    /// <inheritdoc/>
+    public string ReadAllText(string path) => File.ReadAllText(path);
 }

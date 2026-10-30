@@ -135,4 +135,15 @@ public sealed class FileOperationsTests
 
         File.ReadAllBytes(first).Should().Equal(File.ReadAllBytes(second));
     }
+
+    [TestMethod]
+    public async Task ReadAllText_ReadsUtf8File()
+    {
+        var path = Path.Combine(_directory, "test.txt");
+        File.WriteAllText(path, "Grüße", Encoding.UTF8);
+
+        var result = _subject.ReadAllText(path);
+
+        result.Should().Be("Grüße");
+    }
 }

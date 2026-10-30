@@ -11,6 +11,7 @@
     <PackageReference Include="WeatherParser.Parsing" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="MQTTnet" />
   </ItemGroup>
 
 </Project>

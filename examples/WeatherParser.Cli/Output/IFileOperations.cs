@@ -47,4 +47,11 @@ public interface IFileOperations
     /// </summary>
     /// <param name="path">The path to the file.</param>
     void Delete(string path);
+
+    /// <summary>
+    /// Reads a whole UTF-8 text file, for example the CA file of the broker connection (CL-13).
+    /// </summary>
+    /// <param name="path">The file path.</param>
+    /// <returns>The file content.</returns>
+    string ReadAllText(string path);
 }

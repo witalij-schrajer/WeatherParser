@@ -146,6 +146,11 @@
           "Microsoft.TestPlatform.ObjectModel": "18.11.0"
         }
       },
+      "MQTTnet": {
+        "type": "Transitive",
+        "resolved": "5.2.0.1603",
+        "contentHash": "iNuWVo/568aRo2ExEN2qkC4J5b07ckKqt+9Uok2kIbbK7PMBsXvYiKVENPHmOBWFB5ExhlNQb/qQ8M9/IYRTdQ=="
+      },
       "MSTest.Analyzers": {
         "type": "Transitive",
         "resolved": "4.5.1",
@@ -159,6 +164,7 @@
       "WeatherParser": {
         "type": "Project",
         "dependencies": {
+          "MQTTnet": "[5.2.0.1603, )",
           "Microsoft.Extensions.DependencyInjection": "[10.0.13, )",
           "Microsoft.Extensions.Logging": "[10.0.13, )",
           "WeatherParser.Parsing": "[0.1.0-initial, )"
