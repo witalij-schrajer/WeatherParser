@@ -1,5 +1,6 @@
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Geography;
+using WeatherParser.Parsing.Time;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -58,6 +59,48 @@ internal static class TestExportData
                     }
                 }
             }).ToList()
+        };
+    }
+
+    /// <summary>
+    /// Creates a valid synthetic observation dataset.
+    /// </summary>
+    public static ObservationDataset Observation(string provider, string stationId)
+    {
+        var measuredAt = new DateTime(2026, 10, 30, 5, 50, 0, DateTimeKind.Utc);
+        return new ObservationDataset
+        {
+            Source = provider + ":" + stationId,
+            Location = new ObservationLocation { StationId = stationId, Name = "Station Ö & <" + stationId + ">", Latitude = 50.5m, Longitude = 9.7m },
+            MeasuredAtUtc = measuredAt,
+            RetrievedAtUtc = RetrievedAt,
+            TimestampQuality = TimestampQuality.Source,
+            Measurements = new ObservationMeasurements
+            {
+                TemperatureC = new MeasurementValue { Value = 0.0m, MeasuredAtUtc = measuredAt, TimestampQuality = TimestampQuality.Source },
+                HumidityPercent = new MeasurementValue { Value = 87m, MeasuredAtUtc = measuredAt, TimestampQuality = TimestampQuality.Source }
+            }
+        };
+    }
+
+    /// <summary>
+    /// Creates a valid synthetic forecast run.
+    /// </summary>
+    public static ForecastRun Forecast(MosmixProduct product, string mosmixId)
+    {
+        return new ForecastRun
+        {
+            Source = (product == MosmixProduct.MosmixS ? "dwd-mosmix-s:" : "dwd-mosmix-l:") + mosmixId,
+            MosmixId = mosmixId,
+            Location = new ForecastLocation { Name = "Ort Ü", Latitude = 50.5m, Longitude = 9.7m },
+            Product = product,
+            IssuedAtUtc = new DateTime(2026, 10, 30, 3, 0, 0, DateTimeKind.Utc),
+            RetrievedAtUtc = RetrievedAt,
+            Forecasts = new List<ForecastStep>
+            {
+                new() { ValidAtUtc = new DateTime(2026, 10, 30, 7, 0, 0, DateTimeKind.Utc), Values = new ForecastValues { TemperatureC = 12.3m } },
+                new() { ValidAtUtc = new DateTime(2026, 10, 30, 8, 0, 0, DateTimeKind.Utc), Values = new ForecastValues { TemperatureC = 0.0m } }
+            }
         };
     }
 }
