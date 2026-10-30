@@ -51,6 +51,7 @@ public sealed class MqttPublisherRetryTests
         _stderr.Dispose();
     }
 
+    private static PublicationItem[] Items(params MqttMessage[] messages) => messages.Select(message => new PublicationItem(message, "dwd:00044")).ToArray();
     private static MqttMessage Message(string topic) => new(topic, new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation);
     private static Task Never() => new TaskCompletionSource().Task;
     private static Task<MqttPublishAcknowledgment> NeverAcknowledged() => new TaskCompletionSource<MqttPublishAcknowledgment>().Task;
@@ -60,7 +61,7 @@ public sealed class MqttPublisherRetryTests
     private static MqttTransportException Refused() => new(MqttTransportFailure.ConnectionRefused, "Not authorized.");
     private void SetupConnect() => _adapter.Setup(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
     private void SetupDisconnect() => _adapter.Setup(a => a.DisconnectAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-    private Task<PublicationReport> Publish(params MqttMessage[] messages) => _subject.PublishAllAsync(messages, _settings, CancellationToken.None);
+    private Task<PublicationReport> Publish(params MqttMessage[] messages) => _subject.PublishAllAsync(Items(messages), _settings, CancellationToken.None);
 
     [TestMethod]
     [Timeout(10000)]
@@ -127,7 +128,7 @@ public sealed class MqttPublisherRetryTests
         var report = await Publish(Message("t/1"));
         report.Should().Be(new PublicationReport(0, 1, 0));
         _adapter.Verify(a => a.PublishAsync(It.IsAny<MqttMessage>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
-        _stderr.ToString().Should().Contain(" ERROR CLI-MQTT-PUBLISH-TIMEOUT command=ParseDWD ").And.Contain("t/1");
+        _stderr.ToString().Should().Contain(" ERROR CLI-MQTT-PUBLISH-TIMEOUT command=ParseDWD source=dwd:00044 ").And.Contain("t/1");
     }
 
     [TestMethod]
@@ -224,6 +225,6 @@ public sealed class MqttPublisherRetryTests
     {
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        await ((Func<Task>)(() => _subject.PublishAllAsync(new[] { Message("t/1") }, _settings, cancellation.Token))).Should().ThrowAsync<OperationCanceledException>();
+        await ((Func<Task>)(() => _subject.PublishAllAsync(Items(Message("t/1")), _settings, cancellation.Token))).Should().ThrowAsync<OperationCanceledException>();
     }
 }

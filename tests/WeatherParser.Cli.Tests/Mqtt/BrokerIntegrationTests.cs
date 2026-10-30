@@ -77,8 +77,10 @@ public sealed class BrokerIntegrationTests
             services.AddLogging();
         });
         var settings = provider.GetRequiredService<IMqttPublicationSettingsFactory>().Create(_configuration, _credentials);
-        return await provider.GetRequiredService<IMessagePublisher>().PublishAllAsync(messages, settings, CancellationToken.None);
+        return await provider.GetRequiredService<IMessagePublisher>().PublishAllAsync(Items(messages), settings, CancellationToken.None);
     }
+
+    private static PublicationItem[] Items(params MqttMessage[] messages) => messages.Select(message => new PublicationItem(message, "dwd:00044")).ToArray();
 
     private async Task<IMqttClient> ConnectSubscriberAsync(BrokerCredentials? credentials = null)
     {

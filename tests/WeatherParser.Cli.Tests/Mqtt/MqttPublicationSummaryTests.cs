@@ -49,6 +49,8 @@ public sealed class MqttPublicationSummaryTests
 
     private static MqttMessage Message(string topic) => new(topic, new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation);
 
+    private static PublicationItem[] Items(params MqttMessage[] messages) => messages.Select(message => new PublicationItem(message, "dwd:00044")).ToArray();
+
     private int SummaryLines() => Regex.Matches(_stderr.ToString(), " INFORMATION CLI-PUBLICATION-SUMMARY command=ParseDWD ").Count;
 
     [TestMethod]
@@ -64,7 +66,7 @@ public sealed class MqttPublicationSummaryTests
             .Returns(Task.FromResult(new MqttPublishAcknowledgment(false, "NotAuthorized")));
         _adapter.Setup(a => a.DisconnectAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
-        var report = await _subject.PublishAllAsync(new[] { first, second }, _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Items(first, second), _settings, CancellationToken.None);
 
         report.Should().BeEquivalentTo(new PublicationReport(1, 1, 0));
         SummaryLines().Should().Be(1);
@@ -74,7 +76,7 @@ public sealed class MqttPublicationSummaryTests
     [TestMethod]
     public async Task Summary_EmptyList_AllZeroWithoutContact()
     {
-        var report = await _subject.PublishAllAsync(Array.Empty<MqttMessage>(), _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Array.Empty<PublicationItem>(), _settings, CancellationToken.None);
 
         report.Should().BeEquivalentTo(new PublicationReport(0, 0, 0));
         SummaryLines().Should().Be(1);
@@ -89,7 +91,7 @@ public sealed class MqttPublicationSummaryTests
         _adapter.Setup(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionFailed, "No connection could be made."));
 
-        Func<Task> act = async () => await _subject.PublishAllAsync(messages, _settings, CancellationToken.None);
+        Func<Task> act = async () => await _subject.PublishAllAsync(Items(messages), _settings, CancellationToken.None);
 
         (await act.Should().ThrowAsync<CliException>()).Which.ErrorId.Should().Be("CLI-MQTT-CONNECT-FAILED");
         SummaryLines().Should().Be(1);
@@ -101,7 +103,7 @@ public sealed class MqttPublicationSummaryTests
     {
         var message = new MqttMessage("t/1", new byte[] { 1 }, MqttQualityOfService.AtMostOnce, true, MqttMessageType.Observation);
 
-        Func<Task> act = async () => await _subject.PublishAllAsync(new[] { message }, _settings, CancellationToken.None);
+        Func<Task> act = async () => await _subject.PublishAllAsync(Items(message), _settings, CancellationToken.None);
 
         (await act.Should().ThrowAsync<CliException>()).Which.ErrorId.Should().Be("CLI-UNEXPECTED");
         SummaryLines().Should().Be(1);
@@ -123,7 +125,7 @@ public sealed class MqttPublicationSummaryTests
             .Returns(new TaskCompletionSource<MqttPublishAcknowledgment>().Task);
         _adapter.Setup(a => a.DisconnectAsync(It.Is<CancellationToken>(t => !t.IsCancellationRequested))).Returns(Task.CompletedTask);
 
-        await ((Func<Task>)(() => _subject.PublishAllAsync(new[] { first, second }, _settings, cancellation.Token)))
+        await ((Func<Task>)(() => _subject.PublishAllAsync(Items(first, second), _settings, cancellation.Token)))
             .Should().ThrowAsync<OperationCanceledException>();
 
         SummaryLines().Should().Be(1);
@@ -146,7 +148,7 @@ public sealed class MqttPublicationSummaryTests
             .ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionLost, "Lost."));
         _adapter.Setup(a => a.DisconnectAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
-        var report = await _subject.PublishAllAsync(messages, _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Items(messages), _settings, CancellationToken.None);
 
         report.Should().BeEquivalentTo(new PublicationReport(0, 1, 2));
         SummaryLines().Should().Be(1);

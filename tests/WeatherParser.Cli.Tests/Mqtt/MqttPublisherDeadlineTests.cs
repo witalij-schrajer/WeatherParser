@@ -50,10 +50,11 @@ public sealed class MqttPublisherDeadlineTests
     }
 
     private static MqttMessage Message(string topic) => new(topic, new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation);
+    private static PublicationItem[] Items(params MqttMessage[] messages) => messages.Select(message => new PublicationItem(message, "dwd:00044")).ToArray();
     private static MqttPublishAcknowledgment Success() => new(true, "Success");
     private void SetupConnect() => _adapter.Setup(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
     private void SetupDisconnect() => _adapter.Setup(a => a.DisconnectAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-    private Task<PublicationReport> Publish(params MqttMessage[] messages) => _subject.PublishAllAsync(messages, _settings, CancellationToken.None);
+    private Task<PublicationReport> Publish(params MqttMessage[] messages) => _subject.PublishAllAsync(Items(messages), _settings, CancellationToken.None);
 
     [TestMethod]
     [Timeout(10000)]

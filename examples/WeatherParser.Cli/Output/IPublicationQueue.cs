@@ -11,10 +11,16 @@ public interface IPublicationQueue
     /// Adds a message to the queue.
     /// </summary>
     /// <param name="message">The message to add.</param>
-    void Add(MqttMessage message);
+    /// <param name="source">The source of the export root.</param>
+    void Add(MqttMessage message, string source);
 
     /// <summary>
     /// Gets the messages in the queue.
     /// </summary>
     IReadOnlyList<MqttMessage> Messages { get; }
+
+    /// <summary>
+    /// Gets the queued items in result order.
+    /// </summary>
+    IReadOnlyList<PublicationItem> Items { get; }
 }

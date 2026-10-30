@@ -39,16 +39,17 @@ public sealed class MqttPublisher : IMessagePublisher
     }
 
     /// <inheritdoc/>
-    public async Task<PublicationReport> PublishAllAsync(IReadOnlyList<MqttMessage> messages, MqttPublicationSettings settings, CancellationToken cancellationToken)
+    public async Task<PublicationReport> PublishAllAsync(IReadOnlyList<PublicationItem> items, MqttPublicationSettings settings, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(messages);
+        ArgumentNullException.ThrowIfNull(items);
         ArgumentNullException.ThrowIfNull(settings);
+        var messages = items.Select(item => item.Message).ToList();
         var published = 0;
         var failed = 0;
         var connected = false;
         try
         {
-            if (messages.Count == 0)
+            if (items.Count == 0)
             {
                 return new PublicationReport(0, 0, 0);
             }
@@ -68,9 +69,9 @@ public sealed class MqttPublisher : IMessagePublisher
             await ConnectFirstAsync(settings, cancellationToken).ConfigureAwait(false);
             connected = true;
             var suspect = false;
-            foreach (var message in messages)
+            foreach (var item in items)
             {
-                var (result, stillSuspect) = await PublishOneAsync(message, settings, suspect, cancellationToken).ConfigureAwait(false);
+                var (result, stillSuspect) = await PublishOneAsync(item, settings, suspect, cancellationToken).ConfigureAwait(false);
                 suspect = stillSuspect;
                 if (result == MessageResult.Published)
                 {
@@ -172,8 +173,9 @@ public sealed class MqttPublisher : IMessagePublisher
     }
 
     // One message with at most MaxPublishAttempts attempts; an acknowledged message is never sent again and a refusal is final (CL-14).
-    private async Task<(MessageResult Result, bool Suspect)> PublishOneAsync(MqttMessage message, MqttPublicationSettings settings, bool suspect, CancellationToken cancellationToken)
+    private async Task<(MessageResult Result, bool Suspect)> PublishOneAsync(PublicationItem item, MqttPublicationSettings settings, bool suspect, CancellationToken cancellationToken)
     {
+        var message = item.Message;
         var limits = settings.Limits;
         var errorId = CliErrorIds.MqttPublishFailed;
         var reason = string.Empty;
@@ -218,7 +220,7 @@ public sealed class MqttPublisher : IMessagePublisher
                 }
 
                 // A failure reason code is final and never retried (CL-14).
-                _logger.LogError(new EventId(0, CliErrorIds.MqttMessageRefused), "The broker refused the message for topic {Topic} with reason code {ReasonCode}.", message.Topic, acknowledgment.ReasonCode);
+                _logger.LogError(new EventId(0, CliErrorIds.MqttMessageRefused), "The broker refused the message of {Source} for topic {Topic} with reason code {ReasonCode}.", item.Source, message.Topic, acknowledgment.ReasonCode);
                 return (MessageResult.Failed, false);
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -236,11 +238,11 @@ public sealed class MqttPublisher : IMessagePublisher
 
             if (attempt < limits.MaxPublishAttempts)
             {
-                _logger.LogWarning(new EventId(0, errorId), "Attempt {Attempt} of {Attempts} for topic {Topic} failed ({Reason}); retrying.", attempt, limits.MaxPublishAttempts, message.Topic, reason);
+                _logger.LogWarning(new EventId(0, errorId), "Attempt {Attempt} of {Attempts} for {Source} on topic {Topic} failed ({Reason}); retrying.", attempt, limits.MaxPublishAttempts, item.Source, message.Topic, reason);
             }
         }
 
-        _logger.LogError(new EventId(0, errorId), "The message for topic {Topic} was not published: {Reason}.", message.Topic, reason);
+        _logger.LogError(new EventId(0, errorId), "The message of {Source} for topic {Topic} was not published: {Reason}.", item.Source, message.Topic, reason);
         return (reconnectFailed ? MessageResult.ConnectionGone : MessageResult.Failed, true);
     }
 

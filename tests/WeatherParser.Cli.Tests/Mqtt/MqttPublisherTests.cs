@@ -54,6 +54,8 @@ public sealed class MqttPublisherTests
     private static MqttMessage Message(string topic, MqttMessageType type = MqttMessageType.Observation, MqttQualityOfService qos = MqttQualityOfService.AtLeastOnce, bool? retain = null) =>
         new(topic, PayloadBytes, qos, retain ?? (type is MqttMessageType.Observation or MqttMessageType.Forecast), type);
 
+    private static PublicationItem[] Items(params MqttMessage[] messages) => messages.Select(message => new PublicationItem(message, "dwd:00044")).ToArray();
+
     private void SetupConnect() => _adapter.Setup(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
     private void SetupDisconnect() => _adapter.Setup(a => a.DisconnectAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
     private void SetupAcknowledgment(MqttMessage message, bool success, string reason = "Success") =>
@@ -62,7 +64,7 @@ public sealed class MqttPublisherTests
     [TestMethod]
     public async Task Publish_EmptyList_NeverContactsTheBroker()
     {
-        (await _subject.PublishAllAsync(Array.Empty<MqttMessage>(), _settings, CancellationToken.None)).Should().Be(new PublicationReport(0, 0, 0));
+        (await _subject.PublishAllAsync(Array.Empty<PublicationItem>(), _settings, CancellationToken.None)).Should().Be(new PublicationReport(0, 0, 0));
     }
 
     [TestMethod]
@@ -73,7 +75,7 @@ public sealed class MqttPublisherTests
         SetupDisconnect();
         MqttMessage? sent = null;
         _adapter.Setup(a => a.PublishAsync(It.IsAny<MqttMessage>(), It.IsAny<CancellationToken>())).Callback<MqttMessage, CancellationToken>((m, _) => sent = m).ReturnsAsync(new MqttPublishAcknowledgment(true, "Success"));
-        var report = await _subject.PublishAllAsync(new[] { message }, _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Items(message), _settings, CancellationToken.None);
         report.Should().Be(new PublicationReport(1, 0, 0));
         sent.Should().BeSameAs(message);
         sent!.Topic.Should().Be("haus/weather/dwd/00044");
@@ -89,7 +91,7 @@ public sealed class MqttPublisherTests
         SetupDisconnect();
         var acknowledgment = new TaskCompletionSource<MqttPublishAcknowledgment>(TaskCreationOptions.RunContinuationsAsynchronously);
         _adapter.Setup(a => a.PublishAsync(It.IsAny<MqttMessage>(), It.IsAny<CancellationToken>())).Returns(acknowledgment.Task);
-        var publication = _subject.PublishAllAsync(new[] { Message("t/1") }, _settings, CancellationToken.None);
+        var publication = _subject.PublishAllAsync(Items(Message("t/1")), _settings, CancellationToken.None);
         await Task.Delay(50);
         publication.IsCompleted.Should().BeFalse();
         acknowledgment.SetResult(new MqttPublishAcknowledgment(true, "Success"));
@@ -103,7 +105,7 @@ public sealed class MqttPublisherTests
         SetupDisconnect();
         var message = Message("t/1");
         SetupAcknowledgment(message, false, "NotAuthorized");
-        var report = await _subject.PublishAllAsync(new[] { message }, _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Items(message), _settings, CancellationToken.None);
         report.Should().Be(new PublicationReport(0, 1, 0));
         _stderr.ToString().Should().Contain(" ERROR CLI-MQTT-MESSAGE-REFUSED command=ParseDWD ");
         _stderr.ToString().Should().Contain("t/1");
@@ -119,7 +121,7 @@ public sealed class MqttPublisherTests
         var second = Message("t/2");
         SetupAcknowledgment(first, false, "QuotaExceeded");
         SetupAcknowledgment(second, true);
-        var report = await _subject.PublishAllAsync(new[] { first, second }, _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Items(first, second), _settings, CancellationToken.None);
         report.Should().Be(new PublicationReport(1, 1, 0));
     }
 
@@ -128,7 +130,7 @@ public sealed class MqttPublisherTests
     [TestMethod]
     public async Task Publish_MessageWithQosOtherThanOne_RefusedBeforeConnect(MqttQualityOfService qos)
     {
-        var act = () => _subject.PublishAllAsync(new[] { Message("t/1", qos: qos) }, _settings, CancellationToken.None);
+        var act = () => _subject.PublishAllAsync(Items(Message("t/1", qos: qos)), _settings, CancellationToken.None);
         (await act.Should().ThrowAsync<CliException>()).Which.ErrorId.Should().Be("CLI-UNEXPECTED");
     }
 
@@ -137,7 +139,7 @@ public sealed class MqttPublisherTests
     [TestMethod]
     public async Task Publish_StationListRetained_RefusedBeforeConnect(MqttMessageType type)
     {
-        var act = () => _subject.PublishAllAsync(new[] { Message("t/1", type, retain: true) }, _settings, CancellationToken.None);
+        var act = () => _subject.PublishAllAsync(Items(Message("t/1", type, retain: true)), _settings, CancellationToken.None);
         (await act.Should().ThrowAsync<CliException>()).Which.ErrorId.Should().Be("CLI-UNEXPECTED");
     }
 
@@ -146,14 +148,14 @@ public sealed class MqttPublisherTests
     [TestMethod]
     public async Task Publish_ObservationNotRetained_RefusedBeforeConnect(MqttMessageType type)
     {
-        var act = () => _subject.PublishAllAsync(new[] { Message("t/1", type, retain: false) }, _settings, CancellationToken.None);
+        var act = () => _subject.PublishAllAsync(Items(Message("t/1", type, retain: false)), _settings, CancellationToken.None);
         (await act.Should().ThrowAsync<CliException>()).Which.ErrorId.Should().Be("CLI-UNEXPECTED");
     }
 
     [TestMethod]
     public async Task Publish_InvalidMessageAfterValidOne_NothingConnected()
     {
-        var act = () => _subject.PublishAllAsync(new[] { Message("t/1"), Message("t/2", MqttMessageType.CdcStationList, retain: true) }, _settings, CancellationToken.None);
+        var act = () => _subject.PublishAllAsync(Items(Message("t/1"), Message("t/2", MqttMessageType.CdcStationList, retain: true)), _settings, CancellationToken.None);
         (await act.Should().ThrowAsync<CliException>()).Which.ErrorId.Should().Be("CLI-UNEXPECTED");
     }
 
@@ -167,7 +169,7 @@ public sealed class MqttPublisherTests
         SetupAcknowledgment(first, true);
         SetupAcknowledgment(second, true);
         SetupDisconnect();
-        var report = await _subject.PublishAllAsync(new[] { first, second }, _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Items(first, second), _settings, CancellationToken.None);
         report.Should().Be(new PublicationReport(2, 0, 0));
         Regex.Matches(_stderr.ToString(), " WARNING ").Count.Should().Be(1);
         _stderr.ToString().Should().Contain("unencrypted");
@@ -180,7 +182,7 @@ public sealed class MqttPublisherTests
         SetupDisconnect();
         var message = Message("t/1");
         SetupAcknowledgment(message, true);
-        var report = await _subject.PublishAllAsync(new[] { message }, _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Items(message), _settings, CancellationToken.None);
         report.Should().Be(new PublicationReport(1, 0, 0));
         _stderr.ToString().Should().NotContain(" WARNING ");
     }
@@ -189,7 +191,7 @@ public sealed class MqttPublisherTests
     public async Task Connect_Failure_FailsWithMqttConnectFailed_NothingPublished()
     {
         _adapter.Setup(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>())).ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionFailed, "No connection could be made."));
-        var act = () => _subject.PublishAllAsync(new[] { Message("t/1") }, _settings, CancellationToken.None);
+        var act = () => _subject.PublishAllAsync(Items(Message("t/1")), _settings, CancellationToken.None);
         (await act.Should().ThrowAsync<CliException>()).Which.ErrorId.Should().Be("CLI-MQTT-CONNECT-FAILED");
     }
 
@@ -198,7 +200,7 @@ public sealed class MqttPublisherTests
     {
         _settings = Settings(useTls: true, credentials: new BrokerCredentials("marker-user-4711", "marker-pass-4711"));
         _adapter.Setup(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>())).ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionRefused, "Not authorized."));
-        var act = () => _subject.PublishAllAsync(new[] { Message("t/1") }, _settings, CancellationToken.None);
+        var act = () => _subject.PublishAllAsync(Items(Message("t/1")), _settings, CancellationToken.None);
         var exception = (await act.Should().ThrowAsync<CliException>()).Which;
         exception.ErrorId.Should().Be("CLI-MQTT-CONNECT-FAILED");
         exception.Message.Should().NotContain("marker-user-4711").And.NotContain("marker-pass-4711");
@@ -213,7 +215,7 @@ public sealed class MqttPublisherTests
         var message = Message("t/1");
         SetupAcknowledgment(message, true);
         _adapter.Setup(a => a.DisconnectAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionLost, "Lost."));
-        var report = await _subject.PublishAllAsync(new[] { message }, _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Items(message), _settings, CancellationToken.None);
         report.Should().Be(new PublicationReport(1, 0, 0));
     }
 
@@ -230,9 +232,9 @@ public sealed class MqttPublisherTests
     {
         await _subject.Invoking(s => s.PublishAllAsync(null!, _settings, CancellationToken.None))
             .Should().ThrowAsync<ArgumentNullException>()
-            .WithParameterName("messages");
+            .WithParameterName("items");
 
-        await _subject.Invoking(s => s.PublishAllAsync(Array.Empty<MqttMessage>(), null!, CancellationToken.None))
+        await _subject.Invoking(s => s.PublishAllAsync(Array.Empty<PublicationItem>(), null!, CancellationToken.None))
             .Should().ThrowAsync<ArgumentNullException>()
             .WithParameterName("settings");
     }
@@ -243,7 +245,7 @@ public sealed class MqttPublisherTests
         _settings = Settings(useTls: true, credentials: new BrokerCredentials("marker-user-4711", "marker-pass-4711"));
         const string Leaky = "failure for marker-user-4711 with marker-pass-4711";
         _adapter.Setup(a => a.ConnectAsync(_settings.Connection, It.IsAny<CancellationToken>())).ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionFailed, Leaky));
-        var act = () => _subject.PublishAllAsync(new[] { Message("t/1") }, _settings, CancellationToken.None);
+        var act = () => _subject.PublishAllAsync(Items(Message("t/1")), _settings, CancellationToken.None);
         var exception = (await act.Should().ThrowAsync<CliException>()).Which;
         exception.ErrorId.Should().Be("CLI-MQTT-CONNECT-FAILED");
         exception.Message.Should().NotContain("marker-user-4711").And.NotContain("marker-pass-4711");
@@ -258,7 +260,7 @@ public sealed class MqttPublisherTests
         SetupDisconnect();
         var message = Message("t/1");
         _adapter.Setup(a => a.PublishAsync(It.Is<MqttMessage>(m => ReferenceEquals(m, message)), It.IsAny<CancellationToken>())).ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionLost, "failure for marker-user-4711 with marker-pass-4711"));
-        var report = await _subject.PublishAllAsync(new[] { message }, _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Items(message), _settings, CancellationToken.None);
         report.Should().Be(new PublicationReport(0, 1, 0));
         _stderr.ToString().Should().NotContain("marker-user-4711").And.NotContain("marker-pass-4711");
         _stderr.ToString().Should().Contain("[redacted]");
@@ -272,9 +274,20 @@ public sealed class MqttPublisherTests
         var message = Message("t/1");
         SetupAcknowledgment(message, true);
         _adapter.Setup(a => a.DisconnectAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new MqttTransportException(MqttTransportFailure.ConnectionLost, "failure for marker-user-4711 with marker-pass-4711"));
-        var report = await _subject.PublishAllAsync(new[] { message }, _settings, CancellationToken.None);
+        var report = await _subject.PublishAllAsync(Items(message), _settings, CancellationToken.None);
         report.Should().Be(new PublicationReport(1, 0, 0));
         _stderr.ToString().Should().NotContain("marker-user-4711").And.NotContain("marker-pass-4711");
         _stderr.ToString().Should().Contain("[redacted]");
+    }
+
+    [TestMethod]
+    public async Task Publish_RefusedMessage_LoggedWithItsSource()
+    {
+        SetupConnect();
+        SetupDisconnect();
+        var message = Message("t/1");
+        SetupAcknowledgment(message, false, "NotAuthorized");
+        await _subject.PublishAllAsync(new[] { new PublicationItem(message, "osthessen:Teststation") }, _settings, CancellationToken.None);
+        _stderr.ToString().Should().Contain(" ERROR CLI-MQTT-MESSAGE-REFUSED command=ParseDWD source=osthessen:Teststation ");
     }
 }

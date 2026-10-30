@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -77,6 +78,7 @@ public class CommandRegistrarTests
         await writer.WriteAsync(TestExportData.CdcStations("00044"), new CommandContext(request.Common, null, TextWriter.Null), CancellationToken.None);
         
         queue.Messages.Should().ContainSingle().Which.MessageType.Should().Be(MqttMessageType.CdcStationList);
+        queue.Items.Should().ContainSingle().Which.Source.Should().Be("dwd:cdc-10min-now");
     }
 
     [TestMethod]
@@ -113,6 +115,8 @@ public class CommandRegistrarTests
 
         provider.GetRequiredService(HandlerType(request)).Should().NotBeNull();
     }
+
+    private static PublicationItem[] Items(params MqttMessage[] messages) => messages.Select(message => new PublicationItem(message, "dwd:00044")).ToArray();
 
     private static ServiceProvider Build(CliConfiguration configuration, CommandRequest request) => 
         CompositionRoot.Build(services => 

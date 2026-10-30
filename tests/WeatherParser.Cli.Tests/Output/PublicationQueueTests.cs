@@ -32,8 +32,8 @@ public sealed class PublicationQueueTests
         var message1 = new MqttMessage("t/1", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation);
         var message2 = new MqttMessage("t/2", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation);
 
-        _subject.Add(message1);
-        _subject.Add(message2);
+        _subject.Add(message1, "dwd:00044");
+        _subject.Add(message2, "dwd:00044");
 
         _subject.Messages.Select(m => m.Topic).Should().Equal("t/1", "t/2");
     }
@@ -41,7 +41,26 @@ public sealed class PublicationQueueTests
     [TestMethod]
     public void Add_Null_Throws()
     {
-        Action act = () => _subject.Add(null!);
+        Action act = () => _subject.Add(null!, "dwd:00044");
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [TestMethod]
+    public void Add_KeepsTheSourceWithTheMessage()
+    {
+        var message = new MqttMessage("t/1", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation);
+        _subject.Add(message, "dwd:00044");
+
+        _subject.Items.Should().ContainSingle();
+        _subject.Items[0].Source.Should().Be("dwd:00044");
+        _subject.Items[0].Message.Should().BeSameAs(message);
+    }
+
+    [TestMethod]
+    public void Add_NullSource_Throws()
+    {
+        var message = new MqttMessage("t/1", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation);
+        Action act = () => _subject.Add(message, null!);
         act.Should().Throw<ArgumentNullException>();
     }
 }

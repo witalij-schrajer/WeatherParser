@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using System.Linq;
 using System.Text;
 using WeatherParser.Cli.Arguments;
 using WeatherParser.Cli.Commands;
@@ -85,7 +86,7 @@ public sealed class CommandExecutorPublicationTests
             {
                 for (var i = 0; i < messages; i++)
                 {
-                    queue.Add(new MqttMessage($"t/{i}", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation));
+                    queue.Add(new MqttMessage($"t/{i}", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation), "dwd:00044");
                 }
             })
             .ReturnsAsync(new CommandOutcome(messages, 0, false));

@@ -129,9 +129,9 @@ public sealed class CommandExecutor : ICommandExecutor
             return outcome;
         }
 
-        var messages = services.GetRequiredService<IPublicationQueue>().Messages;
+        var items = services.GetRequiredService<IPublicationQueue>().Items;
         var publication = services.GetRequiredService<IMqttPublicationSettingsFactory>().Create(configuration, credentials);
-        var report = await services.GetRequiredService<IMessagePublisher>().PublishAllAsync(messages, publication, cancellationToken).ConfigureAwait(false);
+        var report = await services.GetRequiredService<IMessagePublisher>().PublishAllAsync(items, publication, cancellationToken).ConfigureAwait(false);
         var unpublished = report.Failed + report.NotAttempted;
         return new CommandOutcome(Math.Max(0, outcome.Succeeded - unpublished), outcome.Failed + unpublished, outcome.Cancelled);
     }

@@ -12,6 +12,7 @@ using WeatherParser.Parsing.Exceptions;
 using WeatherParser.Cli.Output;
 using WeatherParser.Parsing.Mqtt;
 using WeatherParser.Cli.Mqtt;
+using System.Linq;
 
 namespace WeatherParser.Cli.Tests;
 
@@ -367,7 +368,7 @@ public sealed class CommandExecutorTests
             {
                 for (var i = 0; i < messages; i++)
                 {
-                    queue.Add(new MqttMessage($"t/{i}", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation));
+                    queue.Add(new MqttMessage($"t/{i}", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation), "dwd:00044");
                 }
             })
             .ReturnsAsync(handlerOutcome);
@@ -379,7 +380,7 @@ public sealed class CommandExecutorTests
     public async Task Execute_MqttMode_PublishesTheQueueAfterTheHandler()
     {
         var (request, queue) = SetupMqttRun(new CommandOutcome(1, 0, false), 1);
-        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<MqttMessage>>(m => m.Count == 1 && m[0].Topic == "t/0"), Publication, It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 0, 0));
+        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<PublicationItem>>(m => m.Count == 1 && m[0].Message.Topic == "t/0"), Publication, It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 0, 0));
         var subject = CreateSubject();
 
         var exitCode = subject.Execute(request, _stdout, _stderr);
@@ -392,7 +393,7 @@ public sealed class CommandExecutorTests
     public async Task Execute_MqttMode_OnePublicationFails_ExitPartial()
     {
         var (request, queue) = SetupMqttRun(new CommandOutcome(2, 0, false), 2);
-        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<MqttMessage>>(m => m.Count == 2), Publication, It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 1, 0));
+        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<PublicationItem>>(m => m.Count == 2), Publication, It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 1, 0));
         var subject = CreateSubject();
 
         var exitCode = subject.Execute(request, _stdout, _stderr);
@@ -405,7 +406,7 @@ public sealed class CommandExecutorTests
     public async Task Execute_MqttMode_NothingPublished_ExitFailure()
     {
         var (request, queue) = SetupMqttRun(new CommandOutcome(1, 0, false), 1);
-        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<MqttMessage>>(m => m.Count == 1), Publication, It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(0, 0, 1));
+        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<PublicationItem>>(m => m.Count == 1), Publication, It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(0, 0, 1));
         var subject = CreateSubject();
 
         var exitCode = subject.Execute(request, _stdout, _stderr);
@@ -418,7 +419,7 @@ public sealed class CommandExecutorTests
     public async Task Execute_MqttMode_ItemFailureAndPublishedItem_ExitPartial()
     {
         var (request, queue) = SetupMqttRun(new CommandOutcome(1, 1, false), 1);
-        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<MqttMessage>>(m => m.Count == 1), Publication, It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 0, 0));
+        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<PublicationItem>>(m => m.Count == 1), Publication, It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 0, 0));
         var subject = CreateSubject();
 
         var exitCode = subject.Execute(request, _stdout, _stderr);
@@ -431,7 +432,7 @@ public sealed class CommandExecutorTests
     public async Task Execute_MqttMode_ConnectFailure_LogsIdExitFailure()
     {
         var (request, queue) = SetupMqttRun(new CommandOutcome(1, 0, false), 1);
-        _publisher.Setup(p => p.PublishAllAsync(It.IsAny<IReadOnlyList<MqttMessage>>(), Publication, It.IsAny<CancellationToken>())).ThrowsAsync(new CliException(CliErrorIds.MqttConnectFailed, "The broker is not reachable."));
+        _publisher.Setup(p => p.PublishAllAsync(It.IsAny<IReadOnlyList<PublicationItem>>(), Publication, It.IsAny<CancellationToken>())).ThrowsAsync(new CliException(CliErrorIds.MqttConnectFailed, "The broker is not reachable."));
         var subject = CreateSubject();
 
         var exitCode = subject.Execute(request, _stdout, _stderr);
@@ -446,7 +447,7 @@ public sealed class CommandExecutorTests
     {
         var credentials = new BrokerCredentials("user", "secret");
         var (request, queue) = SetupMqttRun(new CommandOutcome(1, 0, false), 1, credentials);
-        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<MqttMessage>>(m => m.Count == 1), Publication, It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 0, 0));
+        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<PublicationItem>>(m => m.Count == 1), Publication, It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 0, 0));
         var subject = CreateSubject();
 
         var exitCode = subject.Execute(request, _stdout, _stderr);
