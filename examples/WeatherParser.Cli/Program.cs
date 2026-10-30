@@ -33,15 +33,29 @@ public static class Program
     /// <returns>The process exit code.</returns>
     public static int Main(string[] args, Stream standardOutputStream, Stream standardErrorStream)
     {
+        // Registered before anything else runs, so that a signal at any time cancels the command instead of ending the process (CL-18).
+        using var shutdownSignal = new ShutdownSignal(new PosixSignalRegistrar(), new ProcessTerminator(), TimeProvider.System);
+        return Main(args, standardOutputStream, standardErrorStream, shutdownSignal);
+    }
+
+    /// <summary>
+    /// Runs one invocation with the given streams and shutdown signal; the seam through which in-process tests raise a signal on every platform (CL-18).
+    /// </summary>
+    /// <param name="args">The command-line arguments.</param>
+    /// <param name="standardOutputStream">The standard output stream.</param>
+    /// <param name="standardErrorStream">The standard error stream.</param>
+    /// <param name="shutdownSignal">The shutdown signal whose token cancels the command (CL-18).</param>
+    /// <returns>The process exit code.</returns>
+    public static int Main(string[] args, Stream standardOutputStream, Stream standardErrorStream, IShutdownSignal shutdownSignal)
+    {
         ArgumentNullException.ThrowIfNull(standardOutputStream);
         ArgumentNullException.ThrowIfNull(standardErrorStream);
+        ArgumentNullException.ThrowIfNull(shutdownSignal);
 
         // Console.Out uses the console code page when redirected on Windows; the document and the log lines are UTF-8 without byte-order mark (CL-12, REQ-068).
         using var standardOutput = new StreamWriter(standardOutputStream, new UTF8Encoding(false), leaveOpen: true) { AutoFlush = true };
         using var standardError = new StreamWriter(standardErrorStream, new UTF8Encoding(false), leaveOpen: true) { AutoFlush = true };
 
-        // Registered before anything else runs, so that a signal at any time cancels the command instead of ending the process (CL-18).
-        using var shutdownSignal = new ShutdownSignal(new PosixSignalRegistrar(), new ProcessTerminator(), TimeProvider.System);
         var environment = new EnvironmentReader();
         var exitCodePolicy = new ExitCodePolicy();
         var executor = new CommandExecutor(

@@ -12,6 +12,7 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
     private readonly string _baseUri;
     private int _requestCount;
     private readonly ConcurrentQueue<string> _paths = new();
+    private readonly CancellationTokenSource _stopping = new();
 
     public LoopbackHttpServer()
     {
@@ -37,6 +38,9 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
 
     public Func<string, string?> Redirect { get; set; } = _ => null;
 
+    // Awaited before every response; a test can hold a response back until the server is disposed.
+    public Func<string, CancellationToken, Task> BeforeResponse { get; set; } = (_, _) => Task.CompletedTask;
+
     private async Task AcceptLoopAsync()
     {
         while (_listener.IsListening)
@@ -55,6 +59,16 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
             var path = context.Request.Url!.PathAndQuery;
             _paths.Enqueue(path);
             
+            try
+            {
+                await BeforeResponse(path, _stopping.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                context.Response.Abort();
+                return;
+            }
+
             var redirectTarget = Redirect(path);
             if (redirectTarget != null)
             {
@@ -75,6 +89,7 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        _stopping.Cancel();
         _listener.Stop();
         _listener.Close();
         try
@@ -87,5 +102,6 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
 
         // Ensure the task is awaited even if it's already completed.
         await _loop.ContinueWith(_ => { }, TaskScheduler.Default);
+        _stopping.Dispose();
     }
 }

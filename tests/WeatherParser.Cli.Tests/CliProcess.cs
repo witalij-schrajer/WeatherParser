@@ -49,6 +49,22 @@ internal sealed class CliProcess
     }
 
     /// <summary>
+    /// Runs the CLI and calls the callback with the child's process ID while the child runs; the timeout also bounds the callback.
+    /// </summary>
+    /// <param name="arguments">The command-line arguments.</param>
+    /// <param name="workingDirectory">The working directory.</param>
+    /// <param name="timeout">The timeout.</param>
+    /// <param name="environment">The environment variables.</param>
+    /// <param name="whileRunning">Called with the child's process ID after the start; null for none.</param>
+    /// <returns>The result of the process run.</returns>
+    public static async Task<CliProcessResult> RunCliAsync(IReadOnlyList<string> arguments, string workingDirectory, TimeSpan timeout, IReadOnlyDictionary<string, string?>? environment, Func<int, Task> whileRunning)
+    {
+        var cliArguments = new List<string> { Path.Combine(AppContext.BaseDirectory, "WeatherParser.dll") };
+        cliArguments.AddRange(arguments);
+        return await RunAsync("dotnet", cliArguments, workingDirectory, timeout, environment, whileRunning);
+    }
+
+    /// <summary>
     /// Runs the specified executable with the specified arguments.
     /// </summary>
     /// <param name="fileName">The file name.</param>
@@ -56,8 +72,9 @@ internal sealed class CliProcess
     /// <param name="workingDirectory">The working directory.</param>
     /// <param name="timeout">The timeout.</param>
     /// <param name="environment">The environment variables.</param>
+    /// <param name="whileRunning">Called with the child's process ID after the start; null for none.</param>
     /// <returns>The result of the process run.</returns>
-    public static async Task<CliProcessResult> RunAsync(string fileName, IReadOnlyList<string> arguments, string workingDirectory, TimeSpan timeout, IReadOnlyDictionary<string, string?>? environment)
+    public static async Task<CliProcessResult> RunAsync(string fileName, IReadOnlyList<string> arguments, string workingDirectory, TimeSpan timeout, IReadOnlyDictionary<string, string?>? environment, Func<int, Task>? whileRunning = null)
     {
         var startInfo = new ProcessStartInfo
         {
@@ -101,6 +118,11 @@ internal sealed class CliProcess
         using var cts = new CancellationTokenSource(timeout);
         try
         {
+            if (whileRunning != null)
+            {
+                await whileRunning(process.Id).WaitAsync(cts.Token);
+            }
+
             await process.WaitForExitAsync(cts.Token);
             await Task.WhenAll(stdoutTask, stderrTask).WaitAsync(cts.Token);
         }
