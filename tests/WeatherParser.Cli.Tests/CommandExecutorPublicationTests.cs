@@ -10,6 +10,8 @@ using WeatherParser.Cli.Diagnostics;
 using WeatherParser.Cli.Mqtt;
 using WeatherParser.Cli.Output;
 using WeatherParser.Cli.Tests.Configuration;
+using WeatherParser.Cli.Lifetime;
+using WeatherParser.Cli.Tests.Lifetime;
 using WeatherParser.Parsing.Mqtt;
 
 namespace WeatherParser.Cli.Tests;
@@ -52,7 +54,7 @@ public sealed class CommandExecutorPublicationTests
         _configuration = TestConfigurations.Valid();
         _configuration.Limits = new LimitsSection { MaxPublishAttempts = 1, RetryDelay = TimeSpan.Zero };
         _request = new ParseDwdRequest(new CommonOptions(OutputFormat.Mqtt, null, "c.json", false), "00044");
-        _subject = new CommandExecutor(_loader.Object, _registrar.Object, _commandRegistrar.Object, _validator.Object, new ExitCodePolicy(), new LibraryErrors(), new LogLineFormatter());
+        _subject = new CommandExecutor(_loader.Object, _registrar.Object, _commandRegistrar.Object, _validator.Object, new ExitCodePolicy(), new LibraryErrors(), new LogLineFormatter(), new TestShutdownSignal(), new LibraryDeadlineResolver(), TimeProvider.System);
     }
 
     /// <summary>

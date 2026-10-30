@@ -13,6 +13,8 @@ using WeatherParser.Cli.Output;
 using WeatherParser.Parsing.Mqtt;
 using WeatherParser.Cli.Mqtt;
 using System.Linq;
+using WeatherParser.Cli.Lifetime;
+using WeatherParser.Cli.Tests.Lifetime;
 
 namespace WeatherParser.Cli.Tests;
 
@@ -65,7 +67,7 @@ public sealed class CommandExecutorTests
         _mocks.VerifyAll();
     }
 
-    private ICommandExecutor CreateSubject() => new CommandExecutor(_loader.Object, _registrar.Object, _commandRegistrar.Object, _validator.Object, new ExitCodePolicy(), new LibraryErrors(), new LogLineFormatter());
+    private ICommandExecutor CreateSubject() => new CommandExecutor(_loader.Object, _registrar.Object, _commandRegistrar.Object, _validator.Object, new ExitCodePolicy(), new LibraryErrors(), new LogLineFormatter(), new TestShutdownSignal(), new LibraryDeadlineResolver(), TimeProvider.System);
 
     private void RegisterParseDwdHandler() => _commandRegistrar.Setup(r => r.Register(It.IsAny<IServiceCollection>(), _request)).Callback<IServiceCollection, CommandRequest>((services, _) => services.AddSingleton(_handler.Object));
 

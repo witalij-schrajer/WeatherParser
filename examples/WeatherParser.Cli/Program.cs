@@ -5,6 +5,7 @@ using WeatherParser.Parsing.Geography;
 using Microsoft.Extensions.Logging;
 using WeatherParser.Cli.Commands;
 using System.Text;
+using WeatherParser.Cli.Lifetime;
 
 namespace WeatherParser.Cli;
 
@@ -39,6 +40,8 @@ public static class Program
         using var standardOutput = new StreamWriter(standardOutputStream, new UTF8Encoding(false), leaveOpen: true) { AutoFlush = true };
         using var standardError = new StreamWriter(standardErrorStream, new UTF8Encoding(false), leaveOpen: true) { AutoFlush = true };
 
+        // Registered before anything else runs, so that a signal at any time cancels the command instead of ending the process (CL-18).
+        using var shutdownSignal = new ShutdownSignal(new PosixSignalRegistrar(), new ProcessTerminator(), TimeProvider.System);
         var environment = new EnvironmentReader();
         var exitCodePolicy = new ExitCodePolicy();
         var executor = new CommandExecutor(
@@ -48,7 +51,10 @@ public static class Program
             new ConfigurationValidator(new ReferenceStationResolver(), new CredentialProvider(environment, new FileModeReader())),
             exitCodePolicy,
             new LibraryErrors(),
-            new LogLineFormatter());
+            new LogLineFormatter(),
+            shutdownSignal,
+            new LibraryDeadlineResolver(),
+            TimeProvider.System);
         return Run(
             args,
             standardOutput,

@@ -6,6 +6,7 @@ using WeatherParser.Cli.Diagnostics;
 using WeatherParser.Cli.Commands;
 using WeatherParser.Cli.Output;
 using WeatherParser.Cli.Mqtt;
+using WeatherParser.Cli.Lifetime;
 
 namespace WeatherParser.Cli;
 
@@ -14,6 +15,9 @@ namespace WeatherParser.Cli;
 /// </summary>
 public sealed class CommandExecutor : ICommandExecutor
 {
+    // The CL-14 default of Limits.CommandDeadline.
+    private static readonly TimeSpan DefaultCommandDeadline = TimeSpan.FromMinutes(10);
+
     private readonly IConfigurationLoader _loader;
     private readonly IConfigurationRegistrar _registrar;
     private readonly ICommandRegistrar _commandRegistrar;
@@ -21,6 +25,9 @@ public sealed class CommandExecutor : ICommandExecutor
     private readonly IExitCodePolicy _exitCodePolicy;
     private readonly ILibraryErrors _libraryErrors;
     private readonly ILogLineFormatter _formatter;
+    private readonly IShutdownSignal _shutdownSignal;
+    private readonly ILibraryDeadlineResolver _deadlineResolver;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommandExecutor"/> class.
@@ -32,7 +39,10 @@ public sealed class CommandExecutor : ICommandExecutor
     /// <param name="exitCodePolicy">The exit code policy.</param>
     /// <param name="libraryErrors">The mapping of library exceptions to error IDs.</param>
     /// <param name="formatter">The log line formatter.</param>
-    public CommandExecutor(IConfigurationLoader loader, IConfigurationRegistrar registrar, ICommandRegistrar commandRegistrar, IConfigurationValidator validator, IExitCodePolicy exitCodePolicy, ILibraryErrors libraryErrors, ILogLineFormatter formatter)
+    /// <param name="shutdownSignal">The shutdown signal whose token cancels the command (CL-18).</param>
+    /// <param name="deadlineResolver">The resolver of the selected command's library deadline (CL-14).</param>
+    /// <param name="timeProvider">The time provider of the command deadline (CL-14).</param>
+    public CommandExecutor(IConfigurationLoader loader, IConfigurationRegistrar registrar, ICommandRegistrar commandRegistrar, IConfigurationValidator validator, IExitCodePolicy exitCodePolicy, ILibraryErrors libraryErrors, ILogLineFormatter formatter, IShutdownSignal shutdownSignal, ILibraryDeadlineResolver deadlineResolver, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(loader);
         ArgumentNullException.ThrowIfNull(registrar);
@@ -41,6 +51,9 @@ public sealed class CommandExecutor : ICommandExecutor
         ArgumentNullException.ThrowIfNull(exitCodePolicy);
         ArgumentNullException.ThrowIfNull(libraryErrors);
         ArgumentNullException.ThrowIfNull(formatter);
+        ArgumentNullException.ThrowIfNull(shutdownSignal);
+        ArgumentNullException.ThrowIfNull(deadlineResolver);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         _loader = loader;
         _registrar = registrar;
@@ -49,6 +62,9 @@ public sealed class CommandExecutor : ICommandExecutor
         _exitCodePolicy = exitCodePolicy;
         _libraryErrors = libraryErrors;
         _formatter = formatter;
+        _shutdownSignal = shutdownSignal;
+        _deadlineResolver = deadlineResolver;
+        _timeProvider = timeProvider;
     }
 
     /// <inheritdoc/>
@@ -76,11 +92,38 @@ public sealed class CommandExecutor : ICommandExecutor
             {
                 provider.GetRequiredService<IOutputDestination>().Check(request.Common);
             }
+
+            var limits = configuration.Limits;
+            _shutdownSignal.Configure(limits?.ShutdownGracePeriod ?? ShutdownSignal.DefaultGracePeriod, logger);
+            var commandDeadline = limits?.CommandDeadline ?? DefaultCommandDeadline;
+            var libraryDeadline = _deadlineResolver.Resolve(provider, request);
+            if (commandDeadline < libraryDeadline)
+            {
+                // The library deadline is not shortened; the command deadline ends the work first (CL-14).
+                logger.LogWarning(new EventId(0, CliErrorIds.DeadlineExceeded), "The command deadline {CommandDeadline} is shorter than the library deadline {LibraryDeadline} of the command; the command deadline ends the work first.", commandDeadline, libraryDeadline);
+            }
+
             var context = new CommandContext(request.Common, settings.StationId, standardOutput);
+            // One token for every library, output and transport call: the shutdown signal or the command deadline cancels it (CL-14, CL-18).
+            using var deadline = new CancellationTokenSource(commandDeadline, _timeProvider);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(_shutdownSignal.Token, deadline.Token);
             try
             {
-                var outcome = RunAndPublishAsync(provider, request, context, configuration, settings.Credentials, CancellationToken.None).GetAwaiter().GetResult();
+                var outcome = RunAndPublishAsync(provider, request, context, configuration, settings.Credentials, linked.Token).GetAwaiter().GetResult();
                 return _exitCodePolicy.ForOutcome(outcome);
+            }
+            catch (OperationCanceledException) when (_shutdownSignal.Token.IsCancellationRequested)
+            {
+                // A signal wins over the deadline; an interrupted export or publication is never reported as successful (CL-11, CL-18, REQ-007).
+                logger.LogError(new EventId(0, CliErrorIds.Cancelled), "The command was cancelled by a shutdown signal; its output is incomplete and not reported as successful.");
+                return _exitCodePolicy.ForRuntimeError(CliErrorIds.Cancelled);
+            }
+            catch (OperationCanceledException exception) when (deadline.IsCancellationRequested)
+            {
+                // Messages acknowledged before the deadline make it a partial failure (CL-11, CL-14).
+                var published = (exception as PublicationCancelledException)?.Report.Published ?? 0;
+                logger.LogError(new EventId(0, CliErrorIds.DeadlineExceeded), "The command did not finish within the command deadline {CommandDeadline}; the remaining work was cancelled.", commandDeadline);
+                return _exitCodePolicy.ForOutcome(new CommandOutcome(published, 1, false));
             }
             catch (CliException exception)
             {

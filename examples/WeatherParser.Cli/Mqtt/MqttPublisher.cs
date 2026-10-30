@@ -89,6 +89,11 @@ public sealed class MqttPublisher : IMessagePublisher
 
             return new PublicationReport(published, failed, messages.Count - published - failed);
         }
+        catch (OperationCanceledException exception) when (cancellationToken.IsCancellationRequested)
+        {
+            // The counts reached so far survive the cancellation, so that the caller can tell a partial publication from none (CL-11, CL-15).
+            throw new PublicationCancelledException(new PublicationReport(published, failed, messages.Count - published - failed), exception, cancellationToken);
+        }
         finally
         {
             if (connected)
