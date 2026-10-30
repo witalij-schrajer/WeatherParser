@@ -1,5 +1,8 @@
 using System.Diagnostics;
+using System.Text;
 using FluentAssertions;
+using WeatherParser.Cli.Arguments;
+using WeatherParser.Cli.Configuration;
 
 namespace WeatherParser.Cli.Tests;
 
@@ -177,6 +180,96 @@ public sealed class ProcessTests
         result.ExitCode.Should().NotBe(0);
         result.StandardOutput.Should().BeEmpty();
         result.StandardError.Should().StartWith("CLI-CONFIG-INVALID:");
+    }
+
+    /// <summary>
+    /// Verifies that parsing DWD without a station ID exits before retrieval (CL-06).
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-06")]
+    public async Task Process_ParseDwdWithoutStation_ExitsBeforeRetrieval()
+    {
+        await using var server = new LoopbackHttpServer();
+        var configPath = Path.Combine(_workingDirectory, "config.json");
+        var configJson = $$"""
+            {
+              "Dwd": {
+                "Catalog": {
+                  "AirTemperatureStationList": "{{server.BaseUri}}cdc/air_temperature/now/zehn_now_tu_Beschreibung_Stationen.txt",
+                  "AirTemperatureNowDirectory": "{{server.BaseUri}}cdc/air_temperature/now/",
+                  "WindStationList": "{{server.BaseUri}}cdc/wind/now/zehn_now_ff_Beschreibung_Stationen.txt",
+                  "WindNowDirectory": "{{server.BaseUri}}cdc/wind/now/",
+                  "PrecipitationStationList": "{{server.BaseUri}}cdc/precipitation/now/zehn_now_rr_Beschreibung_Stationen.txt",
+                  "PrecipitationNowDirectory": "{{server.BaseUri}}cdc/precipitation/now/",
+                  "SolarStationList": "{{server.BaseUri}}cdc/solar/now/zehn_now_sd_Beschreibung_Stationen.txt",
+                  "SolarNowDirectory": "{{server.BaseUri}}cdc/solar/now/"
+                }
+              }
+            }
+            """;
+        await File.WriteAllTextAsync(configPath, configJson);
+
+        var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--Output", "json", "--Config", "config.json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
+        result.TimedOut.Should().BeFalse();
+        result.ExitCode.Should().NotBe(0);
+        result.StandardOutput.Should().BeEmpty();
+        result.StandardError.Should().StartWith("CLI-DWD-STATION-MISSING:");
+        server.RequestCount.Should().Be(0);
+        Directory.EnumerateFileSystemEntries(_workingDirectory).Should().ContainSingle().Which.Should().Be(configPath);
+    }
+
+    /// <summary>
+    /// Verifies that credential values are never printed to stdout or stderr (CL-07).
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-07")]
+    public async Task Process_CredentialValues_NeverPrinted()
+    {
+        var configPath = Path.Combine(_workingDirectory, "config.json");
+        var mqttConfigJson = """
+            {
+              "Broker": {
+                "Host": "broker.example.invalid"
+              },
+              "Topics": {
+                "Observation": {
+                  "TopicTemplate": "t/{source}"
+                }
+              }
+            }
+            """;
+        var configJson = $$"""
+            {
+              "Dwd": {
+                "ReferenceStationId": "00044",
+                "Catalog": {
+                  "AirTemperatureStationList": "https://example.invalid/cdc/air_temperature/now/zehn_now_tu_Beschreibung_Stationen.txt",
+                  "AirTemperatureNowDirectory": "https://example.invalid/cdc/air_temperature/now/",
+                  "WindStationList": "https://example.invalid/cdc/wind/now/zehn_now_ff_Beschreibung_Stationen.txt",
+                  "WindNowDirectory": "https://example.invalid/cdc/wind/now/",
+                  "PrecipitationStationList": "https://example.invalid/cdc/precipitation/now/zehn_now_rr_Beschreibung_Stationen.txt",
+                  "PrecipitationNowDirectory": "https://example.invalid/cdc/precipitation/now/",
+                  "SolarStationList": "https://example.invalid/cdc/solar/now/zehn_now_sd_Beschreibung_Stationen.txt",
+                  "SolarNowDirectory": "https://example.invalid/cdc/solar/now/"
+                }
+              },
+              "Mqtt": {{mqttConfigJson}}
+            }
+            """;
+        await File.WriteAllTextAsync(configPath, configJson);
+
+        var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--StationID", "00044", "--Config", "config.json" }, _workingDirectory, _timeout,
+            new Dictionary<string, string?>
+            {
+                ["WEATHERPARSER_CONFIG"] = null,
+                ["WEATHERPARSER_MQTT_USERNAME"] = null,
+                ["WEATHERPARSER_MQTT_PASSWORD"] = "s3cr3t-Marker-7f2a"
+            });
+        result.TimedOut.Should().BeFalse();
+        result.ExitCode.Should().NotBe(0);
+        result.StandardError.Should().StartWith("CLI-CREDENTIALS-INVALID:");
+        result.StandardOutput.Should().NotContain("s3cr3t-Marker-7f2a");
+        result.StandardError.Should().NotContain("s3cr3t-Marker-7f2a");
     }
 
     private const string MinimalValidConfiguration = """

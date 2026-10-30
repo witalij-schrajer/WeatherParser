@@ -25,13 +25,26 @@ public sealed class ConfigurationValidator : IConfigurationValidator
     private readonly IReferenceStationResolver _stationResolver;
     private readonly ICredentialProvider _credentialProvider;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConfigurationValidator"/> class.
+    /// </summary>
+    /// <param name="stationResolver">The reference station resolver to use.</param>
+    /// <param name="credentialProvider">The credential provider to use.</param>
     public ConfigurationValidator(IReferenceStationResolver stationResolver, ICredentialProvider credentialProvider)
     {
-        _stationResolver = stationResolver ?? throw new ArgumentNullException(nameof(stationResolver));
-        _credentialProvider = credentialProvider ?? throw new ArgumentNullException(nameof(credentialProvider));
+        ArgumentNullException.ThrowIfNull(stationResolver);
+        ArgumentNullException.ThrowIfNull(credentialProvider);
+        _stationResolver = stationResolver;
+        _credentialProvider = credentialProvider;
     }
 
     /// <inheritdoc />
+    /// <summary>
+    /// Validates the specified service provider, configuration and command request.
+    /// </summary>
+    /// <param name="services">The service provider to validate.</param>
+    /// <param name="configuration">The CLI configuration to validate.</param>
+    /// <param name="request">The command request to validate.</param>
     public void Validate(IServiceProvider services, CliConfiguration configuration, CommandRequest request)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -77,6 +90,10 @@ public sealed class ConfigurationValidator : IConfigurationValidator
         }
     }
 
+    /// <summary>
+    /// Validates the specified broker section.
+    /// </summary>
+    /// <param name="broker">The broker section to validate.</param>
     private static void ValidateBroker(BrokerSection? broker)
     {
         if (string.IsNullOrEmpty(broker?.Host))
@@ -98,6 +115,11 @@ public sealed class ConfigurationValidator : IConfigurationValidator
         }
     }
 
+    /// <summary>
+    /// Resolves the command services for the specified service provider and command request.
+    /// </summary>
+    /// <param name="services">The service provider to resolve services from.</param>
+    /// <param name="request">The command request to resolve services for.</param>
     private static void ResolveCommandServices(IServiceProvider services, CommandRequest request)
     {
         // Creating the services runs the library's own option and endpoint validation (CL-05).
@@ -112,12 +134,23 @@ public sealed class ConfigurationValidator : IConfigurationValidator
         };
     }
 
+    /// <summary>
+    /// Resolves the MOSMIX selection for the specified service provider and refresh flag.
+    /// </summary>
+    /// <param name="services">The service provider to resolve services from.</param>
+    /// <param name="refresh">A value indicating whether to refresh the evidence.</param>
+    /// <returns>The resolved MOSMIX selection object.</returns>
     private static object ResolveMosmixSelection(IServiceProvider services, bool refresh)
     {
         var selector = services.GetRequiredService<IMosmixLocationSelector>();
         return refresh ? services.GetRequiredService<IMosmixSEvidenceRefresher>() : selector;
     }
 
+    /// <summary>
+    /// Checks the MQTT topic for the specified service provider and command request.
+    /// </summary>
+    /// <param name="services">The service provider to validate.</param>
+    /// <param name="request">The command request to validate.</param>
     private static void CheckTopic(IServiceProvider services, CommandRequest request)
     {
         var messageType = request switch
@@ -135,6 +168,14 @@ public sealed class ConfigurationValidator : IConfigurationValidator
         }
     }
 
+    /// <summary>
+    /// Checks the range of a value against specified minimum and maximum values.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to check.</typeparam>
+    /// <param name="name">The name of the setting being checked.</param>
+    /// <param name="value">The value to check.</param>
+    /// <param name="min">The minimum allowed value.</param>
+    /// <param name="max">The maximum allowed value.</param>
     private static void CheckRange<T>(string name, T? value, T min, T max)
         where T : struct, IComparable<T>
     {
@@ -144,6 +185,11 @@ public sealed class ConfigurationValidator : IConfigurationValidator
         }
     }
 
+    /// <summary>
+    /// Gets the library error ID from the specified exception.
+    /// </summary>
+    /// <param name="exception">The exception to get the error ID from.</param>
+    /// <returns>The library error ID, or null if not found.</returns>
     private static string? LibraryErrorId(Exception exception) => exception switch
     {
         ParserEndpointValidationException endpoint => endpoint.ErrorId,
@@ -156,5 +202,10 @@ public sealed class ConfigurationValidator : IConfigurationValidator
         _ => null,
     };
 
+    /// <summary>
+    /// Creates a new invalid configuration exception with the specified message.
+    /// </summary>
+    /// <param name="message">The message for the exception.</param>
+    /// <returns>A new <see cref="CliException"/> instance.</returns>
     private static CliException Invalid(string message) => new(ConfigInvalid, message);
 }
