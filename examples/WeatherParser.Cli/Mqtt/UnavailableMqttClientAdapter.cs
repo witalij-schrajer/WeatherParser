@@ -46,4 +46,7 @@ public sealed class UnavailableMqttClientAdapter : IMqttClientAdapter
     {
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc/>
+    public bool IsConnected => false;
 }

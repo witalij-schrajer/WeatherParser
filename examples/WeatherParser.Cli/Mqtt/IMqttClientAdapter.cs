@@ -29,4 +29,9 @@ public interface IMqttClientAdapter : IDisposable
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task DisconnectAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets a value indicating whether the connection is currently open; read before a retry to decide whether to reconnect (CL-14).
+    /// </summary>
+    bool IsConnected { get; }
 }

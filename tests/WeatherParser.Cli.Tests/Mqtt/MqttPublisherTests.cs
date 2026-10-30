@@ -36,7 +36,7 @@ public sealed class MqttPublisherTests
         _stderr = new StringWriter();
         _loggerFactory = LoggerFactory.Create(builder => builder.SetMinimumLevel(LogLevel.Debug).AddProvider(new StandardErrorLoggerProvider(_stderr, TimeProvider.System, new LogLineFormatter(), LogLevel.Debug, "ParseDWD")));
         _settings = Settings(useTls: true, credentials: null);
-        _subject = new MqttPublisher(_adapter.Object, _loggerFactory.CreateLogger<MqttPublisher>());
+        _subject = new MqttPublisher(_adapter.Object, TimeProvider.System, _loggerFactory.CreateLogger<MqttPublisher>());
     }
 
     [TestCleanup]
@@ -220,8 +220,9 @@ public sealed class MqttPublisherTests
     [TestMethod]
     public void Constructor_NullArguments_Throw()
     {
-        ((Action)(() => new MqttPublisher(null!, _loggerFactory.CreateLogger<MqttPublisher>()))).Should().Throw<ArgumentNullException>().WithParameterName("adapter");
-        ((Action)(() => new MqttPublisher(_adapter.Object, null!))).Should().Throw<ArgumentNullException>().WithParameterName("logger");
+        ((Action)(() => new MqttPublisher(null!, TimeProvider.System, _loggerFactory.CreateLogger<MqttPublisher>()))).Should().Throw<ArgumentNullException>().WithParameterName("adapter");
+        ((Action)(() => new MqttPublisher(_adapter.Object, null!, _loggerFactory.CreateLogger<MqttPublisher>()))).Should().Throw<ArgumentNullException>().WithParameterName("timeProvider");
+        ((Action)(() => new MqttPublisher(_adapter.Object, TimeProvider.System, null!))).Should().Throw<ArgumentNullException>().WithParameterName("logger");
     }
 
     [TestMethod]

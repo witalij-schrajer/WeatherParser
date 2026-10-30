@@ -12,19 +12,30 @@ public sealed class MqttPublisher : IMessagePublisher
 {
     private readonly IMqttClientAdapter _adapter;
     private readonly ILogger<MqttPublisher> _logger;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MqttPublisher"/> class.
     /// </summary>
     /// <param name="adapter">The MQTT client adapter.</param>
+    /// <param name="timeProvider">The time provider for timeouts and retry delays (CL-14).</param>
     /// <param name="logger">The logger.</param>
-    public MqttPublisher(IMqttClientAdapter adapter, ILogger<MqttPublisher> logger)
+    public MqttPublisher(IMqttClientAdapter adapter, TimeProvider timeProvider, ILogger<MqttPublisher> logger)
     {
         ArgumentNullException.ThrowIfNull(adapter);
+        ArgumentNullException.ThrowIfNull(timeProvider);
         ArgumentNullException.ThrowIfNull(logger);
         
         _adapter = adapter;
+        _timeProvider = timeProvider;
         _logger = logger;
+    }
+
+    private enum MessageResult
+    {
+        Published,
+        Failed,
+        ConnectionGone,
     }
 
     /// <inheritdoc/>
@@ -43,35 +54,34 @@ public sealed class MqttPublisher : IMessagePublisher
             CheckMessage(message);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         if (!settings.Connection.UseTls)
         {
             _logger.LogWarning("TLS is disabled by 'Mqtt.Broker.AllowUnencrypted'; the broker connection is unencrypted.");
         }
 
-        try
-        {
-            await _adapter.ConnectAsync(settings.Connection, cancellationToken).ConfigureAwait(false);
-        }
-        catch (MqttTransportException exception)
-        {
-            // The adapter's message never contains credentials (CL-06).
-            throw new CliException(CliErrorIds.MqttConnectFailed, $"The connection to the MQTT broker {settings.Connection.Host}:{settings.Connection.Port} failed ({exception.Failure}): {exception.Message}");
-        }
+        await ConnectFirstAsync(settings, cancellationToken).ConfigureAwait(false);
 
         var published = 0;
         var failed = 0;
-        foreach (var message in messages)
+        var notAttempted = 0;
+        var suspect = false;
+        for (var index = 0; index < messages.Count; index++)
         {
-            var acknowledgment = await _adapter.PublishAsync(message, cancellationToken).ConfigureAwait(false);
-            if (acknowledgment.IsSuccess)
+            var (result, stillSuspect) = await PublishOneAsync(messages[index], settings, suspect, cancellationToken).ConfigureAwait(false);
+            suspect = stillSuspect;
+            if (result == MessageResult.Published)
             {
                 published++;
+                continue;
             }
-            else
+
+            failed++;
+            if (result == MessageResult.ConnectionGone)
             {
-                // A failure reason code is final and never retried (CL-14).
-                failed++;
-                _logger.LogError(new EventId(0, CliErrorIds.MqttMessageRefused), "The broker refused the message for topic {Topic} with reason code {ReasonCode}.", message.Topic, acknowledgment.ReasonCode);
+                // The connection could not be re-established: the remaining messages are never sent (CL-15).
+                notAttempted = messages.Count - index - 1;
+                break;
             }
         }
 
@@ -81,11 +91,124 @@ public sealed class MqttPublisher : IMessagePublisher
         }
         catch (MqttTransportException exception)
         {
-            // Every message already has its acknowledgment; a failed disconnect does not change the result.
+            // Every message already has its result; a failed disconnect does not change it.
             _logger.LogDebug("The MQTT disconnect failed: {Message}", exception.Message);
         }
 
-        return new PublicationReport(published, failed, 0);
+        return new PublicationReport(published, failed, notAttempted);
+    }
+
+    // The first connection gets at most MaxPublishAttempts attempts; a refusal is final (CL-14).
+    private async Task ConnectFirstAsync(MqttPublicationSettings settings, CancellationToken cancellationToken)
+    {
+        var limits = settings.Limits;
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                await ConnectOnceAsync(settings, cancellationToken).ConfigureAwait(false);
+                return;
+            }
+            catch (MqttTransportException exception) when (exception.Failure == MqttTransportFailure.ConnectionRefused || attempt >= limits.MaxPublishAttempts)
+            {
+                // The adapter's message never contains credentials (CL-06).
+                throw new CliException(CliErrorIds.MqttConnectFailed, $"The connection to the MQTT broker {settings.Connection.Host}:{settings.Connection.Port} failed after {attempt} attempt(s) ({exception.Failure}): {exception.Message}");
+            }
+            catch (MqttTransportException exception)
+            {
+                _logger.LogWarning(new EventId(0, CliErrorIds.MqttConnectFailed), "Connection attempt {Attempt} of {Attempts} failed ({Failure}); retrying.", attempt, limits.MaxPublishAttempts, exception.Failure);
+                await Task.Delay(limits.RetryDelay, _timeProvider, cancellationToken).ConfigureAwait(false);
+            }
+        }
+    }
+
+    // One connection attempt bounded by ConnectTimeout; a timeout is reported as a failed connection.
+    private async Task ConnectOnceAsync(MqttPublicationSettings settings, CancellationToken cancellationToken)
+    {
+        var timeout = settings.Limits.ConnectTimeout;
+        using var timer = new CancellationTokenSource(timeout, _timeProvider);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timer.Token);
+        try
+        {
+            await _adapter.ConnectAsync(settings.Connection, linked.Token).WaitAsync(linked.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new MqttTransportException(MqttTransportFailure.ConnectionFailed, $"The connection attempt timed out after {timeout}.");
+        }
+    }
+
+    // One message with at most MaxPublishAttempts attempts; an acknowledged message is never sent again and a refusal is final (CL-14).
+    private async Task<(MessageResult Result, bool Suspect)> PublishOneAsync(MqttMessage message, MqttPublicationSettings settings, bool suspect, CancellationToken cancellationToken)
+    {
+        var limits = settings.Limits;
+        var errorId = CliErrorIds.MqttPublishFailed;
+        var reason = string.Empty;
+        var reconnectFailed = false;
+        for (var attempt = 1; attempt <= limits.MaxPublishAttempts; attempt++)
+        {
+            if (attempt > 1)
+            {
+                await Task.Delay(limits.RetryDelay, _timeProvider, cancellationToken).ConfigureAwait(false);
+            }
+
+            reconnectFailed = false;
+            if (suspect && !_adapter.IsConnected)
+            {
+                try
+                {
+                    await ConnectOnceAsync(settings, cancellationToken).ConfigureAwait(false);
+                }
+                catch (MqttTransportException exception)
+                {
+                    errorId = CliErrorIds.MqttPublishFailed;
+                    reason = $"reconnection failed ({exception.Failure}): {exception.Message}";
+                    reconnectFailed = true;
+                    if (exception.Failure == MqttTransportFailure.ConnectionRefused)
+                    {
+                        break;
+                    }
+
+                    continue;
+                }
+            }
+
+            suspect = false;
+            using var timer = new CancellationTokenSource(limits.PublishTimeout, _timeProvider);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timer.Token);
+            try
+            {
+                var acknowledgment = await _adapter.PublishAsync(message, linked.Token).WaitAsync(linked.Token).ConfigureAwait(false);
+                if (acknowledgment.IsSuccess)
+                {
+                    return (MessageResult.Published, false);
+                }
+
+                // A failure reason code is final and never retried (CL-14).
+                _logger.LogError(new EventId(0, CliErrorIds.MqttMessageRefused), "The broker refused the message for topic {Topic} with reason code {ReasonCode}.", message.Topic, acknowledgment.ReasonCode);
+                return (MessageResult.Failed, false);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                errorId = CliErrorIds.MqttPublishTimeout;
+                reason = $"no acknowledgment within {limits.PublishTimeout}";
+                suspect = true;
+            }
+            catch (MqttTransportException exception)
+            {
+                errorId = CliErrorIds.MqttPublishFailed;
+                reason = $"{exception.Failure}: {exception.Message}";
+                suspect = true;
+            }
+
+            if (attempt < limits.MaxPublishAttempts)
+            {
+                _logger.LogWarning(new EventId(0, errorId), "Attempt {Attempt} of {Attempts} for topic {Topic} failed ({Reason}); retrying.", attempt, limits.MaxPublishAttempts, message.Topic, reason);
+            }
+        }
+
+        _logger.LogError(new EventId(0, errorId), "The message for topic {Topic} was not published: {Reason}.", message.Topic, reason);
+        return (reconnectFailed ? MessageResult.ConnectionGone : MessageResult.Failed, true);
     }
 
     private static void CheckMessage(MqttMessage message)
