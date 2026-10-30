@@ -32,4 +32,13 @@ public sealed class LoopbackHttpServerTests
         response.Headers.Location!.OriginalString.Should().Be("/elsewhere");
         server.RequestedPaths.Should().Equal("/moved");
     }
+
+    [TestMethod]
+    [TestCategory("T-P3-20")]
+    public async Task Server_BaseUri_IsNumericLoopbackAddress()
+    {
+        await using var server = new LoopbackHttpServer();
+        server.BaseUri.Host.Should().Be("127.0.0.1");
+        IPAddress.Parse(server.BaseUri.Host).Should().Be(IPAddress.Loopback);
+    }
 }

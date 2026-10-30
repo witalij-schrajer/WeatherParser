@@ -43,6 +43,11 @@ public sealed class ParseDwdAndMosmixHandlerTests
     private MqttResultWriter _mqttWriter = null!;
     private List<MqttMessage> _published = null!;
 
+    private ParseDwdHandler _dwdDocument = null!;
+    private ParseDwdHandler _dwdMqtt = null!;
+    private ParseMosmixHandler _mosmixDocument = null!;
+    private ParseMosmixHandler _mosmixMqtt = null!;
+
     [TestInitialize]
     public void Initialize()
     {
@@ -60,6 +65,11 @@ public sealed class ParseDwdAndMosmixHandlerTests
         _mqttServices = TestConfigurations.Build(TestConfigurations.Valid(), TestConfigurations.Request(CliCommand.ParseDwd, OutputFormat.Mqtt));
         _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _publisher.Object);
         _published = new List<MqttMessage>();
+
+        _dwdDocument = new ParseDwdHandler(_dwdParser.Object, _documentWriter, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), _loggerFactory.CreateLogger<ParseDwdHandler>());
+        _dwdMqtt = new ParseDwdHandler(_dwdParser.Object, _mqttWriter, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), _loggerFactory.CreateLogger<ParseDwdHandler>());
+        _mosmixDocument = new ParseMosmixHandler(_mosmixL.Object, _mosmixS.Object, _documentWriter, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), _loggerFactory.CreateLogger<ParseMosmixHandler>());
+        _mosmixMqtt = new ParseMosmixHandler(_mosmixL.Object, _mosmixS.Object, _mqttWriter, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), _loggerFactory.CreateLogger<ParseMosmixHandler>());
     }
 
     [TestCleanup]
@@ -72,8 +82,6 @@ public sealed class ParseDwdAndMosmixHandlerTests
         _stderr.Dispose();
     }
 
-    private ParseDwdHandler Dwd(IResultWriter writer) => new(_dwdParser.Object, writer, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), _loggerFactory.CreateLogger<ParseDwdHandler>());
-    private ParseMosmixHandler Mosmix(IResultWriter writer) => new(_mosmixL.Object, _mosmixS.Object, writer, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), _loggerFactory.CreateLogger<ParseMosmixHandler>());
     private CommandContext Context(OutputFormat output) => new(new CommonOptions(output, null, null, false), "00044", _stdout);
     private static ParseDwdRequest DwdRequest(OutputFormat output) => new(new CommonOptions(output, null, null, false), "00044");
     private static ParseMosmixRequest MosmixRequest(OutputFormat output, MosmixProduct product) => new(new CommonOptions(output, null, null, false), product, "10637");
@@ -91,7 +99,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     {
         var dataset = TestExportData.Observation("dwd", "00044");
         _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ReturnsAsync(dataset);
-        var outcome = await Dwd(_documentWriter).HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _dwdDocument.HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         _stdout.ToString().Should().Be(await JsonOf(new ExportDocument { Observations = { dataset } }));
         using var doc = JsonDocument.Parse(_stdout.ToString());
@@ -104,7 +112,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     {
         var dataset = TestExportData.Observation("dwd", "00044");
         _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ReturnsAsync(dataset);
-        var outcome = await Dwd(_documentWriter).HandleAsync(DwdRequest(OutputFormat.Xml), Context(OutputFormat.Xml), CancellationToken.None);
+        var outcome = await _dwdDocument.HandleAsync(DwdRequest(OutputFormat.Xml), Context(OutputFormat.Xml), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         var events = SchemaValidation.ValidateAgainstPackagedSchema(Encoding.UTF8.GetBytes(_stdout.ToString()));
         events.Should().BeEmpty();
@@ -116,7 +124,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     public async Task ParseDwd_RetrievalFailure_ExportDocumentWithError_ExitFailure()
     {
         _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ThrowsAsync(new CatalogRetrievalException(CatalogRetrievalException.RetrievalFailedErrorId, "endpoint", "secret-endpoint-7c1"));
-        var outcome = await Dwd(_documentWriter).HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _dwdDocument.HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(0, 1, false));
         new ExitCodePolicy().ForOutcome(outcome).Should().Be(ExitCodes.Failure);
         using var doc = JsonDocument.Parse(_stdout.ToString());
@@ -134,7 +142,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     public async Task ParseDwd_StationUnknown_ItemFailure()
     {
         _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ThrowsAsync(new DwdStationException(DwdStationException.StationUnknownErrorId, "m"));
-        var outcome = await Dwd(_documentWriter).HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _dwdDocument.HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(0, 1, false));
         using var doc = JsonDocument.Parse(_stdout.ToString());
         doc.RootElement.GetProperty("errors").GetArrayLength().Should().Be(1);
@@ -147,7 +155,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     public async Task ParseDwd_InvalidStationId_CommandLevel_Propagates()
     {
         _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ThrowsAsync(new DwdStationException(DwdStationException.StationIdInvalidErrorId, "m"));
-        Func<Task<CommandOutcome>> act = () => Dwd(_documentWriter).HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        Func<Task<CommandOutcome>> act = () => _dwdDocument.HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         await act.Should().ThrowAsync<DwdStationException>();
         _stdout.ToString().Should().BeEmpty();
     }
@@ -156,7 +164,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     public async Task ParseDwd_UnlistedExceptionType_Propagates()
     {
         _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ThrowsAsync(new EvidenceCacheException(EvidenceCacheException.CacheFailedErrorId, "m"));
-        Func<Task<CommandOutcome>> act = () => Dwd(_documentWriter).HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        Func<Task<CommandOutcome>> act = () => _dwdDocument.HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         await act.Should().ThrowAsync<EvidenceCacheException>();
         _stdout.ToString().Should().BeEmpty();
     }
@@ -167,7 +175,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
         var dataset = TestExportData.Observation("dwd", "00044");
         _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ReturnsAsync(dataset);
         SetupPublisher();
-        var outcome = await Dwd(_mqttWriter).HandleAsync(DwdRequest(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
+        var outcome = await _dwdMqtt.HandleAsync(DwdRequest(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         _published.Should().HaveCount(1);
         _published[0].MessageType.Should().Be(MqttMessageType.Observation);
@@ -180,7 +188,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     public async Task ParseDwd_Mqtt_Failure_NothingPublished_LoggedOnly()
     {
         _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ThrowsAsync(new CatalogRetrievalException(CatalogRetrievalException.RetrievalFailedErrorId, "endpoint", "secret-endpoint-7c1"));
-        var outcome = await Dwd(_mqttWriter).HandleAsync(DwdRequest(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
+        var outcome = await _dwdMqtt.HandleAsync(DwdRequest(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(0, 1, false));
         _published.Should().HaveCount(0);
         _stdout.ToString().Should().BeEmpty();
@@ -193,7 +201,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     {
         var run = TestExportData.Forecast(MosmixProduct.MosmixL, "10637");
         _mosmixL.Setup(p => p.ParseAsync("10637", It.IsAny<CancellationToken>())).ReturnsAsync(Result(run));
-        var outcome = await Mosmix(_documentWriter).HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixL), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _mosmixDocument.HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixL), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         _stdout.ToString().Should().Be(await JsonOf(new ExportDocument { ForecastRuns = { run } }));
     }
@@ -203,7 +211,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     {
         var run = TestExportData.Forecast(MosmixProduct.MosmixS, "10637");
         _mosmixS.Setup(p => p.ParseAsync("10637", It.IsAny<CancellationToken>())).ReturnsAsync(Result(run));
-        var outcome = await Mosmix(_documentWriter).HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixS), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _mosmixDocument.HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixS), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         _stdout.ToString().Should().Be(await JsonOf(new ExportDocument { ForecastRuns = { run } }));
     }
@@ -213,7 +221,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     {
         var run = TestExportData.Forecast(MosmixProduct.MosmixL, "10637");
         _mosmixL.Setup(p => p.ParseAsync("10637", It.IsAny<CancellationToken>())).ReturnsAsync(Result(run));
-        var outcome = await Mosmix(_documentWriter).HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixL), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _mosmixDocument.HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixL), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         _stdout.ToString().Should().NotContain("measured_at");
         _stdout.ToString().Should().Contain("dwd-mosmix-l:10637");
@@ -224,7 +232,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     {
         var run = TestExportData.Forecast(MosmixProduct.MosmixL, "10637");
         _mosmixL.Setup(p => p.ParseAsync("10637", It.IsAny<CancellationToken>())).ReturnsAsync(Result(run));
-        var outcome = await Mosmix(_documentWriter).HandleAsync(MosmixRequest(OutputFormat.Xml, MosmixProduct.MosmixL), Context(OutputFormat.Xml), CancellationToken.None);
+        var outcome = await _mosmixDocument.HandleAsync(MosmixRequest(OutputFormat.Xml, MosmixProduct.MosmixL), Context(OutputFormat.Xml), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         var events = SchemaValidation.ValidateAgainstPackagedSchema(Encoding.UTF8.GetBytes(_stdout.ToString()));
         events.Should().BeEmpty();
@@ -234,7 +242,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     public async Task ParseMosmix_IdUnknown_ErrorWithProductSource()
     {
         _mosmixS.Setup(p => p.ParseAsync("10637", It.IsAny<CancellationToken>())).ThrowsAsync(new MosmixForecastException(MosmixForecastErrorIds.IdUnknown, MosmixProduct.MosmixS, "m"));
-        var outcome = await Mosmix(_documentWriter).HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixS), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _mosmixDocument.HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixS), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(0, 1, false));
         using var doc = JsonDocument.Parse(_stdout.ToString());
         doc.RootElement.GetProperty("errors").GetArrayLength().Should().Be(1);
@@ -248,7 +256,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     public async Task ParseMosmix_FormatFailure_ErrorWithProductSource()
     {
         _mosmixL.Setup(p => p.ParseAsync("10637", It.IsAny<CancellationToken>())).ThrowsAsync(new MosmixForecastFormatException(MosmixForecastErrorIds.FormatInvalid, "m"));
-        var outcome = await Mosmix(_documentWriter).HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixL), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _mosmixDocument.HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixL), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(0, 1, false));
         using var doc = JsonDocument.Parse(_stdout.ToString());
         doc.RootElement.GetProperty("errors").GetArrayLength().Should().Be(1);
@@ -261,7 +269,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
     public async Task ParseMosmix_InvalidId_CommandLevel_Propagates()
     {
         _mosmixL.Setup(p => p.ParseAsync("10637", It.IsAny<CancellationToken>())).ThrowsAsync(new MosmixForecastException(MosmixForecastErrorIds.IdInvalid, MosmixProduct.MosmixL, "m"));
-        Func<Task<CommandOutcome>> act = () => Mosmix(_documentWriter).HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixL), Context(OutputFormat.Json), CancellationToken.None);
+        Func<Task<CommandOutcome>> act = () => _mosmixDocument.HandleAsync(MosmixRequest(OutputFormat.Json, MosmixProduct.MosmixL), Context(OutputFormat.Json), CancellationToken.None);
         await act.Should().ThrowAsync<MosmixForecastException>();
         _stdout.ToString().Should().BeEmpty();
     }
@@ -272,7 +280,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
         var run = TestExportData.Forecast(MosmixProduct.MosmixL, "10637");
         _mosmixL.Setup(p => p.ParseAsync("10637", It.IsAny<CancellationToken>())).ReturnsAsync(Result(run));
         SetupPublisher();
-        var outcome = await Mosmix(_mqttWriter).HandleAsync(MosmixRequest(OutputFormat.Mqtt, MosmixProduct.MosmixL), Context(OutputFormat.Mqtt), CancellationToken.None);
+        var outcome = await _mosmixMqtt.HandleAsync(MosmixRequest(OutputFormat.Mqtt, MosmixProduct.MosmixL), Context(OutputFormat.Mqtt), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         _published.Should().HaveCount(1);
         _published[0].MessageType.Should().Be(MqttMessageType.Forecast);

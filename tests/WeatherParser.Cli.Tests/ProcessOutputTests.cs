@@ -44,6 +44,18 @@ public class ProcessOutputTests
 
     private void AssertNoTemporaryFile() => Directory.EnumerateFiles(_workingDirectory, "*.tmp").Should().BeEmpty();
 
+    private async Task AssertCommandLevelFailureAsync(LoopbackHttpServer server, string pattern, string output, string errorId)
+    {
+        var configPath = await WriteConfigAsync(ProcessFixtures.OsthessenConfiguration(server.BaseUri, mqtt: false, publicationPermitted: false));
+        var result = await RunAsync("--ParseOstHessen", "--StationNamePattern", pattern, "--Output", output, "--OutputFile", "out." + output, "--Config", configPath);
+        result.TimedOut.Should().BeFalse();
+        result.ExitCode.Should().Be(1);
+        result.StandardError.Should().Contain($" ERROR {errorId} command=ParseOstHessen ");
+        result.StandardOutput.Should().BeEmpty();
+        File.Exists(Path.Combine(_workingDirectory, "out." + output)).Should().BeFalse();
+        AssertNoTemporaryFile();
+    }
+
     [TestMethod]
     [TestCategory("T-P3-12")]
     [TestCategory("T-P3-08")]
@@ -130,6 +142,25 @@ public class ProcessOutputTests
     }
 
     [TestMethod]
+    [TestCategory("T-P3-12")]
+    public async Task Process_OutputFile_ExistingDirectory_RejectedBeforeRetrieval()
+    {
+        await using var server = OsthessenServer();
+        var config = ProcessFixtures.OsthessenConfiguration(server.BaseUri, mqtt: false, publicationPermitted: false);
+        var configPath = await WriteConfigAsync(config);
+        Directory.CreateDirectory(Path.Combine(_workingDirectory, "out.json"));
+
+        var result = await RunAsync("--ParseOstHessen", "--StationNamePattern", "*", "--Output", "json", "--OutputFile", "out.json", "--Config", configPath);
+
+        result.ExitCode.Should().Be(2);
+        result.StandardOutput.Should().BeEmpty();
+        result.StandardError.Should().Contain(" ERROR CLI-OUTPUT-EXISTS command=ParseOstHessen ");
+
+        server.RequestCount.Should().Be(0);
+        Directory.EnumerateFiles(Path.Combine(_workingDirectory, "out.json")).Should().BeEmpty();
+    }
+
+    [TestMethod]
     [TestCategory("T-P3-11")]
     [TestCategory("T-P3-12")]
     public async Task Process_CommandLevelFailure_StdoutEmpty_NoFile()
@@ -168,6 +199,42 @@ public class ProcessOutputTests
 
         server.RequestedPaths.Should().Equal("/osthessen/");
         AssertNoTemporaryFile();
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-11")]
+    [TestCategory("T-P3-12")]
+    public async Task Process_PageUnavailable_Json_NoDocument_StderrOnly_ExitFailure()
+    {
+        await using var server = new LoopbackHttpServer();
+        await AssertCommandLevelFailureAsync(server, "*", "json", "OSTHESSEN-PAGE-UNAVAILABLE");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-11")]
+    [TestCategory("T-P3-12")]
+    public async Task Process_PageUnavailable_Xml_NoDocument_StderrOnly_ExitFailure()
+    {
+        await using var server = new LoopbackHttpServer();
+        await AssertCommandLevelFailureAsync(server, "*", "xml", "OSTHESSEN-PAGE-UNAVAILABLE");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-11")]
+    [TestCategory("T-P3-12")]
+    public async Task Process_PatternNoMatch_Json_NoDocument_StderrOnly_ExitFailure()
+    {
+        await using var server = OsthessenServer();
+        await AssertCommandLevelFailureAsync(server, "Nowhere*", "json", "OSTHESSEN-PATTERN-NO-MATCH");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-11")]
+    [TestCategory("T-P3-12")]
+    public async Task Process_PatternNoMatch_Xml_NoDocument_StderrOnly_ExitFailure()
+    {
+        await using var server = OsthessenServer();
+        await AssertCommandLevelFailureAsync(server, "Nowhere*", "xml", "OSTHESSEN-PATTERN-NO-MATCH");
     }
 
     [TestMethod]

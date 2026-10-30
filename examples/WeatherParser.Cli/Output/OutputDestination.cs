@@ -35,7 +35,7 @@ public sealed class OutputDestination : IOutputDestination
         }
 
         var destination = _files.GetFullPath(options.OutputFile);
-        if (_files.FileExists(destination))
+        if (_files.FileExists(destination) || _files.DirectoryExists(destination))
         {
             throw new CliException(CliErrorIds.OutputExists, "The output file already exists; an existing file is never overwritten.");
         }
@@ -64,6 +64,8 @@ public sealed class OutputDestination : IOutputDestination
         try
         {
             await _files.WriteNewAsync(temporary, document, cancellationToken).ConfigureAwait(false);
+            // A cancellation noticed after the write still prevents the move; the catch deletes the temporary file (CL-12).
+            cancellationToken.ThrowIfCancellationRequested();
             moving = true;
             _files.Move(temporary, destination);
         }

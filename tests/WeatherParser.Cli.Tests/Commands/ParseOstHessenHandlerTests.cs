@@ -37,6 +37,9 @@ public sealed class ParseOstHessenHandlerTests
     private IResultWriter _mqttWriter = null!;
     private List<MqttMessage> _published = null!;
 
+    private ParseOstHessenHandler _document = null!;
+    private ParseOstHessenHandler _mqtt = null!;
+
     [TestInitialize]
     public void Initialize()
     {
@@ -51,6 +54,9 @@ public sealed class ParseOstHessenHandlerTests
         _mqttServices = TestConfigurations.Build(TestConfigurations.Valid(), TestConfigurations.Request(CliCommand.ParseOstHessen, OutputFormat.Mqtt));
         _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _publisher.Object);
         _published = new List<MqttMessage>();
+        
+        _document = new ParseOstHessenHandler(_parser.Object, _identity.Object, _documentWriter, new ExportErrorMessages(), _loggerFactory.CreateLogger<ParseOstHessenHandler>());
+        _mqtt = new ParseOstHessenHandler(_parser.Object, _identity.Object, _mqttWriter, new ExportErrorMessages(), _loggerFactory.CreateLogger<ParseOstHessenHandler>());
     }
 
     [TestCleanup]
@@ -63,7 +69,6 @@ public sealed class ParseOstHessenHandlerTests
         _stderr.Dispose();
     }
 
-    private ParseOstHessenHandler Handler(IResultWriter writer) => new(_parser.Object, _identity.Object, writer, new ExportErrorMessages(), _loggerFactory.CreateLogger<ParseOstHessenHandler>());
     private CommandContext Context(OutputFormat output) => new(new CommonOptions(output, null, null, false), null, _stdout);
     private static ParseOstHessenRequest Request(OutputFormat output) => new(new CommonOptions(output, null, null, false), "Fulda*");
     private void SetupParse(params ObservationDataset[] datasets) => _parser.Setup(p => p.ParseAsync("Fulda*", It.IsAny<CancellationToken>())).ReturnsAsync(new OsthessenWetterParseResult(datasets, Array.Empty<OsthessenWetterStationFailure>()));
@@ -83,7 +88,7 @@ public sealed class ParseOstHessenHandlerTests
         var first = TestExportData.Observation("osthessenwetter", "fulda");
         var second = TestExportData.Observation("osthessenwetter", "fulda-sued");
         SetupParse(first, second);
-        var outcome = await Handler(_documentWriter).HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _document.HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(2, 0, false));
         var expectedJson = await JsonOf(new ExportDocument { Observations = { first, second } });
         _stdout.ToString().Should().Be(expectedJson);
@@ -95,7 +100,7 @@ public sealed class ParseOstHessenHandlerTests
         var first = TestExportData.Observation("osthessenwetter", "fulda");
         var second = TestExportData.Observation("osthessenwetter", "fulda-sued");
         SetupParse(first, second);
-        var outcome = await Handler(_documentWriter).HandleAsync(Request(OutputFormat.Xml), Context(OutputFormat.Xml), CancellationToken.None);
+        var outcome = await _document.HandleAsync(Request(OutputFormat.Xml), Context(OutputFormat.Xml), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(2, 0, false));
         var xml = _stdout.ToString();
         SchemaValidation.ValidateAgainstPackagedSchema(Encoding.UTF8.GetBytes(xml)).Should().BeEmpty();
@@ -108,7 +113,7 @@ public sealed class ParseOstHessenHandlerTests
         var failure = new OsthessenWetterStationFailure("Hünfeld", "OSTHESSEN-STATION-OFFLINE", "offline-reason-7c1");
         SetupParse(new[] { dataset }, failure);
         MapName("Hünfeld", "huenfeld");
-        var outcome = await Handler(_documentWriter).HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _document.HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 1, false));
         new ExitCodePolicy().ForOutcome(outcome).Should().Be(ExitCodes.Partial);
         var doc = JsonDocument.Parse(_stdout.ToString());
@@ -131,7 +136,7 @@ public sealed class ParseOstHessenHandlerTests
         _parser.Setup(p => p.ParseAsync("Fulda*", It.IsAny<CancellationToken>())).Throws(new OsthessenWetterException(OsthessenWetterException.NoUsableStationErrorId, "m", new[] { failure1, failure2 }));
         MapName("Fulda", "fulda");
         MapName("Hünfeld", "huenfeld");
-        var outcome = await Handler(_documentWriter).HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _document.HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(0, 2, false));
         new ExitCodePolicy().ForOutcome(outcome).Should().Be(ExitCodes.Failure);
         var doc = JsonDocument.Parse(_stdout.ToString());
@@ -147,7 +152,7 @@ public sealed class ParseOstHessenHandlerTests
     public async Task ParseOstHessen_PageUnavailable_CommandLevel_Propagates()
     {
         _parser.Setup(p => p.ParseAsync("Fulda*", It.IsAny<CancellationToken>())).Throws(new OsthessenWetterException(OsthessenWetterException.PageUnavailableErrorId, "m"));
-        Func<Task> act = async () => await Handler(_documentWriter).HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        Func<Task> act = async () => await _document.HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         await act.Should().ThrowAsync<OsthessenWetterException>();
         _stdout.ToString().Should().BeEmpty();
     }
@@ -156,7 +161,7 @@ public sealed class ParseOstHessenHandlerTests
     public async Task ParseOstHessen_PatternNoMatch_CommandLevel_Propagates()
     {
         _parser.Setup(p => p.ParseAsync("Fulda*", It.IsAny<CancellationToken>())).Throws(new OsthessenWetterException(OsthessenWetterException.PatternNoMatchErrorId, "m"));
-        Func<Task> act = async () => await Handler(_documentWriter).HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        Func<Task> act = async () => await _document.HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         await act.Should().ThrowAsync<OsthessenWetterException>();
         _stdout.ToString().Should().BeEmpty();
     }
@@ -168,7 +173,7 @@ public sealed class ParseOstHessenHandlerTests
         var failure = new OsthessenWetterStationFailure("???", "OSTHESSEN-STATION-OFFLINE", "r");
         SetupParse(new[] { dataset }, failure);
         _identity.Setup(i => i.ToStationId("???")).Throws(new OsthessenWetterException(OsthessenWetterException.FormatChangedErrorId, "m"));
-        var outcome = await Handler(_documentWriter).HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _document.HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 1, false));
         var doc = JsonDocument.Parse(_stdout.ToString());
         var errors = doc.RootElement.GetProperty("errors");
@@ -183,7 +188,7 @@ public sealed class ParseOstHessenHandlerTests
         var failure = new OsthessenWetterStationFailure("Fulda", "OSTHESSEN-STATION-NO-READING", "r");
         SetupParse(new[] { dataset }, failure);
         MapName("Fulda", "fulda");
-        var outcome = await Handler(_documentWriter).HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _document.HandleAsync(Request(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 1, false));
         var doc = JsonDocument.Parse(_stdout.ToString());
         var errors = doc.RootElement.GetProperty("errors");
@@ -201,7 +206,7 @@ public sealed class ParseOstHessenHandlerTests
         SetupParse(new[] { first, second }, failure);
         MapName("Hünfeld", "huenfeld");
         SetupPublisher();
-        var outcome = await Handler(_mqttWriter).HandleAsync(Request(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
+        var outcome = await _mqtt.HandleAsync(Request(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(2, 1, false));
         _published.Count.Should().Be(2);
         _published[0].MessageType.Should().Be(MqttMessageType.Observation);

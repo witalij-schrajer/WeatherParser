@@ -21,7 +21,7 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
         probe.Stop();
 
         _listener = new HttpListener();
-        _baseUri = $"http://localhost:{port}/";
+        _baseUri = $"http://127.0.0.1:{port}/";
         _listener.Prefixes.Add(_baseUri);
         _listener.Start();
         _loop = Task.Run(AcceptLoopAsync);

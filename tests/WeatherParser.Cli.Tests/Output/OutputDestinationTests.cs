@@ -70,6 +70,7 @@ public sealed class OutputDestinationTests
     {
         _files.Setup(f => f.GetFullPath("out.json")).Returns(Destination);
         _files.Setup(f => f.FileExists(Destination)).Returns(false);
+        _files.Setup(f => f.DirectoryExists(Destination)).Returns(false);
         _files.Setup(f => f.DirectoryExists(Directory)).Returns(false);
 
         _subject.Invoking(s => s.Check(new CommonOptions(OutputFormat.Json, "out.json", null, false))).Should().Throw<CliException>().Which.ErrorId.Should().Be("CLI-OUTPUT-FAILED");
@@ -80,9 +81,20 @@ public sealed class OutputDestinationTests
     {
         _files.Setup(f => f.GetFullPath("out.json")).Returns(Destination);
         _files.Setup(f => f.FileExists(Destination)).Returns(false);
+        _files.Setup(f => f.DirectoryExists(Destination)).Returns(false);
         _files.Setup(f => f.DirectoryExists(Directory)).Returns(true);
 
         _subject.Check(new CommonOptions(OutputFormat.Json, "out.json", null, false));
+    }
+
+    [TestMethod]
+    public async Task Check_ExistingDirectoryAtDestination_OutputExists()
+    {
+        _files.Setup(f => f.GetFullPath("out.json")).Returns(Destination);
+        _files.Setup(f => f.FileExists(Destination)).Returns(false);
+        _files.Setup(f => f.DirectoryExists(Destination)).Returns(true);
+
+        _subject.Invoking(s => s.Check(new CommonOptions(OutputFormat.Json, "out.json", null, false))).Should().Throw<CliException>().Which.ErrorId.Should().Be("CLI-OUTPUT-EXISTS");
     }
 
     [TestMethod]
@@ -171,6 +183,18 @@ public sealed class OutputDestinationTests
     }
 
     [TestMethod]
+    public async Task WriteAsync_File_CancelledAfterWrite_NotMoved_TemporaryDeleted()
+    {
+        Resolve();
+        using var cancellation = new CancellationTokenSource();
+        _files.Setup(f => f.WriteNewAsync(It.IsAny<string>(), It.IsAny<ReadOnlyMemory<byte>>(), It.IsAny<CancellationToken>())).Callback(() => cancellation.Cancel()).Returns(Task.CompletedTask);
+        _files.Setup(f => f.Delete(It.Is<string>(p => p.EndsWith(".tmp"))));
+
+        Func<Task> act = () => _subject.WriteAsync(Document, Context("out.json"), cancellation.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [TestMethod]
     public async Task WriteAsync_File_TemporaryDeleteFails_WarningWithPath()
     {
         _files.Setup(f => f.GetFullPath("out.json")).Returns(Destination);
@@ -185,4 +209,5 @@ public sealed class OutputDestinationTests
     }
 
     private CommandContext Context(string? outputFile) => new(new CommonOptions(OutputFormat.Json, outputFile, null, false), null, _stdout);
+    private void Resolve() => _files.Setup(f => f.GetFullPath("out.json")).Returns(Destination);
 }

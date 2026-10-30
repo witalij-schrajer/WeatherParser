@@ -40,6 +40,12 @@ public class SelectionHandlerTests
     private MqttResultWriter _mqttWriter = null!;
     private List<MqttMessage> _published = null!;
 
+    private SelectDwdHandler _selectDwdDocument = null!;
+    private SelectDwdHandler _selectDwdMqtt = null!;
+    private SelectMosmixHandler _selectMosmixDocument = null!;
+    private SelectMosmixHandler _selectMosmixMqtt = null!;
+    private SelectMosmixHandler _selectMosmixRefresh = null!;
+
     [TestInitialize]
     public void Initialize()
     {
@@ -53,6 +59,12 @@ public class SelectionHandlerTests
         _mqttServices = TestConfigurations.Build(TestConfigurations.Valid(), TestConfigurations.Request(CliCommand.SelectDwd, OutputFormat.Mqtt));
         _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _publisher.Object);
         _published = new List<MqttMessage>();
+
+        _selectDwdDocument = new SelectDwdHandler(_cdcSelector.Object, _documentWriter);
+        _selectDwdMqtt = new SelectDwdHandler(_cdcSelector.Object, _mqttWriter);
+        _selectMosmixDocument = new SelectMosmixHandler(_mosmixSelector.Object, _documentWriter, null);
+        _selectMosmixMqtt = new SelectMosmixHandler(_mosmixSelector.Object, _mqttWriter, null);
+        _selectMosmixRefresh = new SelectMosmixHandler(_mosmixSelector.Object, _documentWriter, _refresher.Object);
     }
 
     [TestCleanup]
@@ -105,8 +117,7 @@ public class SelectionHandlerTests
     {
         var list = TestExportData.CdcStations("00044", "01234");
         SetupCdc(list);
-        var outcome = await new SelectDwdHandler(_cdcSelector.Object, _documentWriter)
-            .HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _selectDwdDocument.HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         _stdout.ToString().Should().Be(await JsonOf(list));
@@ -123,8 +134,7 @@ public class SelectionHandlerTests
     {
         var list = TestExportData.CdcStations("00044");
         SetupCdc(list);
-        var outcome = await new SelectDwdHandler(_cdcSelector.Object, _documentWriter)
-            .HandleAsync(DwdRequest(OutputFormat.Xml), Context(OutputFormat.Xml), CancellationToken.None);
+        var outcome = await _selectDwdDocument.HandleAsync(DwdRequest(OutputFormat.Xml), Context(OutputFormat.Xml), CancellationToken.None);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         SchemaValidation.ValidateAgainstPackagedSchema(Encoding.UTF8.GetBytes(_stdout.ToString())).Should().BeEmpty();
@@ -137,8 +147,7 @@ public class SelectionHandlerTests
     {
         var list = TestExportData.CdcStations();
         SetupCdc(list);
-        var outcome = await new SelectDwdHandler(_cdcSelector.Object, _documentWriter)
-            .HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _selectDwdDocument.HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         new ExitCodePolicy().ForOutcome(outcome).Should().Be(ExitCodes.Success);
@@ -154,8 +163,7 @@ public class SelectionHandlerTests
     {
         var list = TestExportData.MosmixLocations("10637");
         SetupMosmix(list);
-        var outcome = await new SelectMosmixHandler(_mosmixSelector.Object, _documentWriter, null)
-            .HandleAsync(MosmixRequest(OutputFormat.Json, false), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _selectMosmixDocument.HandleAsync(MosmixRequest(OutputFormat.Json, false), Context(OutputFormat.Json), CancellationToken.None);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         _stdout.ToString().Should().Be(await JsonOf(list));
@@ -171,8 +179,7 @@ public class SelectionHandlerTests
     {
         var list = TestExportData.MosmixLocations("10637");
         SetupMosmix(list);
-        var outcome = await new SelectMosmixHandler(_mosmixSelector.Object, _documentWriter, null)
-            .HandleAsync(MosmixRequest(OutputFormat.Xml, false), Context(OutputFormat.Xml), CancellationToken.None);
+        var outcome = await _selectMosmixDocument.HandleAsync(MosmixRequest(OutputFormat.Xml, false), Context(OutputFormat.Xml), CancellationToken.None);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         SchemaValidation.ValidateAgainstPackagedSchema(Encoding.UTF8.GetBytes(_stdout.ToString())).Should().BeEmpty();
@@ -187,8 +194,7 @@ public class SelectionHandlerTests
         _mosmixSelector.InSequence(sequence).Setup(s => s.SelectAsync(It.IsAny<SearchParameters>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(TestExportData.MosmixLocations("10637"));
 
-        var outcome = await new SelectMosmixHandler(_mosmixSelector.Object, _documentWriter, _refresher.Object)
-            .HandleAsync(MosmixRequest(OutputFormat.Json, true), Context(OutputFormat.Json), CancellationToken.None);
+        var outcome = await _selectMosmixRefresh.HandleAsync(MosmixRequest(OutputFormat.Json, true), Context(OutputFormat.Json), CancellationToken.None);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
     }
@@ -199,8 +205,7 @@ public class SelectionHandlerTests
         _refresher.Setup(r => r.RefreshAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new CatalogRetrievalException(CatalogRetrievalException.RetrievalFailedErrorId, "endpoint", "m"));
 
-        Func<Task> act = async () => await new SelectMosmixHandler(_mosmixSelector.Object, _documentWriter, _refresher.Object)
-            .HandleAsync(MosmixRequest(OutputFormat.Json, true), Context(OutputFormat.Json), CancellationToken.None);
+        Func<Task> act = async () => await _selectMosmixRefresh.HandleAsync(MosmixRequest(OutputFormat.Json, true), Context(OutputFormat.Json), CancellationToken.None);
 
         await act.Should().ThrowAsync<CatalogRetrievalException>();
         _stdout.ToString().Should().BeEmpty();
@@ -209,8 +214,7 @@ public class SelectionHandlerTests
     [TestMethod]
     public async Task SelectMosmix_RefreshRequestedWithoutRefresher_Throws()
     {
-        Func<Task> act = async () => await new SelectMosmixHandler(_mosmixSelector.Object, _documentWriter, null)
-            .HandleAsync(MosmixRequest(OutputFormat.Json, true), Context(OutputFormat.Json), CancellationToken.None);
+        Func<Task> act = async () => await _selectMosmixDocument.HandleAsync(MosmixRequest(OutputFormat.Json, true), Context(OutputFormat.Json), CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
         _stdout.ToString().Should().BeEmpty();
@@ -223,8 +227,7 @@ public class SelectionHandlerTests
         SetupCdc(list);
         SetupPublisher();
 
-        var outcome = await new SelectDwdHandler(_cdcSelector.Object, _mqttWriter)
-            .HandleAsync(DwdRequest(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
+        var outcome = await _selectDwdMqtt.HandleAsync(DwdRequest(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         _published.Should().ContainSingle();
@@ -244,8 +247,7 @@ public class SelectionHandlerTests
         SetupMosmix(list);
         SetupPublisher();
 
-        var outcome = await new SelectMosmixHandler(_mosmixSelector.Object, _mqttWriter, null)
-            .HandleAsync(MosmixRequest(OutputFormat.Mqtt, false), Context(OutputFormat.Mqtt), CancellationToken.None);
+        var outcome = await _selectMosmixMqtt.HandleAsync(MosmixRequest(OutputFormat.Mqtt, false), Context(OutputFormat.Mqtt), CancellationToken.None);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
         _published.Should().ContainSingle();
