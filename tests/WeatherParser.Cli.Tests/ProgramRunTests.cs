@@ -175,7 +175,7 @@ public sealed class ProgramRunTests
             Console.SetError(_stderr);
             var exitCode = Program.Main(new[] { "--ParseDWD", "--Langitude", "1" });
             exitCode.Should().Be(2);
-            _stderr.ToString().Should().Contain(" ERROR CLI-ARGUMENT-INVALID command=- Unknown option '--Langitude'.");
+            _stderr.ToString().Should().Contain(" ERROR CLI-ARGUMENT-INVALID command=ParseDWD Unknown option '--Langitude'.");
         }
         finally
         {

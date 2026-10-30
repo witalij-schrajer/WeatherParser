@@ -8,7 +8,13 @@ namespace WeatherParser.Cli.Tests.Diagnostics;
 [TestCategory("T-P3-09")]
 public class ExitCodePolicyTests
 {
-    private readonly IExitCodePolicy _policy = new ExitCodePolicy();
+    private IExitCodePolicy _policy = null!;
+
+    [TestInitialize]
+    public void Initialize()
+    {
+        _policy = new ExitCodePolicy();
+    }
 
     [DataRow(CliErrorIds.ArgumentInvalid)]
     [DataRow(CliErrorIds.CommandMissing)]

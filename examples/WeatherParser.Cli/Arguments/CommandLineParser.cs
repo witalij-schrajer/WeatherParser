@@ -46,28 +46,30 @@ public sealed class CommandLineParser : ICommandLineParser
         var values = new Dictionary<string, string>(StringComparer.Ordinal);
         var flags = new HashSet<string>(StringComparer.Ordinal);
 
+        CliCommand? Known() => commands.Count == 1 ? commands[0] : null;
+
         for (int i = 0; i < args.Count; i++)
         {
             var token = args[i];
             if (!token.StartsWith("--", StringComparison.Ordinal))
-                return new UsageError(ArgumentInvalid, $"Unexpected argument '{token}'.");
+                return new UsageError(ArgumentInvalid, $"Unexpected argument '{token}'.", Known());
 
             var name = token[2..];
 
             if (Commands.TryGetValue(name, out var command))
             {
                 if (commands.Contains(command))
-                    return new UsageError(ArgumentInvalid, $"Option '--{CommandNames[command]}' is specified more than once.");
+                    return new UsageError(ArgumentInvalid, $"Option '--{CommandNames[command]}' is specified more than once.", Known());
                 commands.Add(command);
                 continue;
             }
 
             var canonical = ValueOptions.Concat(FlagOptions).FirstOrDefault(o => string.Equals(o, name, StringComparison.OrdinalIgnoreCase));
             if (canonical == null)
-                return new UsageError(ArgumentInvalid, $"Unknown option '{token}'.");
+                return new UsageError(ArgumentInvalid, $"Unknown option '{token}'.", Known());
 
             if (values.ContainsKey(canonical) || flags.Contains(canonical))
-                return new UsageError(ArgumentInvalid, $"Option '--{canonical}' is specified more than once.");
+                return new UsageError(ArgumentInvalid, $"Option '--{canonical}' is specified more than once.", Known());
 
             if (FlagOptions.Contains(canonical))
             {
@@ -77,7 +79,7 @@ public sealed class CommandLineParser : ICommandLineParser
 
             // Value option
             if (i + 1 >= args.Count || args[i + 1].StartsWith("--", StringComparison.Ordinal))
-                return new UsageError(ArgumentInvalid, $"Option '--{canonical}' requires a value.");
+                return new UsageError(ArgumentInvalid, $"Option '--{canonical}' requires a value.", Known());
 
             values[canonical] = args[i + 1];
             i++;

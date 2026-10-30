@@ -8,7 +8,13 @@ namespace WeatherParser.Cli.Tests.Diagnostics;
 [TestClass]
 public class FailureClassifierTests
 {
-    private readonly IFailureClassifier _classifier = new FailureClassifier();
+    private IFailureClassifier _classifier = null!;
+
+    [TestInitialize]
+    public void Initialize()
+    {
+        _classifier = new FailureClassifier();
+    }
 
     [DataRow(CliCommand.SelectDwd, "CATALOG-RETRIEVAL-FAILED", FailureKind.CommandLevel)]
     [DataRow(CliCommand.SelectMosmix, "MOSMIX-S-EVIDENCE-MISSING", FailureKind.CommandLevel)]

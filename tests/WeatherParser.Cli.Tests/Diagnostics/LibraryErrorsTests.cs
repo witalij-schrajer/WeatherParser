@@ -12,7 +12,13 @@ namespace WeatherParser.Cli.Tests.Diagnostics;
 [TestClass]
 public class LibraryErrorsTests
 {
-    private readonly ILibraryErrors _errors = new LibraryErrors();
+    private ILibraryErrors _errors = null!;
+
+    [TestInitialize]
+    public void Initialize()
+    {
+        _errors = new LibraryErrors();
+    }
 
     [TestMethod]
     public void Map_EachLibraryExceptionType_KeepsLibraryErrorId()

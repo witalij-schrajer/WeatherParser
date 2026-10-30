@@ -10,27 +10,36 @@ namespace WeatherParser.Cli.Tests;
 [TestCategory("T-P3-08")]
 public class ProgramUsageCommandTests
 {
+    private MockRepository _mocks = null!;
+    private Mock<ICommandExecutor> _executor = null!;
+    private StringWriter _stdout = null!;
+    private StringWriter _stderr = null!;
+
+    [TestInitialize]
+    public void Initialize()
+    {
+        _mocks = new MockRepository(MockBehavior.Strict);
+        _executor = _mocks.Create<ICommandExecutor>();
+        _stdout = new StringWriter();
+        _stderr = new StringWriter();
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        _mocks.VerifyAll();
+    }
+
+    private int Run(string[] arguments) => Program.Run(arguments, _stdout, _stderr, new HelpWriter(), new CommandLineParser(), new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()), _executor.Object, new ExitCodePolicy());
+
     [TestMethod]
     public void Run_ParserErrorWithKnownCommand_NamesTheCommand()
     {
-        var stdout = new StringWriter();
-        var stderr = new StringWriter();
-        var executor = new Mock<ICommandExecutor>(MockBehavior.Strict);
-
-        var exitCode = Program.Run(
-            new[] { "--ParseMOSMIX", "--MOSMIXID", "10637" },
-            stdout,
-            stderr,
-            new HelpWriter(),
-            new CommandLineParser(),
-            new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()),
-            executor.Object,
-            new ExitCodePolicy());
+        var exitCode = Run(new[] { "--ParseMOSMIX", "--MOSMIXID", "10637" });
 
         exitCode.Should().Be(2);
-        stderr.ToString().Should().Contain(" ERROR CLI-ARGUMENT-INVALID command=ParseMOSMIX Option '--Product' is required with '--ParseMOSMIX'.");
+        _stderr.ToString().Should().Contain(" ERROR CLI-ARGUMENT-INVALID command=ParseMOSMIX Option '--Product' is required with '--ParseMOSMIX'.");
 
-        executor.VerifyAll();
     }
 
     [TestMethod]
@@ -42,23 +51,9 @@ public class ProgramUsageCommandTests
     [DataRow("--ParseDWD --Output csv", "ParseDWD")]
     public void Run_ParserErrorForEachCommand_NamesTheCommand(string arguments, string commandName)
     {
-        var stdout = new StringWriter();
-        var stderr = new StringWriter();
-        var executor = new Mock<ICommandExecutor>(MockBehavior.Strict);
-
-        var exitCode = Program.Run(
-            arguments.Split(' '),
-            stdout,
-            stderr,
-            new HelpWriter(),
-            new CommandLineParser(),
-            new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()),
-            executor.Object,
-            new ExitCodePolicy());
+        var exitCode = Run(arguments.Split(' '));
 
         exitCode.Should().Be(2);
-        stderr.ToString().Should().Contain($" ERROR CLI-ARGUMENT-INVALID command={commandName} ");
-
-        executor.VerifyAll();
+        _stderr.ToString().Should().Contain($" ERROR CLI-ARGUMENT-INVALID command={commandName} ");
     }
 }
