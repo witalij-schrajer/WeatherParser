@@ -21,7 +21,7 @@ public sealed class ConstructorGuardTests
     /// <summary>
     /// Tests that the constructors of command handler classes reject null dependencies with ArgumentNullException.
     /// </summary>
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(typeof(SelectDwdHandler), "selector")]
     [DataRow(typeof(SelectDwdHandler), "writer")]
     [DataRow(typeof(SelectMosmixHandler), "selector")]
