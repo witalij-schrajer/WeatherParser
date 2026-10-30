@@ -189,15 +189,19 @@ public class ConfigurationValidatorServicesTests
 
     [TestCategory("T-P3-05")]
     [TestMethod]
-    [DataRow(CliCommand.SelectDwd)]
-    [DataRow(CliCommand.SelectMosmix)]
-    [DataRow(CliCommand.ParseDwd)]
-    [DataRow(CliCommand.ParseOstHessen)]
-    [DataRow(CliCommand.ParseMosmix)]
-    public void Validate_MqttMappingMissingForCommand_ConfigurationInvalid(CliCommand command)
+    [DataRow(CliCommand.SelectDwd, "CdcStationList")]
+    [DataRow(CliCommand.SelectMosmix, "MosmixLocationList")]
+    [DataRow(CliCommand.ParseDwd, "Observation")]
+    [DataRow(CliCommand.ParseOstHessen, "Observation")]
+    [DataRow(CliCommand.ParseMosmix, "Forecast")]
+    public void Validate_MqttMappingMissingForCommand_ConfigurationInvalid(CliCommand command, string topicToRemove)
     {
         var configuration = TestConfigurations.Valid();
-        configuration.Mqtt!.Topics = new TopicsSection();
+        var topics = configuration.Mqtt!.Topics!;
+        topics.Observation = topicToRemove == "Observation" ? null : topics.Observation;
+        topics.Forecast = topicToRemove == "Forecast" ? null : topics.Forecast;
+        topics.CdcStationList = topicToRemove == "CdcStationList" ? null : topics.CdcStationList;
+        topics.MosmixLocationList = topicToRemove == "MosmixLocationList" ? null : topics.MosmixLocationList;
         var request = TestConfigurations.Request(command, OutputFormat.Mqtt);
         using var provider = TestConfigurations.Build(configuration, request);
         Action act = () => _subject.Validate(provider, configuration, request);
