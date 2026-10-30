@@ -208,9 +208,8 @@ public sealed class BrokerIntegrationTests
         }
         finally
         {
-            // The cleanup uses the valid credentials; nothing was published with the altered ones.
+            // The cleanup uses the valid credentials and removes any message published if the broker accepted the altered password (an empty retained message to an unused topic is harmless).
             _credentials = valid;
-            _retainedTopics.Clear();
         }
     }
 
