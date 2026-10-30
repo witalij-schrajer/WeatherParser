@@ -155,7 +155,7 @@ public sealed class ProcessTests
     {
         var configPath = Path.Combine(_workingDirectory, "config.json");
         await File.WriteAllTextAsync(configPath, MinimalValidConfiguration);
-        var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--Output", "json", "--Config", "config.json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
+        var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--StationID", "00044", "--Output", "json", "--Config", "config.json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
         result.TimedOut.Should().BeFalse();
         result.ExitCode.Should().Be(1);
         result.StandardOutput.Should().BeEmpty();

@@ -24,7 +24,7 @@ public class ConfigurationValidatorServicesTests
     [TestInitialize]
     public void TestInitialize()
     {
-        _subject = new ConfigurationValidator();
+        _subject = new ConfigurationValidator(new ReferenceStationResolver(), new CredentialProvider(new EnvironmentReader(), new FileModeReader()));
     }
 
     [TestCategory("T-P3-05")]

@@ -22,6 +22,15 @@ public sealed class ConfigurationValidator : IConfigurationValidator
     private static readonly Regex UserAgentPattern = new(@"\A[\x20-\x7E]{1,200}\z", RegexOptions.CultureInvariant);
     private static readonly Regex ClientIdPattern = new(@"\A[0-9A-Za-z]{1,23}\z", RegexOptions.CultureInvariant);
 
+    private readonly IReferenceStationResolver _stationResolver;
+    private readonly ICredentialProvider _credentialProvider;
+
+    public ConfigurationValidator(IReferenceStationResolver stationResolver, ICredentialProvider credentialProvider)
+    {
+        _stationResolver = stationResolver ?? throw new ArgumentNullException(nameof(stationResolver));
+        _credentialProvider = credentialProvider ?? throw new ArgumentNullException(nameof(credentialProvider));
+    }
+
     /// <inheritdoc />
     public void Validate(IServiceProvider services, CliConfiguration configuration, CommandRequest request)
     {
@@ -46,6 +55,12 @@ public sealed class ConfigurationValidator : IConfigurationValidator
         if (mqtt)
         {
             ValidateBroker(configuration.Mqtt?.Broker);
+            _credentialProvider.GetCredentials(configuration.Mqtt!.Broker);
+        }
+
+        if (request is ParseDwdRequest parseDwd)
+        {
+            _stationResolver.Resolve(parseDwd.StationId, configuration);
         }
 
         try

@@ -17,7 +17,7 @@ public sealed class ConfigurationValidatorSettingsTests
     [TestInitialize]
     public void TestInitialize()
     {
-        _subject = new ConfigurationValidator();
+        _subject = new ConfigurationValidator(new ReferenceStationResolver(), new CredentialProvider(new EnvironmentReader(), new FileModeReader()));
     }
 
     private Action Act(CliConfiguration configuration, OutputFormat output)

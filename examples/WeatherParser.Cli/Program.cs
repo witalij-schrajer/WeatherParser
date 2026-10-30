@@ -16,7 +16,7 @@ public static class Program
     /// <returns>The process exit code.</returns>
     public static int Main(string[] args)
     {
-        return Run(args, Console.Out, Console.Error, new HelpWriter(), new CommandLineParser(), new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()), new CommandExecutor(new ConfigurationLoader(new EnvironmentReader()), new ConfigurationRegistrar(), new ConfigurationValidator()));
+        return Run(args, Console.Out, Console.Error, new HelpWriter(), new CommandLineParser(), new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()), new CommandExecutor(new ConfigurationLoader(new EnvironmentReader()), new ConfigurationRegistrar(), new ConfigurationValidator(new ReferenceStationResolver(), new CredentialProvider(new EnvironmentReader(), new FileModeReader()))));
     }
 
     /// <summary>
