@@ -162,6 +162,44 @@ public class ReadmeCliSectionTests
     }
 
     /// <summary>
+    /// Verifies that the example configuration passes the CLI's validation in MQTT mode, the default output mode (broker, topic and OW-14 checks).
+    /// </summary>
+    [TestMethod]
+    public void Readme_ExampleConfiguration_ValidInMqttMode()
+    {
+        var path = Path.Combine(RepositoryRoot(), "examples", "weatherparser.example.json");
+        var configuration = new ConfigurationLoader(new EnvironmentReader()).Load(path);
+        // The example targets Debian; its evidence cache directory is a Linux path, which is not absolute on Windows.
+        if (OperatingSystem.IsWindows())
+        {
+            configuration.Mosmix!.Catalog!.EvidenceCacheDirectory = Path.GetTempPath();
+        }
+
+        // The example names a credential file at its Debian location; the file is local setup and does not exist here.
+        configuration.Mqtt!.Broker!.CredentialsFile = null;
+        var validator = new ConfigurationValidator(new ReferenceStationResolver(), new CredentialProvider(new EmptyEnvironment(), new FileModeReader()));
+        var mqtt = new CommonOptions(OutputFormat.Mqtt, null, null, false);
+        var requests = new CommandRequest[]
+        {
+            TestConfigurations.Request(CliCommand.SelectDwd, OutputFormat.Mqtt),
+            TestConfigurations.Request(CliCommand.ParseDwd, OutputFormat.Mqtt),
+            TestConfigurations.Request(CliCommand.SelectMosmix, OutputFormat.Mqtt),
+            TestConfigurations.Request(CliCommand.ParseMosmix, OutputFormat.Mqtt),
+            new ParseMosmixRequest(mqtt, MosmixProduct.MosmixS, "10637"),
+        };
+        foreach (var request in requests)
+        {
+            using var provider = Build(configuration, request);
+            ((Action)(() => validator.Validate(provider, configuration, request))).Should().NotThrow($"the example configuration must be valid in MQTT mode for {request.GetType().Name}");
+        }
+
+        // OW-14: the example keeps PublicationPermitted false, so --ParseOstHessen is rejected in MQTT mode before any request.
+        var osthessen = TestConfigurations.Request(CliCommand.ParseOstHessen, OutputFormat.Mqtt);
+        using var osthessenProvider = Build(configuration, osthessen);
+        ((Action)(() => validator.Validate(osthessenProvider, configuration, osthessen))).Should().Throw<CliException>().Which.ErrorId.Should().Be(CliErrorIds.OsthessenPublicationNotPermitted);
+    }
+
+    /// <summary>
     /// Tests that the README does not contain private IP addresses or paths.
     /// </summary>
     [TestMethod]
@@ -201,6 +239,12 @@ public class ReadmeCliSectionTests
         {
             allowedHosts.Should().Contain(host, $"URL host '{host}' is not allowed");
         }
+    }
+
+    // No environment variable is set, so the credentials come only from the configuration (here none).
+    private sealed class EmptyEnvironment : IEnvironmentReader
+    {
+        public string? Get(string name) => null;
     }
 
     // The repository root is the directory that holds WeatherParser.slnx, searched upwards from the test output.
@@ -295,4 +339,11 @@ public class ReadmeCliSectionTests
         new[] { command }.Concat(options.SelectMany(option => option == "--RefreshMosmixSEvidence"
             ? new[] { option }
             : new[] { option, option == "--Product" ? "MOSMIX_L" : "1" })).ToArray();
+
+    private static ServiceProvider Build(CliConfiguration configuration, CommandRequest request) => CompositionRoot.Build(services =>
+    {
+        new ConfigurationRegistrar().Register(services, configuration, request);
+        new CommandRegistrar().Register(services, request);
+        services.AddLogging();
+    });
 }
