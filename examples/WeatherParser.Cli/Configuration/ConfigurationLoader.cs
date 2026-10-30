@@ -39,10 +39,20 @@ public sealed class ConfigurationLoader : IConfigurationLoader
             throw new CliException("CLI-CONFIG-MISSING", $"The configuration file '{path}' does not exist.");
         }
 
+        string text;
+        try
+        {
+            text = File.ReadAllText(path);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            throw new CliException("CLI-CONFIG-INVALID", $"The configuration file '{path}' cannot be read.");
+        }
+
         CliConfiguration? configuration;
         try
         {
-            configuration = JsonSerializer.Deserialize<CliConfiguration>(File.ReadAllText(path), Options);
+            configuration = JsonSerializer.Deserialize<CliConfiguration>(text, Options);
         }
         catch (JsonException exception)
         {

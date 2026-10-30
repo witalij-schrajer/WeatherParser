@@ -41,7 +41,7 @@ public sealed class CredentialProvider : ICredentialProvider
     {
         var username = _environment.Get(UsernameVariable);
         var password = _environment.Get(PasswordVariable);
-        var fromEnvironment = !string.IsNullOrEmpty(username) || !string.IsNullOrEmpty(password);
+        var fromEnvironment = username != null || password != null;
         var file = broker?.CredentialsFile;
 
         if (fromEnvironment && file != null)
@@ -74,15 +74,25 @@ public sealed class CredentialProvider : ICredentialProvider
             throw new CliException(CredentialsInvalid, "The credential file named by 'Mqtt.Broker.CredentialsFile' does not exist.");
         }
 
-        if (_fileModeReader.HasGroupOrOtherAccess(path))
+        string text;
+        try
         {
-            throw new CliException(CredentialsInvalid, "The credential file must not be accessible by group or others.");
+            if (_fileModeReader.HasGroupOrOtherAccess(path))
+            {
+                throw new CliException(CredentialsInvalid, "The credential file must not be accessible by group or others.");
+            }
+
+            text = File.ReadAllText(path);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            throw new CliException(CredentialsInvalid, "The credential file named by 'Mqtt.Broker.CredentialsFile' cannot be read.");
         }
 
         CredentialFile? content;
         try
         {
-            content = JsonSerializer.Deserialize<CredentialFile>(File.ReadAllText(path), Options);
+            content = JsonSerializer.Deserialize<CredentialFile>(text, Options);
         }
         catch (JsonException)
         {

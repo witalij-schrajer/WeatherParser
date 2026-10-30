@@ -172,4 +172,67 @@ public sealed class CredentialProviderTests
         credentials = new CredentialProvider(_environment.Object, _fileMode.Object).GetCredentials(new BrokerSection { Host = "h" });
         credentials.Should().BeNull();
     }
+
+    /// <summary>
+    /// Verifies that a credential error is thrown when both environment variables are empty.
+    /// </summary>
+    [TestMethod]
+    [DataRow("", "")]
+    [DataRow("", null)]
+    [DataRow(null, "")]
+    [DataRow("mqtt-user", "")]
+    public void Credentials_EmptyVariables_Rejected(string username, string password)
+    {
+        SetEnvironment(username, password);
+        var ex = Error(new BrokerSection { Host = "h" });
+        ex.Message.Should().Contain("Set both WEATHERPARSER_MQTT_USERNAME and WEATHERPARSER_MQTT_PASSWORD or neither.");
+    }
+
+    /// <summary>
+    /// Verifies that a credential error is thrown when one environment variable is empty and the file does not exist.
+    /// </summary>
+    [TestMethod]
+    public void Credentials_EmptyVariableAndFile_BothSourcesRejected()
+    {
+        SetEnvironment("", null);
+        var path = Path.Combine(_tempDirectory, "missing.json");
+        var ex = Error(new BrokerSection { Host = "h", CredentialsFile = path });
+        ex.Message.Should().Be("Broker credentials are given both as environment variables and as a credential file; use one source.");
+    }
+
+    /// <summary>
+    /// Verifies that a credential error is thrown when the credential file is locked.
+    /// </summary>
+    [TestMethod]
+    public void Credentials_FileLocked_Rejected()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            Assert.Inconclusive("Mandatory file locks exist only on Windows; the access-denied path is covered by Credentials_ModeReaderFails_Rejected.");
+        }
+
+        SetEnvironment(null, null);
+        var path = Path.Combine(_tempDirectory, "credentials.json");
+        File.WriteAllText(path, "{\"Username\":\"mqtt-user\",\"Password\":\"" + Marker + "\"}");
+        _fileMode.Setup(f => f.HasGroupOrOtherAccess(path)).Returns(false);
+        using var lockStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        var ex = Error(new BrokerSection { Host = "h", CredentialsFile = path });
+        ex.Message.Should().Contain("The credential file named by 'Mqtt.Broker.CredentialsFile' cannot be read.");
+        ex.Message.Should().NotContain("denied");
+    }
+
+    /// <summary>
+    /// Verifies that a credential error is thrown when the credential file mode check fails.
+    /// </summary>
+    [TestMethod]
+    public void Credentials_ModeReaderFails_Rejected()
+    {
+        SetEnvironment(null, null);
+        var path = Path.Combine(_tempDirectory, "credentials.json");
+        File.WriteAllText(path, "{\"Username\":\"mqtt-user\",\"Password\":\"" + Marker + "\"}");
+        _fileMode.Setup(f => f.HasGroupOrOtherAccess(path)).Throws(new UnauthorizedAccessException("denied"));
+        var ex = Error(new BrokerSection { Host = "h", CredentialsFile = path });
+        ex.Message.Should().Contain("The credential file named by 'Mqtt.Broker.CredentialsFile' cannot be read.");
+        ex.Message.Should().NotContain("denied");
+    }
 }

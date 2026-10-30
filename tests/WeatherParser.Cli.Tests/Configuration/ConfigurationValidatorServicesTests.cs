@@ -208,6 +208,27 @@ public class ConfigurationValidatorServicesTests
 
     [TestCategory("T-P3-05")]
     [TestMethod]
+    [DataRow(CliCommand.SelectDwd, "CdcStationList")]
+    [DataRow(CliCommand.SelectMosmix, "MosmixLocationList")]
+    [DataRow(CliCommand.ParseDwd, "Observation")]
+    [DataRow(CliCommand.ParseOstHessen, "Observation")]
+    [DataRow(CliCommand.ParseMosmix, "Forecast")]
+    public void Validate_OnlyRequiredMapping_Accepted(CliCommand command, string topicToKeep)
+    {
+        var configuration = TestConfigurations.Valid();
+        var topics = configuration.Mqtt!.Topics!;
+        topics.Observation = topicToKeep == "Observation" ? topics.Observation : null;
+        topics.Forecast = topicToKeep == "Forecast" ? topics.Forecast : null;
+        topics.CdcStationList = topicToKeep == "CdcStationList" ? topics.CdcStationList : null;
+        topics.MosmixLocationList = topicToKeep == "MosmixLocationList" ? topics.MosmixLocationList : null;
+        var request = TestConfigurations.Request(command, OutputFormat.Mqtt);
+        using var provider = TestConfigurations.Build(configuration, request);
+        Action act = () => _subject.Validate(provider, configuration, request);
+        act.Should().NotThrow();
+    }
+
+    [TestCategory("T-P3-05")]
+    [TestMethod]
     public void Validate_JsonMode_NoMqttSection_NoException()
     {
         var configuration = TestConfigurations.Valid();

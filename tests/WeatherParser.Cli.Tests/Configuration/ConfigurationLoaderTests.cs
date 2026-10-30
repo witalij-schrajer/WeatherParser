@@ -202,4 +202,23 @@ public sealed class ConfigurationLoaderTests
         config.Mosmix.Catalog!.MaxEvidenceCandidates.Should().Be(7);
         config.OsthessenWetter!.Stations![0].Latitude.Should().Be(50.5m);
     }
+
+    [TestMethod]
+    /// <summary>
+    /// Throws an exception when the configuration file is locked.
+    /// </summary>
+    [TestCategory("T-P3-05")]
+    public void Load_FileLocked_ConfigurationInvalid()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            Assert.Inconclusive("Mandatory file locks exist only on Windows.");
+        }
+
+        var path = WriteFile("config.json", """{"Dwd":{"ReferenceStationId":"00044"}}""");
+        using var lockStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        var ex = LoadError(path);
+        ex.ErrorId.Should().Be("CLI-CONFIG-INVALID");
+        ex.Message.Should().Contain($"The configuration file '{path}' cannot be read.");
+    }
 }
