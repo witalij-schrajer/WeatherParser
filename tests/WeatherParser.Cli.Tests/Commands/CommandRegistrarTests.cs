@@ -11,6 +11,7 @@ using WeatherParser.Cli.Tests.Configuration;
 using WeatherParser.Cli.Mqtt;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Mqtt;
+using MQTTnet;
 
 namespace WeatherParser.Cli.Tests.Commands;
 
@@ -34,6 +35,7 @@ public class CommandRegistrarTests
         provider.GetRequiredService<IResultWriter>().Should().BeOfType<DocumentResultWriter>();
         provider.GetService<IMessagePublisher>().Should().BeNull();
         provider.GetService<IMqttPublicationSettingsFactory>().Should().BeNull();
+        provider.GetService<IMqttClient>().Should().BeNull();
     }
 
     [TestMethod]
@@ -52,18 +54,15 @@ public class CommandRegistrarTests
     }
 
     [TestMethod]
-    public async Task Register_MqttMode_PublisherFailsUntilTransportExists()
+    public void Register_MqttMode_RegistersTheMqttNetTransport()
     {
         var request = TestConfigurations.Request(CliCommand.SelectDwd, OutputFormat.Mqtt);
         using var provider = Build(TestConfigurations.Valid(), request);
 
-        var publisher = provider.GetRequiredService<IMessagePublisher>();
-        var message = new MqttMessage("haus/weather/stations/dwd/selection", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, false, MqttMessageType.CdcStationList);
-        publisher.Should().BeOfType<MqttPublisher>();
-        provider.GetRequiredService<IMqttClientAdapter>().Should().BeOfType<UnavailableMqttClientAdapter>();
-
-        (await publisher.Invoking(p => p.PublishAllAsync(new[] { message }, provider.GetRequiredService<IMqttPublicationSettingsFactory>().Create(TestConfigurations.Valid(), null), CancellationToken.None)).Should().ThrowAsync<CliException>())
-            .Which.ErrorId.Should().Be("CLI-MQTT-CONNECT-FAILED");
+        provider.GetRequiredService<IMessagePublisher>().Should().BeOfType<MqttPublisher>();
+        provider.GetRequiredService<IMqttClientAdapter>().Should().BeOfType<MqttNetClientAdapter>();
+        provider.GetRequiredService<IMqttNetOptionsBuilder>().Should().BeOfType<MqttNetOptionsBuilder>();
+        provider.GetRequiredService<IMqttClient>().Should().NotBeNull();
     }
 
     [TestMethod]

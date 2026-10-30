@@ -177,6 +177,31 @@ git restore examples/WeatherParser.Cli/packages.lock.json tests/WeatherParser.Cl
 
 The process tests start the built CLI with `dotnet <output>/WeatherParser.dll` in a temporary working directory, each with a timeout after which the process tree is killed; the harness self-test needs `pwsh` on the `PATH`.
 
+### Opt-in broker integration test of the example CLI (P3.08)
+
+*Status: Verified (Windows, local Mosquitto 2.1.2 without TLS) – [P3.08 section of the P3 verification record](docs/p3/P3_VERIFICATION.md)*
+
+The tests in `tests/WeatherParser.Cli.Tests/Mqtt/BrokerIntegrationTests.cs` (category `Broker`) publish through the CLI's own MQTT composition and check delivery with a separate subscriber; without the variable `WEATHERPARSER_TEST_BROKER` they end inconclusive, so the standard runs and the CI jobs never contact a broker (CL-20, REQ-083). Use only a test broker the maintainer authorized, never a production broker. Write the test configuration **outside the repository**; it holds only the broker section and, optionally, `Limits`, for example for a local Mosquitto that listens on the loopback interface without TLS:
+
+```json
+{
+  "Mqtt": {
+    "Broker": { "Host": "127.0.0.1", "Port": 1883, "AllowUnencrypted": true }
+  },
+  "Limits": { "MaxPublishAttempts": 1, "RetryDelay": "00:00:00" }
+}
+```
+
+Credentials, if the broker needs them, come only from `WEATHERPARSER_MQTT_USERNAME` and `WEATHERPARSER_MQTT_PASSWORD` (CL-06), never from the file. Then run, after the build of the CLI tests above:
+
+```powershell
+$env:WEATHERPARSER_TEST_BROKER = '<path outside the repository>	est-broker.json'
+dotnet test tests/WeatherParser.Cli.Tests --configuration Release --no-build --filter "TestCategory=Broker"
+Remove-Item Env:WEATHERPARSER_TEST_BROKER
+```
+
+Every test uses its own topic below `weatherparser-test/<GUID>/` and removes its retained messages afterwards. `Broker_WrongCredentials_Rejected` runs only when credentials are configured, and `Broker_TlsWithCustomCa` only when the configuration uses TLS with `Mqtt.Broker.Tls.CaFile`; otherwise they end inconclusive with the reason.
+
 ### README changes
 
 *Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md)*
