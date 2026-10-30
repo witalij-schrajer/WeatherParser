@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using WeatherParser.Cli.Arguments;
 using WeatherParser.Cli.Commands;
@@ -48,7 +49,7 @@ public class SelectionHandlerTests
         _refresher = _mocks.Create<IMosmixSEvidenceRefresher>();
         _publisher = _mocks.Create<IMessagePublisher>();
         _stdout = new StringWriter();
-        _documentWriter = new DocumentResultWriter(new JsonExportSerializer(), new XmlExportSerializer());
+        _documentWriter = new DocumentResultWriter(new JsonExportSerializer(), new XmlExportSerializer(), new OutputDestination(new FileOperations(), NullLogger<OutputDestination>.Instance));
         _mqttServices = TestConfigurations.Build(TestConfigurations.Valid(), TestConfigurations.Request(CliCommand.SelectDwd, OutputFormat.Mqtt));
         _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _publisher.Object);
         _published = new List<MqttMessage>();

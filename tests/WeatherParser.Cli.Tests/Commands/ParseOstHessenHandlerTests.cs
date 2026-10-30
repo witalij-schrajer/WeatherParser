@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using WeatherParser.Cli.Arguments;
 using WeatherParser.Cli.Commands;
@@ -46,7 +47,7 @@ public sealed class ParseOstHessenHandlerTests
         _stdout = new StringWriter();
         _stderr = new StringWriter();
         _loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new StandardErrorLoggerProvider(_stderr, TimeProvider.System, new LogLineFormatter(), LogLevel.Information, "ParseOstHessen")));
-        _documentWriter = new DocumentResultWriter(new JsonExportSerializer(), new XmlExportSerializer());
+        _documentWriter = new DocumentResultWriter(new JsonExportSerializer(), new XmlExportSerializer(), new OutputDestination(new FileOperations(), NullLogger<OutputDestination>.Instance));
         _mqttServices = TestConfigurations.Build(TestConfigurations.Valid(), TestConfigurations.Request(CliCommand.ParseOstHessen, OutputFormat.Mqtt));
         _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _publisher.Object);
         _published = new List<MqttMessage>();

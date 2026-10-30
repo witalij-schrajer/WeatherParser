@@ -24,6 +24,8 @@ public sealed class CommandRegistrar : ICommandRegistrar
         services.AddSingleton<IExportErrorMessages, ExportErrorMessages>();
         services.AddSingleton<ILibraryErrors, LibraryErrors>();
         services.AddSingleton<IFailureClassifier, FailureClassifier>();
+        services.AddSingleton<IFileOperations, FileOperations>();
+        services.AddSingleton<IOutputDestination, OutputDestination>();
 
         // JSON and XML mode register no publisher and never construct the MQTT serializer (REQ-067).
         if (request.Common.Output == OutputFormat.Mqtt)

@@ -1,6 +1,5 @@
 namespace WeatherParser.Cli.Output;
 
-using System.Text;
 using WeatherParser.Cli.Commands;
 using WeatherParser.Cli.Arguments;
 using WeatherParser.Parsing.Serialization;
@@ -12,16 +11,19 @@ public sealed class DocumentResultWriter : IResultWriter
 {
     private readonly IJsonExportSerializer _jsonSerializer;
     private readonly IXmlExportSerializer _xmlSerializer;
+    private readonly IOutputDestination _destination;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentResultWriter"/> class.
     /// </summary>
     /// <param name="jsonSerializer">The JSON serializer.</param>
     /// <param name="xmlSerializer">The XML serializer.</param>
-    public DocumentResultWriter(IJsonExportSerializer jsonSerializer, IXmlExportSerializer xmlSerializer)
+    /// <param name="destination">The destination of the serialized document.</param>
+    public DocumentResultWriter(IJsonExportSerializer jsonSerializer, IXmlExportSerializer xmlSerializer, IOutputDestination destination)
     {
         _jsonSerializer = jsonSerializer ?? throw new ArgumentNullException(nameof(jsonSerializer));
         _xmlSerializer = xmlSerializer ?? throw new ArgumentNullException(nameof(xmlSerializer));
+        _destination = destination ?? throw new ArgumentNullException(nameof(destination));
     }
 
     /// <inheritdoc/>
@@ -44,8 +46,6 @@ public sealed class DocumentResultWriter : IResultWriter
                 throw new InvalidOperationException("The document writer handles only JSON and XML output.");
         }
 
-        var document = Encoding.UTF8.GetString(buffer.GetBuffer(), 0, (int)buffer.Length);
-        await context.StandardOutput.WriteAsync(document.AsMemory(), cancellationToken).ConfigureAwait(false);
-        await context.StandardOutput.FlushAsync(cancellationToken).ConfigureAwait(false);
+        await _destination.WriteAsync(buffer.GetBuffer().AsMemory(0, (int)buffer.Length), context, cancellationToken).ConfigureAwait(false);
     }
 }
