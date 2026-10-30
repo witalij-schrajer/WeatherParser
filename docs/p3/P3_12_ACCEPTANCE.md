@@ -77,7 +77,7 @@ This audit decision is not the user's acceptance.
 
 ## 6. User decision (A7)
 
-Pending: the user is asked after the automatic Codex review of pull request #16 reaches 0 findings.
+Pending: the automatic Codex review of pull request #16 reached 0 findings in round 3 (section 7); the user is asked for the acceptance after the review of the commit that records it.
 
 ## 7. Ready for review, review and merge (A9 to A11)
 
@@ -87,6 +87,7 @@ Pending: the user is asked after the automatic Codex review of pull request #16 
 - Automatic review round 2 (head `1d22160`, [run 41143477597](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41143477597)): 2 findings, both rejected after verification; the loop continues:
   1. [P2] "Cancellation can return success during MQTT cleanup": a signal during the broker disconnect after every message was acknowledged ends with exit 0. Rejected: this is the approved behavior of the accepted P3.09 plan (slice S1, `Cancel_AfterOutputCompleted_StillReportsCompletedOutcome`: a signal after the output is complete does not change a completed outcome); success is reported only after every acknowledgment (CL-13), so the signal interrupts nothing, and CL-11's "also when items succeeded before the signal" applies to a command the signal interrupts. Documentation addition: the README section "Cancellation and deadlines" now states that a signal after the output is complete leaves the result and exit code unchanged although its `CLI-CANCELLED` warning is logged (README tests 6 of 6, package check passed).
   2. [P3] the changed review brief `.github/review/prompt-documentation.md` (status check against `PHASE_STATUS.md` instead of the README) must not govern the current review. Rejected: the change implements the user's instruction of 2026-10-30 to move the phase status into `PHASE_STATUS.md` (commit `8ef553b`, with AGENTS.md and CONTRIBUTING.md); the review workflow already takes its brief from the base commit (`brief from base e623a83`), so the revised brief takes effect only after the user's merge, which is what the finding asks for.
+- Automatic review round 3 (head `ec915fc`, [run 41143919797](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41143919797)): 0 findings in all five angles. The commit recording this round is reviewed once more; that round is recorded in its pull request comment only (AGENTS.md "Plan generation" step 3).
 
 ## 8. Authorship and review
 
