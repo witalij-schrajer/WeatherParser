@@ -98,10 +98,26 @@ public sealed class BrokerIntegrationTests
             received.Enqueue(e.ApplicationMessage);
             return Task.CompletedTask;
         };
-        await client.SubscribeAsync(new MqttClientSubscribeOptionsBuilder().WithTopicFilter(topic, MqttQualityOfServiceLevel.AtLeastOnce).Build());
+        var subscription = await client.SubscribeAsync(new MqttClientSubscribeOptionsBuilder().WithTopicFilter(topic, MqttQualityOfServiceLevel.AtLeastOnce).Build());
+        subscription.Items.Should().OnlyContain(item => item.ResultCode == MqttClientSubscribeResultCode.GrantedQoS0 || item.ResultCode == MqttClientSubscribeResultCode.GrantedQoS1 || item.ResultCode == MqttClientSubscribeResultCode.GrantedQoS2);
         await Task.Delay(wait);
         await client.DisconnectAsync();
         return received.ToArray();
+    }
+
+    // Subscribes before the publication, so that a delivered (live) message is observed; the caller disposes the returned client.
+    private async Task<(IMqttClient Client, ConcurrentQueue<MqttApplicationMessage> Received)> SubscribeLiveAsync(string topic)
+    {
+        var received = new ConcurrentQueue<MqttApplicationMessage>();
+        var client = await ConnectSubscriberAsync();
+        client.ApplicationMessageReceivedAsync += e =>
+        {
+            received.Enqueue(e.ApplicationMessage);
+            return Task.CompletedTask;
+        };
+        var subscription = await client.SubscribeAsync(new MqttClientSubscribeOptionsBuilder().WithTopicFilter(topic, MqttQualityOfServiceLevel.AtLeastOnce).Build());
+        subscription.Items.Should().OnlyContain(item => item.ResultCode == MqttClientSubscribeResultCode.GrantedQoS0 || item.ResultCode == MqttClientSubscribeResultCode.GrantedQoS1 || item.ResultCode == MqttClientSubscribeResultCode.GrantedQoS2);
+        return (client, received);
     }
 
     private MqttMessage Message(string name, string payload, MqttMessageType type)
@@ -133,7 +149,18 @@ public sealed class BrokerIntegrationTests
     public async Task Broker_StationList_NotRetained()
     {
         var message = Message("stations", "[]", MqttMessageType.CdcStationList);
-        (await PublishAsync(message)).Should().Be(new PublicationReport(1, 0, 0));
+        var (live, delivered) = await SubscribeLiveAsync(message.Topic);
+        using (live)
+        {
+            (await PublishAsync(message)).Should().Be(new PublicationReport(1, 0, 0));
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            await live.DisconnectAsync();
+        }
+
+        // The live subscriber received the message, not retained; a later subscriber receives nothing.
+        delivered.Should().ContainSingle();
+        delivered.Single().Retain.Should().BeFalse();
+        delivered.Single().Payload.ToArray().Should().Equal(message.Payload.ToArray());
         (await ReceiveAsync(message.Topic, TimeSpan.FromSeconds(2))).Should().BeEmpty();
     }
 

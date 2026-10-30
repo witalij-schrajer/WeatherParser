@@ -58,7 +58,7 @@ internal static class ProcessFixtures
     /// <summary>
     /// Creates a synthetic OsthessenWetter configuration with the specified parameters.
     /// </summary>
-    public static string OsthessenConfiguration(Uri baseUri, bool mqtt, bool publicationPermitted)
+    public static string OsthessenConfiguration(Uri baseUri, bool mqtt, bool publicationPermitted, int brokerPort = 1)
     {
         var config = $$"""
             {
@@ -86,8 +86,12 @@ internal static class ProcessFixtures
                     ]
                   },
                   "Mqtt": {
-                    "Broker": { "Host": "127.0.0.1", "Port": 1, "AllowUnencrypted": true },
+                    "Broker": { "Host": "127.0.0.1", "Port": {{brokerPort}}, "AllowUnencrypted": true },
                     "Topics": { "Observation": { "TopicTemplate": "test/weather/measurements/{source}/state" } }
+                  },
+                  "Limits": {
+                    "MaxPublishAttempts": 1,
+                    "RetryDelay": "00:00:00"
                   }
                 }
                 """;

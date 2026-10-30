@@ -312,7 +312,8 @@ public class ProcessOutputTests
     public async Task Process_ParseOstHessen_Mqtt_WithPermission_PassesTheRestriction()
     {
         await using var server = OsthessenServer();
-        var config = ProcessFixtures.OsthessenConfiguration(server.BaseUri, mqtt: true, publicationPermitted: true);
+        await using var broker = new ClosingTcpListener();
+        var config = ProcessFixtures.OsthessenConfiguration(server.BaseUri, mqtt: true, publicationPermitted: true, brokerPort: broker.Port);
         var configPath = await WriteConfigAsync(config);
 
         var result = await RunAsync("--ParseOstHessen", "--StationNamePattern", "*", "--Config", configPath);
@@ -324,6 +325,7 @@ public class ProcessOutputTests
         result.TimedOut.Should().BeFalse();
         result.ExitCode.Should().Be(1);
         result.StandardError.Should().Contain(" ERROR CLI-MQTT-CONNECT-FAILED command=ParseOstHessen ");
+        broker.AcceptedCount.Should().BeGreaterThan(0);
     }
 
     [TestMethod]
