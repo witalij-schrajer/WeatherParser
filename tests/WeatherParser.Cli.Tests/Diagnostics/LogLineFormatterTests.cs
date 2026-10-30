@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WeatherParser.Cli.Diagnostics;
+using System.Reflection;
 
 namespace WeatherParser.Cli.Tests.Diagnostics;
 
@@ -90,5 +91,16 @@ public class LogLineFormatterTests
         var result = formatter.Format(_timestamp, LogLevel.Information, null, "-", null, "Failed.", exception);
         result.Should().EndWith("Failed. InvalidOperationException: boom");
         result.Should().NotContain(" at ");
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-08")]
+    public void LogLine_ReflectionTypeLoadException_NoLoaderMessages()
+    {
+        var formatter = new LogLineFormatter();
+        var exception = new ReflectionTypeLoadException(new Type?[] { null }, new Exception?[] { new InvalidOperationException("inner-secret-marker") }, "Loading failed");
+        var result = formatter.Format(_timestamp, LogLevel.Information, null, "-", null, "Failed.", exception);
+        result.Should().EndWith("Failed. ReflectionTypeLoadException: 1 loader exception(s)");
+        result.Should().NotContain("inner-secret-marker");
     }
 }

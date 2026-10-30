@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Reflection;
 using Microsoft.Extensions.Logging;
 
 namespace WeatherParser.Cli.Diagnostics;
@@ -15,6 +16,8 @@ public sealed class LogLineFormatter : ILogLineFormatter
         {
             null => message,
             AggregateException aggregate => $"{message} {nameof(AggregateException)}: {aggregate.InnerExceptions.Count} inner exception(s)",
+            // Exceptions whose Message embeds inner exception messages are written as counts only (CL-08).
+            ReflectionTypeLoadException typeLoad => $"{message} {nameof(ReflectionTypeLoadException)}: {typeLoad.LoaderExceptions.Count(loader => loader is not null)} loader exception(s)",
             _ => $"{message} {exception.GetType().Name}: {exception.Message}",
         };
         var sourcePart = string.IsNullOrEmpty(source) ? string.Empty : $" source={source}";
