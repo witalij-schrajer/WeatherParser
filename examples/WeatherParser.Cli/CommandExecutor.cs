@@ -78,7 +78,7 @@ public sealed class CommandExecutor : ICommandExecutor
             var context = new CommandContext(request.Common, settings.StationId, standardOutput);
             try
             {
-                var outcome = RunAsync(provider, request, context, CancellationToken.None).GetAwaiter().GetResult();
+                var outcome = RunAndPublishAsync(provider, request, context, CancellationToken.None).GetAwaiter().GetResult();
                 return _exitCodePolicy.ForOutcome(outcome);
             }
             catch (CliException exception)
@@ -118,4 +118,19 @@ public sealed class CommandExecutor : ICommandExecutor
         ParseOstHessenRequest parseOstHessen => services.GetRequiredService<ICommandHandler<ParseOstHessenRequest>>().HandleAsync(parseOstHessen, context, cancellationToken),
         _ => services.GetRequiredService<ICommandHandler<ParseMosmixRequest>>().HandleAsync((ParseMosmixRequest)request, context, cancellationToken),
     };
+
+    // In MQTT mode the queued messages are published after the handler; an unpublished message turns a succeeded item into a failed one (CL-13, CL-15, REQ-069).
+    private static async Task<CommandOutcome> RunAndPublishAsync(IServiceProvider services, CommandRequest request, CommandContext context, CancellationToken cancellationToken)
+    {
+        var outcome = await RunAsync(services, request, context, cancellationToken).ConfigureAwait(false);
+        if (request.Common.Output != OutputFormat.Mqtt)
+        {
+            return outcome;
+        }
+
+        var messages = services.GetRequiredService<IPublicationQueue>().Messages;
+        var report = await services.GetRequiredService<IMessagePublisher>().PublishAllAsync(messages, cancellationToken).ConfigureAwait(false);
+        var unpublished = report.Failed + report.NotAttempted;
+        return new CommandOutcome(Math.Max(0, outcome.Succeeded - unpublished), outcome.Failed + unpublished, outcome.Cancelled);
+    }
 }

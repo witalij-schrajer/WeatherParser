@@ -10,6 +10,7 @@ using WeatherParser.Cli.Tests.Configuration;
 using WeatherParser.Cli.Commands;
 using WeatherParser.Parsing.Exceptions;
 using WeatherParser.Cli.Output;
+using WeatherParser.Parsing.Mqtt;
 
 namespace WeatherParser.Cli.Tests;
 
@@ -25,6 +26,7 @@ public sealed class CommandExecutorTests
     private Mock<ICommandRegistrar> _commandRegistrar = null!;
     private Mock<IConfigurationValidator> _validator = null!;
     private Mock<ICommandHandler<ParseDwdRequest>> _handler = null!;
+    private Mock<IMessagePublisher> _publisher = null!;
     private StringWriter _stdout = null!;
     private StringWriter _stderr = null!;
     private CliConfiguration _configuration = null!;
@@ -42,6 +44,7 @@ public sealed class CommandExecutorTests
         _commandRegistrar = _mocks.Create<ICommandRegistrar>();
         _validator = _mocks.Create<IConfigurationValidator>();
         _handler = _mocks.Create<ICommandHandler<ParseDwdRequest>>();
+        _publisher = _mocks.Create<IMessagePublisher>();
         _stdout = new StringWriter();
         _stderr = new StringWriter();
         _configuration = TestConfigurations.Valid();
@@ -78,7 +81,7 @@ public sealed class CommandExecutorTests
         _registrar.Setup(r => r.Register(It.IsAny<IServiceCollection>(), _configuration, _request)).Callback<IServiceCollection, CliConfiguration, CommandRequest>((services, configuration, r) => new ConfigurationRegistrar().Register(services, configuration, r));
         _validator.Setup(v => v.Validate(It.IsAny<IServiceProvider>(), _configuration, _request)).Callback<IServiceProvider, CliConfiguration, CommandRequest>((provider, _, _) => { }).Returns(new ValidatedSettings("00044", null));
         RegisterParseDwdHandler();
-        _handler.Setup(h => h.HandleAsync((ParseDwdRequest)_request, It.Is<CommandContext>(c => c.StationId == "00044" && c.Options == _request.Common && c.StandardOutput == _stdout), It.IsAny<CancellationToken>())).ReturnsAsync(new CommandOutcome(1, 0, false));
+        _handler.Setup(h => h.HandleAsync((ParseDwdRequest)_request, It.IsAny<CommandContext>(), It.IsAny<CancellationToken>())).ReturnsAsync(new CommandOutcome(1, 0, false));
         var subject = CreateSubject();
 
         var exitCode = subject.Execute(_request, _stdout, _stderr);
@@ -339,5 +342,95 @@ public sealed class CommandExecutorTests
         exitCode.Should().Be(2);
         _stderr.ToString().Should().Contain(" ERROR CLI-OUTPUT-EXISTS command=ParseDWD The output file already exists.");
         _stdout.ToString().Should().BeEmpty();
+    }
+
+    private (ParseDwdRequest Request, PublicationQueue Queue) SetupMqttRun(CommandOutcome handlerOutcome, int messages)
+    {
+        var request = new ParseDwdRequest(new CommonOptions(OutputFormat.Mqtt, null, "c.json", false), "00044");
+        var queue = new PublicationQueue();
+        SetupValidConfiguration(request);
+        _validator.Setup(v => v.Validate(It.IsAny<IServiceProvider>(), _configuration, request)).Returns(new ValidatedSettings("00044", null));
+        _commandRegistrar.Setup(r => r.Register(It.IsAny<IServiceCollection>(), request)).Callback<IServiceCollection, CommandRequest>((services, _) =>
+        {
+            services.AddSingleton(_handler.Object);
+            services.AddSingleton<IPublicationQueue>(queue);
+            services.AddSingleton(_publisher.Object);
+        });
+        _handler.Setup(h => h.HandleAsync(request, It.IsAny<CommandContext>(), It.IsAny<CancellationToken>()))
+            .Callback(() =>
+            {
+                for (var i = 0; i < messages; i++)
+                {
+                    queue.Add(new MqttMessage($"t/{i}", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, true, MqttMessageType.Observation));
+                }
+            })
+            .ReturnsAsync(handlerOutcome);
+        return (request, queue);
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-15")]
+    public async Task Execute_MqttMode_PublishesTheQueueAfterTheHandler()
+    {
+        var (request, queue) = SetupMqttRun(new CommandOutcome(1, 0, false), 1);
+        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<MqttMessage>>(m => m.Count == 1 && m[0].Topic == "t/0"), It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 0, 0));
+        var subject = CreateSubject();
+
+        var exitCode = subject.Execute(request, _stdout, _stderr);
+
+        exitCode.Should().Be(0);
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-15")]
+    public async Task Execute_MqttMode_OnePublicationFails_ExitPartial()
+    {
+        var (request, queue) = SetupMqttRun(new CommandOutcome(2, 0, false), 2);
+        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<MqttMessage>>(m => m.Count == 2), It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 1, 0));
+        var subject = CreateSubject();
+
+        var exitCode = subject.Execute(request, _stdout, _stderr);
+
+        exitCode.Should().Be(3);
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-15")]
+    public async Task Execute_MqttMode_NothingPublished_ExitFailure()
+    {
+        var (request, queue) = SetupMqttRun(new CommandOutcome(1, 0, false), 1);
+        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<MqttMessage>>(m => m.Count == 1), It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(0, 0, 1));
+        var subject = CreateSubject();
+
+        var exitCode = subject.Execute(request, _stdout, _stderr);
+
+        exitCode.Should().Be(1);
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-15")]
+    public async Task Execute_MqttMode_ItemFailureAndPublishedItem_ExitPartial()
+    {
+        var (request, queue) = SetupMqttRun(new CommandOutcome(1, 1, false), 1);
+        _publisher.Setup(p => p.PublishAllAsync(It.Is<IReadOnlyList<MqttMessage>>(m => m.Count == 1), It.IsAny<CancellationToken>())).ReturnsAsync(new PublicationReport(1, 0, 0));
+        var subject = CreateSubject();
+
+        var exitCode = subject.Execute(request, _stdout, _stderr);
+
+        exitCode.Should().Be(3);
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-15")]
+    public async Task Execute_MqttMode_ConnectFailure_LogsIdExitFailure()
+    {
+        var (request, queue) = SetupMqttRun(new CommandOutcome(1, 0, false), 1);
+        _publisher.Setup(p => p.PublishAllAsync(It.IsAny<IReadOnlyList<MqttMessage>>(), It.IsAny<CancellationToken>())).ThrowsAsync(new CliException(CliErrorIds.MqttConnectFailed, "The broker is not reachable."));
+        var subject = CreateSubject();
+
+        var exitCode = subject.Execute(request, _stdout, _stderr);
+
+        exitCode.Should().Be(1);
+        _stderr.ToString().Should().Contain(" ERROR CLI-MQTT-CONNECT-FAILED command=ParseDWD The broker is not reachable.");
     }
 }

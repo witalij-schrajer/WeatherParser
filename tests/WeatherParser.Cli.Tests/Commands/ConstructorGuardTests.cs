@@ -46,7 +46,7 @@ public sealed class ConstructorGuardTests
     [DataRow(typeof(DocumentResultWriter), "xmlSerializer")]
     [DataRow(typeof(DocumentResultWriter), "destination")]
     [DataRow(typeof(MqttResultWriter), "serializer")]
-    [DataRow(typeof(MqttResultWriter), "publisher")]
+    [DataRow(typeof(MqttResultWriter), "queue")]
     [DataRow(typeof(OutputDestination), "files")]
     [DataRow(typeof(OutputDestination), "logger")]
     [DataRow(typeof(CommandExecutor), "commandRegistrar")]

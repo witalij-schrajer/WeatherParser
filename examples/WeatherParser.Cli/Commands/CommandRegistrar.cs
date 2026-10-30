@@ -30,6 +30,7 @@ public sealed class CommandRegistrar : ICommandRegistrar
         // JSON and XML mode register no publisher and never construct the MQTT serializer (REQ-067).
         if (request.Common.Output == OutputFormat.Mqtt)
         {
+            services.AddSingleton<IPublicationQueue, PublicationQueue>();
             services.AddSingleton<IMessagePublisher, UnavailableMessagePublisher>();
             services.AddSingleton<IResultWriter, MqttResultWriter>();
         }

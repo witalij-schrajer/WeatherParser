@@ -33,12 +33,11 @@ public class SelectionHandlerTests
     private Mock<ICdcStationSelector> _cdcSelector = null!;
     private Mock<IMosmixLocationSelector> _mosmixSelector = null!;
     private Mock<IMosmixSEvidenceRefresher> _refresher = null!;
-    private Mock<IMessagePublisher> _publisher = null!;
     private StringWriter _stdout = null!;
     private DocumentResultWriter _documentWriter = null!;
     private ServiceProvider _mqttServices = null!;
     private MqttResultWriter _mqttWriter = null!;
-    private List<MqttMessage> _published = null!;
+    private PublicationQueue _queue = null!;
 
     private SelectDwdHandler _selectDwdDocument = null!;
     private SelectDwdHandler _selectDwdMqtt = null!;
@@ -53,13 +52,12 @@ public class SelectionHandlerTests
         _cdcSelector = _mocks.Create<ICdcStationSelector>();
         _mosmixSelector = _mocks.Create<IMosmixLocationSelector>();
         _refresher = _mocks.Create<IMosmixSEvidenceRefresher>();
-        _publisher = _mocks.Create<IMessagePublisher>();
         _stdout = new StringWriter();
         _documentWriter = new DocumentResultWriter(new JsonExportSerializer(), new XmlExportSerializer(), new OutputDestination(new FileOperations(), NullLogger<OutputDestination>.Instance));
         _mqttServices = TestConfigurations.Build(TestConfigurations.Valid(), TestConfigurations.Request(CliCommand.SelectDwd, OutputFormat.Mqtt));
-        _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _publisher.Object);
-        _published = new List<MqttMessage>();
-
+        _queue = new PublicationQueue();
+        _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _queue);
+        
         _selectDwdDocument = new SelectDwdHandler(_cdcSelector.Object, _documentWriter);
         _selectDwdMqtt = new SelectDwdHandler(_cdcSelector.Object, _mqttWriter);
         _selectMosmixDocument = new SelectMosmixHandler(_mosmixSelector.Object, _documentWriter, null);
@@ -87,13 +85,6 @@ public class SelectionHandlerTests
         using var stream = new MemoryStream();
         await serializer.SerializeAsync(root, stream, CancellationToken.None);
         return Encoding.UTF8.GetString(stream.ToArray());
-    }
-
-    private void SetupPublisher()
-    {
-        _publisher.Setup(p => p.PublishAsync(It.IsAny<MqttMessage>(), It.IsAny<CancellationToken>()))
-            .Callback<MqttMessage, CancellationToken>((message, _) => _published.Add(message))
-            .Returns(Task.CompletedTask);
     }
 
     private void SetupCdc(CdcStationList list)
@@ -225,13 +216,12 @@ public class SelectionHandlerTests
     {
         var list = TestExportData.CdcStations("00044");
         SetupCdc(list);
-        SetupPublisher();
 
         var outcome = await _selectDwdMqtt.HandleAsync(DwdRequest(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
-        _published.Should().ContainSingle();
-        var message = _published[0];
+        _queue.Messages.Should().ContainSingle();
+        var message = _queue.Messages[0];
         message.Topic.Should().Be("haus/weather/stations/dwd/selection");
         message.QualityOfService.Should().Be(MqttQualityOfService.AtLeastOnce);
         message.Retain.Should().BeFalse();
@@ -245,13 +235,12 @@ public class SelectionHandlerTests
     {
         var list = TestExportData.MosmixLocations("10637");
         SetupMosmix(list);
-        SetupPublisher();
 
         var outcome = await _selectMosmixMqtt.HandleAsync(MosmixRequest(OutputFormat.Mqtt, false), Context(OutputFormat.Mqtt), CancellationToken.None);
 
         outcome.Should().Be(new CommandOutcome(1, 0, false));
-        _published.Should().ContainSingle();
-        var message = _published[0];
+        _queue.Messages.Should().ContainSingle();
+        var message = _queue.Messages[0];
         message.Topic.Should().Be("haus/weather/stations/mosmix/selection");
         message.QualityOfService.Should().Be(MqttQualityOfService.AtLeastOnce);
         message.Retain.Should().BeFalse();

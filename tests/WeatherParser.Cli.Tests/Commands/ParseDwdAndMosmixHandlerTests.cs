@@ -35,14 +35,13 @@ public sealed class ParseDwdAndMosmixHandlerTests
     private Mock<IDwdObservationParser> _dwdParser = null!;
     private Mock<IMosmixLParser> _mosmixL = null!;
     private Mock<IMosmixSParser> _mosmixS = null!;
-    private Mock<IMessagePublisher> _publisher = null!;
     private StringWriter _stdout = null!;
     private StringWriter _stderr = null!;
     private ILoggerFactory _loggerFactory = null!;
     private DocumentResultWriter _documentWriter = null!;
     private ServiceProvider _mqttServices = null!;
     private MqttResultWriter _mqttWriter = null!;
-    private List<MqttMessage> _published = null!;
+    private PublicationQueue _queue = null!;
 
     private ParseDwdHandler _dwdDocument = null!;
     private ParseDwdHandler _dwdMqtt = null!;
@@ -56,7 +55,6 @@ public sealed class ParseDwdAndMosmixHandlerTests
         _dwdParser = _mocks.Create<IDwdObservationParser>();
         _mosmixL = _mocks.Create<IMosmixLParser>();
         _mosmixS = _mocks.Create<IMosmixSParser>();
-        _publisher = _mocks.Create<IMessagePublisher>();
 
         _stdout = new StringWriter();
         _stderr = new StringWriter();
@@ -64,8 +62,8 @@ public sealed class ParseDwdAndMosmixHandlerTests
 
         _documentWriter = new DocumentResultWriter(new JsonExportSerializer(), new XmlExportSerializer(), new OutputDestination(new FileOperations(), NullLogger<OutputDestination>.Instance));
         _mqttServices = TestConfigurations.Build(TestConfigurations.Valid(), TestConfigurations.Request(CliCommand.ParseDwd, OutputFormat.Mqtt));
-        _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _publisher.Object);
-        _published = new List<MqttMessage>();
+        _queue = new PublicationQueue();
+        _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _queue);
 
         _dwdDocument = new ParseDwdHandler(_dwdParser.Object, _documentWriter, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), _loggerFactory.CreateLogger<ParseDwdHandler>());
         _dwdMqtt = new ParseDwdHandler(_dwdParser.Object, _mqttWriter, new ExportErrorMessages(), new LibraryErrors(), new FailureClassifier(), _loggerFactory.CreateLogger<ParseDwdHandler>());
@@ -93,7 +91,6 @@ public sealed class ParseDwdAndMosmixHandlerTests
         await new JsonExportSerializer().SerializeAsync(root, stream, CancellationToken.None);
         return Encoding.UTF8.GetString(stream.ToArray());
     }
-    private void SetupPublisher() => _publisher.Setup(p => p.PublishAsync(It.IsAny<MqttMessage>(), It.IsAny<CancellationToken>())).Callback<MqttMessage, CancellationToken>((message, _) => _published.Add(message)).Returns(Task.CompletedTask);
 
     [TestMethod]
     public async Task ParseDwd_Json_ExportDocumentWithOneObservation()
@@ -175,12 +172,11 @@ public sealed class ParseDwdAndMosmixHandlerTests
     {
         var dataset = TestExportData.Observation("dwd", "00044");
         _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ReturnsAsync(dataset);
-        SetupPublisher();
         var outcome = await _dwdMqtt.HandleAsync(DwdRequest(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 0, false));
-        _published.Should().HaveCount(1);
-        _published[0].MessageType.Should().Be(MqttMessageType.Observation);
-        var payload = Encoding.UTF8.GetString(_published[0].Payload.ToArray());
+        _queue.Messages.Should().HaveCount(1);
+        _queue.Messages[0].MessageType.Should().Be(MqttMessageType.Observation);
+        var payload = Encoding.UTF8.GetString(_queue.Messages[0].Payload.ToArray());
         payload.Should().Be(await JsonOf(dataset));
         _stdout.ToString().Should().BeEmpty();
     }
@@ -191,7 +187,7 @@ public sealed class ParseDwdAndMosmixHandlerTests
         _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ThrowsAsync(new CatalogRetrievalException(CatalogRetrievalException.RetrievalFailedErrorId, "endpoint", "secret-endpoint-7c1"));
         var outcome = await _dwdMqtt.HandleAsync(DwdRequest(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(0, 1, false));
-        _published.Should().HaveCount(0);
+        _queue.Messages.Should().HaveCount(0);
         _stdout.ToString().Should().BeEmpty();
         _stderr.ToString().Should().Contain(" ERROR CATALOG-RETRIEVAL-FAILED ");
         _stderr.ToString().Should().Contain("source=dwd:00044");
@@ -287,12 +283,11 @@ public sealed class ParseDwdAndMosmixHandlerTests
     {
         var run = TestExportData.Forecast(MosmixProduct.MosmixL, "10637");
         _mosmixL.Setup(p => p.ParseAsync("10637", It.IsAny<CancellationToken>())).ReturnsAsync(Result(run));
-        SetupPublisher();
         var outcome = await _mosmixMqtt.HandleAsync(MosmixRequest(OutputFormat.Mqtt, MosmixProduct.MosmixL), Context(OutputFormat.Mqtt), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(1, 0, false));
-        _published.Should().HaveCount(1);
-        _published[0].MessageType.Should().Be(MqttMessageType.Forecast);
-        var payload = Encoding.UTF8.GetString(_published[0].Payload.ToArray());
+        _queue.Messages.Should().HaveCount(1);
+        _queue.Messages[0].MessageType.Should().Be(MqttMessageType.Forecast);
+        var payload = Encoding.UTF8.GetString(_queue.Messages[0].Payload.ToArray());
         payload.Should().Be(await JsonOf(run));
         _stdout.ToString().Should().BeEmpty();
     }

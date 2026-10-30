@@ -9,9 +9,15 @@ namespace WeatherParser.Cli.Output;
 public sealed class UnavailableMessagePublisher : IMessagePublisher
 {
     /// <inheritdoc/>
-    public Task PublishAsync(MqttMessage message, CancellationToken cancellationToken)
+    public Task<PublicationReport> PublishAllAsync(IReadOnlyList<MqttMessage> messages, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(messages);
+        
+        if (messages.Count == 0)
+        {
+            return Task.FromResult(new PublicationReport(0, 0, 0));
+        }
+        
         throw new CliException(CliErrorIds.MqttConnectFailed, "The MQTT transport is not available in this version of the example.");
     }
 }

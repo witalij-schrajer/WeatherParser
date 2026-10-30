@@ -58,8 +58,22 @@ public class CommandRegistrarTests
         var publisher = provider.GetRequiredService<IMessagePublisher>();
         var message = new MqttMessage("haus/weather/stations/dwd/selection", new byte[] { 1 }, MqttQualityOfService.AtLeastOnce, false, MqttMessageType.CdcStationList);
 
-        (await publisher.Invoking(p => p.PublishAsync(message, CancellationToken.None)).Should().ThrowAsync<CliException>())
+        (await publisher.Invoking(p => p.PublishAllAsync(new[] { message }, CancellationToken.None)).Should().ThrowAsync<CliException>())
             .Which.ErrorId.Should().Be("CLI-MQTT-CONNECT-FAILED");
+    }
+
+    [TestMethod]
+    public async Task Register_MqttMode_WriterQueuesIntoTheRegisteredQueue()
+    {
+        var request = TestConfigurations.Request(CliCommand.SelectDwd, OutputFormat.Mqtt);
+        using var provider = Build(TestConfigurations.Valid(), request);
+
+        var writer = provider.GetRequiredService<IResultWriter>();
+        var queue = provider.GetRequiredService<IPublicationQueue>();
+        
+        await writer.WriteAsync(TestExportData.CdcStations("00044"), new CommandContext(request.Common, null, TextWriter.Null), CancellationToken.None);
+        
+        queue.Messages.Should().ContainSingle().Which.MessageType.Should().Be(MqttMessageType.CdcStationList);
     }
 
     [TestMethod]

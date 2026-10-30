@@ -29,14 +29,13 @@ public sealed class ParseOstHessenHandlerTests
     private MockRepository _mocks = null!;
     private Mock<IOsthessenWetterParser> _parser = null!;
     private Mock<IOsthessenWetterStationIdentity> _identity = null!;
-    private Mock<IMessagePublisher> _publisher = null!;
     private StringWriter _stdout = null!;
     private StringWriter _stderr = null!;
     private ILoggerFactory _loggerFactory = null!;
     private IResultWriter _documentWriter = null!;
     private ServiceProvider _mqttServices = null!;
     private IResultWriter _mqttWriter = null!;
-    private List<MqttMessage> _published = null!;
+    private PublicationQueue _queue = null!;
 
     private ParseOstHessenHandler _document = null!;
     private ParseOstHessenHandler _mqtt = null!;
@@ -47,14 +46,13 @@ public sealed class ParseOstHessenHandlerTests
         _mocks = new(MockBehavior.Strict);
         _parser = _mocks.Create<IOsthessenWetterParser>();
         _identity = _mocks.Create<IOsthessenWetterStationIdentity>();
-        _publisher = _mocks.Create<IMessagePublisher>();
         _stdout = new StringWriter();
         _stderr = new StringWriter();
         _loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(new StandardErrorLoggerProvider(_stderr, TimeProvider.System, new LogLineFormatter(), LogLevel.Information, "ParseOstHessen")));
         _documentWriter = new DocumentResultWriter(new JsonExportSerializer(), new XmlExportSerializer(), new OutputDestination(new FileOperations(), NullLogger<OutputDestination>.Instance));
         _mqttServices = TestConfigurations.Build(TestConfigurations.Valid(), TestConfigurations.Request(CliCommand.ParseOstHessen, OutputFormat.Mqtt));
-        _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _publisher.Object);
-        _published = new List<MqttMessage>();
+        _queue = new PublicationQueue();
+        _mqttWriter = new MqttResultWriter(_mqttServices.GetRequiredService<IMqttMessageSerializer>(), _queue);
         
         _document = new ParseOstHessenHandler(_parser.Object, _identity.Object, _documentWriter, new ExportErrorMessages(), _loggerFactory.CreateLogger<ParseOstHessenHandler>());
         _mqtt = new ParseOstHessenHandler(_parser.Object, _identity.Object, _mqttWriter, new ExportErrorMessages(), _loggerFactory.CreateLogger<ParseOstHessenHandler>());
@@ -81,7 +79,6 @@ public sealed class ParseOstHessenHandlerTests
         await new JsonExportSerializer().SerializeAsync(root, stream, CancellationToken.None);
         return Encoding.UTF8.GetString(stream.ToArray());
     }
-    private void SetupPublisher() => _publisher.Setup(p => p.PublishAsync(It.IsAny<MqttMessage>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask).Callback<MqttMessage, CancellationToken>((m, _) => _published.Add(m));
 
     [TestMethod]
     public async Task ParseOstHessen_SeveralMatches_SeparateDatasets()
@@ -211,14 +208,13 @@ public sealed class ParseOstHessenHandlerTests
         var failure = new OsthessenWetterStationFailure("Hünfeld", "OSTHESSEN-STATION-OFFLINE", "offline-reason-7c1");
         SetupParse(new[] { first, second }, failure);
         MapName("Hünfeld", "huenfeld");
-        SetupPublisher();
         var outcome = await _mqtt.HandleAsync(Request(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
         outcome.Should().Be(new CommandOutcome(2, 1, false));
-        _published.Count.Should().Be(2);
-        _published[0].MessageType.Should().Be(MqttMessageType.Observation);
-        _published[1].MessageType.Should().Be(MqttMessageType.Observation);
-        var payload1 = Encoding.UTF8.GetString(_published[0].Payload.Span);
-        var payload2 = Encoding.UTF8.GetString(_published[1].Payload.Span);
+        _queue.Messages.Count.Should().Be(2);
+        _queue.Messages[0].MessageType.Should().Be(MqttMessageType.Observation);
+        _queue.Messages[1].MessageType.Should().Be(MqttMessageType.Observation);
+        var payload1 = Encoding.UTF8.GetString(_queue.Messages[0].Payload.Span);
+        var payload2 = Encoding.UTF8.GetString(_queue.Messages[1].Payload.Span);
         payload1.Should().Be(await JsonOf(first));
         payload2.Should().Be(await JsonOf(second));
         _stdout.ToString().Should().BeEmpty();
