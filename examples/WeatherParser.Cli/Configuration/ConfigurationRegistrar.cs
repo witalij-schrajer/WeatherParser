@@ -1,6 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using WeatherParser.Cli.Arguments;
 using WeatherParser.Parsing.Catalogs;
 using WeatherParser.Parsing.Evidence.MosmixS;
@@ -12,7 +10,7 @@ using WeatherParser.Parsing.Observations.Osthessen;
 namespace WeatherParser.Cli.Configuration;
 
 /// <summary>
-/// Registers the consumer types of the library from the configuration; values are forwarded unchanged and absent members keep the library defaults (CL-05). Logging is a null logger until P3.06.
+/// Registers the consumer types of the library from the configuration; values are forwarded unchanged and absent members keep the library defaults (CL-05). Logging is registered by the command executor.
 /// </summary>
 public sealed class ConfigurationRegistrar : IConfigurationRegistrar
 {
@@ -33,7 +31,6 @@ public sealed class ConfigurationRegistrar : IConfigurationRegistrar
         var mosmixSOptions = new MosmixSForecastOptions { MaxRunAge = mosmixS?.MaxRunAge };
         mosmixSOptions.ParseDeadline = mosmixS?.ParseDeadline ?? mosmixSOptions.ParseDeadline;
 
-        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddSingleton(configuration.Dwd?.Catalog ?? new CdcCatalogEndpoints());
         services.AddSingleton(configuration.Dwd?.Observation ?? new DwdObservationOptions());
         services.AddSingleton(osthessenOptions);

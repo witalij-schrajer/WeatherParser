@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using WeatherParser.Cli.Arguments;
 using WeatherParser.Cli.Configuration;
@@ -68,8 +69,8 @@ public sealed class ProcessTests
     public async Task Process_NoArguments_PrintsUsageToStderr_NonZero()
     {
         var result = await CliProcess.RunCliAsync(Array.Empty<string>(), _workingDirectory, _timeout);
-        result.ExitCode.Should().NotBe(0);
-        result.StandardError.Should().Contain("Usage: WeatherParser --<command> [options]");
+        result.ExitCode.Should().Be(2);
+        result.StandardError.Should().Contain(" ERROR CLI-COMMAND-MISSING command=- ");
         result.StandardOutput.Should().BeEmpty();
     }
 
@@ -128,9 +129,9 @@ public sealed class ProcessTests
     {
         var result = await CliProcess.RunCliAsync(arguments.Split(' '), _workingDirectory, _timeout);
         result.TimedOut.Should().BeFalse();
-        result.ExitCode.Should().NotBe(0);
+        result.ExitCode.Should().Be(2);
         result.StandardOutput.Should().BeEmpty();
-        result.StandardError.Should().StartWith(errorId + ":");
+        result.StandardError.Should().Contain($" ERROR {errorId} command=- ");
         Directory.EnumerateFileSystemEntries(_workingDirectory).Should().BeEmpty();
     }
 
@@ -143,9 +144,9 @@ public sealed class ProcessTests
     {
         var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--Output", "json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
         result.TimedOut.Should().BeFalse();
-        result.ExitCode.Should().NotBe(0);
+        result.ExitCode.Should().Be(2);
         result.StandardOutput.Should().BeEmpty();
-        result.StandardError.Should().StartWith("CLI-CONFIG-MISSING:");
+        result.StandardError.Should().Contain(" ERROR CLI-CONFIG-MISSING command=ParseDWD ");
         Directory.EnumerateFileSystemEntries(_workingDirectory).Should().BeEmpty();
     }
 
@@ -162,7 +163,7 @@ public sealed class ProcessTests
         result.TimedOut.Should().BeFalse();
         result.ExitCode.Should().Be(1);
         result.StandardOutput.Should().BeEmpty();
-        result.StandardError.Should().Be("The command is not implemented yet." + Environment.NewLine);
+        result.StandardError.Should().Contain(" ERROR - command=ParseDWD The command is not implemented yet.");
         Directory.EnumerateFileSystemEntries(_workingDirectory).Should().ContainSingle().Which.Should().Be(configPath);
     }
 
@@ -177,9 +178,9 @@ public sealed class ProcessTests
         await File.WriteAllTextAsync(configPath, "{\"Dwdd\":{}}");
         var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--Output", "json", "--Config", "config.json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
         result.TimedOut.Should().BeFalse();
-        result.ExitCode.Should().NotBe(0);
+        result.ExitCode.Should().Be(2);
         result.StandardOutput.Should().BeEmpty();
-        result.StandardError.Should().StartWith("CLI-CONFIG-INVALID:");
+        result.StandardError.Should().Contain(" ERROR CLI-CONFIG-INVALID command=ParseDWD ");
     }
 
     /// <summary>
@@ -211,9 +212,9 @@ public sealed class ProcessTests
 
         var result = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--Output", "json", "--Config", "config.json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
         result.TimedOut.Should().BeFalse();
-        result.ExitCode.Should().NotBe(0);
+        result.ExitCode.Should().Be(2);
         result.StandardOutput.Should().BeEmpty();
-        result.StandardError.Should().StartWith("CLI-DWD-STATION-MISSING:");
+        result.StandardError.Should().Contain(" ERROR CLI-DWD-STATION-MISSING command=ParseDWD ");
         server.RequestCount.Should().Be(0);
         Directory.EnumerateFileSystemEntries(_workingDirectory).Should().ContainSingle().Which.Should().Be(configPath);
     }
@@ -266,10 +267,48 @@ public sealed class ProcessTests
                 ["WEATHERPARSER_MQTT_PASSWORD"] = "s3cr3t-Marker-7f2a"
             });
         result.TimedOut.Should().BeFalse();
-        result.ExitCode.Should().NotBe(0);
-        result.StandardError.Should().StartWith("CLI-CREDENTIALS-INVALID:");
+        result.ExitCode.Should().Be(2);
+        result.StandardError.Should().Contain(" ERROR CLI-CREDENTIALS-INVALID command=ParseDWD ");
         result.StandardOutput.Should().NotContain("s3cr3t-Marker-7f2a");
         result.StandardError.Should().NotContain("s3cr3t-Marker-7f2a");
+    }
+
+    /// <summary>
+    /// Verifies that every line on stderr of failing invocations is a log line with UTC time, severity, ID and command, and that stdout stays empty (CL-08, REQ-072, REQ-073).
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-08")]
+    public async Task Process_UsageAndConfigurationFailures_EveryStderrLineIsALogLine_StdoutEmpty()
+    {
+        // Test 1: Invalid argument
+        var result1 = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--Langitude", "1" }, _workingDirectory, _timeout);
+        result1.ExitCode.Should().Be(2);
+        result1.StandardOutput.Should().BeEmpty();
+        result1.StandardError.Should().NotBeEmpty();
+        foreach (var line in result1.StandardError.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            line.Should().MatchRegex(@"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2} UTC [A-Z]+ \S+ command=\S+ ");
+        }
+
+        // Test 2: Missing config
+        var result2 = await CliProcess.RunCliAsync(new[] { "--ParseDWD", "--Output", "json" }, _workingDirectory, _timeout, new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
+        result2.ExitCode.Should().Be(2);
+        result2.StandardOutput.Should().BeEmpty();
+        result2.StandardError.Should().NotBeEmpty();
+        foreach (var line in result2.StandardError.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            line.Should().MatchRegex(@"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2} UTC [A-Z]+ \S+ command=\S+ ");
+        }
+
+        // Test 3: No arguments
+        var result3 = await CliProcess.RunCliAsync(Array.Empty<string>(), _workingDirectory, _timeout);
+        result3.ExitCode.Should().Be(2);
+        result3.StandardOutput.Should().BeEmpty();
+        result3.StandardError.Should().NotBeEmpty();
+        foreach (var line in result3.StandardError.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            line.Should().MatchRegex(@"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2} UTC [A-Z]+ \S+ command=\S+ ");
+        }
     }
 
     private const string MinimalValidConfiguration = """

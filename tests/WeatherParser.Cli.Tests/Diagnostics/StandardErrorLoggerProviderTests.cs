@@ -67,4 +67,27 @@ public class StandardErrorLoggerProviderTests
         logger.LogInformation(new EventId(0, "SELECTION-EMPTY"), "No station.");
         writer.ToString().Should().Contain(" INFORMATION SELECTION-EMPTY command=ParseDWD No station.");
     }
+
+    [TestMethod]
+    [TestCategory("T-P3-08")]
+    public void Logger_BeginScope_ReturnsNoScope()
+    {
+        var writer = new StringWriter();
+        var provider = new StandardErrorLoggerProvider(writer, new FakeClock(new DateTimeOffset(2026, 10, 29, 19, 5, 7, TimeSpan.Zero)), new LogLineFormatter(), LogLevel.Information, "ParseDWD");
+        var logger = provider.CreateLogger("Test");
+        var scope = logger.BeginScope("scope");
+        scope.Should().BeNull();
+    }
+
+    [TestMethod]
+    [TestCategory("T-P3-08")]
+    public void Logger_StateWithoutKeyValuePairs_NoSourceField()
+    {
+        var writer = new StringWriter();
+        var provider = new StandardErrorLoggerProvider(writer, new FakeClock(new DateTimeOffset(2026, 10, 29, 19, 5, 7, TimeSpan.Zero)), new LogLineFormatter(), LogLevel.Information, "ParseDWD");
+        var logger = provider.CreateLogger("Test");
+        logger.Log(LogLevel.Information, new EventId(0, "X-ID"), "plain state", null, (state, _) => state);
+        writer.ToString().Should().EndWith($" INFORMATION X-ID command=ParseDWD plain state{Environment.NewLine}");
+        writer.ToString().Should().NotContain("source=");
+    }
 }

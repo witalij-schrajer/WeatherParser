@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Moq;
 using WeatherParser.Cli.Arguments;
+using WeatherParser.Cli.Diagnostics;
 
 namespace WeatherParser.Cli.Tests;
 
@@ -42,7 +43,7 @@ public sealed class ProgramRunTests
         _mocks.VerifyAll();
     }
 
-    private int Run(params string[] args) => Program.Run(args, _stdout, _stderr, _help.Object, _parser.Object, _validator.Object, _executor.Object);
+    private int Run(params string[] args) => Program.Run(args, _stdout, _stderr, _help.Object, _parser.Object, _validator.Object, _executor.Object, new ExitCodePolicy());
 
     /// <summary>
     /// Verifies that help is written to stdout and returns zero.
@@ -83,16 +84,17 @@ public sealed class ProgramRunTests
     /// </summary>
     [TestMethod]
     [TestCategory("T-P3-04")]
-    public void Run_ParserUsageError_WritesErrorLineAndHelpToStderr_ReturnsOne()
+    public void Run_ParserUsageError_WritesOneLogLine_ExitUsage()
     {
         _parser.Setup(p => p.Parse(It.Is<IReadOnlyList<string>>(a => a.SequenceEqual(new[] { "--ParseDWD", "--Bogus" }))))
             .Returns(new UsageError("CLI-ARGUMENT-INVALID", "Unknown option '--Bogus'."));
-        _help.Setup(h => h.WriteHelp(_stderr));
+        // No help writing to stderr anymore
 
         var exitCode = Run("--ParseDWD", "--Bogus");
-        exitCode.Should().Be(1);
+        exitCode.Should().Be(2);
 
-        _stderr.ToString().Should().StartWith("CLI-ARGUMENT-INVALID: Unknown option '--Bogus'." + Environment.NewLine);
+        _stderr.ToString().Should().Contain(" ERROR CLI-ARGUMENT-INVALID command=- Unknown option '--Bogus'. Use --Help for the commands and options.");
+        _stderr.ToString().TrimEnd().Should().NotContain("\n");
         _stdout.ToString().Should().BeEmpty();
     }
 
@@ -101,19 +103,21 @@ public sealed class ProgramRunTests
     /// </summary>
     [TestMethod]
     [TestCategory("T-P3-04")]
-    public void Run_ValidatorUsageError_WritesErrorLineAndHelpToStderr_ReturnsOne()
+    public void Run_ValidatorUsageError_WritesOneLogLine_ExitUsage()
     {
         var parsed = new ParsedCommandLine(CliCommand.SelectDwd, new Dictionary<string, string>(), new HashSet<string>());
         _parser.Setup(p => p.Parse(It.Is<IReadOnlyList<string>>(a => a.SequenceEqual(new[] { "--SelectDWD" }))))
             .Returns(parsed);
         _validator.Setup(v => v.Validate(parsed))
             .Returns(new UsageError("COORDINATE-INVALID", "Latitude out of range."));
-        _help.Setup(h => h.WriteHelp(_stderr));
+        // No help writing to stderr anymore
 
         var exitCode = Run("--SelectDWD");
-        exitCode.Should().Be(1);
+        exitCode.Should().Be(2);
 
-        _stderr.ToString().Should().StartWith("COORDINATE-INVALID: Latitude out of range." + Environment.NewLine);
+        _stderr.ToString().Should().Contain(" ERROR COORDINATE-INVALID command=- Latitude out of range. Use --Help for the commands and options.");
+        _stderr.ToString().TrimEnd().Should().NotContain("\n");
+        _stdout.ToString().Should().BeEmpty();
     }
 
     /// <summary>
@@ -163,19 +167,40 @@ public sealed class ProgramRunTests
     /// Verifies that main with invalid arguments writes error to console error and returns one.
     /// </summary>
     [TestMethod]
-    public void Main_InvalidArguments_WritesErrorToConsoleError_ReturnsOne()
+    public void Main_InvalidArguments_WritesLogLine_ExitUsage()
     {
         var originalErr = Console.Error;
         try
         {
             Console.SetError(_stderr);
             var exitCode = Program.Main(new[] { "--ParseDWD", "--Langitude", "1" });
-            exitCode.Should().Be(1);
-            _stderr.ToString().Should().StartWith("CLI-ARGUMENT-INVALID: Unknown option '--Langitude'." + Environment.NewLine);
+            exitCode.Should().Be(2);
+            _stderr.ToString().Should().Contain(" ERROR CLI-ARGUMENT-INVALID command=- Unknown option '--Langitude'.");
         }
         finally
         {
             Console.SetError(originalErr);
         }
+    }
+
+    /// <summary>
+    /// Verifies that an unexpected exception ends with exit code 1 and the log line "… ERROR CLI-UNEXPECTED command=- The command failed unexpectedly. &lt;ExceptionType&gt;: &lt;message&gt;".
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P3-09")]
+    public void Run_UnexpectedException_ExitFailureWithCliUnexpected()
+    {
+        var parsed = new ParsedCommandLine(CliCommand.ParseDwd, new Dictionary<string, string>(), new HashSet<string>());
+        var request = new ParseDwdRequest(new CommonOptions(OutputFormat.Mqtt, null, null, false), "00044");
+        _parser.Setup(p => p.Parse(It.IsAny<IReadOnlyList<string>>())).Returns(parsed);
+        _validator.Setup(v => v.Validate(parsed)).Returns(new ValidatedCommand(request));
+        _executor.Setup(e => e.Execute(request, _stdout, _stderr)).Throws(new InvalidOperationException("boom"));
+
+        var exitCode = Run("--ParseDWD");
+
+        exitCode.Should().Be(1);
+        _stderr.ToString().Should().Contain(" ERROR CLI-UNEXPECTED command=- The command failed unexpectedly. InvalidOperationException: boom");
+        _stderr.ToString().Should().NotContain(" at ");
+        _stdout.ToString().Should().BeEmpty();
     }
 }

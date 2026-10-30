@@ -98,5 +98,5 @@ internal static class TestConfigurations
     }
 
     public static ServiceProvider Build(CliConfiguration configuration, CommandRequest request) => 
-        CompositionRoot.Build(services => new ConfigurationRegistrar().Register(services, configuration, request));
+        CompositionRoot.Build(services => { new ConfigurationRegistrar().Register(services, configuration, request); services.AddLogging(); });
 }

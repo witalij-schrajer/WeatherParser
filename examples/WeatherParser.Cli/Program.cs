@@ -1,6 +1,8 @@
 using WeatherParser.Cli.Arguments;
 using WeatherParser.Cli.Configuration;
+using WeatherParser.Cli.Diagnostics;
 using WeatherParser.Parsing.Geography;
+using Microsoft.Extensions.Logging;
 
 namespace WeatherParser.Cli;
 
@@ -16,7 +18,23 @@ public static class Program
     /// <returns>The process exit code.</returns>
     public static int Main(string[] args)
     {
-        return Run(args, Console.Out, Console.Error, new HelpWriter(), new CommandLineParser(), new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()), new CommandExecutor(new ConfigurationLoader(new EnvironmentReader()), new ConfigurationRegistrar(), new ConfigurationValidator(new ReferenceStationResolver(), new CredentialProvider(new EnvironmentReader(), new FileModeReader()))));
+        var environment = new EnvironmentReader();
+        var exitCodePolicy = new ExitCodePolicy();
+        var executor = new CommandExecutor(
+            new ConfigurationLoader(environment),
+            new ConfigurationRegistrar(),
+            new ConfigurationValidator(new ReferenceStationResolver(), new CredentialProvider(environment, new FileModeReader())),
+            exitCodePolicy,
+            new LogLineFormatter());
+        return Run(
+            args,
+            Console.Out,
+            Console.Error,
+            new HelpWriter(),
+            new CommandLineParser(),
+            new CommandRequestValidator(new CoordinateParser(), new SearchParameterFactory()),
+            executor,
+            exitCodePolicy);
     }
 
     /// <summary>
@@ -29,8 +47,9 @@ public static class Program
     /// <param name="parser">The command-line parser.</param>
     /// <param name="validator">The command request validator.</param>
     /// <param name="executor">The command executor.</param>
+    /// <param name="exitCodePolicy">The exit code policy.</param>
     /// <returns>The process exit code.</returns>
-    public static int Run(string[] args, TextWriter standardOutput, TextWriter standardError, IHelpWriter helpWriter, ICommandLineParser parser, ICommandRequestValidator validator, ICommandExecutor executor)
+    public static int Run(string[] args, TextWriter standardOutput, TextWriter standardError, IHelpWriter helpWriter, ICommandLineParser parser, ICommandRequestValidator validator, ICommandExecutor executor, IExitCodePolicy exitCodePolicy)
     {
         ArgumentNullException.ThrowIfNull(args);
         ArgumentNullException.ThrowIfNull(standardOutput);
@@ -39,6 +58,7 @@ public static class Program
         ArgumentNullException.ThrowIfNull(parser);
         ArgumentNullException.ThrowIfNull(validator);
         ArgumentNullException.ThrowIfNull(executor);
+        ArgumentNullException.ThrowIfNull(exitCodePolicy);
 
         var result = parser.Parse(args);
         if (result is ParsedCommandLine parsed)
@@ -55,11 +75,23 @@ public static class Program
                 helpWriter.WriteCommandHelp(standardOutput, help.Command.Value);
                 return 0;
             case UsageError error:
-                standardError.WriteLine($"{error.ErrorId}: {error.Message}");
-                helpWriter.WriteHelp(standardError);
-                return 1;
+                using (var provider = new StandardErrorLoggerProvider(standardError, TimeProvider.System, new LogLineFormatter(), LogLevel.Information, "-"))
+                {
+                    provider.CreateLogger("WeatherParser.Cli").LogError(new EventId(0, error.ErrorId), "{Message} Use --Help for the commands and options.", error.Message);
+                }
+
+                return exitCodePolicy.ForError(error.ErrorId);
             default:
-                return executor.Execute(((ValidatedCommand)result).Request, standardOutput, standardError);
+                try
+                {
+                    return executor.Execute(((ValidatedCommand)result).Request, standardOutput, standardError);
+                }
+                catch (Exception exception)
+                {
+                    using var provider = new StandardErrorLoggerProvider(standardError, TimeProvider.System, new LogLineFormatter(), LogLevel.Information, "-");
+                    provider.CreateLogger("WeatherParser.Cli").LogError(new EventId(0, CliErrorIds.Unexpected), exception, "The command failed unexpectedly.");
+                    return ExitCodes.Failure;
+                }
         }
     }
 }

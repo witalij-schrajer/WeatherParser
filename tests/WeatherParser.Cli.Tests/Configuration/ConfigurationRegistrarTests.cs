@@ -105,7 +105,7 @@ public sealed class ConfigurationRegistrarTests
         provider.GetRequiredService<MosmixSForecastEndpoints>().AllStationsUri.Should().Be(new Uri("https://example.invalid/s.kmz"));
         provider.GetRequiredService<MosmixSForecastOptions>().ParseDeadline.Should().Be(TimeSpan.FromMinutes(4));
         provider.GetRequiredService<MosmixSForecastOptions>().MaxRunAge.Should().Be(TimeSpan.FromHours(2));
-        provider.GetRequiredService<ILogger<ConfigurationRegistrarTests>>().Should().NotBeNull();
+        provider.GetService<ILogger<ConfigurationRegistrarTests>>().Should().BeNull();
     }
 
     [TestMethod]
