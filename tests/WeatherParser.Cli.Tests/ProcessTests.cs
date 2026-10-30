@@ -92,8 +92,9 @@ public sealed class ProcessTests
     [TestMethod]
     public async Task Harness_KillsProcessOnTimeout()
     {
+        // The killed process may hold its current directory for a moment after the kill; the shared temporary directory is never deleted, so cleanup cannot fail on Windows.
         var sw = Stopwatch.StartNew();
-        var result = await CliProcess.RunAsync("pwsh", new[] { "-NoProfile", "-Command", "Start-Sleep -Seconds 30" }, _workingDirectory, TimeSpan.FromSeconds(2));
+        var result = await CliProcess.RunAsync("pwsh", new[] { "-NoProfile", "-Command", "Start-Sleep -Seconds 30" }, Path.GetTempPath(), TimeSpan.FromSeconds(2));
         sw.Stop();
         result.TimedOut.Should().BeTrue();
         sw.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(20));
