@@ -91,7 +91,7 @@ public sealed class CommandLineParser : ICommandLineParser
             if (flags.Count == 1 && values.Count == 0 && commands.Count <= 1)
                 return new HelpRequest(commands.Count == 1 ? commands[0] : null);
             else
-                return new UsageError(ArgumentInvalid, "Option '--Help' is allowed alone or with exactly one command.");
+                return new UsageError(ArgumentInvalid, "Option '--Help' is allowed alone or with exactly one command.", Known());
         }
 
         if (commands.Count == 0)

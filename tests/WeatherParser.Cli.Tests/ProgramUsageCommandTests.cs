@@ -49,6 +49,7 @@ public class ProgramUsageCommandTests
     [DataRow("--ParseOstHessen", "ParseOstHessen")]
     [DataRow("--ParseMOSMIX", "ParseMOSMIX")]
     [DataRow("--ParseDWD --Output csv", "ParseDWD")]
+    [DataRow("--ParseDWD --Help --Verbose", "ParseDWD")]
     public void Run_ParserErrorForEachCommand_NamesTheCommand(string arguments, string commandName)
     {
         var exitCode = Run(arguments.Split(' '));

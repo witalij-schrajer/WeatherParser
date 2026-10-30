@@ -29,6 +29,7 @@ public sealed class CommandLineParserCommandContextTests
     [DataRow("--ParseDWD --Bogus x", CliCommand.ParseDwd)]
     [DataRow("--ParseDWD --StationID 1 --stationid 2", CliCommand.ParseDwd)]
     [DataRow("--ParseDWD foo", CliCommand.ParseDwd)]
+    [DataRow("--ParseDWD --Help --Verbose", CliCommand.ParseDwd)]
     [TestMethod]
     public void Parse_ErrorAfterCommandKnown_CarriesCommand(string arguments, CliCommand expectedCommand)
     {
@@ -41,6 +42,7 @@ public sealed class CommandLineParserCommandContextTests
     [DataRow("--Bogus")]
     [DataRow("--ParseDWD --ParseOstHessen")]
     [DataRow("--Bogus --ParseDWD")]
+    [DataRow("--ParseDWD --ParseOstHessen --Help")]
     [TestMethod]
     public void Parse_ErrorBeforeCommandKnown_NoCommand(string arguments)
     {
