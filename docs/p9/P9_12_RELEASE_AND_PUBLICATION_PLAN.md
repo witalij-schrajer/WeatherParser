@@ -42,7 +42,7 @@ Create the annotated tag on the `master` merge commit and the GitHub release wit
 The user publishes the promoted `.nupkg` (and symbols) to the feed; the agent records the user's confirmation and the feed's package page.
 
 ### S5 Post-publication check
-A clean consumer outside any checkout restores the published package from the feed by version, verifies the package hash against `SHA256SUMS` (the feed's repository signature aside, decided in P9.02), and passes the package consumer tests; recorded.
+A clean consumer outside any checkout restores the published package from the feed by version, verifies the package hash against `SHA256SUMS` (the feed's repository signature aside, decided in P9.02), and passes the package consumer tests; recorded. Under RL-08 A in addition: the CLI built from the tagged source exactly by the operating-guide procedure (P9.08) against the published package from the feed, with a check that the restored `WeatherParser.Parsing` is the published version and its hash equals the promoted `.nupkg`, then a smoke check of the built CLI (`--Help` exit 0, a usage error exit 2, one `--SelectDWD` against the P9.07 fixture host in JSON mode exit 0); under RL-08 B the attached CLI archive's checksum is verified and the same smoke check runs on it.
 
 ### S6 Follow-ups on `develop`
 On a post-release branch with its pull request: the next prerelease version together with the consumer pin in `Directory.Packages.props` and the regenerated consumer lock files (the P9.05 test `Consumers_RestoreExactSameRunPackage` must pass: the CLI and the package tests consume the same-run package, never the released one from a cache or feed); package validation switched on with the released version as baseline (**Red**: `PackageValidation_BreakingChangeAgainstBaseline_Fails` over a fixture; **Green**: the configuration); README and changelog updates; status documents.
@@ -52,11 +52,11 @@ On a post-release branch with its pull request: the next prerelease version toge
 |---|---|---|---|
 | S2 | T-P9-05 | REQ-005 | Promotion only for equal inputs and intact checksums |
 | S3, S4 | T-P9-06 | REQ-003, REQ-013 | Tag, release and publication only with authorization |
-| S5 | T-P9-12 | REQ-013 | The published package consumed without a checkout |
+| S5 | T-P9-12 | REQ-013 | The published package consumed without a checkout; the CLI built from the tagged source against it (RL-08 A) or the attached archive (RL-08 B) passes the smoke check |
 | S6 | T-P9-04 | REQ-016 | Compatibility check active from the released baseline |
 
 ## 7. Evidence to Record
-- Authorizations verbatim, pull request and review rounds, promotion output, tag and release URL, feed page, consumer check results, follow-up pull request
+- Authorizations verbatim, pull request and review rounds, promotion output, tag and release URL, feed page, consumer check results, the CLI build or archive check with the resolved package version and hash and the smoke-check exit codes, follow-up pull request
 
 ## 8. Risks and Limitations
 - (a) A published version cannot be replaced on nuget.org (only unlisted); a defect after publication requires a new version
@@ -65,4 +65,5 @@ On a post-release branch with its pull request: the next prerelease version toge
 ## 9. Acceptance Criteria
 - [ ] Release pull request reviewed to 0 findings and merged by the user
 - [ ] Promotion check passed; tag and release created with authorization; publication by the user recorded
-- [ ] Post-publication consumer check passed; follow-ups on `develop` in their own pull request
+- [ ] Post-publication consumer check passed; the CLI built from the tagged source against the published package (RL-08 A) or the attached archive (RL-08 B) passed the smoke check
+- [ ] Follow-ups on `develop` in their own pull request
