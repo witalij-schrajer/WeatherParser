@@ -10,6 +10,7 @@
     <Project Path="tests/WeatherParser.Coverage.Tests/WeatherParser.Coverage.Tests.csproj" />
     <Project Path="tests/WeatherParser.Cli.Tests/WeatherParser.Cli.Tests.csproj" />
     <Project Path="tests/WeatherParser.Cli.SignalHost/WeatherParser.Cli.SignalHost.csproj" />
+    <Project Path="tests/WeatherParser.Cli.FixtureHost/WeatherParser.Cli.FixtureHost.csproj" />
     <Project Path="tests/WeatherParser.Package.Tests/WeatherParser.Package.Tests.csproj" />
     <Project Path="tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj" />
     <Project Path="tests/WeatherParser.SchemaGeneration.Tests/WeatherParser.SchemaGeneration.Tests.csproj" />

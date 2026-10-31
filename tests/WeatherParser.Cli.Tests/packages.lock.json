@@ -170,6 +170,9 @@
           "WeatherParser.Parsing": "[0.1.0, )"
         }
       },
+      "weatherparser.cli.fixturehost": {
+        "type": "Project"
+      },
       "weatherparser.cli.signalhost": {
         "type": "Project",
         "dependencies": {

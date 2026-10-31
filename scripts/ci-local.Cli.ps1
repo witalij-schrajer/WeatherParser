@@ -2,9 +2,9 @@
 $script:CliProjectPath = 'examples/WeatherParser.Cli/WeatherParser.Cli.csproj'
 $script:CliTestsProject = 'tests/WeatherParser.Cli.Tests'
 $script:CliLockFiles = @('examples/WeatherParser.Cli/packages.lock.json', 'tests/WeatherParser.Cli.Tests/packages.lock.json')
-$script:CliGateExclusions = @('--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--exclude', 'WeatherParser.Parsing.dll', '--exclude', 'WeatherParser.Cli.SignalHost.dll')
+$script:CliGateExclusions = @('--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--exclude', 'WeatherParser.Parsing.dll', '--exclude', 'WeatherParser.Cli.SignalHost.dll', '--exclude', 'WeatherParser.Cli.FixtureHost.dll')
 
-# The CLI gate measures only the CLI assembly WeatherParser.dll (CL-19 C); the signal test host started by the process tests is measured on Linux and excluded.
+# The CLI gate measures only the CLI assembly WeatherParser.dll (CL-19 C); the signal test host (P3.09) and the fixture host (P9.07) started by the process tests can be measured and are excluded.
 function Test-CliPresent([string]$CloneDir) {
     return Test-Path -LiteralPath (Join-Path $CloneDir $script:CliProjectPath) -PathType Leaf
 }
