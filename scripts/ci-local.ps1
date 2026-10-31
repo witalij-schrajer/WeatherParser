@@ -41,7 +41,7 @@ param(
     [switch]$Bootstrap,
     [switch]$CollectOnly,
     [switch]$KeepWorkDir,
-    [ValidateSet('SdkMismatch','LockDrift','FailingTest','MissingCoverage','ConsumerLockDrift','IncomparableTarget','GateFailure','RunSettingsTamper')]
+    [ValidateSet('SdkMismatch','LockDrift','FailingTest','MissingCoverage','ConsumerLockDrift','IncomparableTarget','GateFailure','RunSettingsTamper','InvalidReconciliation')]
     [string]$FaultInjection,
     [string]$ResumeFrom,
     [string]$PullRequestHeadRepository,
@@ -838,6 +838,12 @@ function New-ResumePackage() {
 function Invoke-GateStage() {
     Write-CiLog "=== GATE ==="
     $script:CurrentStageCode = 90
+
+    if ($FaultInjection -eq 'InvalidReconciliation') {
+        # Verification only: a malformed reconciliation file in the commit under test must fail the gate as an input error (exit code 91).
+        Write-CiLog "FAULT INJECTION: InvalidReconciliation"
+        Set-Content -LiteralPath (Join-Path "$script:WorkDir/src" 'coverage-reconciliation.json') -Value '{ not json'
+    }
     
     $changedFiles = Join-Path $script:RunDir 'changed-files.txt'
     
@@ -847,7 +853,7 @@ function Invoke-GateStage() {
 
     if ($Bootstrap) {
         Write-CiLog "Running bootstrap gate"
-        $gate = Invoke-Native 90 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--bootstrap') -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--bootstrap') + (Get-GateArguments 'library')) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
         switch ($gate.ExitCode) {
             1 {
                 $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
@@ -1246,7 +1252,7 @@ try {
         Fail 20 "CollectOnly requires two-pass mode (no BaselinePath and no Bootstrap)"
     }
 
-    if ($FaultInjection -in @('GateFailure', 'IncomparableTarget') -and $CollectOnly) {
+    if ($FaultInjection -in @('GateFailure', 'IncomparableTarget', 'InvalidReconciliation') -and $CollectOnly) {
         Fail 20 "FaultInjection $FaultInjection requires a run with conversion and gate"
     }
 

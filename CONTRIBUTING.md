@@ -276,8 +276,8 @@ pwsh ./scripts/ci-local.ps1 -TargetRef <comparison commit or branch> -RunSetting
 | `-CollectOnly` | Every stage except conversion, baseline and gate; writes the resume package; exit 0 with "collection complete, gate pending" |
 | `-ResumeFrom <run directory>` | Alone; verifies the resume package hashes, converts both passes with the pinned tool, writes the baseline and runs the gate with the published runner |
 | `-KeepWorkDir` | Do not delete the temporary work directory |
-| `-FaultInjection` | Verification only (SdkMismatch, LockDrift, FailingTest, MissingCoverage, ConsumerLockDrift, IncomparableTarget, GateFailure, RunSettingsTamper) |
-| `-PullRequestHeadRepository <owner/name>`, `-PullRequestBranch <branch>` | Pull request identity (REQ-086 amendment 2): with both, the library and CLI comparison gates read `coverage-reconciliation.json` of the commit under test and apply a matching recorded baseline reconciliation; without both, none applies. The bootstrap gates and `-ResumeFrom` do not use it |
+| `-FaultInjection` | Verification only (SdkMismatch, LockDrift, FailingTest, MissingCoverage, ConsumerLockDrift, IncomparableTarget, GateFailure, RunSettingsTamper, InvalidReconciliation: overwrites `coverage-reconciliation.json` of the commit under test with invalid JSON before the gate; expected exit code 91) |
+| `-PullRequestHeadRepository <owner/name>`, `-PullRequestBranch <branch>` | Pull request identity (REQ-086 amendment 2): every library and CLI gate (also the bootstrap gates) reads and validates `coverage-reconciliation.json` of the commit under test, so an invalid file fails the gate; a matching recorded baseline reconciliation applies only when both parameters are given. `-ResumeFrom` does not use it |
 
 ### Exit codes
 

@@ -209,12 +209,12 @@ function Invoke-CliTargetStage([string]$TargetDir, [string]$ToolVersion) {
     Write-CiLog "CLI target complete"
 }
 
-# Gate arguments of the REQ-086 amendments: the gated-input set of the gate and, when the pull request identity is known,
-# the recorded baseline reconciliations of the commit under test (coverage-reconciliation.json; a missing file means none).
+# Gate arguments of the REQ-086 amendments: the gated-input set of the gate and the recorded baseline reconciliations of the commit under test
+# (coverage-reconciliation.json, always read so that an invalid file fails; a missing file means none). Entries apply only with the pull request identity.
 function Get-GateArguments([string]$GateName) {
-    $result = @('--gated-input-set', $GateName)
+    $result = @('--gated-input-set', $GateName, '--gate-name', $GateName, '--reconciliation', (Join-Path "$script:WorkDir/src" 'coverage-reconciliation.json'))
     if (-not [string]::IsNullOrWhiteSpace($PullRequestHeadRepository) -and -not [string]::IsNullOrWhiteSpace($PullRequestBranch)) {
-        $result += @('--gate-name', $GateName, '--reconciliation', (Join-Path "$script:WorkDir/src" 'coverage-reconciliation.json'), '--head-repository', $PullRequestHeadRepository, '--head-branch', $PullRequestBranch)
+        $result += @('--head-repository', $PullRequestHeadRepository, '--head-branch', $PullRequestBranch)
     }
     return $result
 }
@@ -234,7 +234,7 @@ function Invoke-CliGate([string]$ToolVersion) {
         if ($probe.ExitCode -eq 0) {
             Fail 91 "The target contains the example CLI, but no CLI baseline was measured (only the two-pass mode measures it)"
         } else {
-            $gateArgs += @('--bootstrap')
+            $gateArgs += @('--bootstrap') + (Get-GateArguments 'cli')
             Write-CiLog "CLI gate: the target has no CLI assembly; at least 80% without comparison (REQ-086 amendment)"
         }
     }
