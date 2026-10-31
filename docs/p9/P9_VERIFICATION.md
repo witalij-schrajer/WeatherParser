@@ -1,6 +1,6 @@
 # P9 Verification Record
 
-**Status (2026-10-31): P9.01 complete, outcome READY (section 1); P9.02 complete: release contract RL-01 to RL-20 approved by the user on 2026-10-31, RL-19 open, plans reconciled (section 2); P9.04 complete: REQ-086 amendment 2 implemented (section 3); P9.03 complete: `Microsoft.Extensions.*` 10.0.14 and MSTest 4.5.2 (section 4).**
+**Status (2026-10-31): P9.01 complete, outcome READY (section 1); P9.02 complete: release contract RL-01 to RL-20 approved by the user on 2026-10-31, RL-19 A and the publication deferred, plans reconciled (section 2); P9.04 complete: REQ-086 amendment 2 implemented (section 3); P9.03 complete: `Microsoft.Extensions.*` 10.0.14 and MSTest 4.5.2 (section 4).**
 
 - Integration target: `ed7fc7a` (merge of pull request #17; documentation-only successor of the P3 merge `2ba5502`).
 - Branch `features/develop/P9`.
@@ -55,3 +55,7 @@
 - Per-step Codex review of P9.03, round 1: 2 findings. [P2] "Windows verification used the superseded runtime": verified against the approved contract and rejected as a requirement on Windows, with the plan corrected: RL-09 A requires runtime 10.0.14 or newer on the target (P9.07, P9.10) and in the release documentation, not on the Windows development machine; the bullet of the P9.03 plan section 10 that also named Windows was wider than the contract and was corrected (`d7cd77d`); Windows and hosted runs use the runtime of SDK 10.0.402. [P2] hosted evidence of the updated dependencies missing: confirmed; recorded below.
 - Hosted CI on the push with the dependency update (run 41180642979, `pull_request`, head `d7cd77da24c16b2206b44cb0c189bb9cabc80e76`, which contains `99810a7`; target `ed7fc7a`): windows-x64, ubuntu-x64 and debian13-arm64 all success. Gates per job (downloaded artifacts): library 11102/11103 and CLI 2872/2917 (Windows) or 2881/2917 (Ubuntu x64, Debian 13 ARM64 container), each equal to the target measured on the same platform, passed with the approved reconciliation entry applied (rule `Reconciliation` true) in all six gate results.
 - Round 2 of the per-step review: 0 findings. P9.03 complete.
+
+## 5. Decision of 2026-10-31 on RL-19 and the publication
+
+- The user: "We do not public the nuget now and do not go public. It will be made later" (chat, 2026-10-31). Recorded in the contract section 1: RL-19 A; no nuget.org publication in this phase; `Authors` stays "WeatherParser contributors" (open item before any publication). Reconciliation notes added to the step plans P9.05, P9.06 and P9.12 (section 10).

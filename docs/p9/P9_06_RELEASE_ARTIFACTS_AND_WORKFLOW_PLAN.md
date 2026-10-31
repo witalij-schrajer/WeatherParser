@@ -66,3 +66,4 @@ The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approv
 - RL-06 A: the release build runs as a manual run of a new workflow (Proposed `.github/workflows/release-build.yml`, `workflow_dispatch` only, `contents: read`, no secrets) on the hosted `ubuntu-x64` runner; the artifacts are downloaded, checksummed in `SHA256SUMS` and recorded; RL-06 C (attestations) is not applicable while the repository is private (RL-19).
 - RL-02 A: no publication step; the user pushes to nuget.org with their own scoped key.
 - Precondition added: the user's RL-19 decision, because the candidate's package metadata depends on it.
+- 2026-10-31: RL-19 A decided (repository private); RL-06 C not applicable; the release candidate carries no repository URL.
