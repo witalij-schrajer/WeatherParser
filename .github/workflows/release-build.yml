@@ -1,0 +1,49 @@
+# Builds the release artifacts of one candidate commit (P9 release contract RL-06 A).
+# Manual runs only; read-only token, no secrets, no publication: the artifacts are uploaded as workflow artifacts and published only by the user (RL-02 A).
+name: Release build
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Full ID of the candidate commit'
+        required: true
+        type: string
+      version:
+        description: 'Release version, equal to the Version of the library project'
+        required: true
+        type: string
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  TESTINGPLATFORM_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+  DOTNET_CLI_UI_LANGUAGE: en
+permissions:
+  contents: read
+jobs:
+  release-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      RELEASE_COMMIT: ${{ inputs.commit }}
+      RELEASE_VERSION: ${{ inputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Release build
+        shell: bash
+        run: pwsh -NoProfile -File ./scripts/build-release.ps1 -Commit "$RELEASE_COMMIT" -Version "$RELEASE_VERSION" -OutputDirectory "$RUNNER_TEMP/release"
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: success()
+        with:
+          name: release-${{ inputs.version }}
+          path: ${{ runner.temp }}/release/
+          retention-days: 90
+          if-no-files-found: error
