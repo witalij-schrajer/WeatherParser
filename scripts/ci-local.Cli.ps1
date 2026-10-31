@@ -10,7 +10,7 @@ function Test-CliPresent([string]$CloneDir) {
 }
 
 function Get-LibraryVersion([string]$CloneDir) {
-    $version = ([xml](Get-Content (Join-Path $CloneDir "src/WeatherParser.Parsing/WeatherParser.Parsing.csproj"))).Project.PropertyGroup.Version
+    $version = ([xml](Get-Content (Join-Path $CloneDir "src/WeatherParser.Parsing/WeatherParser.Parsing.csproj"))).SelectNodes('/Project/PropertyGroup/Version') | ForEach-Object { $_.InnerText.Trim() } | Where-Object { $_ } | Select-Object -First 1
     if ($version -is [array]) {
         $version = ($version | Where-Object { $_ -ne '' } | Select-Object -First 1)
     }
