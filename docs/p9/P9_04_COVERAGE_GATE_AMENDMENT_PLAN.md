@@ -1,6 +1,6 @@
 # P9.04 – Coverage Gate Amendment: Implementation Plan
 
-**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row; P9 starts only on a separate instruction. Conditional: applies only if the user approves RL-11 option A in P9.02; with option B or C the step is recorded as not applicable and the approved rule is applied per pull request.** Refines the P9.04 row of section 5 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
+**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row. Conditional at planning time on RL-11 A; the user approved RL-11 A and RL-20 A on 2026-10-31 ("Approve all"), which made the step mandatory (section 10). P9 started on 2026-10-31 on the user's instruction ("P9 Execution"); this step is complete (2026-10-31; [verification record](P9_VERIFICATION.md) section 3).** Refines the P9.04 row of section 5 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: remove the CL-19 C asymmetry: a pull request that leaves the example CLI and its build inputs unchanged may retain equal CLI coverage, as the library gate already allows for its own gated inputs.
