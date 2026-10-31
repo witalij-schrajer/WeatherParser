@@ -189,7 +189,7 @@ The process tests start the built CLI with `dotnet <output>/WeatherParser.dll` i
 
 ### Opt-in broker integration test of the example CLI (P3.08)
 
-*Status: Verified (Windows, local Mosquitto 2.1.2 without TLS) – [P3.08 section of the P3 verification record](docs/p3/P3_VERIFICATION.md)*
+*Status: Verified (Windows, local Mosquitto 2.1.2 without TLS) – [P3.08 section of the P3 verification record](docs/p3/P3_VERIFICATION.md); with TLS, a test CA and credentials on Windows and on the NanoPi R76S – [P9.09 record](docs/p9/P9_09_BROKER_AND_SHUTDOWN_CHECKS.md)*
 
 The tests in `tests/WeatherParser.Cli.Tests/Mqtt/BrokerIntegrationTests.cs` (category `Broker`) publish through the CLI's own MQTT composition and check delivery with a separate subscriber; without the variable `WEATHERPARSER_TEST_BROKER` they end inconclusive, so the standard runs and the CI jobs never contact a broker (CL-20, REQ-083). Use only a test broker the maintainer authorized, never a production broker. Write the test configuration **outside the repository**; it holds only the broker section and, optionally, `Limits`, for example for a local Mosquitto that listens on the loopback interface without TLS:
 
@@ -202,7 +202,7 @@ The tests in `tests/WeatherParser.Cli.Tests/Mqtt/BrokerIntegrationTests.cs` (cat
 }
 ```
 
-Credentials, if the broker needs them, come only from `WEATHERPARSER_MQTT_USERNAME` and `WEATHERPARSER_MQTT_PASSWORD` (CL-06), never from the file. Then run, after the build of the CLI tests above:
+For a broker with TLS and a test CA, use the TLS port and `"Tls": { "CaFile": "<path outside the repository>/ca.crt" }` instead of `AllowUnencrypted`; the certificate's name must match `Host`. Credentials, if the broker needs them, come only from `WEATHERPARSER_MQTT_USERNAME` and `WEATHERPARSER_MQTT_PASSWORD` (CL-06), never from the file. The test identity needs read and write permission on `weatherparser-test/#`, because the tests publish and subscribe with the same credentials. Then run, after the build of the CLI tests above:
 
 ```powershell
 $env:WEATHERPARSER_TEST_BROKER = '<path outside the repository>\test-broker.json'

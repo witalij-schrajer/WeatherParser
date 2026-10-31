@@ -167,7 +167,7 @@ Several locations of MOSMIX_S each download the whole file; parse only the locat
 
 The known limitations of the release, with their owners, are listed in the [changelog](../CHANGELOG.md). For operation in particular:
 
-- TLS and authenticated broker connections are verified against a real broker only as recorded for the release (P9.09); see the changelog.
+- TLS and authentication were verified against one broker product (Mosquitto 2.1.2) with a self-signed test CA in `Tls.CaFile` ([P9.09 record](p9/P9_09_BROKER_AND_SHUTDOWN_CHECKS.md)); the system trust store and a public CA were not shown.
 - With MQTT 3.1.1 a dropped message can look acknowledged; use 5.0.
 - After a cancellation or an expired deadline the broker disconnect is bounded by `Limits.ConnectTimeout`, so the process can end up to that long after `Limits.CommandDeadline`.
 - Windows is a development platform, not a release target; a Windows system shutdown during a run is not tested.
@@ -184,4 +184,4 @@ Status values as in CONTRIBUTING.md ("Status values").
 | Section 3, cron entries; n8n | cron Planned for P9.10 (RL-15 long run with the fixture host); n8n is an example only, not verified |
 | Section 4, exit codes | Verified by the CLI tests (P3) and on the NanoPi in P3.11 and P9.07 |
 | Section 5, journal and logrotate | Planned for P9.10 (journal); logrotate is an example only, not verified |
-| Section 7, broker set-up with TLS, credentials and ACL | Planned for P9.09 |
+| Section 7, broker set-up with TLS, credentials and ACL | Verified in P9.09 with Mosquitto 2.1.2, a test CA in `Tls.CaFile`, a credential file and a write-only publisher identity, on Windows and on the NanoPi R76S ([P9.09 record](p9/P9_09_BROKER_AND_SHUTDOWN_CHECKS.md)); the system trust store not shown |

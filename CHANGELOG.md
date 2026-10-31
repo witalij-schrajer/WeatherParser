@@ -47,7 +47,7 @@ Build: .NET SDK 10.0.402 (pinned). The update to SDK 10.0.403 is an open item of
 |---|---|
 | Not published on any feed; repository private, no repository URL in the package metadata (RL-19 A) | The user |
 | Runtime 10.0.14 on the target and the release acceptance on the NanoPi R76S are still open (P9.10) | P9.10, the user (runtime installation) |
-| TLS and authenticated broker connections not yet verified against a real broker (P9.09) | P9.09 |
+| TLS and authentication were verified against one broker product (Mosquitto 2.1.2) with a self-signed test CA given in `Tls.CaFile` (P9.09); the system trust store, a public CA and an ACL denial of a single message were not shown | Recorded |
 | MQTT 3.1.1: a broker can acknowledge a message it then drops; only 5.0 reports such a refusal (`CLI-MQTT-MESSAGE-REFUSED`) | Recorded (CL-13) |
 | After a cancellation or an expired deadline the broker disconnect is bounded by `ConnectTimeout` and runs outside the command token | Recorded |
 | A Windows system shutdown (`CTRL_SHUTDOWN_EVENT`) is not tested; Windows is not a release target (RL-14 A) | Recorded |
