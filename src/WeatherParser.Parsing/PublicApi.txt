@@ -908,7 +908,7 @@ M:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixUnitScaler.KilojoulesToJoules(do
 M:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixUnitScaler.PascalToHectopascal(double pascal) : double [public abstract]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixElementMapper..ctor(WeatherParser.Parsing.Forecasts.Mosmix.IMosmixUnitScaler scaler) : void [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixElementMapper.Map(WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument document, WeatherParser.Parsing.Export.MosmixProduct product, System.DateTime retrievedAtUtc, System.Nullable`1<bool> runAgeExceeded) : WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult [public]
-M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument..ctor() : void [public]
+M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument..ctor() : void [public] @Obsolete(error)
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.get_AltitudeM() : System.Nullable`1<System.Decimal> [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.get_IssuedAtUtc() : System.DateTime [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.get_Latitude() : System.Decimal [public]
@@ -936,7 +936,7 @@ M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastException.get_OmittedValu
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastException.get_Product() : WeatherParser.Parsing.Export.MosmixProduct [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastFormatException..ctor(string errorId, string message) : void [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastFormatException.get_ErrorId() : string [public]
-M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastSeries..ctor() : void [public]
+M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastSeries..ctor() : void [public] @Obsolete(error)
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastSeries.get_ElementName() : string [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastSeries.get_Values() : System.Collections.Generic.IReadOnlyList`1<string> [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastSeries.set_ElementName(string value) : void modreq(System.Runtime.CompilerServices.IsExternalInit) [public]
@@ -954,7 +954,7 @@ M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastSource.RetrieveAsync``1<
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastSource.get_SanitizedEndpoint() : string [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLParser..ctor(WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastOptions options, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixLForecastSource source, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixForecastDocumentReader reader, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixParsePipeline pipeline, Microsoft.Extensions.Logging.ILogger`1<WeatherParser.Parsing.Forecasts.Mosmix.MosmixLParser> logger) : void [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLParser.ParseAsync(string mosmixId, System.Threading.CancellationToken cancellationToken) : System.Threading.Tasks.Task`1<WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseResult> [public]
-M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult..ctor() : void [public]
+M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult..ctor() : void [public] @Obsolete(error)
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult.get_AbsentElements() : System.Collections.Generic.IReadOnlyList`1<string> [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult.get_Input() : WeatherParser.Parsing.Forecasts.ForecastRunInput [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult.get_NotExportedElements() : System.Collections.Generic.IReadOnlyList`1<string> [public]
@@ -963,7 +963,7 @@ M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult.set_Input(WeatherPa
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult.set_NotExportedElements(System.Collections.Generic.IReadOnlyList`1<string> value) : void modreq(System.Runtime.CompilerServices.IsExternalInit) [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParsePipeline..ctor(WeatherParser.Parsing.Forecasts.Mosmix.IMosmixElementMapper mapper, WeatherParser.Parsing.Forecasts.IForecastRunBuilder builder, System.TimeProvider timeProvider) : void [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParsePipeline.ParseAsync(WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest request, string mosmixId, System.Threading.CancellationToken cancellationToken) : System.Threading.Tasks.Task`1<WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseResult> [public]
-M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest..ctor() : void [public]
+M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest..ctor() : void [public] @Obsolete(error)
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest.get_Logger() : Microsoft.Extensions.Logging.ILogger [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest.get_MaxRunAge() : System.TimeSpan [public]
 M:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest.get_ParseDeadline() : System.TimeSpan [public]
@@ -1443,7 +1443,7 @@ M:WeatherParser.Parsing.Parsing.ParserEndpointValidationException..ctor(string m
 M:WeatherParser.Parsing.Parsing.ParserEndpointValidationException.get_ErrorId() : string [public]
 M:WeatherParser.Parsing.Parsing.ParserEndpointValidator..ctor(WeatherParser.Parsing.Parsing.IEndpointUriValidator uriValidator) : void [public]
 M:WeatherParser.Parsing.Parsing.ParserEndpointValidator.ValidateAndMap(System.Collections.Generic.IReadOnlyCollection`1<WeatherParser.Parsing.Parsing.ParserEndpointDefinition> endpoints) : System.Collections.Generic.IReadOnlyDictionary`2<string, WeatherParser.Parsing.Parsing.ParserEndpointDefinition> [public]
-M:WeatherParser.Parsing.Parsing.ServiceCollectionExtensions.AddWeatherParsing(Microsoft.Extensions.DependencyInjection.IServiceCollection services) : Microsoft.Extensions.DependencyInjection.IServiceCollection [public static]
+M:WeatherParser.Parsing.Parsing.ServiceCollectionExtensions.AddWeatherParsing(Microsoft.Extensions.DependencyInjection.IServiceCollection services) : Microsoft.Extensions.DependencyInjection.IServiceCollection [public static] @Extension
 M:WeatherParser.Parsing.Quantities.AveragingPeriod..ctor(System.DateTime startUtc, System.DateTime endUtc) : void [public]
 M:WeatherParser.Parsing.Quantities.AveragingPeriod.get_Duration() : System.TimeSpan [public]
 M:WeatherParser.Parsing.Quantities.AveragingPeriod.get_EndUtc() : System.DateTime [public]
@@ -1545,255 +1545,658 @@ M:WeatherParser.Parsing.Time.SourceTimeNormalizer.NormalizeComplete(System.Nulla
 M:WeatherParser.Parsing.Time.SourceTimeNormalizer.NormalizeCompleteLocal(System.Nullable`1<System.DateTime> localTime) : WeatherParser.Parsing.Time.NormalizedSourceTime [public]
 M:WeatherParser.Parsing.Time.TimeZoneResolver..ctor() : void [public]
 M:WeatherParser.Parsing.Time.TimeZoneResolver.Resolve(string zoneId) : System.TimeZoneInfo [public]
-T:WeatherParser.Parsing.Catalogs.CatalogDeadlineKind (enum) : System.Enum
-T:WeatherParser.Parsing.Catalogs.CatalogDiagnostic (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CatalogDiagnostic>
-T:WeatherParser.Parsing.Catalogs.CatalogDownloader (class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICatalogDownloader
-T:WeatherParser.Parsing.Catalogs.CatalogRequest (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CatalogRequest>
-T:WeatherParser.Parsing.Catalogs.CdcArchiveRequestTarget (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcArchiveRequestTarget>
-T:WeatherParser.Parsing.Catalogs.CdcAvailabilityDeriver (class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICdcAvailabilityDeriver
-T:WeatherParser.Parsing.Catalogs.CdcAvailabilityResult (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcAvailabilityResult>
-T:WeatherParser.Parsing.Catalogs.CdcCandidateStation (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcCandidateStation>
-T:WeatherParser.Parsing.Catalogs.CdcCandidates (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcCandidates>
-T:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints (class sealed) : System.Object
-T:WeatherParser.Parsing.Catalogs.CdcCatalogEndpointsValidator (class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICdcCatalogEndpointsValidator
-T:WeatherParser.Parsing.Catalogs.CdcCatalogSource (class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICdcCatalogSource
-T:WeatherParser.Parsing.Catalogs.CdcEvidenceKey (struct) : System.ValueType, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcEvidenceKey>
-T:WeatherParser.Parsing.Catalogs.CdcListRequestTarget (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcListRequestTarget>
-T:WeatherParser.Parsing.Catalogs.CdcProductList (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcProductList>
-T:WeatherParser.Parsing.Catalogs.CdcRequestComposer (class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICdcRequestComposer
-T:WeatherParser.Parsing.Catalogs.CdcStationAvailability (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcStationAvailability>
-T:WeatherParser.Parsing.Catalogs.CdcStationCatalog (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcStationCatalog>
-T:WeatherParser.Parsing.Catalogs.CdcStationCatalogReader (class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICdcStationCatalogReader
-T:WeatherParser.Parsing.Catalogs.CdcStationRecord (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcStationRecord>
-T:WeatherParser.Parsing.Catalogs.ICatalogDownloader (interface)
-T:WeatherParser.Parsing.Catalogs.ICdcAvailabilityDeriver (interface)
-T:WeatherParser.Parsing.Catalogs.ICdcCatalogEndpointsValidator (interface)
-T:WeatherParser.Parsing.Catalogs.ICdcCatalogSource (interface)
-T:WeatherParser.Parsing.Catalogs.ICdcRequestComposer (interface)
-T:WeatherParser.Parsing.Catalogs.ICdcStationCatalogReader (interface)
-T:WeatherParser.Parsing.Catalogs.IMosmixAvailabilityResolver (interface)
-T:WeatherParser.Parsing.Catalogs.IMosmixCatalogSource (interface)
-T:WeatherParser.Parsing.Catalogs.IMosmixLocationCatalogReader (interface)
-T:WeatherParser.Parsing.Catalogs.IMosmixSEvidenceRefresher (interface)
-T:WeatherParser.Parsing.Catalogs.MosmixAvailabilityResolver (class sealed) : System.Object, WeatherParser.Parsing.Catalogs.IMosmixAvailabilityResolver
-T:WeatherParser.Parsing.Catalogs.MosmixCatalogSource (class sealed) : System.Object, WeatherParser.Parsing.Catalogs.IMosmixCatalogSource
-T:WeatherParser.Parsing.Catalogs.MosmixLocationCatalog (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.MosmixLocationCatalog>
-T:WeatherParser.Parsing.Catalogs.MosmixLocationCatalogReader (class sealed) : System.Object, WeatherParser.Parsing.Catalogs.IMosmixLocationCatalogReader
-T:WeatherParser.Parsing.Catalogs.MosmixLocationRecord (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.MosmixLocationRecord>
-T:WeatherParser.Parsing.Catalogs.MosmixSEvidenceRefresher (class sealed) : System.Object, WeatherParser.Parsing.Catalogs.IMosmixSEvidenceRefresher
-T:WeatherParser.Parsing.Evidence.MosmixL.IMosmixLEvidenceReader (interface)
-T:WeatherParser.Parsing.Evidence.MosmixL.MosmixLEvidence (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Evidence.MosmixL.MosmixLEvidence>
-T:WeatherParser.Parsing.Evidence.MosmixL.MosmixLEvidenceReader (class sealed) : System.Object, WeatherParser.Parsing.Evidence.MosmixL.IMosmixLEvidenceReader
-T:WeatherParser.Parsing.Evidence.MosmixL.MosmixLRetrieval (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Evidence.MosmixL.MosmixLRetrieval>
-T:WeatherParser.Parsing.Evidence.MosmixS.FileSystemMosmixEvidenceCache (class sealed) : System.Object, WeatherParser.Parsing.Evidence.MosmixS.IMosmixEvidenceCache
-T:WeatherParser.Parsing.Evidence.MosmixS.IMosmixCatalogEndpointsValidator (interface)
-T:WeatherParser.Parsing.Evidence.MosmixS.IMosmixEvidenceCache (interface)
-T:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints (class sealed) : System.Object
-T:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpointsValidator (class sealed) : System.Object, WeatherParser.Parsing.Evidence.MosmixS.IMosmixCatalogEndpointsValidator
-T:WeatherParser.Parsing.Evidence.MosmixS.MosmixSEvidenceIndex (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Evidence.MosmixS.MosmixSEvidenceIndex>
-T:WeatherParser.Parsing.Exceptions.CatalogFormatException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Exceptions.CatalogRetrievalException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Exceptions.CoordinateFormatException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Exceptions.DwdStationException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Exceptions.EvidenceCacheException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Exceptions.ObservationLimitException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Exceptions.OsthessenWetterException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Exceptions.SearchParameterException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Exceptions.SelectionLimitException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Export.AvailabilityState (enum) : System.Enum
-T:WeatherParser.Parsing.Export.CdcStationList (class sealed) : System.Object, WeatherParser.Parsing.Export.IExportRootValidation
-T:WeatherParser.Parsing.Export.CdcStationListEntry (class sealed) : System.Object
-T:WeatherParser.Parsing.Export.ExportDocument (class sealed) : System.Object, WeatherParser.Parsing.Export.IExportRootValidation
-T:WeatherParser.Parsing.Export.ExportError (class sealed) : System.Object
-T:WeatherParser.Parsing.Export.ExportNamespaces (class static) : System.Object
-T:WeatherParser.Parsing.Export.ForecastLocation (class sealed) : System.Object
-T:WeatherParser.Parsing.Export.ForecastRun (class sealed) : System.Object, WeatherParser.Parsing.Export.IExportRootValidation
-T:WeatherParser.Parsing.Export.ForecastStep (class sealed) : System.Object
-T:WeatherParser.Parsing.Export.ForecastValues (class sealed) : System.Object
-T:WeatherParser.Parsing.Export.IListEntryOrdering (interface)
-T:WeatherParser.Parsing.Export.IntervalAggregation (enum) : System.Enum
-T:WeatherParser.Parsing.Export.IntervalValue (class) : System.Object
-T:WeatherParser.Parsing.Export.ListEntryOrdering (class sealed) : System.Object, WeatherParser.Parsing.Export.IListEntryOrdering
-T:WeatherParser.Parsing.Export.MeasurementPeriod (class sealed) : System.Object
-T:WeatherParser.Parsing.Export.MeasurementValue (class) : System.Object
-T:WeatherParser.Parsing.Export.MosmixLocationList (class sealed) : System.Object, WeatherParser.Parsing.Export.IExportRootValidation
-T:WeatherParser.Parsing.Export.MosmixLocationListEntry (class sealed) : System.Object
-T:WeatherParser.Parsing.Export.MosmixProduct (enum) : System.Enum
-T:WeatherParser.Parsing.Export.MosmixProductAvailability (class sealed) : System.Object
-T:WeatherParser.Parsing.Export.ObservationDataset (class sealed) : System.Object, WeatherParser.Parsing.Export.IExportRootValidation
-T:WeatherParser.Parsing.Export.ObservationLocation (class sealed) : System.Object
-T:WeatherParser.Parsing.Export.ObservationMeasurements (class sealed) : System.Object
-T:WeatherParser.Parsing.Export.PressureMeasurementValue (class sealed) : WeatherParser.Parsing.Export.MeasurementValue
-T:WeatherParser.Parsing.Export.SearchParameters (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.ForecastRunBuildResult (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.ForecastRunBuilder (class sealed) : System.Object, WeatherParser.Parsing.Forecasts.IForecastRunBuilder
-T:WeatherParser.Parsing.Forecasts.ForecastRunInput (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.ForecastRunRejectedException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Forecasts.ForecastSeries (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.IForecastRunBuilder (interface)
-T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixElementMapper (interface)
-T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixForecastDocumentReader (interface)
-T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixLForecastSource (interface)
-T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixLParser (interface)
-T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixParsePipeline (interface)
-T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixSForecastSource (interface)
-T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixSParser (interface)
-T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixUnitScaler (interface)
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixElementMapper (class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixElementMapper
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocumentReader (class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixForecastDocumentReader
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastErrorIds (class static) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastFormatException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastSeries (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastEndpoints (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastOptions (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastSource (class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixLForecastSource
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLParser (class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixLParser
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixNoticeIds (class static) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParsePipeline (class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixParsePipeline
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseResult (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixRunFreshness (enum) : System.Enum
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSForecastEndpoints (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSForecastOptions (class sealed) : System.Object
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSForecastSource (class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixSForecastSource
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSParser (class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixSParser
-T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixUnitScaler (class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixUnitScaler
-T:WeatherParser.Parsing.Forecasts.OmittedForecastValue (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Forecasts.OmittedForecastValue>
-T:WeatherParser.Parsing.Geography.CoordinateParser (class sealed) : System.Object, WeatherParser.Parsing.Geography.ICoordinateParser
-T:WeatherParser.Parsing.Geography.DistanceCalculator (class sealed) : System.Object, WeatherParser.Parsing.Geography.IDistanceCalculator
-T:WeatherParser.Parsing.Geography.ICoordinateParser (interface)
-T:WeatherParser.Parsing.Geography.IDistanceCalculator (interface)
-T:WeatherParser.Parsing.Geography.ISearchAreaFilter (interface)
-T:WeatherParser.Parsing.Geography.ISearchParameterFactory (interface)
-T:WeatherParser.Parsing.Geography.SearchAreaEvaluation (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Geography.SearchAreaEvaluation>
-T:WeatherParser.Parsing.Geography.SearchAreaFilter (class sealed) : System.Object, WeatherParser.Parsing.Geography.ISearchAreaFilter
-T:WeatherParser.Parsing.Geography.SearchAreaMatch (enum) : System.Enum
-T:WeatherParser.Parsing.Geography.SearchParameterFactory (class sealed) : System.Object, WeatherParser.Parsing.Geography.ISearchParameterFactory
-T:WeatherParser.Parsing.Mqtt.IMqttMessageSerializer (interface)
-T:WeatherParser.Parsing.Mqtt.IMqttTopicOptionsValidator (interface)
-T:WeatherParser.Parsing.Mqtt.IMqttTopicTemplateParser (interface)
-T:WeatherParser.Parsing.Mqtt.IMqttTopicValidator (interface)
-T:WeatherParser.Parsing.Mqtt.MqttMessage (class sealed) : System.Object
-T:WeatherParser.Parsing.Mqtt.MqttMessageErrorIds (class static) : System.Object
-T:WeatherParser.Parsing.Mqtt.MqttMessageException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Mqtt.MqttMessageSerializer (class sealed) : System.Object, WeatherParser.Parsing.Mqtt.IMqttMessageSerializer
-T:WeatherParser.Parsing.Mqtt.MqttMessageType (enum) : System.Enum
-T:WeatherParser.Parsing.Mqtt.MqttQualityOfService (enum) : System.Enum
-T:WeatherParser.Parsing.Mqtt.MqttTopicMapping (class sealed) : System.Object
-T:WeatherParser.Parsing.Mqtt.MqttTopicOptions (class sealed) : System.Object
-T:WeatherParser.Parsing.Mqtt.MqttTopicOptionsValidator (class sealed) : System.Object, WeatherParser.Parsing.Mqtt.IMqttTopicOptionsValidator
-T:WeatherParser.Parsing.Mqtt.MqttTopicTemplate (class sealed) : System.Object
-T:WeatherParser.Parsing.Mqtt.MqttTopicTemplateParser (class sealed) : System.Object, WeatherParser.Parsing.Mqtt.IMqttTopicTemplateParser
-T:WeatherParser.Parsing.Mqtt.MqttTopicTemplateSegment (class sealed) : System.Object
-T:WeatherParser.Parsing.Mqtt.MqttTopicValidator (class sealed) : System.Object, WeatherParser.Parsing.Mqtt.IMqttTopicValidator
-T:WeatherParser.Parsing.Mqtt.ValidatedMqttTopicConfiguration (class sealed) : System.Object
-T:WeatherParser.Parsing.Mqtt.ValidatedMqttTopicMapping (class sealed) : System.Object
-T:WeatherParser.Parsing.Observations.Dwd.DwdMappingOmission (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Dwd.DwdMappingOmission>
-T:WeatherParser.Parsing.Observations.Dwd.DwdMappingOmissionReason (enum) : System.Enum
-T:WeatherParser.Parsing.Observations.Dwd.DwdMappingResult (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Dwd.DwdMappingResult>
-T:WeatherParser.Parsing.Observations.Dwd.DwdObservationMapper (class sealed) : System.Object, WeatherParser.Parsing.Observations.Dwd.IDwdObservationMapper
-T:WeatherParser.Parsing.Observations.Dwd.DwdObservationNoticeIds (class static) : System.Object
-T:WeatherParser.Parsing.Observations.Dwd.DwdObservationOptions (class sealed) : System.Object
-T:WeatherParser.Parsing.Observations.Dwd.DwdObservationParser (class sealed) : System.Object, WeatherParser.Parsing.Observations.Dwd.IDwdObservationParser
-T:WeatherParser.Parsing.Observations.Dwd.DwdObservationSource (class sealed) : System.Object, WeatherParser.Parsing.Observations.Dwd.IDwdObservationSource
-T:WeatherParser.Parsing.Observations.Dwd.DwdResolvedStation (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Dwd.DwdResolvedStation>
-T:WeatherParser.Parsing.Observations.Dwd.DwdStationResolver (class sealed) : System.Object, WeatherParser.Parsing.Observations.Dwd.IDwdStationResolver
-T:WeatherParser.Parsing.Observations.Dwd.IDwdObservationMapper (interface)
-T:WeatherParser.Parsing.Observations.Dwd.IDwdObservationParser (interface)
-T:WeatherParser.Parsing.Observations.Dwd.IDwdObservationSource (interface)
-T:WeatherParser.Parsing.Observations.Dwd.IDwdStationResolver (interface)
-T:WeatherParser.Parsing.Observations.IObservationDatasetBuilder (interface)
-T:WeatherParser.Parsing.Observations.ObservationBuildResult (class sealed) : System.Object
-T:WeatherParser.Parsing.Observations.ObservationDatasetBuilder (class sealed) : System.Object, WeatherParser.Parsing.Observations.IObservationDatasetBuilder
-T:WeatherParser.Parsing.Observations.ObservationDatasetRejectedException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Observations.ObservationInput (class sealed) : System.Object
-T:WeatherParser.Parsing.Observations.ObservationReading (class sealed) : System.Object
-T:WeatherParser.Parsing.Observations.OmissionReason (enum) : System.Enum
-T:WeatherParser.Parsing.Observations.OmittedReading (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.OmittedReading>
-T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterObservationMapper (interface)
-T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterPageReader (interface)
-T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterPageSource (interface)
-T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterParser (interface)
-T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterStationIdentity (interface)
-T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterStationMetadataLookup (interface)
-T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterTimeReader (interface)
-T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterValueReader (interface)
-T:WeatherParser.Parsing.Observations.Osthessen.IStationNamePatternMatcher (interface)
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterCellValue (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterCellValue>
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterCellValueStatus (enum) : System.Enum
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterEndpoints (class sealed) : System.Object
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappedStation (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappedStation>
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappingNotice (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappingNotice>
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterNoticeIds (class static) : System.Object
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterObservationMapper (class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterObservationMapper
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterOptions (class sealed) : System.Object
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPage (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPage>
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageDiagnostic (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageDiagnostic>
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageReader (class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterPageReader
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageSource (class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterPageSource
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterParseResult (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterParseResult>
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterParser (class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterParser
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationFailure (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationFailure>
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationIdentity (class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterStationIdentity
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationMetadata (class sealed) : System.Object
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationMetadataLookup (class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterStationMetadataLookup
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow>
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationStatus (enum) : System.Enum
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeReader (class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterTimeReader
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeStatus (enum) : System.Enum
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeValue (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeValue>
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterValueColumn (enum) : System.Enum
-T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterValueReader (class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterValueReader
-T:WeatherParser.Parsing.Observations.Osthessen.StationNamePattern (class sealed) : System.Object
-T:WeatherParser.Parsing.Observations.Osthessen.StationNamePatternMatcher (class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IStationNamePatternMatcher
-T:WeatherParser.Parsing.Observations.WindSpeedUnit (enum) : System.Enum
-T:WeatherParser.Parsing.Parsing.CdcNowEvidence (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Parsing.CdcNowEvidence>
-T:WeatherParser.Parsing.Parsing.CdcNowEvidenceReader (class sealed) : System.Object, WeatherParser.Parsing.Parsing.ICdcNowEvidenceReader
-T:WeatherParser.Parsing.Parsing.CdcNowEvidenceRow (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Parsing.CdcNowEvidenceRow>
-T:WeatherParser.Parsing.Parsing.EndpointUriValidator (class sealed) : System.Object, WeatherParser.Parsing.Parsing.IEndpointUriValidator
-T:WeatherParser.Parsing.Parsing.ICdcNowEvidenceReader (interface)
-T:WeatherParser.Parsing.Parsing.IEndpointUriValidator (interface)
-T:WeatherParser.Parsing.Parsing.IParserEndpointValidator (interface)
-T:WeatherParser.Parsing.Parsing.ParserEndpointDefinition (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Parsing.ParserEndpointDefinition>
-T:WeatherParser.Parsing.Parsing.ParserEndpointValidationException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Parsing.ParserEndpointValidator (class sealed) : System.Object, WeatherParser.Parsing.Parsing.IParserEndpointValidator
-T:WeatherParser.Parsing.Parsing.ServiceCollectionExtensions (class static) : System.Object
-T:WeatherParser.Parsing.Quantities.AveragingPeriod (class sealed) : System.Object
-T:WeatherParser.Parsing.Quantities.IOutputRounding (interface)
-T:WeatherParser.Parsing.Quantities.IPeriodRateConverter (interface)
-T:WeatherParser.Parsing.Quantities.IPressureConverter (interface)
-T:WeatherParser.Parsing.Quantities.IQuantityValidator (interface)
-T:WeatherParser.Parsing.Quantities.IWindSpeedConverter (interface)
-T:WeatherParser.Parsing.Quantities.OutputRounding (class sealed) : System.Object, WeatherParser.Parsing.Quantities.IOutputRounding
-T:WeatherParser.Parsing.Quantities.PeriodQuantity (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Quantities.PeriodQuantity>
-T:WeatherParser.Parsing.Quantities.PeriodRateConverter (class sealed) : System.Object, WeatherParser.Parsing.Quantities.IPeriodRateConverter
-T:WeatherParser.Parsing.Quantities.PressureConverter (class sealed) : System.Object, WeatherParser.Parsing.Quantities.IPressureConverter
-T:WeatherParser.Parsing.Quantities.PressureReference (enum) : System.Enum
-T:WeatherParser.Parsing.Quantities.PressureUnit (enum) : System.Enum
-T:WeatherParser.Parsing.Quantities.PressureValues (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Quantities.PressureValues>
-T:WeatherParser.Parsing.Quantities.QuantityConversionException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Quantities.QuantityKind (enum) : System.Enum
-T:WeatherParser.Parsing.Quantities.QuantityRejectionReason (enum) : System.Enum
-T:WeatherParser.Parsing.Quantities.QuantityValidator (class sealed) : System.Object, WeatherParser.Parsing.Quantities.IQuantityValidator
-T:WeatherParser.Parsing.Quantities.ValidatedQuantity (class sealed) : System.Object
-T:WeatherParser.Parsing.Quantities.WindSpeedConverter (class sealed) : System.Object, WeatherParser.Parsing.Quantities.IWindSpeedConverter
-T:WeatherParser.Parsing.Selection.CdcStationSelector (class sealed) : System.Object, WeatherParser.Parsing.Selection.ICdcStationSelector
-T:WeatherParser.Parsing.Selection.ICdcStationSelector (interface)
-T:WeatherParser.Parsing.Selection.IMosmixLocationSelector (interface)
-T:WeatherParser.Parsing.Selection.MosmixLocationSelector (class sealed) : System.Object, WeatherParser.Parsing.Selection.IMosmixLocationSelector
-T:WeatherParser.Parsing.Selection.SelectionNoticeIds (class static) : System.Object
-T:WeatherParser.Parsing.Serialization.ExportSerializationException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Serialization.IJsonExportSerializer (interface)
-T:WeatherParser.Parsing.Serialization.IXmlExportSerializer (interface)
-T:WeatherParser.Parsing.Serialization.JsonExportSerializer (class sealed) : System.Object, WeatherParser.Parsing.Serialization.IJsonExportSerializer
-T:WeatherParser.Parsing.Serialization.XmlExportSerializer (class sealed) : System.Object, WeatherParser.Parsing.Serialization.IXmlExportSerializer
-T:WeatherParser.Parsing.Time.ISourceTimeNormalizer (interface)
-T:WeatherParser.Parsing.Time.ITimeZoneResolver (interface)
-T:WeatherParser.Parsing.Time.NormalizedSourceTime (class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Time.NormalizedSourceTime>
-T:WeatherParser.Parsing.Time.SourceTimeNormalizationException (class sealed) : System.Exception
-T:WeatherParser.Parsing.Time.SourceTimeNormalizer (class sealed) : System.Object, WeatherParser.Parsing.Time.ISourceTimeNormalizer
-T:WeatherParser.Parsing.Time.TimeZoneResolver (class sealed) : System.Object, WeatherParser.Parsing.Time.ITimeZoneResolver
-T:WeatherParser.Parsing.Time.TimestampQuality (enum) : System.Enum
+P:WeatherParser.Parsing.Catalogs.CatalogDiagnostic.AlreadyLogged : bool
+P:WeatherParser.Parsing.Catalogs.CatalogDiagnostic.EndpointName : string
+P:WeatherParser.Parsing.Catalogs.CatalogDiagnostic.Id : string
+P:WeatherParser.Parsing.Catalogs.CatalogDiagnostic.LineNumber : System.Nullable`1<int>
+P:WeatherParser.Parsing.Catalogs.CatalogDiagnostic.Reason : string
+P:WeatherParser.Parsing.Catalogs.CatalogDiagnostic.StationId : string
+P:WeatherParser.Parsing.Catalogs.CatalogRequest.DeadlineKind : WeatherParser.Parsing.Catalogs.CatalogDeadlineKind
+P:WeatherParser.Parsing.Catalogs.CatalogRequest.DeadlineToken : System.Threading.CancellationToken
+P:WeatherParser.Parsing.Catalogs.CatalogRequest.EndpointName : string
+P:WeatherParser.Parsing.Catalogs.CatalogRequest.MaxBytes : long
+P:WeatherParser.Parsing.Catalogs.CatalogRequest.NotFoundIsAbsent : bool
+P:WeatherParser.Parsing.Catalogs.CatalogRequest.RequestTimeout : System.Nullable`1<System.TimeSpan>
+P:WeatherParser.Parsing.Catalogs.CatalogRequest.Uri : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcArchiveRequestTarget.EndpointName : string
+P:WeatherParser.Parsing.Catalogs.CdcArchiveRequestTarget.Uri : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcAvailabilityResult.Diagnostics : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Catalogs.CatalogDiagnostic>
+P:WeatherParser.Parsing.Catalogs.CdcAvailabilityResult.Stations : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Catalogs.CdcStationAvailability>
+P:WeatherParser.Parsing.Catalogs.CdcCandidateStation.AltitudeM : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Catalogs.CdcCandidateStation.CandidateProducts : System.Collections.Generic.IReadOnlyList`1<string>
+P:WeatherParser.Parsing.Catalogs.CdcCandidateStation.FederalState : string
+P:WeatherParser.Parsing.Catalogs.CdcCandidateStation.Latitude : System.Decimal
+P:WeatherParser.Parsing.Catalogs.CdcCandidateStation.Longitude : System.Decimal
+P:WeatherParser.Parsing.Catalogs.CdcCandidateStation.Name : string
+P:WeatherParser.Parsing.Catalogs.CdcCandidateStation.StationId : string
+P:WeatherParser.Parsing.Catalogs.CdcCandidates.Diagnostics : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Catalogs.CatalogDiagnostic>
+P:WeatherParser.Parsing.Catalogs.CdcCandidates.Stations : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Catalogs.CdcCandidateStation>
+P:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints.AirTemperatureNowDirectory : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints.AirTemperatureStationList : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints.MaxEvidenceCandidates : int
+P:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints.PrecipitationNowDirectory : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints.PrecipitationStationList : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints.SelectionDeadline : System.TimeSpan
+P:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints.SolarNowDirectory : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints.SolarStationList : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints.WindNowDirectory : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints.WindStationList : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcEvidenceKey.ProductCode : string
+P:WeatherParser.Parsing.Catalogs.CdcEvidenceKey.StationId : string
+P:WeatherParser.Parsing.Catalogs.CdcListRequestTarget.EndpointName : string
+P:WeatherParser.Parsing.Catalogs.CdcListRequestTarget.ProductCode : string
+P:WeatherParser.Parsing.Catalogs.CdcListRequestTarget.Uri : System.Uri
+P:WeatherParser.Parsing.Catalogs.CdcProductList.Catalog : WeatherParser.Parsing.Catalogs.CdcStationCatalog
+P:WeatherParser.Parsing.Catalogs.CdcProductList.EndpointName : string
+P:WeatherParser.Parsing.Catalogs.CdcProductList.ProductCode : string
+P:WeatherParser.Parsing.Catalogs.CdcStationAvailability.AvailableMeasurements : System.Collections.Generic.IReadOnlyList`1<string>
+P:WeatherParser.Parsing.Catalogs.CdcStationAvailability.Station : WeatherParser.Parsing.Catalogs.CdcCandidateStation
+P:WeatherParser.Parsing.Catalogs.CdcStationCatalog.Diagnostics : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Catalogs.CatalogDiagnostic>
+P:WeatherParser.Parsing.Catalogs.CdcStationCatalog.Records : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Catalogs.CdcStationRecord>
+P:WeatherParser.Parsing.Catalogs.CdcStationRecord.AltitudeM : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Catalogs.CdcStationRecord.FederalState : string
+P:WeatherParser.Parsing.Catalogs.CdcStationRecord.FromDate : System.DateOnly
+P:WeatherParser.Parsing.Catalogs.CdcStationRecord.Latitude : System.Decimal
+P:WeatherParser.Parsing.Catalogs.CdcStationRecord.LineNumber : int
+P:WeatherParser.Parsing.Catalogs.CdcStationRecord.Longitude : System.Decimal
+P:WeatherParser.Parsing.Catalogs.CdcStationRecord.Name : string
+P:WeatherParser.Parsing.Catalogs.CdcStationRecord.StationId : string
+P:WeatherParser.Parsing.Catalogs.CdcStationRecord.ToDate : System.DateOnly
+P:WeatherParser.Parsing.Catalogs.MosmixLocationCatalog.Diagnostics : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Catalogs.CatalogDiagnostic>
+P:WeatherParser.Parsing.Catalogs.MosmixLocationCatalog.Records : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Catalogs.MosmixLocationRecord>
+P:WeatherParser.Parsing.Catalogs.MosmixLocationCatalog.SelectableRecords : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Catalogs.MosmixLocationRecord>
+P:WeatherParser.Parsing.Catalogs.MosmixLocationRecord.AltitudeM : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Catalogs.MosmixLocationRecord.Latitude : System.Decimal
+P:WeatherParser.Parsing.Catalogs.MosmixLocationRecord.LineNumber : int
+P:WeatherParser.Parsing.Catalogs.MosmixLocationRecord.Longitude : System.Decimal
+P:WeatherParser.Parsing.Catalogs.MosmixLocationRecord.MosmixId : string
+P:WeatherParser.Parsing.Catalogs.MosmixLocationRecord.Name : string
+P:WeatherParser.Parsing.Evidence.MosmixL.MosmixLEvidence.AvailableElements : System.Collections.Generic.IReadOnlyList`1<string>
+P:WeatherParser.Parsing.Evidence.MosmixL.MosmixLEvidence.IssuedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Evidence.MosmixL.MosmixLEvidence.MosmixId : string
+P:WeatherParser.Parsing.Evidence.MosmixL.MosmixLRetrieval.Evidence : WeatherParser.Parsing.Evidence.MosmixL.MosmixLEvidence
+P:WeatherParser.Parsing.Evidence.MosmixL.MosmixLRetrieval.RetrievedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints.CatalogUri : System.Uri
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints.EvidenceCacheDirectory : string
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints.MaxEvidenceCandidates : int
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints.MosmixLSingleStationsDirectory : System.Uri
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints.MosmixSAllStationsUri : System.Uri
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints.MosmixSEvidenceMaxAge : System.Nullable`1<System.TimeSpan>
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints.MosmixSRefreshDeadline : System.TimeSpan
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints.SelectionDeadline : System.TimeSpan
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixSEvidenceIndex.DownloadedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixSEvidenceIndex.FileSha256 : string
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixSEvidenceIndex.FileSize : long
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixSEvidenceIndex.IssuedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixSEvidenceIndex.Locations : System.Collections.Generic.IReadOnlyDictionary`2<string, System.Collections.Generic.IReadOnlyList`1<string>>
+P:WeatherParser.Parsing.Evidence.MosmixS.MosmixSEvidenceIndex.SourceUri : string
+P:WeatherParser.Parsing.Exceptions.CatalogFormatException.ErrorId : string
+P:WeatherParser.Parsing.Exceptions.CatalogRetrievalException.EndpointName : string
+P:WeatherParser.Parsing.Exceptions.CatalogRetrievalException.ErrorId : string
+P:WeatherParser.Parsing.Exceptions.CoordinateFormatException.ErrorId : string
+P:WeatherParser.Parsing.Exceptions.DwdStationException.Diagnostic : WeatherParser.Parsing.Catalogs.CatalogDiagnostic
+P:WeatherParser.Parsing.Exceptions.DwdStationException.ErrorId : string
+P:WeatherParser.Parsing.Exceptions.EvidenceCacheException.ErrorId : string
+P:WeatherParser.Parsing.Exceptions.ObservationLimitException.ErrorId : string
+P:WeatherParser.Parsing.Exceptions.OsthessenWetterException.ErrorId : string
+P:WeatherParser.Parsing.Exceptions.OsthessenWetterException.StationFailures : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationFailure>
+P:WeatherParser.Parsing.Exceptions.SearchParameterException.ErrorId : string
+P:WeatherParser.Parsing.Exceptions.SelectionLimitException.ErrorId : string
+P:WeatherParser.Parsing.Export.CdcStationList.RetrievedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Export.CdcStationList.RetrievedAtWire : string
+P:WeatherParser.Parsing.Export.CdcStationList.SchemaVersion : string
+P:WeatherParser.Parsing.Export.CdcStationList.SearchParameters : WeatherParser.Parsing.Export.SearchParameters
+P:WeatherParser.Parsing.Export.CdcStationList.Source : string
+P:WeatherParser.Parsing.Export.CdcStationList.Stations : System.Collections.Generic.List`1<WeatherParser.Parsing.Export.CdcStationListEntry>
+P:WeatherParser.Parsing.Export.CdcStationListEntry.AltitudeDifferenceM : System.Decimal
+P:WeatherParser.Parsing.Export.CdcStationListEntry.AltitudeM : System.Decimal
+P:WeatherParser.Parsing.Export.CdcStationListEntry.AvailableMeasurements : System.Collections.Generic.List`1<string>
+P:WeatherParser.Parsing.Export.CdcStationListEntry.DistanceKm : System.Decimal
+P:WeatherParser.Parsing.Export.CdcStationListEntry.Latitude : System.Decimal
+P:WeatherParser.Parsing.Export.CdcStationListEntry.Longitude : System.Decimal
+P:WeatherParser.Parsing.Export.CdcStationListEntry.Name : string
+P:WeatherParser.Parsing.Export.CdcStationListEntry.StationId : string
+P:WeatherParser.Parsing.Export.ExportDocument.Errors : System.Collections.Generic.List`1<WeatherParser.Parsing.Export.ExportError>
+P:WeatherParser.Parsing.Export.ExportDocument.ForecastRuns : System.Collections.Generic.List`1<WeatherParser.Parsing.Export.ForecastRun>
+P:WeatherParser.Parsing.Export.ExportDocument.Observations : System.Collections.Generic.List`1<WeatherParser.Parsing.Export.ObservationDataset>
+P:WeatherParser.Parsing.Export.ExportDocument.SchemaVersion : string
+P:WeatherParser.Parsing.Export.ExportError.ErrorId : string
+P:WeatherParser.Parsing.Export.ExportError.Message : string
+P:WeatherParser.Parsing.Export.ExportError.Source : string
+P:WeatherParser.Parsing.Export.ForecastLocation.AltitudeM : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Export.ForecastLocation.AltitudeMSpecified : bool
+P:WeatherParser.Parsing.Export.ForecastLocation.Latitude : System.Decimal
+P:WeatherParser.Parsing.Export.ForecastLocation.Longitude : System.Decimal
+P:WeatherParser.Parsing.Export.ForecastLocation.Name : string
+P:WeatherParser.Parsing.Export.ForecastRun.DatasetType : string
+P:WeatherParser.Parsing.Export.ForecastRun.Forecasts : System.Collections.Generic.List`1<WeatherParser.Parsing.Export.ForecastStep>
+P:WeatherParser.Parsing.Export.ForecastRun.IssuedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Export.ForecastRun.IssuedAtWire : string
+P:WeatherParser.Parsing.Export.ForecastRun.Location : WeatherParser.Parsing.Export.ForecastLocation
+P:WeatherParser.Parsing.Export.ForecastRun.MosmixId : string
+P:WeatherParser.Parsing.Export.ForecastRun.Product : WeatherParser.Parsing.Export.MosmixProduct
+P:WeatherParser.Parsing.Export.ForecastRun.RetrievedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Export.ForecastRun.RetrievedAtWire : string
+P:WeatherParser.Parsing.Export.ForecastRun.RunAgeExceeded : System.Nullable`1<bool>
+P:WeatherParser.Parsing.Export.ForecastRun.RunAgeExceededSpecified : bool
+P:WeatherParser.Parsing.Export.ForecastRun.SchemaVersion : string
+P:WeatherParser.Parsing.Export.ForecastRun.Source : string
+P:WeatherParser.Parsing.Export.ForecastStep.ValidAtUtc : System.DateTime
+P:WeatherParser.Parsing.Export.ForecastStep.ValidAtWire : string
+P:WeatherParser.Parsing.Export.ForecastStep.Values : WeatherParser.Parsing.Export.ForecastValues
+P:WeatherParser.Parsing.Export.ForecastValues.HumidityPercent : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Export.ForecastValues.HumidityPercentSpecified : bool
+P:WeatherParser.Parsing.Export.ForecastValues.IlluminanceLux : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Export.ForecastValues.IlluminanceLuxSpecified : bool
+P:WeatherParser.Parsing.Export.ForecastValues.PrecipitationAmountMm : WeatherParser.Parsing.Export.IntervalValue
+P:WeatherParser.Parsing.Export.ForecastValues.PressureHpa : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Export.ForecastValues.PressureHpaSpecified : bool
+P:WeatherParser.Parsing.Export.ForecastValues.PressureMmHg : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Export.ForecastValues.PressureMmHgSpecified : bool
+P:WeatherParser.Parsing.Export.ForecastValues.PressureReference : System.Nullable`1<WeatherParser.Parsing.Quantities.PressureReference>
+P:WeatherParser.Parsing.Export.ForecastValues.PressureReferenceSpecified : bool
+P:WeatherParser.Parsing.Export.ForecastValues.RainRateMmH : WeatherParser.Parsing.Export.IntervalValue
+P:WeatherParser.Parsing.Export.ForecastValues.SolarIrradianceWm2 : WeatherParser.Parsing.Export.IntervalValue
+P:WeatherParser.Parsing.Export.ForecastValues.TemperatureC : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Export.ForecastValues.TemperatureCSpecified : bool
+P:WeatherParser.Parsing.Export.ForecastValues.WindDirectionDeg : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Export.ForecastValues.WindDirectionDegSpecified : bool
+P:WeatherParser.Parsing.Export.ForecastValues.WindGustKmh : WeatherParser.Parsing.Export.IntervalValue
+P:WeatherParser.Parsing.Export.ForecastValues.WindSpeedKmh : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Export.ForecastValues.WindSpeedKmhSpecified : bool
+P:WeatherParser.Parsing.Export.IntervalValue.Aggregation : WeatherParser.Parsing.Export.IntervalAggregation
+P:WeatherParser.Parsing.Export.IntervalValue.PeriodEndUtc : System.DateTime
+P:WeatherParser.Parsing.Export.IntervalValue.PeriodEndWire : string
+P:WeatherParser.Parsing.Export.IntervalValue.PeriodStartUtc : System.DateTime
+P:WeatherParser.Parsing.Export.IntervalValue.PeriodStartWire : string
+P:WeatherParser.Parsing.Export.IntervalValue.Value : System.Decimal
+P:WeatherParser.Parsing.Export.MeasurementPeriod.EndUtc : System.DateTime
+P:WeatherParser.Parsing.Export.MeasurementPeriod.EndWire : string
+P:WeatherParser.Parsing.Export.MeasurementPeriod.StartUtc : System.DateTime
+P:WeatherParser.Parsing.Export.MeasurementPeriod.StartWire : string
+P:WeatherParser.Parsing.Export.MeasurementValue.MeasuredAtUtc : System.DateTime
+P:WeatherParser.Parsing.Export.MeasurementValue.MeasuredAtWire : string
+P:WeatherParser.Parsing.Export.MeasurementValue.Period : WeatherParser.Parsing.Export.MeasurementPeriod
+P:WeatherParser.Parsing.Export.MeasurementValue.Quality : string
+P:WeatherParser.Parsing.Export.MeasurementValue.SourceTimezone : string
+P:WeatherParser.Parsing.Export.MeasurementValue.TimestampQuality : WeatherParser.Parsing.Time.TimestampQuality
+P:WeatherParser.Parsing.Export.MeasurementValue.Value : System.Decimal
+P:WeatherParser.Parsing.Export.MosmixLocationList.Locations : System.Collections.Generic.List`1<WeatherParser.Parsing.Export.MosmixLocationListEntry>
+P:WeatherParser.Parsing.Export.MosmixLocationList.RetrievedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Export.MosmixLocationList.RetrievedAtWire : string
+P:WeatherParser.Parsing.Export.MosmixLocationList.SchemaVersion : string
+P:WeatherParser.Parsing.Export.MosmixLocationList.SearchParameters : WeatherParser.Parsing.Export.SearchParameters
+P:WeatherParser.Parsing.Export.MosmixLocationList.Source : string
+P:WeatherParser.Parsing.Export.MosmixLocationListEntry.AltitudeDifferenceM : System.Decimal
+P:WeatherParser.Parsing.Export.MosmixLocationListEntry.AltitudeM : System.Decimal
+P:WeatherParser.Parsing.Export.MosmixLocationListEntry.DistanceKm : System.Decimal
+P:WeatherParser.Parsing.Export.MosmixLocationListEntry.Latitude : System.Decimal
+P:WeatherParser.Parsing.Export.MosmixLocationListEntry.Longitude : System.Decimal
+P:WeatherParser.Parsing.Export.MosmixLocationListEntry.MosmixId : string
+P:WeatherParser.Parsing.Export.MosmixLocationListEntry.Name : string
+P:WeatherParser.Parsing.Export.MosmixLocationListEntry.Products : System.Collections.Generic.List`1<WeatherParser.Parsing.Export.MosmixProductAvailability>
+P:WeatherParser.Parsing.Export.MosmixProductAvailability.Availability : WeatherParser.Parsing.Export.AvailabilityState
+P:WeatherParser.Parsing.Export.MosmixProductAvailability.AvailableForecastElements : System.Collections.Generic.List`1<string>
+P:WeatherParser.Parsing.Export.MosmixProductAvailability.EvidenceIssuedAtUtc : System.Nullable`1<System.DateTime>
+P:WeatherParser.Parsing.Export.MosmixProductAvailability.EvidenceIssuedAtWire : string
+P:WeatherParser.Parsing.Export.MosmixProductAvailability.EvidenceIssuedAtWireSpecified : bool
+P:WeatherParser.Parsing.Export.MosmixProductAvailability.EvidenceRetrievedAtUtc : System.Nullable`1<System.DateTime>
+P:WeatherParser.Parsing.Export.MosmixProductAvailability.EvidenceRetrievedAtWire : string
+P:WeatherParser.Parsing.Export.MosmixProductAvailability.EvidenceRetrievedAtWireSpecified : bool
+P:WeatherParser.Parsing.Export.MosmixProductAvailability.Product : WeatherParser.Parsing.Export.MosmixProduct
+P:WeatherParser.Parsing.Export.ObservationDataset.Location : WeatherParser.Parsing.Export.ObservationLocation
+P:WeatherParser.Parsing.Export.ObservationDataset.MeasuredAtUtc : System.DateTime
+P:WeatherParser.Parsing.Export.ObservationDataset.MeasuredAtWire : string
+P:WeatherParser.Parsing.Export.ObservationDataset.Measurements : WeatherParser.Parsing.Export.ObservationMeasurements
+P:WeatherParser.Parsing.Export.ObservationDataset.RetrievedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Export.ObservationDataset.RetrievedAtWire : string
+P:WeatherParser.Parsing.Export.ObservationDataset.SchemaVersion : string
+P:WeatherParser.Parsing.Export.ObservationDataset.Source : string
+P:WeatherParser.Parsing.Export.ObservationDataset.TimestampQuality : WeatherParser.Parsing.Time.TimestampQuality
+P:WeatherParser.Parsing.Export.ObservationLocation.AltitudeM : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Export.ObservationLocation.AltitudeMSpecified : bool
+P:WeatherParser.Parsing.Export.ObservationLocation.Latitude : System.Decimal
+P:WeatherParser.Parsing.Export.ObservationLocation.Longitude : System.Decimal
+P:WeatherParser.Parsing.Export.ObservationLocation.Name : string
+P:WeatherParser.Parsing.Export.ObservationLocation.StationId : string
+P:WeatherParser.Parsing.Export.ObservationMeasurements.HumidityPercent : WeatherParser.Parsing.Export.MeasurementValue
+P:WeatherParser.Parsing.Export.ObservationMeasurements.IlluminanceLux : WeatherParser.Parsing.Export.MeasurementValue
+P:WeatherParser.Parsing.Export.ObservationMeasurements.PressureHpa : WeatherParser.Parsing.Export.PressureMeasurementValue
+P:WeatherParser.Parsing.Export.ObservationMeasurements.PressureMmHg : WeatherParser.Parsing.Export.PressureMeasurementValue
+P:WeatherParser.Parsing.Export.ObservationMeasurements.RainRateMmH : WeatherParser.Parsing.Export.MeasurementValue
+P:WeatherParser.Parsing.Export.ObservationMeasurements.SolarIrradianceWm2 : WeatherParser.Parsing.Export.MeasurementValue
+P:WeatherParser.Parsing.Export.ObservationMeasurements.TemperatureC : WeatherParser.Parsing.Export.MeasurementValue
+P:WeatherParser.Parsing.Export.ObservationMeasurements.WindDirectionDeg : WeatherParser.Parsing.Export.MeasurementValue
+P:WeatherParser.Parsing.Export.ObservationMeasurements.WindSpeedKmh : WeatherParser.Parsing.Export.MeasurementValue
+P:WeatherParser.Parsing.Export.PressureMeasurementValue.PressureReference : WeatherParser.Parsing.Quantities.PressureReference
+P:WeatherParser.Parsing.Export.SearchParameters.AltitudeM : System.Decimal
+P:WeatherParser.Parsing.Export.SearchParameters.Latitude : System.Decimal
+P:WeatherParser.Parsing.Export.SearchParameters.Longitude : System.Decimal
+P:WeatherParser.Parsing.Export.SearchParameters.MaxAltitudeDifferenceM : System.Decimal
+P:WeatherParser.Parsing.Export.SearchParameters.MaxDistanceKm : System.Decimal
+P:WeatherParser.Parsing.Forecasts.ForecastRunBuildResult.OmittedValues : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Forecasts.OmittedForecastValue>
+P:WeatherParser.Parsing.Forecasts.ForecastRunBuildResult.Run : WeatherParser.Parsing.Export.ForecastRun
+P:WeatherParser.Parsing.Forecasts.ForecastRunInput.IssuedAtUtc : System.Nullable`1<System.DateTime>
+P:WeatherParser.Parsing.Forecasts.ForecastRunInput.Location : WeatherParser.Parsing.Export.ForecastLocation
+P:WeatherParser.Parsing.Forecasts.ForecastRunInput.MosmixId : string
+P:WeatherParser.Parsing.Forecasts.ForecastRunInput.Product : System.Nullable`1<WeatherParser.Parsing.Export.MosmixProduct>
+P:WeatherParser.Parsing.Forecasts.ForecastRunInput.RetrievedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Forecasts.ForecastRunInput.RunAgeExceeded : System.Nullable`1<bool>
+P:WeatherParser.Parsing.Forecasts.ForecastRunInput.Series : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Forecasts.ForecastSeries>
+P:WeatherParser.Parsing.Forecasts.ForecastRunInput.Timeline : System.Collections.Generic.IReadOnlyList`1<System.DateTime>
+P:WeatherParser.Parsing.Forecasts.ForecastRunRejectedException.OmittedValues : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Forecasts.OmittedForecastValue>
+P:WeatherParser.Parsing.Forecasts.ForecastSeries.IssuedAtUtc : System.Nullable`1<System.DateTime>
+P:WeatherParser.Parsing.Forecasts.ForecastSeries.Kind : System.Nullable`1<WeatherParser.Parsing.Quantities.QuantityKind>
+P:WeatherParser.Parsing.Forecasts.ForecastSeries.MosmixId : string
+P:WeatherParser.Parsing.Forecasts.ForecastSeries.Periods : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Quantities.AveragingPeriod>
+P:WeatherParser.Parsing.Forecasts.ForecastSeries.PressureReference : System.Nullable`1<WeatherParser.Parsing.Quantities.PressureReference>
+P:WeatherParser.Parsing.Forecasts.ForecastSeries.PressureUnit : System.Nullable`1<WeatherParser.Parsing.Quantities.PressureUnit>
+P:WeatherParser.Parsing.Forecasts.ForecastSeries.Product : System.Nullable`1<WeatherParser.Parsing.Export.MosmixProduct>
+P:WeatherParser.Parsing.Forecasts.ForecastSeries.Values : System.Collections.Generic.IReadOnlyList`1<System.Nullable`1<double>>
+P:WeatherParser.Parsing.Forecasts.ForecastSeries.WindSpeedUnit : System.Nullable`1<WeatherParser.Parsing.Observations.WindSpeedUnit>
+P:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixLForecastSource.SanitizedEndpoint : string
+P:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixSForecastSource.SanitizedEndpoint : string
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.AltitudeM : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.IssuedAtUtc : System.DateTime @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.Latitude : System.Decimal @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.LocationName : string @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.Longitude : System.Decimal @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.MosmixId : string @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.Series : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastSeries> @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument.Timeline : System.Collections.Generic.IReadOnlyList`1<System.DateTime> @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastException.ErrorId : string
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastException.NotExportedElements : System.Collections.Generic.IReadOnlyList`1<string>
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastException.OmittedValues : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Forecasts.OmittedForecastValue>
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastException.Product : WeatherParser.Parsing.Export.MosmixProduct
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastFormatException.ErrorId : string
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastSeries.ElementName : string @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastSeries.Values : System.Collections.Generic.IReadOnlyList`1<string> @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastEndpoints.SingleStationsDirectory : System.Uri
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastOptions.MaxRunAge : System.Nullable`1<System.TimeSpan>
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastOptions.ParseDeadline : System.TimeSpan
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastSource.SanitizedEndpoint : string
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult.AbsentElements : System.Collections.Generic.IReadOnlyList`1<string> @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult.Input : WeatherParser.Parsing.Forecasts.ForecastRunInput @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult.NotExportedElements : System.Collections.Generic.IReadOnlyList`1<string> @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest.Logger : Microsoft.Extensions.Logging.ILogger @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest.MaxRunAge : System.TimeSpan @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest.ParseDeadline : System.TimeSpan @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest.Product : WeatherParser.Parsing.Export.MosmixProduct @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest.Read : System.Func`4<System.IO.Stream, string, System.Threading.CancellationToken, System.Threading.Tasks.Task`1<WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument>> @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest.Retrieve : System.Func`5<string, System.Func`3<System.IO.Stream, System.Threading.CancellationToken, System.Threading.Tasks.Task`1<WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument>>, System.Threading.CancellationToken, System.Threading.CancellationToken, System.Threading.Tasks.Task`1<WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument>> @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest.SanitizedEndpoint : string @RequiredMember
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseResult.AbsentElements : System.Collections.Generic.IReadOnlyList`1<string>
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseResult.Freshness : WeatherParser.Parsing.Forecasts.Mosmix.MosmixRunFreshness
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseResult.NotExportedElements : System.Collections.Generic.IReadOnlyList`1<string>
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseResult.OmittedValues : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Forecasts.OmittedForecastValue>
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseResult.Run : WeatherParser.Parsing.Export.ForecastRun
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseResult.RunAge : System.TimeSpan
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSForecastEndpoints.AllStationsUri : System.Uri
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSForecastOptions.MaxRunAge : System.Nullable`1<System.TimeSpan>
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSForecastOptions.ParseDeadline : System.TimeSpan
+P:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSForecastSource.SanitizedEndpoint : string
+P:WeatherParser.Parsing.Forecasts.OmittedForecastValue.Kind : WeatherParser.Parsing.Quantities.QuantityKind
+P:WeatherParser.Parsing.Forecasts.OmittedForecastValue.Reason : WeatherParser.Parsing.Observations.OmissionReason
+P:WeatherParser.Parsing.Forecasts.OmittedForecastValue.ValidAtUtc : System.DateTime
+P:WeatherParser.Parsing.Geography.SearchAreaEvaluation.AltitudeDifferenceM : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Geography.SearchAreaEvaluation.DistanceKm : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Geography.SearchAreaEvaluation.Match : WeatherParser.Parsing.Geography.SearchAreaMatch
+P:WeatherParser.Parsing.Mqtt.MqttMessage.MessageType : WeatherParser.Parsing.Mqtt.MqttMessageType
+P:WeatherParser.Parsing.Mqtt.MqttMessage.Payload : System.ReadOnlyMemory`1<byte>
+P:WeatherParser.Parsing.Mqtt.MqttMessage.QualityOfService : WeatherParser.Parsing.Mqtt.MqttQualityOfService
+P:WeatherParser.Parsing.Mqtt.MqttMessage.Retain : bool
+P:WeatherParser.Parsing.Mqtt.MqttMessage.Topic : string
+P:WeatherParser.Parsing.Mqtt.MqttMessageException.ErrorId : string
+P:WeatherParser.Parsing.Mqtt.MqttMessageException.MessageType : System.Nullable`1<WeatherParser.Parsing.Mqtt.MqttMessageType>
+P:WeatherParser.Parsing.Mqtt.MqttTopicMapping.QualityOfService : System.Nullable`1<WeatherParser.Parsing.Mqtt.MqttQualityOfService>
+P:WeatherParser.Parsing.Mqtt.MqttTopicMapping.Retain : System.Nullable`1<bool>
+P:WeatherParser.Parsing.Mqtt.MqttTopicMapping.TopicTemplate : string
+P:WeatherParser.Parsing.Mqtt.MqttTopicOptions.Mappings : System.Collections.Generic.IDictionary`2<WeatherParser.Parsing.Mqtt.MqttMessageType, WeatherParser.Parsing.Mqtt.MqttTopicMapping>
+P:WeatherParser.Parsing.Mqtt.MqttTopicOptions.MaxPayloadBytes : System.Nullable`1<int>
+P:WeatherParser.Parsing.Mqtt.MqttTopicTemplate.MessageType : WeatherParser.Parsing.Mqtt.MqttMessageType
+P:WeatherParser.Parsing.Mqtt.MqttTopicTemplate.Segments : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Mqtt.MqttTopicTemplateSegment>
+P:WeatherParser.Parsing.Mqtt.MqttTopicTemplate.Text : string
+P:WeatherParser.Parsing.Mqtt.MqttTopicTemplateSegment.IsPlaceholder : bool
+P:WeatherParser.Parsing.Mqtt.MqttTopicTemplateSegment.Text : string
+P:WeatherParser.Parsing.Mqtt.ValidatedMqttTopicConfiguration.MaxPayloadBytes : System.Nullable`1<int>
+P:WeatherParser.Parsing.Mqtt.ValidatedMqttTopicMapping.QualityOfService : WeatherParser.Parsing.Mqtt.MqttQualityOfService
+P:WeatherParser.Parsing.Mqtt.ValidatedMqttTopicMapping.Retain : bool
+P:WeatherParser.Parsing.Mqtt.ValidatedMqttTopicMapping.Template : WeatherParser.Parsing.Mqtt.MqttTopicTemplate
+P:WeatherParser.Parsing.Observations.Dwd.DwdMappingOmission.Kind : WeatherParser.Parsing.Quantities.QuantityKind
+P:WeatherParser.Parsing.Observations.Dwd.DwdMappingOmission.Reason : WeatherParser.Parsing.Observations.Dwd.DwdMappingOmissionReason
+P:WeatherParser.Parsing.Observations.Dwd.DwdMappingResult.Omissions : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.Dwd.DwdMappingOmission>
+P:WeatherParser.Parsing.Observations.Dwd.DwdMappingResult.Readings : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.ObservationReading>
+P:WeatherParser.Parsing.Observations.Dwd.DwdObservationOptions.ObservationDeadline : System.TimeSpan
+P:WeatherParser.Parsing.Observations.Dwd.DwdResolvedStation.Location : WeatherParser.Parsing.Export.ObservationLocation
+P:WeatherParser.Parsing.Observations.Dwd.DwdResolvedStation.ProductCodes : System.Collections.Generic.IReadOnlyList`1<string>
+P:WeatherParser.Parsing.Observations.Dwd.DwdResolvedStation.StationId : string
+P:WeatherParser.Parsing.Observations.ObservationBuildResult.Dataset : WeatherParser.Parsing.Export.ObservationDataset
+P:WeatherParser.Parsing.Observations.ObservationBuildResult.OmittedReadings : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.OmittedReading>
+P:WeatherParser.Parsing.Observations.ObservationDatasetRejectedException.OmittedReadings : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.OmittedReading>
+P:WeatherParser.Parsing.Observations.ObservationInput.Location : WeatherParser.Parsing.Export.ObservationLocation
+P:WeatherParser.Parsing.Observations.ObservationInput.Provider : string
+P:WeatherParser.Parsing.Observations.ObservationInput.Readings : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.ObservationReading>
+P:WeatherParser.Parsing.Observations.ObservationInput.RetrievedAtUtc : System.DateTime
+P:WeatherParser.Parsing.Observations.ObservationReading.Kind : System.Nullable`1<WeatherParser.Parsing.Quantities.QuantityKind>
+P:WeatherParser.Parsing.Observations.ObservationReading.Period : WeatherParser.Parsing.Quantities.AveragingPeriod
+P:WeatherParser.Parsing.Observations.ObservationReading.PressureReference : System.Nullable`1<WeatherParser.Parsing.Quantities.PressureReference>
+P:WeatherParser.Parsing.Observations.ObservationReading.PressureUnit : System.Nullable`1<WeatherParser.Parsing.Quantities.PressureUnit>
+P:WeatherParser.Parsing.Observations.ObservationReading.Quality : string
+P:WeatherParser.Parsing.Observations.ObservationReading.Time : WeatherParser.Parsing.Time.NormalizedSourceTime
+P:WeatherParser.Parsing.Observations.ObservationReading.Value : System.Nullable`1<double>
+P:WeatherParser.Parsing.Observations.ObservationReading.WindSpeedUnit : System.Nullable`1<WeatherParser.Parsing.Observations.WindSpeedUnit>
+P:WeatherParser.Parsing.Observations.OmittedReading.Kind : WeatherParser.Parsing.Quantities.QuantityKind
+P:WeatherParser.Parsing.Observations.OmittedReading.Reason : WeatherParser.Parsing.Observations.OmissionReason
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterCellValue.Status : WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterCellValueStatus
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterCellValue.Value : System.Nullable`1<double>
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterEndpoints.PageUri : System.Uri
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappedStation.Location : WeatherParser.Parsing.Export.ObservationLocation
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappedStation.Name : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappedStation.Notices : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappingNotice>
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappedStation.Readings : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.ObservationReading>
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappedStation.StationId : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappedStation.Status : WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationStatus
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappingNotice.Kind : WeatherParser.Parsing.Quantities.QuantityKind
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappingNotice.NoticeId : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterOptions.PageDeadline : System.TimeSpan
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterOptions.Stations : System.Collections.Generic.IList`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationMetadata>
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPage.Diagnostics : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageDiagnostic>
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPage.Stations : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow>
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageDiagnostic.NoticeId : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageDiagnostic.StationName : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterParseResult.Datasets : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Export.ObservationDataset>
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterParseResult.StationFailures : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationFailure>
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationFailure.ErrorId : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationFailure.Reason : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationFailure.StationName : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationMetadata.AltitudeM : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationMetadata.Latitude : System.Decimal
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationMetadata.Longitude : System.Decimal
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationMetadata.Name : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow.HumidityText : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow.Name : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow.OverviewTimeText : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow.Status : WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationStatus
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow.TemperatureText : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow.WindMeanText : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow.WindTimeText : string
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeValue.Status : WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeStatus
+P:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeValue.Time : WeatherParser.Parsing.Time.NormalizedSourceTime
+P:WeatherParser.Parsing.Observations.Osthessen.StationNamePattern.Value : string
+P:WeatherParser.Parsing.Parsing.CdcNowEvidence.ProductCode : string
+P:WeatherParser.Parsing.Parsing.CdcNowEvidence.Rows : System.Collections.Generic.IReadOnlyList`1<WeatherParser.Parsing.Parsing.CdcNowEvidenceRow>
+P:WeatherParser.Parsing.Parsing.CdcNowEvidence.StationId : string
+P:WeatherParser.Parsing.Parsing.CdcNowEvidenceRow.MeasuredAtUtc : System.DateTime
+P:WeatherParser.Parsing.Parsing.CdcNowEvidenceRow.QualityLevel : string
+P:WeatherParser.Parsing.Parsing.CdcNowEvidenceRow.Values : System.Collections.Generic.IReadOnlyDictionary`2<string, string>
+P:WeatherParser.Parsing.Parsing.ParserEndpointDefinition.Name : string
+P:WeatherParser.Parsing.Parsing.ParserEndpointDefinition.Uri : System.Uri
+P:WeatherParser.Parsing.Parsing.ParserEndpointValidationException.ErrorId : string
+P:WeatherParser.Parsing.Quantities.AveragingPeriod.Duration : System.TimeSpan
+P:WeatherParser.Parsing.Quantities.AveragingPeriod.EndUtc : System.DateTime
+P:WeatherParser.Parsing.Quantities.AveragingPeriod.StartUtc : System.DateTime
+P:WeatherParser.Parsing.Quantities.PeriodQuantity.Kind : WeatherParser.Parsing.Quantities.QuantityKind
+P:WeatherParser.Parsing.Quantities.PeriodQuantity.Period : WeatherParser.Parsing.Quantities.AveragingPeriod
+P:WeatherParser.Parsing.Quantities.PeriodQuantity.Value : System.Decimal
+P:WeatherParser.Parsing.Quantities.PressureValues.Hpa : System.Decimal
+P:WeatherParser.Parsing.Quantities.PressureValues.MmHg : System.Decimal
+P:WeatherParser.Parsing.Quantities.PressureValues.OriginalUnit : WeatherParser.Parsing.Quantities.PressureUnit
+P:WeatherParser.Parsing.Quantities.PressureValues.Reference : WeatherParser.Parsing.Quantities.PressureReference
+P:WeatherParser.Parsing.Quantities.ValidatedQuantity.IsValid : bool
+P:WeatherParser.Parsing.Quantities.ValidatedQuantity.RejectionReason : System.Nullable`1<WeatherParser.Parsing.Quantities.QuantityRejectionReason>
+P:WeatherParser.Parsing.Quantities.ValidatedQuantity.Value : System.Nullable`1<System.Decimal>
+P:WeatherParser.Parsing.Time.NormalizedSourceTime.Quality : WeatherParser.Parsing.Time.TimestampQuality
+P:WeatherParser.Parsing.Time.NormalizedSourceTime.SourceTimeZone : string
+P:WeatherParser.Parsing.Time.NormalizedSourceTime.UtcInstant : System.DateTime
+T:WeatherParser.Parsing.Catalogs.CatalogDeadlineKind (public enum) : System.Enum
+T:WeatherParser.Parsing.Catalogs.CatalogDiagnostic (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CatalogDiagnostic>
+T:WeatherParser.Parsing.Catalogs.CatalogDownloader (public class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICatalogDownloader
+T:WeatherParser.Parsing.Catalogs.CatalogRequest (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CatalogRequest>
+T:WeatherParser.Parsing.Catalogs.CdcArchiveRequestTarget (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcArchiveRequestTarget>
+T:WeatherParser.Parsing.Catalogs.CdcAvailabilityDeriver (public class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICdcAvailabilityDeriver
+T:WeatherParser.Parsing.Catalogs.CdcAvailabilityResult (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcAvailabilityResult>
+T:WeatherParser.Parsing.Catalogs.CdcCandidateStation (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcCandidateStation>
+T:WeatherParser.Parsing.Catalogs.CdcCandidates (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcCandidates>
+T:WeatherParser.Parsing.Catalogs.CdcCatalogEndpoints (public class sealed) : System.Object
+T:WeatherParser.Parsing.Catalogs.CdcCatalogEndpointsValidator (public class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICdcCatalogEndpointsValidator
+T:WeatherParser.Parsing.Catalogs.CdcCatalogSource (public class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICdcCatalogSource
+T:WeatherParser.Parsing.Catalogs.CdcEvidenceKey (public struct) : System.ValueType, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcEvidenceKey>
+T:WeatherParser.Parsing.Catalogs.CdcListRequestTarget (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcListRequestTarget>
+T:WeatherParser.Parsing.Catalogs.CdcProductList (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcProductList>
+T:WeatherParser.Parsing.Catalogs.CdcRequestComposer (public class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICdcRequestComposer
+T:WeatherParser.Parsing.Catalogs.CdcStationAvailability (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcStationAvailability>
+T:WeatherParser.Parsing.Catalogs.CdcStationCatalog (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcStationCatalog>
+T:WeatherParser.Parsing.Catalogs.CdcStationCatalogReader (public class sealed) : System.Object, WeatherParser.Parsing.Catalogs.ICdcStationCatalogReader
+T:WeatherParser.Parsing.Catalogs.CdcStationRecord (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.CdcStationRecord>
+T:WeatherParser.Parsing.Catalogs.ICatalogDownloader (public interface)
+T:WeatherParser.Parsing.Catalogs.ICdcAvailabilityDeriver (public interface)
+T:WeatherParser.Parsing.Catalogs.ICdcCatalogEndpointsValidator (public interface)
+T:WeatherParser.Parsing.Catalogs.ICdcCatalogSource (public interface)
+T:WeatherParser.Parsing.Catalogs.ICdcRequestComposer (public interface)
+T:WeatherParser.Parsing.Catalogs.ICdcStationCatalogReader (public interface)
+T:WeatherParser.Parsing.Catalogs.IMosmixAvailabilityResolver (public interface)
+T:WeatherParser.Parsing.Catalogs.IMosmixCatalogSource (public interface)
+T:WeatherParser.Parsing.Catalogs.IMosmixLocationCatalogReader (public interface)
+T:WeatherParser.Parsing.Catalogs.IMosmixSEvidenceRefresher (public interface)
+T:WeatherParser.Parsing.Catalogs.MosmixAvailabilityResolver (public class sealed) : System.Object, WeatherParser.Parsing.Catalogs.IMosmixAvailabilityResolver
+T:WeatherParser.Parsing.Catalogs.MosmixCatalogSource (public class sealed) : System.Object, WeatherParser.Parsing.Catalogs.IMosmixCatalogSource
+T:WeatherParser.Parsing.Catalogs.MosmixLocationCatalog (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.MosmixLocationCatalog>
+T:WeatherParser.Parsing.Catalogs.MosmixLocationCatalogReader (public class sealed) : System.Object, WeatherParser.Parsing.Catalogs.IMosmixLocationCatalogReader
+T:WeatherParser.Parsing.Catalogs.MosmixLocationRecord (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Catalogs.MosmixLocationRecord>
+T:WeatherParser.Parsing.Catalogs.MosmixSEvidenceRefresher (public class sealed) : System.Object, WeatherParser.Parsing.Catalogs.IMosmixSEvidenceRefresher
+T:WeatherParser.Parsing.Evidence.MosmixL.IMosmixLEvidenceReader (public interface)
+T:WeatherParser.Parsing.Evidence.MosmixL.MosmixLEvidence (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Evidence.MosmixL.MosmixLEvidence>
+T:WeatherParser.Parsing.Evidence.MosmixL.MosmixLEvidenceReader (public class sealed) : System.Object, WeatherParser.Parsing.Evidence.MosmixL.IMosmixLEvidenceReader
+T:WeatherParser.Parsing.Evidence.MosmixL.MosmixLRetrieval (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Evidence.MosmixL.MosmixLRetrieval>
+T:WeatherParser.Parsing.Evidence.MosmixS.FileSystemMosmixEvidenceCache (public class sealed) : System.Object, WeatherParser.Parsing.Evidence.MosmixS.IMosmixEvidenceCache
+T:WeatherParser.Parsing.Evidence.MosmixS.IMosmixCatalogEndpointsValidator (public interface)
+T:WeatherParser.Parsing.Evidence.MosmixS.IMosmixEvidenceCache (public interface)
+T:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints (public class sealed) : System.Object
+T:WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpointsValidator (public class sealed) : System.Object, WeatherParser.Parsing.Evidence.MosmixS.IMosmixCatalogEndpointsValidator
+T:WeatherParser.Parsing.Evidence.MosmixS.MosmixSEvidenceIndex (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Evidence.MosmixS.MosmixSEvidenceIndex>
+T:WeatherParser.Parsing.Exceptions.CatalogFormatException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Exceptions.CatalogRetrievalException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Exceptions.CoordinateFormatException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Exceptions.DwdStationException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Exceptions.EvidenceCacheException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Exceptions.ObservationLimitException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Exceptions.OsthessenWetterException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Exceptions.SearchParameterException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Exceptions.SelectionLimitException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Export.AvailabilityState (public enum) : System.Enum
+T:WeatherParser.Parsing.Export.CdcStationList (public class sealed) : System.Object, WeatherParser.Parsing.Export.IExportRootValidation
+T:WeatherParser.Parsing.Export.CdcStationListEntry (public class sealed) : System.Object
+T:WeatherParser.Parsing.Export.ExportDocument (public class sealed) : System.Object, WeatherParser.Parsing.Export.IExportRootValidation
+T:WeatherParser.Parsing.Export.ExportError (public class sealed) : System.Object
+T:WeatherParser.Parsing.Export.ExportNamespaces (public class static) : System.Object
+T:WeatherParser.Parsing.Export.ForecastLocation (public class sealed) : System.Object
+T:WeatherParser.Parsing.Export.ForecastRun (public class sealed) : System.Object, WeatherParser.Parsing.Export.IExportRootValidation
+T:WeatherParser.Parsing.Export.ForecastStep (public class sealed) : System.Object
+T:WeatherParser.Parsing.Export.ForecastValues (public class sealed) : System.Object
+T:WeatherParser.Parsing.Export.IListEntryOrdering (public interface)
+T:WeatherParser.Parsing.Export.IntervalAggregation (public enum) : System.Enum
+T:WeatherParser.Parsing.Export.IntervalValue (public class) : System.Object
+T:WeatherParser.Parsing.Export.ListEntryOrdering (public class sealed) : System.Object, WeatherParser.Parsing.Export.IListEntryOrdering
+T:WeatherParser.Parsing.Export.MeasurementPeriod (public class sealed) : System.Object
+T:WeatherParser.Parsing.Export.MeasurementValue (public class) : System.Object
+T:WeatherParser.Parsing.Export.MosmixLocationList (public class sealed) : System.Object, WeatherParser.Parsing.Export.IExportRootValidation
+T:WeatherParser.Parsing.Export.MosmixLocationListEntry (public class sealed) : System.Object
+T:WeatherParser.Parsing.Export.MosmixProduct (public enum) : System.Enum
+T:WeatherParser.Parsing.Export.MosmixProductAvailability (public class sealed) : System.Object
+T:WeatherParser.Parsing.Export.ObservationDataset (public class sealed) : System.Object, WeatherParser.Parsing.Export.IExportRootValidation
+T:WeatherParser.Parsing.Export.ObservationLocation (public class sealed) : System.Object
+T:WeatherParser.Parsing.Export.ObservationMeasurements (public class sealed) : System.Object
+T:WeatherParser.Parsing.Export.PressureMeasurementValue (public class sealed) : WeatherParser.Parsing.Export.MeasurementValue
+T:WeatherParser.Parsing.Export.SearchParameters (public class sealed) : System.Object
+T:WeatherParser.Parsing.Forecasts.ForecastRunBuildResult (public class sealed) : System.Object
+T:WeatherParser.Parsing.Forecasts.ForecastRunBuilder (public class sealed) : System.Object, WeatherParser.Parsing.Forecasts.IForecastRunBuilder
+T:WeatherParser.Parsing.Forecasts.ForecastRunInput (public class sealed) : System.Object
+T:WeatherParser.Parsing.Forecasts.ForecastRunRejectedException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Forecasts.ForecastSeries (public class sealed) : System.Object
+T:WeatherParser.Parsing.Forecasts.IForecastRunBuilder (public interface)
+T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixElementMapper (public interface)
+T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixForecastDocumentReader (public interface)
+T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixLForecastSource (public interface)
+T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixLParser (public interface)
+T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixParsePipeline (public interface)
+T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixSForecastSource (public interface)
+T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixSParser (public interface)
+T:WeatherParser.Parsing.Forecasts.Mosmix.IMosmixUnitScaler (public interface)
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixElementMapper (public class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixElementMapper
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocument (public class sealed) : System.Object @RequiredMember
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastDocumentReader (public class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixForecastDocumentReader
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastErrorIds (public class static) : System.Object
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastFormatException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixForecastSeries (public class sealed) : System.Object @RequiredMember
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastEndpoints (public class sealed) : System.Object
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastOptions (public class sealed) : System.Object
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLForecastSource (public class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixLForecastSource
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixLParser (public class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixLParser
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixMappingResult (public class sealed) : System.Object @RequiredMember
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixNoticeIds (public class static) : System.Object
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParsePipeline (public class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixParsePipeline
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseRequest (public class sealed) : System.Object @RequiredMember
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixParseResult (public class sealed) : System.Object
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixRunFreshness (public enum) : System.Enum
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSForecastEndpoints (public class sealed) : System.Object
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSForecastOptions (public class sealed) : System.Object
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSForecastSource (public class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixSForecastSource
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixSParser (public class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixSParser
+T:WeatherParser.Parsing.Forecasts.Mosmix.MosmixUnitScaler (public class sealed) : System.Object, WeatherParser.Parsing.Forecasts.Mosmix.IMosmixUnitScaler
+T:WeatherParser.Parsing.Forecasts.OmittedForecastValue (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Forecasts.OmittedForecastValue>
+T:WeatherParser.Parsing.Geography.CoordinateParser (public class sealed) : System.Object, WeatherParser.Parsing.Geography.ICoordinateParser
+T:WeatherParser.Parsing.Geography.DistanceCalculator (public class sealed) : System.Object, WeatherParser.Parsing.Geography.IDistanceCalculator
+T:WeatherParser.Parsing.Geography.ICoordinateParser (public interface)
+T:WeatherParser.Parsing.Geography.IDistanceCalculator (public interface)
+T:WeatherParser.Parsing.Geography.ISearchAreaFilter (public interface)
+T:WeatherParser.Parsing.Geography.ISearchParameterFactory (public interface)
+T:WeatherParser.Parsing.Geography.SearchAreaEvaluation (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Geography.SearchAreaEvaluation>
+T:WeatherParser.Parsing.Geography.SearchAreaFilter (public class sealed) : System.Object, WeatherParser.Parsing.Geography.ISearchAreaFilter
+T:WeatherParser.Parsing.Geography.SearchAreaMatch (public enum) : System.Enum
+T:WeatherParser.Parsing.Geography.SearchParameterFactory (public class sealed) : System.Object, WeatherParser.Parsing.Geography.ISearchParameterFactory
+T:WeatherParser.Parsing.Mqtt.IMqttMessageSerializer (public interface)
+T:WeatherParser.Parsing.Mqtt.IMqttTopicOptionsValidator (public interface)
+T:WeatherParser.Parsing.Mqtt.IMqttTopicTemplateParser (public interface)
+T:WeatherParser.Parsing.Mqtt.IMqttTopicValidator (public interface)
+T:WeatherParser.Parsing.Mqtt.MqttMessage (public class sealed) : System.Object
+T:WeatherParser.Parsing.Mqtt.MqttMessageErrorIds (public class static) : System.Object
+T:WeatherParser.Parsing.Mqtt.MqttMessageException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Mqtt.MqttMessageSerializer (public class sealed) : System.Object, WeatherParser.Parsing.Mqtt.IMqttMessageSerializer
+T:WeatherParser.Parsing.Mqtt.MqttMessageType (public enum) : System.Enum
+T:WeatherParser.Parsing.Mqtt.MqttQualityOfService (public enum) : System.Enum
+T:WeatherParser.Parsing.Mqtt.MqttTopicMapping (public class sealed) : System.Object
+T:WeatherParser.Parsing.Mqtt.MqttTopicOptions (public class sealed) : System.Object
+T:WeatherParser.Parsing.Mqtt.MqttTopicOptionsValidator (public class sealed) : System.Object, WeatherParser.Parsing.Mqtt.IMqttTopicOptionsValidator
+T:WeatherParser.Parsing.Mqtt.MqttTopicTemplate (public class sealed) : System.Object
+T:WeatherParser.Parsing.Mqtt.MqttTopicTemplateParser (public class sealed) : System.Object, WeatherParser.Parsing.Mqtt.IMqttTopicTemplateParser
+T:WeatherParser.Parsing.Mqtt.MqttTopicTemplateSegment (public class sealed) : System.Object
+T:WeatherParser.Parsing.Mqtt.MqttTopicValidator (public class sealed) : System.Object, WeatherParser.Parsing.Mqtt.IMqttTopicValidator
+T:WeatherParser.Parsing.Mqtt.ValidatedMqttTopicConfiguration (public class sealed) : System.Object
+T:WeatherParser.Parsing.Mqtt.ValidatedMqttTopicMapping (public class sealed) : System.Object
+T:WeatherParser.Parsing.Observations.Dwd.DwdMappingOmission (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Dwd.DwdMappingOmission>
+T:WeatherParser.Parsing.Observations.Dwd.DwdMappingOmissionReason (public enum) : System.Enum
+T:WeatherParser.Parsing.Observations.Dwd.DwdMappingResult (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Dwd.DwdMappingResult>
+T:WeatherParser.Parsing.Observations.Dwd.DwdObservationMapper (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Dwd.IDwdObservationMapper
+T:WeatherParser.Parsing.Observations.Dwd.DwdObservationNoticeIds (public class static) : System.Object
+T:WeatherParser.Parsing.Observations.Dwd.DwdObservationOptions (public class sealed) : System.Object
+T:WeatherParser.Parsing.Observations.Dwd.DwdObservationParser (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Dwd.IDwdObservationParser
+T:WeatherParser.Parsing.Observations.Dwd.DwdObservationSource (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Dwd.IDwdObservationSource
+T:WeatherParser.Parsing.Observations.Dwd.DwdResolvedStation (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Dwd.DwdResolvedStation>
+T:WeatherParser.Parsing.Observations.Dwd.DwdStationResolver (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Dwd.IDwdStationResolver
+T:WeatherParser.Parsing.Observations.Dwd.IDwdObservationMapper (public interface)
+T:WeatherParser.Parsing.Observations.Dwd.IDwdObservationParser (public interface)
+T:WeatherParser.Parsing.Observations.Dwd.IDwdObservationSource (public interface)
+T:WeatherParser.Parsing.Observations.Dwd.IDwdStationResolver (public interface)
+T:WeatherParser.Parsing.Observations.IObservationDatasetBuilder (public interface)
+T:WeatherParser.Parsing.Observations.ObservationBuildResult (public class sealed) : System.Object
+T:WeatherParser.Parsing.Observations.ObservationDatasetBuilder (public class sealed) : System.Object, WeatherParser.Parsing.Observations.IObservationDatasetBuilder
+T:WeatherParser.Parsing.Observations.ObservationDatasetRejectedException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Observations.ObservationInput (public class sealed) : System.Object
+T:WeatherParser.Parsing.Observations.ObservationReading (public class sealed) : System.Object
+T:WeatherParser.Parsing.Observations.OmissionReason (public enum) : System.Enum
+T:WeatherParser.Parsing.Observations.OmittedReading (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.OmittedReading>
+T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterObservationMapper (public interface)
+T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterPageReader (public interface)
+T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterPageSource (public interface)
+T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterParser (public interface)
+T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterStationIdentity (public interface)
+T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterStationMetadataLookup (public interface)
+T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterTimeReader (public interface)
+T:WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterValueReader (public interface)
+T:WeatherParser.Parsing.Observations.Osthessen.IStationNamePatternMatcher (public interface)
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterCellValue (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterCellValue>
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterCellValueStatus (public enum) : System.Enum
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterEndpoints (public class sealed) : System.Object
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappedStation (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappedStation>
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappingNotice (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterMappingNotice>
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterNoticeIds (public class static) : System.Object
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterObservationMapper (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterObservationMapper
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterOptions (public class sealed) : System.Object
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPage (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPage>
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageDiagnostic (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageDiagnostic>
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageReader (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterPageReader
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterPageSource (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterPageSource
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterParseResult (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterParseResult>
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterParser (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterParser
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationFailure (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationFailure>
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationIdentity (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterStationIdentity
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationMetadata (public class sealed) : System.Object
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationMetadataLookup (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterStationMetadataLookup
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationRow>
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterStationStatus (public enum) : System.Enum
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeReader (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterTimeReader
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeStatus (public enum) : System.Enum
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeValue (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterTimeValue>
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterValueColumn (public enum) : System.Enum
+T:WeatherParser.Parsing.Observations.Osthessen.OsthessenWetterValueReader (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IOsthessenWetterValueReader
+T:WeatherParser.Parsing.Observations.Osthessen.StationNamePattern (public class sealed) : System.Object
+T:WeatherParser.Parsing.Observations.Osthessen.StationNamePatternMatcher (public class sealed) : System.Object, WeatherParser.Parsing.Observations.Osthessen.IStationNamePatternMatcher
+T:WeatherParser.Parsing.Observations.WindSpeedUnit (public enum) : System.Enum
+T:WeatherParser.Parsing.Parsing.CdcNowEvidence (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Parsing.CdcNowEvidence>
+T:WeatherParser.Parsing.Parsing.CdcNowEvidenceReader (public class sealed) : System.Object, WeatherParser.Parsing.Parsing.ICdcNowEvidenceReader
+T:WeatherParser.Parsing.Parsing.CdcNowEvidenceRow (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Parsing.CdcNowEvidenceRow>
+T:WeatherParser.Parsing.Parsing.EndpointUriValidator (public class sealed) : System.Object, WeatherParser.Parsing.Parsing.IEndpointUriValidator
+T:WeatherParser.Parsing.Parsing.ICdcNowEvidenceReader (public interface)
+T:WeatherParser.Parsing.Parsing.IEndpointUriValidator (public interface)
+T:WeatherParser.Parsing.Parsing.IParserEndpointValidator (public interface)
+T:WeatherParser.Parsing.Parsing.ParserEndpointDefinition (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Parsing.ParserEndpointDefinition>
+T:WeatherParser.Parsing.Parsing.ParserEndpointValidationException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Parsing.ParserEndpointValidator (public class sealed) : System.Object, WeatherParser.Parsing.Parsing.IParserEndpointValidator
+T:WeatherParser.Parsing.Parsing.ServiceCollectionExtensions (public class static) : System.Object @Extension
+T:WeatherParser.Parsing.Quantities.AveragingPeriod (public class sealed) : System.Object
+T:WeatherParser.Parsing.Quantities.IOutputRounding (public interface)
+T:WeatherParser.Parsing.Quantities.IPeriodRateConverter (public interface)
+T:WeatherParser.Parsing.Quantities.IPressureConverter (public interface)
+T:WeatherParser.Parsing.Quantities.IQuantityValidator (public interface)
+T:WeatherParser.Parsing.Quantities.IWindSpeedConverter (public interface)
+T:WeatherParser.Parsing.Quantities.OutputRounding (public class sealed) : System.Object, WeatherParser.Parsing.Quantities.IOutputRounding
+T:WeatherParser.Parsing.Quantities.PeriodQuantity (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Quantities.PeriodQuantity>
+T:WeatherParser.Parsing.Quantities.PeriodRateConverter (public class sealed) : System.Object, WeatherParser.Parsing.Quantities.IPeriodRateConverter
+T:WeatherParser.Parsing.Quantities.PressureConverter (public class sealed) : System.Object, WeatherParser.Parsing.Quantities.IPressureConverter
+T:WeatherParser.Parsing.Quantities.PressureReference (public enum) : System.Enum
+T:WeatherParser.Parsing.Quantities.PressureUnit (public enum) : System.Enum
+T:WeatherParser.Parsing.Quantities.PressureValues (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Quantities.PressureValues>
+T:WeatherParser.Parsing.Quantities.QuantityConversionException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Quantities.QuantityKind (public enum) : System.Enum
+T:WeatherParser.Parsing.Quantities.QuantityRejectionReason (public enum) : System.Enum
+T:WeatherParser.Parsing.Quantities.QuantityValidator (public class sealed) : System.Object, WeatherParser.Parsing.Quantities.IQuantityValidator
+T:WeatherParser.Parsing.Quantities.ValidatedQuantity (public class sealed) : System.Object
+T:WeatherParser.Parsing.Quantities.WindSpeedConverter (public class sealed) : System.Object, WeatherParser.Parsing.Quantities.IWindSpeedConverter
+T:WeatherParser.Parsing.Selection.CdcStationSelector (public class sealed) : System.Object, WeatherParser.Parsing.Selection.ICdcStationSelector
+T:WeatherParser.Parsing.Selection.ICdcStationSelector (public interface)
+T:WeatherParser.Parsing.Selection.IMosmixLocationSelector (public interface)
+T:WeatherParser.Parsing.Selection.MosmixLocationSelector (public class sealed) : System.Object, WeatherParser.Parsing.Selection.IMosmixLocationSelector
+T:WeatherParser.Parsing.Selection.SelectionNoticeIds (public class static) : System.Object
+T:WeatherParser.Parsing.Serialization.ExportSerializationException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Serialization.IJsonExportSerializer (public interface)
+T:WeatherParser.Parsing.Serialization.IXmlExportSerializer (public interface)
+T:WeatherParser.Parsing.Serialization.JsonExportSerializer (public class sealed) : System.Object, WeatherParser.Parsing.Serialization.IJsonExportSerializer
+T:WeatherParser.Parsing.Serialization.XmlExportSerializer (public class sealed) : System.Object, WeatherParser.Parsing.Serialization.IXmlExportSerializer
+T:WeatherParser.Parsing.Time.ISourceTimeNormalizer (public interface)
+T:WeatherParser.Parsing.Time.ITimeZoneResolver (public interface)
+T:WeatherParser.Parsing.Time.NormalizedSourceTime (public class sealed) : System.Object, System.IEquatable`1<WeatherParser.Parsing.Time.NormalizedSourceTime>
+T:WeatherParser.Parsing.Time.SourceTimeNormalizationException (public class sealed) : System.Exception
+T:WeatherParser.Parsing.Time.SourceTimeNormalizer (public class sealed) : System.Object, WeatherParser.Parsing.Time.ISourceTimeNormalizer
+T:WeatherParser.Parsing.Time.TimeZoneResolver (public class sealed) : System.Object, WeatherParser.Parsing.Time.ITimeZoneResolver
+T:WeatherParser.Parsing.Time.TimestampQuality (public enum) : System.Enum

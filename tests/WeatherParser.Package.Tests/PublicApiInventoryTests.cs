@@ -53,10 +53,13 @@ public sealed class PublicApiInventoryTests
             "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.set_Count(int value) : void [public]",
             "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.set_Label(string value) : void modreq(System.Runtime.CompilerServices.IsExternalInit) [public]",
             "M:WeatherParser.Package.Tests.ApiFixture.IApiShape.Area() : int [public abstract]",
-            "T:WeatherParser.Package.Tests.ApiFixture.ApiBase (class abstract) : System.Object",
-            "T:WeatherParser.Package.Tests.ApiFixture.ApiColor (enum) : System.Enum",
-            "T:WeatherParser.Package.Tests.ApiFixture.ApiSample (class sealed) : WeatherParser.Package.Tests.ApiFixture.ApiBase, WeatherParser.Package.Tests.ApiFixture.IApiShape",
-            "T:WeatherParser.Package.Tests.ApiFixture.IApiShape (interface)"
+            "P:WeatherParser.Package.Tests.ApiFixture.ApiBase.Name : string",
+            "P:WeatherParser.Package.Tests.ApiFixture.ApiSample.Count : int",
+            "P:WeatherParser.Package.Tests.ApiFixture.ApiSample.Label : string",
+            "T:WeatherParser.Package.Tests.ApiFixture.ApiBase (public class abstract) : System.Object",
+            "T:WeatherParser.Package.Tests.ApiFixture.ApiColor (public enum) : System.Enum",
+            "T:WeatherParser.Package.Tests.ApiFixture.ApiSample (public class sealed) : WeatherParser.Package.Tests.ApiFixture.ApiBase, WeatherParser.Package.Tests.ApiFixture.IApiShape",
+            "T:WeatherParser.Package.Tests.ApiFixture.IApiShape (public interface)"
         }.OrderBy(l => l, StringComparer.Ordinal).ToList();
     }
 

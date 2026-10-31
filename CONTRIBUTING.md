@@ -145,7 +145,7 @@ The exact local, uncommitted refresh procedure:
 $package = 'artifacts/local-nuget/WeatherParser.Parsing.0.1.0.nupkg'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zip = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $package).Path)
-$zip.Entries.FullName   # only lib/net10.0/WeatherParser.Parsing.dll, README.md, LICENSE, schemas/export/v1/weatherparser-export-v1.xsd and NuGet metadata
+$zip.Entries.FullName   # only lib/net10.0/WeatherParser.Parsing.dll, lib/net10.0/WeatherParser.Parsing.xml, README.md, LICENSE, schemas/export/v1/weatherparser-export-v1.xsd and NuGet metadata
 foreach ($name in 'README.md', 'LICENSE', 'schemas/export/v1/weatherparser-export-v1.xsd') {
     $entry = $zip.GetEntry($name).Open(); $buffer = [IO.MemoryStream]::new(); $entry.CopyTo($buffer); $entry.Dispose()
     $packedSha = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($buffer.ToArray()))

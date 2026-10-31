@@ -45,8 +45,9 @@ internal sealed class PublicApiListing : IPublicApiListing
 
             var fullName = GetFullName(metadataReader, typeDef);
             result.Add(FormatType(metadataReader, typeDef, fullName));
-            AddMethods(result, metadataReader, typeDef);
             AddFields(result, metadataReader, typeDef);
+            AddProperties(result, metadataReader, typeDef);
+            AddMethods(result, metadataReader, typeDef);
         }
 
         return result.Distinct(StringComparer.Ordinal).OrderBy(s => s, StringComparer.Ordinal).ToList();
@@ -133,6 +134,21 @@ internal sealed class PublicApiListing : IPublicApiListing
         }
 
         sb.Append(" (");
+        
+        var access = typeDef.Attributes & TypeAttributes.VisibilityMask;
+        if (access == TypeAttributes.Public || access == TypeAttributes.NestedPublic)
+        {
+            sb.Append("public ");
+        }
+        else if (access == TypeAttributes.NestedFamily)
+        {
+            sb.Append("protected ");
+        }
+        else if (access == TypeAttributes.NestedFamORAssem)
+        {
+            sb.Append("protected internal ");
+        }
+
         sb.Append(typeKind);
 
         var isAbstract = typeDef.Attributes.HasFlag(TypeAttributes.Abstract);
@@ -173,6 +189,8 @@ internal sealed class PublicApiListing : IPublicApiListing
             sb.Append(" : ");
             sb.Append(string.Join(", ", baseList));
         }
+
+        sb.Append(FormatAttributes(reader, typeDef.GetCustomAttributes()));
 
         return sb.ToString();
     }
@@ -324,6 +342,8 @@ internal sealed class PublicApiListing : IPublicApiListing
         sb.Append(string.Join(" ", modifiers));
         sb.Append(']');
 
+        sb.Append(FormatAttributes(reader, methodDef.GetCustomAttributes()));
+
         return sb.ToString();
     }
 
@@ -404,6 +424,75 @@ internal sealed class PublicApiListing : IPublicApiListing
             }
         }
 
+        sb.Append(FormatAttributes(reader, fieldDef.GetCustomAttributes()));
+
+        return sb.ToString();
+    }
+
+    private static void AddProperties(List<string> result, MetadataReader reader, TypeDefinition typeDef)
+    {
+        foreach (var propHandle in typeDef.GetProperties())
+        {
+            var prop = reader.GetPropertyDefinition(propHandle);
+            var accessors = prop.GetAccessors();
+            var getter = accessors.Getter;
+            var setter = accessors.Setter;
+
+            // Check if either getter or setter is accessible
+            bool hasPublicAccessor = false;
+            if (!getter.IsNil)
+            {
+                var getterDef = reader.GetMethodDefinition(getter);
+                var access = getterDef.Attributes & MethodAttributes.MemberAccessMask;
+                if (access == MethodAttributes.Public || access == MethodAttributes.Family || access == MethodAttributes.FamORAssem)
+                {
+                    hasPublicAccessor = true;
+                }
+            }
+
+            if (!setter.IsNil)
+            {
+                var setterDef = reader.GetMethodDefinition(setter);
+                var access = setterDef.Attributes & MethodAttributes.MemberAccessMask;
+                if (access == MethodAttributes.Public || access == MethodAttributes.Family || access == MethodAttributes.FamORAssem)
+                {
+                    hasPublicAccessor = true;
+                }
+            }
+
+            if (hasPublicAccessor)
+            {
+                result.Add(FormatProperty(reader, prop, typeDef));
+            }
+        }
+    }
+
+    private static string FormatProperty(MetadataReader reader, PropertyDefinition prop, TypeDefinition typeDef)
+    {
+        var sb = new StringBuilder();
+        sb.Append("P:");
+
+        var typeName = GetFullName(reader, typeDef);
+        sb.Append(typeName);
+        sb.Append('.');
+
+        var propName = reader.GetString(prop.Name);
+        sb.Append(propName);
+
+        var signature = prop.DecodeSignature(new TypeNameProvider(reader), null);
+        var paramTypes = signature.ParameterTypes;
+        if (paramTypes.Length > 0)
+        {
+            sb.Append('[');
+            sb.Append(string.Join(", ", paramTypes));
+            sb.Append(']');
+        }
+
+        sb.Append(" : ");
+        sb.Append(signature.ReturnType);
+
+        sb.Append(FormatAttributes(reader, prop.GetCustomAttributes()));
+
         return sb.ToString();
     }
 
@@ -438,6 +527,18 @@ internal sealed class PublicApiListing : IPublicApiListing
         }
 
         var name = reader.GetString(parameter.Name);
+        
+        // Apply variance prefix
+        var variance = parameter.Attributes & GenericParameterAttributes.VarianceMask;
+        if (variance == GenericParameterAttributes.Covariant)
+        {
+            name = "out " + name;
+        }
+        else if (variance == GenericParameterAttributes.Contravariant)
+        {
+            name = "in " + name;
+        }
+
         return constraints.Count == 0 ? name : name + ": " + string.Join(", ", constraints);
     }
 
@@ -465,6 +566,84 @@ internal sealed class PublicApiListing : IPublicApiListing
             ConstantTypeCode.NullReference => "null",
             _ => throw new NotSupportedException($"Unsupported constant type code: {typeCode}")
         };
+    }
+
+    private static string FormatAttributes(MetadataReader reader, CustomAttributeHandleCollection attributes)
+    {
+        var attrList = new List<string>();
+        foreach (var h in attributes)
+        {
+            var attribute = reader.GetCustomAttribute(h);
+            if (attribute.Constructor.Kind == HandleKind.MethodDefinition)
+            {
+                var methodDef = reader.GetMethodDefinition((MethodDefinitionHandle)attribute.Constructor);
+                var declaringType = methodDef.GetDeclaringType();
+                var typeRef = reader.GetTypeDefinition(declaringType);
+                var fullName = GetFullName(reader, typeRef);
+                if (fullName == "System.ObsoleteAttribute")
+                {
+                    var blob = reader.GetBlobReader(attribute.Value);
+                    blob.ReadUInt16(); /* prolog */
+                    var message = blob.ReadSerializedString();
+                    var isError = blob.RemainingBytes > 0 && blob.ReadBoolean();
+                    attrList.Add(isError ? "@Obsolete(error)" : "@Obsolete");
+                }
+                else if (fullName == "System.Runtime.CompilerServices.RequiredMemberAttribute")
+                {
+                    attrList.Add("@RequiredMember");
+                }
+                else if (fullName == "System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute")
+                {
+                    attrList.Add("@SetsRequiredMembers");
+                }
+                else if (fullName == "System.FlagsAttribute")
+                {
+                    attrList.Add("@Flags");
+                }
+                else if (fullName == "System.Runtime.CompilerServices.ExtensionAttribute")
+                {
+                    attrList.Add("@Extension");
+                }
+            }
+            else if (attribute.Constructor.Kind == HandleKind.MemberReference)
+            {
+                var memberRef = reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+                var parent = memberRef.Parent;
+                if (parent.Kind == HandleKind.TypeReference)
+                {
+                    var typeRef = reader.GetTypeReference((TypeReferenceHandle)parent);
+                    var name = reader.GetString(typeRef.Name);
+                    var namespaceName = reader.GetString(typeRef.Namespace);
+                    var fullName = string.IsNullOrEmpty(namespaceName) ? name : namespaceName + "." + name;
+                    if (fullName == "System.ObsoleteAttribute")
+                    {
+                        var blob = reader.GetBlobReader(attribute.Value);
+                        blob.ReadUInt16(); /* prolog */
+                        var message = blob.ReadSerializedString();
+                        var isError = blob.RemainingBytes > 0 && blob.ReadBoolean();
+                        attrList.Add(isError ? "@Obsolete(error)" : "@Obsolete");
+                    }
+                    else if (fullName == "System.Runtime.CompilerServices.RequiredMemberAttribute")
+                    {
+                        attrList.Add("@RequiredMember");
+                    }
+                    else if (fullName == "System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute")
+                    {
+                        attrList.Add("@SetsRequiredMembers");
+                    }
+                    else if (fullName == "System.FlagsAttribute")
+                    {
+                        attrList.Add("@Flags");
+                    }
+                    else if (fullName == "System.Runtime.CompilerServices.ExtensionAttribute")
+                    {
+                        attrList.Add("@Extension");
+                    }
+                }
+            }
+        }
+
+        return attrList.Count == 0 ? "" : " " + string.Join(" ", attrList.OrderBy(s => s, StringComparer.Ordinal));
     }
 
     /// <inheritdoc/>
