@@ -174,7 +174,7 @@ English guides cover configuration and cron/n8n invocation without installing in
 
 **Acceptance:** Independent NuGet use, public library API, configurable-topic MQTT serialization and DI integration are primary product evidence; the CLI remains an example. ARM64 runtime evidence, successful functional acceptance, complete documentation and explicit limitations. Mocks or cross-publish do not replace target-system acceptance.
 
-Phase plan and step plans (written on 2026-10-31 on the user's instructions, the step plans after the phase plan's review loop; under review, not yet accepted): [PHASE_P9_PLAN.md](PHASE_P9_PLAN.md) and the step plans under `docs/p9/`. P9 starts only on a separate instruction.
+Phase plan and step plans (written on 2026-10-31 on the user's instructions, the step plans after the phase plan's review loop; reviewed on pull request #17 to 0 findings and accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row): [PHASE_P9_PLAN.md](PHASE_P9_PLAN.md) and the step plans under `docs/p9/`. P9 starts only on a separate instruction.
 
 ## Definition of done per change
 
