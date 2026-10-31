@@ -1,6 +1,6 @@
 # P3.12 – P3 Acceptance Record
 
-**Status (2026-10-31): P3 accepted by the user on 2026-10-31 on candidate `ec915fc` ("Accept, no rerun", section 6), after the user's pull request review was fixed and the automatic Codex review of pull request #16 reached 0 findings (section 7); P3 is complete once the user has merged pull request #16; P9 starts only on a separate instruction.** Plan: [P3_12_ACCEPTANCE_HANDOFF_PLAN.md](P3_12_ACCEPTANCE_HANDOFF_PLAN.md). Handoff: [P9_HANDOFF.md](P9_HANDOFF.md).
+**Status (2026-10-31): P3 accepted by the user on 2026-10-31 on candidate `ec915fc` ("Accept, no rerun", section 6), after the user's pull request review was fixed and the automatic Codex review of pull request #16 reached 0 findings (section 7); P3 is complete: the user merged pull request #16 into `develop` on 2026-10-31 (merge commit `2ba5502`, A11, section 7); P9 starts only on a separate instruction.** Plan: [P3_12_ACCEPTANCE_HANDOFF_PLAN.md](P3_12_ACCEPTANCE_HANDOFF_PLAN.md). Handoff: [P9_HANDOFF.md](P9_HANDOFF.md).
 
 ## 1. Review identity (A1)
 
@@ -80,7 +80,7 @@ This audit decision is not the user's acceptance.
 - Question (2026-10-31, chat): "How do you want to accept P3 on candidate ec915fc?", with the options "Accept, rerun NanoPi" and "Accept, no rerun"; the message presented the open items of section 4 for the user's decision: S3 to S5 not repeated on the new candidate, the extra live `--SelectMOSMIX`, the missing `retrieved_at` of the MQTT run, the CLI-only package pins, the CL-19 C asymmetry and the CL-22 SDK and runtime update.
 - Answer (2026-10-31, chat): "Accept, no rerun".
 - Recorded: P3 (the example CLI) is accepted by the user on candidate `ec915fc`; the NanoPi R76S, broker and live checks are not repeated (their evidence stays that of `5696357`, [P3.11 record](P3_11_INTEGRATED_VERIFICATION.md)); the two live-check deviations of section 4 are accepted as documented. The answer does not decide the CLI-only package pins, the CL-19 C asymmetry or the CL-22 update; they stay open with the user as owner (section 4).
-- The acceptance does not merge pull request #16, does not start P9 and does not lift the OW-14 restriction: P3 is complete once the user has merged the pull request, and P9 starts only on a separate instruction ([P9 handoff](P9_HANDOFF.md)).
+- The acceptance does not merge pull request #16, does not start P9 and does not lift the OW-14 restriction: P3 is complete once the user has merged the pull request (done on 2026-10-31, section 7), and P9 starts only on a separate instruction ([P9 handoff](P9_HANDOFF.md)).
 
 ## 7. Ready for review, review and merge (A9 to A11)
 
@@ -92,6 +92,7 @@ This audit decision is not the user's acceptance.
   2. [P3] the changed review brief `.github/review/prompt-documentation.md` (status check against `PHASE_STATUS.md` instead of the README) must not govern the current review. Rejected: the change implements the user's instruction of 2026-10-30 to move the phase status into `PHASE_STATUS.md` (commit `8ef553b`, with AGENTS.md and CONTRIBUTING.md); the review workflow already takes its brief from the base commit (`brief from base e623a83`), so the revised brief takes effect only after the user's merge, which is what the finding asks for.
 - Automatic review round 3 (head `ec915fc`, [run 41143919797](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41143919797)): 0 findings in all five angles. The commit recording this round is reviewed once more; that round is recorded in its pull request comment only (AGENTS.md "Plan generation" step 3).
 - Review of the recording commit `85af1a1` ([run 41144157218](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41144157218)): 0 findings; the loop ended and the user was asked for the acceptance (section 6). The commit recording the acceptance goes through one more review round, recorded in its pull request comment only.
+- A11: the user merged pull request #16 into `develop` on 2026-10-31 (GitHub: 2026-10-30T23:34:28Z), merge commit `2ba5502b63729120e284c873a72b418149505a90`; the merged head is `8ea37fd`, the acceptance commit on top of the accepted candidate `ec915fc`. This record was updated afterwards on the post-merge documentation branch `features/develop/P3-post-merge`.
 
 ## 8. Authorship and review
 
