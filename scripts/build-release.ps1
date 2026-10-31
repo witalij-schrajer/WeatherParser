@@ -94,6 +94,8 @@ git -C $script:Clone checkout -q $fullCommit
 if ($LASTEXITCODE -ne 0) {
     Fail 2 "Input error: checkout failed."
 }
+# NuGet.Config names the local feed artifacts/local-nuget; a fresh clone does not contain it.
+New-Item -ItemType Directory -Force -Path (Join-Path $script:Clone 'artifacts/local-nuget') | Out-Null
 
 # Step 3: Version check
 $projectVersion = ([xml](Get-Content -LiteralPath (Join-Path $script:Clone 'src/WeatherParser.Parsing/WeatherParser.Parsing.csproj') -Raw)).SelectNodes('/Project/PropertyGroup/Version') | ForEach-Object { $_.InnerText.Trim() } | Where-Object { $_ } | Select-Object -First 1
