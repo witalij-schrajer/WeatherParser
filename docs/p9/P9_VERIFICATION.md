@@ -1,6 +1,6 @@
 # P9 Verification Record
 
-**Status (2026-10-31): P9.01 complete, outcome READY (section 1).**
+**Status (2026-10-31): P9.01 complete, outcome READY (section 1); P9.02 in progress: release contract draft under review (section 2).**
 
 - Integration target: `ed7fc7a` (merge of pull request #17; documentation-only successor of the P3 merge `2ba5502`).
 - Branch `features/develop/P9`.
@@ -19,3 +19,8 @@
   - round 1: 3 findings, all verified and confirmed: [P2] the servicing check omitted the test pins (MSTest, Microsoft.NET.Test.Sdk, Microsoft.CodeCoverage, Moq, FluentAssertions) and the coverage tool; added (record section 4); [P2] the Linux half of the two-pack comparison was substituted without a recorded deviation; recorded with limited conclusions (record section 3); [P2] S5 requires every uncovered block, the CLI inventory was missing; added, 45 blocks in ten functions (record section 5);
   - round 2: 1 finding, verified by reading the informational version from the packed DLLs and confirmed: [P2] cause 4 ignored that the commit ID is also embedded in the DLL's `AssemblyInformationalVersionAttribute`; cause 4 and the deviation paragraph corrected;
   - round 3: 0 findings.
+
+## 2. P9.02 – Release facts and release contract
+
+- Contract draft: [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md), written by the orchestrating agent; facts F1 to F15 retrieved on 2026-10-31 from the sources named in its section 2 (one page request each to nuget.org, Microsoft Learn, GitHub Docs, the AngleSharp repository, dwd.de, opendata.dwd.de and the OsthessenWetter imprint; `gh api` reads of the repository settings). Added rows: RL-19 (repository visibility: the repository is private, F4) and RL-20 (coverage gates for pull request #18).
+- Review: automatic Codex review of pull request #18 (rounds recorded in section 6 of the contract).
