@@ -57,3 +57,8 @@ Ask the user for the acceptance with the open items; record the answer; update t
 - [ ] Integrated verification READY on the candidate on Windows, hosted CI (an executed run whose head SHA is the candidate, all three jobs passed) and the NanoPi
 - [ ] Review loop at 0 findings; acceptance recorded verbatim; status documents consistent
 - [ ] Pull request merged into `develop` by the user and recorded
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- Both gates are evaluated under the amended REQ-086 with the RL-20 entries for the target `ed7fc7a`; if `develop` moves and the pull request's target changes, the entries no longer apply and a new entry needs the user's approval.

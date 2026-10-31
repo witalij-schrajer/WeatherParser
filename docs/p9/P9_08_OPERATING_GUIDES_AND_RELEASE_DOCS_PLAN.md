@@ -55,3 +55,8 @@ Check English-only text, local links, the planned versus implemented markers and
 - [ ] Guide, README, changelog and compatibility rows written; OW-14 and source conditions stated
 - [ ] Package readme check passed; links valid; English only
 - [ ] Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- RL-12 A `docs/OPERATIONS.md`; RL-17 A `CHANGELOG.md`; RL-16 with the facts F14 (CC BY 4.0, attribution, 7-day IP storage of the open-data server) and F15 (OsthessenWetter imprint, OW-14); RL-18 A including the broker-disconnect and MQTT 3.1.1 limitations; the release documentation names runtime 10.0.14 or newer, the open SDK update (RL-09 A) and, while RL-19 A applies, that the repository is private.

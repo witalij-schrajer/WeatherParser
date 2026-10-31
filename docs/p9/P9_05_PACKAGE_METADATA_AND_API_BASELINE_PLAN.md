@@ -69,3 +69,12 @@ Code, tests, scripts and the listing by qwen from briefs with the real declarati
 - [ ] Every listed test green with recorded Red
 - [ ] Reproducibility shown or every difference named, as decided
 - [ ] API listing checked in and enforced; gates passed under the recorded rule; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- RL-01 A: version `0.1.0` in the project file, a new `Description`, `PackageTags`, `PackageReleaseNotes` pointing to `CHANGELOG.md`, `Authors` as the user names it (asked when the step starts), the XML documentation generated and packed with CS1591 as an error in the library project; the consumer pin and the lock files in the same change; `Invoke-PackStage` gains `lib/net10.0/WeatherParser.Parsing.xml`.
+- RL-19 open: `RepositoryUrl`, `PackageProjectUrl` and `PublishRepositoryUrl` are set only if the user chooses RL-19 B; otherwise they stay unset.
+- RL-03 A: `ContinuousIntegrationBuild` (verified by a two-directory rebuild, `PathMap` if needed), `.gitattributes` `eol=lf` for `README.md` and `LICENSE`, input modification times set to the commit time before packing, `.snupkg`; a member-by-member comparison with the remaining NuGet metadata timestamps named if byte identity is not reached.
+- RL-04 A: `src/WeatherParser.Parsing/PublicApi.txt` and a package test; package validation only after the first release.
+- Gates: the changed project file, `Directory.Build.props` and `PublicApi.txt` are gated inputs covered by the RL-20 entries.

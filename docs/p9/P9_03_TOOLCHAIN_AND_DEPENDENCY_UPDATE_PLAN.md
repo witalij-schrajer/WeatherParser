@@ -58,3 +58,11 @@ No new tests are planned: the change is covered by the existing suites; a defect
 - [ ] Pins, lock files and documents updated in one change
 - [ ] All suites green on Windows and hosted CI; both gates passed under the approved rule, the decision recorded
 - [ ] Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- Prerequisite changed: P9.04 is complete first (RL-20 entries for pull request #18 in force).
+- RL-09 A: `global.json` stays at SDK 10.0.402 (the comparability check of `ci-local.ps1` rejects an SDK change, contract RL-09); the update covers `Microsoft.Extensions.DependencyInjection`, `.DependencyInjection.Abstractions`, `.Logging.Abstractions` (root) and `Microsoft.Extensions.Logging` (`examples/`, RL-10 A) to 10.0.14, and `MSTest.TestFramework`, `MSTest.TestAdapter` to 4.5.2; AngleSharp 1.8.5 and dotnet-coverage 18.11.0 stay. Section 1 "`global.json`" and the section 3 order decision "SDK and packages together" are superseded; CONTRIBUTING.md section 1 is touched only if it lists a changed version.
+- Section 3 "Gates for changed gated inputs": decided by RL-20 A (the reconciliation entries for the target `ed7fc7a`, both gates); no new question to the user unless a gate decreases or the target changes.
+- Runtime 10.0.14 or newer is installed on Windows and the NanoPi before the verification that runs the CLI there (RL-09 A); the hosted jobs use the runtime of their SDK as recorded.

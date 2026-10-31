@@ -1,6 +1,6 @@
 # P9 Verification Record
 
-**Status (2026-10-31): P9.01 complete, outcome READY (section 1); P9.02 in progress: release contract draft under review (section 2).**
+**Status (2026-10-31): P9.01 complete, outcome READY (section 1); P9.02 complete: release contract RL-01 to RL-20 approved by the user on 2026-10-31, RL-19 open, plans reconciled (section 2).**
 
 - Integration target: `ed7fc7a` (merge of pull request #17; documentation-only successor of the P3 merge `2ba5502`).
 - Branch `features/develop/P9`.
@@ -24,3 +24,6 @@
 
 - Contract draft: [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md), written by the orchestrating agent; facts F1 to F15 retrieved on 2026-10-31 from the sources named in its section 2 (one page request each to nuget.org, Microsoft Learn, GitHub Docs, the AngleSharp repository, dwd.de, opendata.dwd.de and the OsthessenWetter imprint; `gh api` reads of the repository settings). Added rows: RL-19 (repository visibility: the repository is private, F4) and RL-20 (coverage gates for pull request #18).
 - Review: automatic Codex review of pull request #18 (rounds recorded in section 6 of the contract).
+- Review: automatic Codex review rounds 1 to 5 of pull request #18 (2, 1, 2, 2 and 0 findings, all confirmed and fixed) and a 0-finding review of the recording commit `19b6da3` (run 41175204215).
+- Approval (S4): "Approve all" (chat, 2026-10-31): the recommended option in every row; RL-19 has no single recommendation and stays open until the user chooses, before P9.06.
+- Reconciliation (S5): approved-contract note in PHASE_P9_PLAN.md section 3; section 10 in the step plans P9.03 to P9.12; P9.04 moved before P9.03.

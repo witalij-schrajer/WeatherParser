@@ -59,3 +59,10 @@ One dry run of the release build on the current phase head (no publication, arti
 - [ ] Every listed test green with recorded Red
 - [ ] No publication right, secret or feed credential in any script or workflow
 - [ ] Dry run recorded; CONTRIBUTING.md and DEPENDENCIES.md updated; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- RL-06 A: the release build runs as a manual run of a new workflow (Proposed `.github/workflows/release-build.yml`, `workflow_dispatch` only, `contents: read`, no secrets) on the hosted `ubuntu-x64` runner; the artifacts are downloaded, checksummed in `SHA256SUMS` and recorded; RL-06 C (attestations) is not applicable while the repository is private (RL-19).
+- RL-02 A: no publication step; the user pushes to nuget.org with their own scoped key.
+- Precondition added: the user's RL-19 decision, because the candidate's package metadata depends on it.

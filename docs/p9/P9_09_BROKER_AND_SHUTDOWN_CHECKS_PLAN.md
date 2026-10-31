@@ -57,3 +57,8 @@ Per-step Codex review; commit and push.
 - [ ] Opt-in tests and CLI runs with TLS and credentials passed on Windows and the NanoPi, or each failure reported and decided
 - [ ] RL-14 outcome recorded; no secret or address in the repository
 - [ ] Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- RL-13 A and RL-14 A approved as planned; each broker run is authorized separately.

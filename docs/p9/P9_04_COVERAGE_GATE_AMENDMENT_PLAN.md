@@ -56,3 +56,12 @@ Record the amendment in REQUIREMENTS.md, AGENTS.md and DEVELOPMENT_PLAN.md befor
 - [ ] Amendment recorded before the code change
 - [ ] Every listed test green with recorded Red; library gate rule unchanged
 - [ ] CONTRIBUTING.md updated; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- The step is mandatory and runs before P9.03 (RL-20 A); its scope grows by the RL-20 reconciliation.
+- S1 amendment text: in addition to the RL-11 CLI gated-input rule, both gates accept "a user-approved baseline reconciliation recorded in the repository for the exact target commit" (REQUIREMENTS.md, AGENTS.md "Tests", DEVELOPMENT_PLAN.md).
+- CLI gated inputs (RL-11 A; the section 3 decision is made): every file under `examples/`, `tests/WeatherParser.Cli.Tests/`, `tests/WeatherParser.Cli.SignalHost/` and `src/`, and `Directory.Build.props`, `Directory.Packages.props`, `global.json`, `NuGet.Config`, `.editorconfig`, `coverage.runsettings`.
+- S2 adds the reconciliation slice with the Red tests named in RL-20 A: `Gate_ReconciliationForTarget_EqualCoverageAccepted`, `Gate_ReconciliationForTarget_DecreaseRejected`, `Gate_ReconciliationForOtherTarget_StrictImprovementRequired`, `Gate_ReconciliationForOtherGate_NotApplied`, `Gate_ReconciliationForOtherBranch_StrictImprovementRequired`, `Gate_ReconciliationForOtherHeadRepository_StrictImprovementRequired`, `Gate_ReconciliationWithoutBranch_NotApplied`, `Gate_ReconciliationFileMissing_RulesUnchanged`, `Gate_ReconciliationFileInvalid_Fails`; the file `coverage-reconciliation.json` with the entries for pull request #18 (target `ed7fc7a03db2f5554c490451f918da9fc6828c84`, head repository `witalij-schrajer/WeatherParser`, branch `features/develop/P9`, both gates); the `ci-local.ps1` parameters `-PullRequestHeadRepository` and `-PullRequestBranch`; `.github/workflows/ci.yml` passes the identity (consistency table: CONTRIBUTING.md sections 5 and 6, `DEPENDENCIES.md` for the workflow).
+- S3: the step's own changes are under `tools/`, `tests/WeatherParser.Coverage*`, `scripts/`, `.github/`, the root reconciliation file and documentation, none of them a library or CLI gated input, so both gates must hold at least equal coverage under the amended rules.
