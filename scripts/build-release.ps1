@@ -112,8 +112,7 @@ if ($projectVersion -ne $Version) {
     Fail 3 "VERSION-MISMATCH project $projectVersion requested $Version"
 }
 
-# Step 4: Set environment variables
-$env:DOTNET_ROLL_FORWARD = 'Disable'
+# Step 4: Set environment variables (DOTNET_ROLL_FORWARD is set per call in Invoke-Dotnet)
 $env:NUGET_PACKAGES = Join-Path $script:Work 'nuget'
 $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 $env:DOTNET_NOLOGO = '1'
