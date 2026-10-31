@@ -322,6 +322,26 @@ The workflow starts for pull requests into `develop` and `master` on `opened`, `
 
 Since 2026-10-28 the first job, `changes`, decides whether the three CI jobs run (user decision recorded in AGENTS.md). Documentation means Markdown files and files under `docs/`; the root `README.md` counts as code because it is packed into the package and checked by `scripts/ci-local.ps1`. Paths are listed with `--no-renames`, so a renamed file counts with its old and its new path (moving a code file into `docs/` still runs the jobs). This classification only decides whether CI runs; the coverage gate keeps its own classification (`PullRequestClassifier`: a pull request whose files are all `.md`, including `README.md`, is documentation-only and may keep equal coverage), so a `README.md`-only pull request runs the jobs, including the package check, and passes the gate with unchanged coverage. For a push (`synchronize`) only the pushed commits (`before..head`) are judged; for `opened`, `reopened`, `ready_for_review` and for force pushes whose previous head is no ancestor, the whole pull request (`base...head`) is judged; an empty change list and manual runs always run the jobs. When no code changed, the three jobs are reported as skipped: no build, test, package check or coverage measurement takes place, and the coverage gate is not evaluated (a manual `workflow_dispatch` run always measures). The workflow has no `cancel-in-progress`, because a later documentation-only push would otherwise cancel a run that still verifies earlier code; concurrent runs of the same pull request therefore all complete. The repository has no branch protection with required checks, so skipped jobs block nothing.
 
+### Release build and promotion check (P9.06)
+
+*Status: Verified (Windows dry runs) – [P9 verification record](docs/p9/P9_VERIFICATION.md) section 7; the hosted workflow runs only after `release-build.yml` exists on the default branch*
+
+Decided in the [P9 release contract](docs/p9/P9_RELEASE_CONTRACT.md) (RL-02 A, RL-03 A, RL-06 A, RL-08 A). Nothing here publishes anything: there is no feed credential, no tag and no release step.
+
+```powershell
+pwsh ./scripts/build-release.ps1 -Commit <candidate commit> -Version <version> -OutputDirectory <empty or new folder>
+```
+
+`scripts/build-release.ps1` clones the commit into a temporary folder, checks the library project's `Version` against `-Version`, restores (library and library tests in locked mode), builds and runs the library tests, sets the modification time of the packed inputs to the commit time, packs `WeatherParser.Parsing.<version>.nupkg` and `.snupkg`, runs the package tests against that package, publishes the example CLI framework-dependent for `-RuntimeIdentifier` (default `linux-arm64`) and checks that the CLI restored exactly the same-run package. Every `dotnet` call that produces an artifact runs with `DOTNET_ROLL_FORWARD=Disable`, so the compiler runs on the runtime bundled with the pinned SDK (the PDB records that runtime version); `dotnet test` runs without it. The output folder receives the two packages, `WeatherParser.Cli.<version>.<rid>.zip`, `SHA256SUMS` (`<sha256>  <name>`, ordinal) and `evidence.json` (commit, tree, version, SDK, runtime identifier, roll-forward setting, `GITHUB_RUN_ID`, creation time, artifacts). Exit codes: 0 success; 2 input error (unknown commit, non-empty output folder, clone failure); 3 `VERSION-MISMATCH`; 4 `TEST-FAILURE`; 5 `PACKAGE-MISMATCH`; 6 `TOOL-FAILURE <command> <project>` (the failing call's output goes to standard error). On exit codes 3 to 6 the output folder receives no artifact. Two builds of one commit give packages with identical member contents; the entry timestamps of the four NuGet-generated metadata files differ (pack time), and the CLI archive differs (its `deps.json` records the package hash, and the CLI build does not map paths).
+
+The workflow `.github/workflows/release-build.yml` runs the same script on `ubuntu-latest` for a manual run only (`workflow_dispatch` with the inputs `commit` and `version`), with `permissions: contents: read`, no secret and `persist-credentials: false`, and uploads the output folder as the workflow artifact `release-<version>` (90 days). GitHub dispatches a workflow only if a file of that name exists on the default branch.
+
+```powershell
+pwsh ./scripts/check-promotion.ps1 -Repository . -Candidate <candidate commit> -Target <target commit> -ArtifactDirectory <folder with SHA256SUMS and evidence.json>
+```
+
+`scripts/check-promotion.ps1` (RL-06 A) prints `PROMOTABLE` (exit 0) only when the candidate is an ancestor of the target, no build input differs (every path except Markdown files; the root `README.md` is an input), every `SHA256SUMS` line matches its file and `evidence.json` names the candidate. Otherwise exit 3 `NOT-AN-ANCESTOR`, exit 4 `CHANGED-INPUT <path>` lines, exit 5 `MISSING-ARTIFACT`, `CHECKSUM-MISMATCH` or `EVIDENCE-COMMIT-MISMATCH`, exit 2 for input errors.
+
 ### Automatic Codex review (GitHub Actions)
 *Status: First hosted run succeeded on pull request #13 (run 40758968836, 2026-10-28) – [verification record](docs/ci/CODEX_REVIEW_WORKFLOW_VERIFICATION.md)*
 
