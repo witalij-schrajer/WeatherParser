@@ -240,8 +240,19 @@ $evidence = [ordered]@{
 
 # Expose the complete set only now: the three artifacts, SHA256SUMS and evidence.json.
 New-Item -ItemType Directory -Force $OutputDirectory | Out-Null
-foreach ($stagedName in @($artifactNames) + @('SHA256SUMS', 'evidence.json')) {
-    Move-Item -LiteralPath (Join-Path $stage $stagedName) -Destination $OutputDirectory
+$movedFiles = New-Object System.Collections.Generic.List[string]
+try {
+    foreach ($stagedName in @($artifactNames) + @('SHA256SUMS', 'evidence.json')) {
+        $destination = Join-Path $OutputDirectory $stagedName
+        Move-Item -LiteralPath (Join-Path $stage $stagedName) -Destination $destination
+        $movedFiles.Add($destination)
+    }
+}
+catch {
+    foreach ($file in $movedFiles) {
+        Remove-Item -LiteralPath $file -Force -ErrorAction SilentlyContinue
+    }
+    throw
 }
 
 # Step 13: Cleanup and exit

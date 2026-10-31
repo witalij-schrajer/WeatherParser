@@ -126,6 +126,7 @@ public sealed class BuildReleaseRegressionTests
             "        $version = $env:FAKE_ASSETS_VERSION ?? '0.1.0'; $hash = $env:FAKE_ASSETS_HASH ?? $real\n" +
             "        $obj = Join-Path $PWD 'examples/WeatherParser.Cli/obj'; New-Item -ItemType Directory -Force $obj | Out-Null\n" +
             "        $assets = @{ version = 3; libraries = @{ \"WeatherParser.Parsing/$version\" = @{ type = 'package'; sha512 = $hash } } } | ConvertTo-Json -Depth 5\n" +
+            "        if ($env:FAKE_BLOCK_EVIDENCE) { New-Item -ItemType Directory -Force $env:FAKE_BLOCK_EVIDENCE | Out-Null; Set-Content -LiteralPath (Join-Path $env:FAKE_BLOCK_EVIDENCE 'evidence.json') -Value 'blocker' }\n" +
             "        Set-Content -LiteralPath (Join-Path $obj 'project.assets.json') -Value $assets; exit 0 }\n" +
             "    default { exit 0 }\n" +
             "}\n");
@@ -218,7 +219,7 @@ public sealed class BuildReleaseRegressionTests
         Directory.GetFiles(_out, "*.nupkg").Should().BeEmpty();
         Directory.GetFiles(_out, "*.snupkg").Should().BeEmpty();
         Directory.GetFiles(_out, "*.zip").Should().BeEmpty();
-        Directory.GetFiles(_out, "*.sums").Should().BeEmpty();
+        Directory.GetFiles(_out, "SHA256SUMS").Should().BeEmpty();
         Directory.GetFiles(_out, "evidence.json").Should().BeEmpty();
     }
 
@@ -306,5 +307,26 @@ public sealed class BuildReleaseRegressionTests
         var (exitCode, output) = Run("0.2.0");
         exitCode.Should().Be(3);
         AssertNoArtifactsAndNoWorkFolder();
+    }
+
+    /// <summary>
+    /// Tests that a failed transfer into the output folder leaves no artifact of this run.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-05")]
+    public void BuildRelease_TransferFailure_LeavesNoArtifactOfThisRun()
+    {
+        var (exitCode, output) = Run(environment: ("FAKE_BLOCK_EVIDENCE", _out));
+        exitCode.Should().Be(6);
+        output.Should().Contain("UNEXPECTED");
+
+        Directory.GetFiles(_out, "*.nupkg").Should().BeEmpty();
+        Directory.GetFiles(_out, "*.snupkg").Should().BeEmpty();
+        Directory.GetFiles(_out, "*.zip").Should().BeEmpty();
+        Directory.GetFiles(_out, "SHA256SUMS").Should().BeEmpty();
+
+        File.ReadAllText(Path.Combine(_out, "evidence.json")).Trim().Should().Be("blocker");
+
+        Directory.GetDirectories(_workRoot, "wp-release-work-*").Should().BeEmpty();
     }
 }
