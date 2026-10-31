@@ -13,7 +13,7 @@ public interface ICdcAvailabilityDeriver
     /// <param name="lists">The product lists.</param>
     /// <param name="referenceTimeUtc">The reference time in UTC with zero offset.</param>
     /// <returns>The candidate stations and diagnostics.</returns>
-    /// <exception cref="CatalogFormatException">Thrown when a list has all records malformed.</exception>
+    /// <exception cref="WeatherParser.Parsing.Exceptions.CatalogFormatException">Thrown when a list has all records malformed.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="referenceTimeUtc"/> does not have zero offset.</exception>
     CdcCandidates SelectCandidates(IReadOnlyList<CdcProductList> lists, DateTimeOffset referenceTimeUtc);
 

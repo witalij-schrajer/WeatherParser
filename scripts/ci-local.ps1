@@ -411,6 +411,7 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
         $zip = [IO.Compression.ZipFile]::OpenRead($nupkgPath)
         $expectedEntries = @(
             'lib/net10.0/WeatherParser.Parsing.dll',
+            'lib/net10.0/WeatherParser.Parsing.xml',
             'schemas/export/v1/weatherparser-export-v1.xsd',
             'README.md',
             'LICENSE',
@@ -453,6 +454,21 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
 
         if ($psmdcpEntries.Count -ne 1) {
             Fail 60 "Expected exactly one psmdcp entry, found $($psmdcpEntries.Count): $($psmdcpEntries -join ', ')"
+        }
+
+        # The symbols package (RL-03 A) is produced next to the package and carries exactly the library PDB besides the NuGet metadata.
+        $snupkgPath = Join-Path $script:RunDir "WeatherParser.Parsing.$version.snupkg"
+        if (!(Test-Path $snupkgPath)) {
+            Fail 60 "Pack failed, no .snupkg created"
+        }
+        $symbolZip = [IO.Compression.ZipFile]::OpenRead($snupkgPath)
+        try {
+            $symbolEntries = @($symbolZip.Entries | ForEach-Object { $_.FullName } | Where-Object { $_ -notmatch $psmdcpPattern -and $_ -notin @('WeatherParser.Parsing.nuspec', '[Content_Types].xml', '_rels/.rels') })
+        } finally {
+            $symbolZip.Dispose()
+        }
+        if (($symbolEntries -join ',') -ne 'lib/net10.0/WeatherParser.Parsing.pdb') {
+            Fail 60 "Unexpected entries in .snupkg: $($symbolEntries -join ', ')"
         }
 
         $hash = [Convert]::ToBase64String([System.Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes($nupkgPath)))

@@ -14,7 +14,7 @@ namespace WeatherParser.Parsing.Evidence.MosmixL;
 /// at most 1 MiB compressed and 16 MiB uncompressed, enforced while reading;
 /// DTD processing prohibited, no resolver;
 /// required paths and cardinalities by namespace URI;
-/// the placemark name equals <paramref name="mosmixId"/>;
+/// the placemark name equals <c>mosmixId</c>;
 /// token grammar and count.
 /// Any violation throws <see cref="CatalogFormatException"/> with <see cref="CatalogFormatException.ErrorId"/> <c>MOSMIX-EVIDENCE-INVALID</c>;
 /// <see cref="ArgumentNullException"/> for a null stream or ID.
@@ -29,7 +29,7 @@ public interface IMosmixLEvidenceReader
     /// at most 1 MiB compressed and 16 MiB uncompressed, enforced while reading;
     /// DTD processing prohibited, no resolver;
     /// required paths and cardinalities by namespace URI;
-    /// the placemark name equals <paramref name="mosmixId"/>;
+    /// the placemark name equals <c>mosmixId</c>;
     /// token grammar and count.
     /// Any violation throws <see cref="CatalogFormatException"/> with <see cref="CatalogFormatException.ErrorId"/> <c>MOSMIX-EVIDENCE-INVALID</c>;
     /// <see cref="ArgumentNullException"/> for a null stream or ID.

@@ -21,7 +21,7 @@ public interface ICdcCatalogSource
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The station lists with diagnostics.</returns>
     /// <exception cref="OperationCanceledException">Thrown when the caller cancellation token is cancelled.</exception>
-    /// <exception cref="SelectionLimitException">Thrown when the selection deadline is exceeded.</exception>
+    /// <exception cref="WeatherParser.Parsing.Exceptions.SelectionLimitException">Thrown when the selection deadline is exceeded.</exception>
     Task<IReadOnlyList<CdcProductList>> ReadStationListsAsync(CancellationToken selectionDeadline, CancellationToken cancellationToken);
 
     /// <summary>
@@ -35,6 +35,6 @@ public interface ICdcCatalogSource
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A dictionary mapping each key to its evidence or null if not found.</returns>
     /// <exception cref="OperationCanceledException">Thrown when the caller cancellation token is cancelled.</exception>
-    /// <exception cref="SelectionLimitException">Thrown when the selection deadline is exceeded.</exception>
+    /// <exception cref="WeatherParser.Parsing.Exceptions.SelectionLimitException">Thrown when the selection deadline is exceeded.</exception>
     Task<IReadOnlyDictionary<CdcEvidenceKey, CdcNowEvidence?>> ReadEvidenceAsync(IReadOnlyCollection<CdcEvidenceKey> keys, CancellationToken selectionDeadline, CancellationToken cancellationToken);
 }
