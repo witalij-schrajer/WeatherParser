@@ -24,6 +24,7 @@ Out of scope with owner: production deployment on the user's systems → the use
 | `docs/p9/P9_12_RELEASE.md` | Create | Release pull request, review rounds, promotion check output, tag, release URL, publication record, consumer check |
 | `CHANGELOG.md`, `README.md`, `PHASE_STATUS.md`, `DEVELOPMENT_PLAN.md`, `AGENTS.md` | Change (on `develop`, after the release) | Released version, feed installation instructions verified, next version |
 | Project file or `Directory.Build.props` | Change (on `develop`, after the release) | Next prerelease version; package validation baseline per RL-04 |
+| `Directory.Packages.props`, `examples/WeatherParser.Cli/packages.lock.json`, `tests/*/packages.lock.json` | Change (on `develop`, after the release) | Consumer pin of `WeatherParser.Parsing` at the next prerelease version; regenerated lock files, in the same commit as the version change |
 
 ## 5. Procedure
 Documentation by the orchestrating agent; the version and validation changes after the release by qwen test-first.
@@ -44,7 +45,7 @@ The user publishes the promoted `.nupkg` (and symbols) to the feed; the agent re
 A clean consumer outside any checkout restores the published package from the feed by version, verifies the package hash against `SHA256SUMS` (the feed's repository signature aside, decided in P9.02), and passes the package consumer tests; recorded.
 
 ### S6 Follow-ups on `develop`
-On a post-release branch with its pull request: the next prerelease version; package validation switched on with the released version as baseline (**Red**: `PackageValidation_BreakingChangeAgainstBaseline_Fails` over a fixture; **Green**: the configuration); README and changelog updates; status documents.
+On a post-release branch with its pull request: the next prerelease version together with the consumer pin in `Directory.Packages.props` and the regenerated consumer lock files (the P9.05 test `Consumers_RestoreExactSameRunPackage` must pass: the CLI and the package tests consume the same-run package, never the released one from a cache or feed); package validation switched on with the released version as baseline (**Red**: `PackageValidation_BreakingChangeAgainstBaseline_Fails` over a fixture; **Green**: the configuration); README and changelog updates; status documents.
 
 ## 6. Tests and Test IDs
 | Step-local case | T-P9 ID | Requirement IDs | Behavior and boundary |
