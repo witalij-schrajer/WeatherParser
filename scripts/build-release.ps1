@@ -191,7 +191,7 @@ Copy-Item -Path $nupkg, $snupkg, $zipPath -Destination $OutputDirectory
 $artifactNames = [string[]]@("WeatherParser.Parsing.$Version.nupkg", "WeatherParser.Parsing.$Version.snupkg", $zipName)
 [Array]::Sort($artifactNames, [StringComparer]::Ordinal)
 $sumLines = foreach ($name in $artifactNames) {
-    '{0}  {1}' -form (Get-FileHash -LiteralPath (Join-Path $OutputDirectory $name) -Algorithm SHA256).Hash.ToLowerInvariant(), $name
+    '{0}  {1}' -f (Get-FileHash -LiteralPath (Join-Path $OutputDirectory $name) -Algorithm SHA256).Hash.ToLowerInvariant(), $name
 }
 [IO.File]::WriteAllText((Join-Path $OutputDirectory 'SHA256SUMS'), (($sumLines -join "`n") + "`n"), [Text.UTF8Encoding]::new($false))
 
