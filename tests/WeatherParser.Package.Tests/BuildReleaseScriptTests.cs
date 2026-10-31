@@ -349,10 +349,20 @@ public sealed class BuildReleaseScriptTests
         var lines = File.ReadAllLines(_log);
         foreach (var line in lines)
         {
-            line.Should().StartWith("Disable|");
+            var command = line.Substring(line.IndexOf('|') + 1);
+            if (command.StartsWith("test ", StringComparison.Ordinal))
+            {
+                line.Should().StartWith("|", "dotnet test runs the tests on the installed runtime, without the compiler-runtime pin");
+            }
+            else
+            {
+                line.Should().StartWith("Disable|", "every call that produces an artifact runs with the compiler-runtime pin");
+            }
         }
-        lines.Should().Contain(line => line.Contains("Disable|pack"));
-        lines.Should().Contain(line => line.Contains("Disable|publish"));
+
+        lines.Should().Contain(line => line.StartsWith("Disable|pack", StringComparison.Ordinal));
+        lines.Should().Contain(line => line.StartsWith("Disable|publish", StringComparison.Ordinal));
+        lines.Should().Contain(line => line.StartsWith("|test", StringComparison.Ordinal));
     }
 
     /// <summary>

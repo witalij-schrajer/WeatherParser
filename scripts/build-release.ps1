@@ -51,6 +51,15 @@ function Fail([int]$Code, [string]$Line) {
 }
 
 function Invoke-Dotnet([string[]]$Arguments, [int]$FailCode, [string]$FailLine) {
+    # The compiler-runtime pin (cause 5) applies to the calls that produce artifacts; dotnet test runs the tests on the installed runtime,
+    # because the test host targets the runtime band (10.0.0) and cannot start with roll-forward disabled.
+    if ($Arguments[0] -eq 'test') {
+        Remove-Item Env:DOTNET_ROLL_FORWARD -ErrorAction SilentlyContinue
+    }
+    else {
+        $env:DOTNET_ROLL_FORWARD = 'Disable'
+    }
+
     Push-Location -LiteralPath $script:Clone
     try {
         $output = & $Dotnet @Arguments
