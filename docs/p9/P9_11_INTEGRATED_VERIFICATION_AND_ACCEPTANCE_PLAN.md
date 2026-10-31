@@ -29,7 +29,7 @@ Out of scope with owner: the release pull request into `master`, tag, GitHub rel
 Documentation by the orchestrating agent; review fixes to code through qwen test-first.
 
 ### S1 Integrated verification
-`pwsh ./scripts/ci-local.ps1 -Commit <candidate-sha> -TargetRef <develop-sha> -RunSettings coverage.runsettings` on Windows and, authorized, on the NanoPi; hosted CI on the candidate push; both gates per the rule in force; outcome READY or NOT_READY.
+`pwsh ./scripts/ci-local.ps1 -Commit <candidate-sha> -TargetRef <develop-sha> -RunSettings coverage.runsettings` on Windows and, authorized, on the NanoPi; hosted CI that executed on the exact candidate: the automatic run of the candidate push counts only if its three jobs (Windows x64, Ubuntu x64, Debian 13 ARM64) ran; when they were skipped because the push changed documentation only (CONTRIBUTING.md section 6), a manual run of `ci.yml` (`workflow_dispatch` with `target_ref` set to the recorded `develop` commit) is started while the candidate is still the head of the phase branch, because a manual run tests the branch head, and no further commit is pushed before that run has started; the run's head SHA must equal the candidate and all three jobs must have run and passed; if the branch head has already moved past the candidate without an executed run, P9.10 selects a new candidate (section 3). Marking the pull request ready later tests the newer head, not the candidate, and does not count; both gates per the rule in force; outcome READY or NOT_READY.
 
 ### S2 Evidence audit
 Map every T-P9 row to its tests and records; list limitations with owners (the open items of P3.12 and P8.10 carried or closed); check status consistency (AGENTS.md table); audit decision.
@@ -48,12 +48,12 @@ Ask the user for the acceptance with the open items; record the answer; update t
 | S2 | T-P9-15 | REQ-090, REQ-093 | Documentation and status consistent |
 
 ## 7. Evidence to Record
-- Run directories, exit codes, counters, CI run IDs, audit table, review rounds, acceptance verbatim, merge commit
+- Run directories, exit codes, counters, the hosted CI run ID with its event (push or manual), head SHA, comparison target and the outcome of each of the three jobs, audit table, review rounds, acceptance verbatim, merge commit
 
 ## 8. Risks and Limitations
 - (a) Review fixes after P9.10 can invalidate the target evidence for the candidate (section 3)
 
 ## 9. Acceptance Criteria
-- [ ] Integrated verification READY on the candidate on Windows, hosted CI and the NanoPi
+- [ ] Integrated verification READY on the candidate on Windows, hosted CI (an executed run whose head SHA is the candidate, all three jobs passed) and the NanoPi
 - [ ] Review loop at 0 findings; acceptance recorded verbatim; status documents consistent
 - [ ] Pull request merged into `develop` by the user and recorded
