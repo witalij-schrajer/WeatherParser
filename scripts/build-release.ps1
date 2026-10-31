@@ -60,6 +60,8 @@ function Invoke-Dotnet([string[]]$Arguments, [int]$FailCode, [string]$FailLine) 
         Pop-Location
     }
     if ($exitCode -ne 0) {
+        [Console]::Error.WriteLine("dotnet $($Arguments -join ' ') exited with $exitCode:")
+        foreach ($outputLine in @($output)) { [Console]::Error.WriteLine([string]$outputLine) }
         Fail $FailCode $FailLine
     }
     return $output
@@ -109,9 +111,9 @@ $env:DOTNET_NOLOGO = '1'
 $sdk = (Invoke-Dotnet @('--version') 6 'TOOL-FAILURE dotnet --version' | Select-Object -First 1).ToString().Trim()
 
 # Step 6: Build and test library and tests
-$null = Invoke-Dotnet @('restore', 'src/WeatherParser.Parsing', '--locked-mode') 6 'TOOL-FAILURE restore'
-$null = Invoke-Dotnet @('restore', 'tests/WeatherParser.Parsing.Tests', '--locked-mode') 6 'TOOL-FAILURE restore'
-$null = Invoke-Dotnet @('build', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-restore') 6 'TOOL-FAILURE build'
+$null = Invoke-Dotnet @('restore', 'src/WeatherParser.Parsing', '--locked-mode') 6 'TOOL-FAILURE restore src/WeatherParser.Parsing'
+$null = Invoke-Dotnet @('restore', 'tests/WeatherParser.Parsing.Tests', '--locked-mode') 6 'TOOL-FAILURE restore tests/WeatherParser.Parsing.Tests'
+$null = Invoke-Dotnet @('build', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-restore') 6 'TOOL-FAILURE build tests/WeatherParser.Parsing.Tests'
 $null = Invoke-Dotnet @('test', 'tests/WeatherParser.Parsing.Tests', '-c', 'Release', '--no-build') 4 'TEST-FAILURE library tests'
 
 # Step 7: Set input times
@@ -132,7 +134,7 @@ foreach ($file in $files) {
 
 # Step 8: Pack library
 $pack = Join-Path $script:Work 'pack'
-$null = Invoke-Dotnet @('pack', 'src/WeatherParser.Parsing', '-c', 'Release', '--no-build', '-o', $pack) 6 'TOOL-FAILURE pack'
+$null = Invoke-Dotnet @('pack', 'src/WeatherParser.Parsing', '-c', 'Release', '--no-build', '-o', $pack) 6 'TOOL-FAILURE pack src/WeatherParser.Parsing'
 $nupkg = Join-Path $pack "WeatherParser.Parsing.$Version.nupkg"
 $snupkg = Join-Path $pack "WeatherParser.Parsing.$Version.snupkg"
 if (!(Test-Path $nupkg) -or !(Test-Path $snupkg)) {
@@ -145,13 +147,13 @@ if (!(Test-Path $localNuget)) {
     New-Item -ItemType Directory -Force $localNuget | Out-Null
 }
 Copy-Item -Path $nupkg -Destination $localNuget
-$null = Invoke-Dotnet @('restore', 'tests/WeatherParser.Package.Tests', '--force-evaluate') 6 'TOOL-FAILURE restore'
+$null = Invoke-Dotnet @('restore', 'tests/WeatherParser.Package.Tests', '--force-evaluate') 6 'TOOL-FAILURE restore tests/WeatherParser.Package.Tests'
 $null = Invoke-Dotnet @('test', 'tests/WeatherParser.Package.Tests', '-c', 'Release', '--no-restore') 4 'TEST-FAILURE package tests'
 
 # Step 10: CLI acceptance artifact
-$null = Invoke-Dotnet @('restore', 'examples/WeatherParser.Cli', '--force-evaluate', '-r', $RuntimeIdentifier) 6 'TOOL-FAILURE restore'
+$null = Invoke-Dotnet @('restore', 'examples/WeatherParser.Cli', '--force-evaluate', '-r', $RuntimeIdentifier) 6 'TOOL-FAILURE restore examples/WeatherParser.Cli'
 $cli = Join-Path $script:Work 'cli'
-$null = Invoke-Dotnet @('publish', 'examples/WeatherParser.Cli', '-c', 'Release', '-r', $RuntimeIdentifier, '--self-contained', 'false', '--no-restore', '-o', $cli) 6 'TOOL-FAILURE publish'
+$null = Invoke-Dotnet @('publish', 'examples/WeatherParser.Cli', '-c', 'Release', '-r', $RuntimeIdentifier, '--self-contained', 'false', '--no-restore', '-o', $cli) 6 'TOOL-FAILURE publish examples/WeatherParser.Cli'
 
 # Same-run check
 $expected = [Convert]::ToBase64String([Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes($nupkg)))
