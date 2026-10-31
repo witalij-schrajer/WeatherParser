@@ -23,6 +23,10 @@ Run settings file for coverage collection; copied once into the run directory an
 Injects one fault inside the clone or the run directory.
 .PARAMETER ResumeFrom
 Run directory of a -CollectOnly run: verify its resume package, convert both raw reports with the pinned tool, write the baseline and run the gate.
+.PARAMETER PullRequestHeadRepository
+Head repository of the pull request as owner/name (REQ-086 amendment 2); together with -PullRequestBranch it selects the recorded baseline reconciliations of coverage-reconciliation.json in the commit under test. Without both, no reconciliation applies.
+.PARAMETER PullRequestBranch
+Head branch of the pull request (REQ-086 amendment 2); see -PullRequestHeadRepository.
 .EXAMPLE
 ci-local.ps1 -Commit 2f8c670 -TargetRef HEAD
 .EXAMPLE
@@ -39,7 +43,9 @@ param(
     [switch]$KeepWorkDir,
     [ValidateSet('SdkMismatch','LockDrift','FailingTest','MissingCoverage','ConsumerLockDrift','IncomparableTarget','GateFailure','RunSettingsTamper')]
     [string]$FaultInjection,
-    [string]$ResumeFrom
+    [string]$ResumeFrom,
+    [string]$PullRequestHeadRepository,
+    [string]$PullRequestBranch
 )
 
 $script:BoundParameterNames = @($PSBoundParameters.Keys)
@@ -875,7 +881,7 @@ function Invoke-GateStage() {
         $settingsSha256 = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData([IO.File]::ReadAllBytes($copiedSettings)))
         Write-CiLog "External baseline settings SHA-256: $settingsSha256"
         
-        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', $copiedBaseline, '--expected-baseline-commit', $script:TargetSha) + (Get-GatedInputArguments)) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', $copiedBaseline, '--expected-baseline-commit', $script:TargetSha) + (Get-GateArguments 'library')) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
         switch ($gate.ExitCode) {
             1 {
                 $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
@@ -888,7 +894,7 @@ function Invoke-GateStage() {
         }
     } else {
         Write-CiLog "Running gate with two-pass baseline"
-        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', (Join-Path $script:RunDir 'target/baseline.json'), '--expected-baseline-commit', $script:TargetSha) + (Get-GatedInputArguments)) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', (Join-Path $script:RunDir 'target/baseline.json'), '--expected-baseline-commit', $script:TargetSha) + (Get-GateArguments 'library')) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
         switch ($gate.ExitCode) {
             1 {
                 $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json

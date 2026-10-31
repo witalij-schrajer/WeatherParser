@@ -80,7 +80,11 @@ public sealed class RunnerApplication : IRunnerApplication
             command.ToolVersion,
             command.Exclusions,
             command.Bootstrap,
-            command.GatedInputs);
+            command.GatedInputs,
+            command.GateName,
+            command.ReconciliationPath,
+            command.HeadRepository,
+            command.HeadBranch);
 
         var result = await _gate.EvaluateAsync(request, cancellationToken);
         await _resultWriter.WriteAsync(result, cancellationToken);

@@ -24,7 +24,7 @@ public static class RunnerComposition
         var evaluator = new RuleEvaluator();
         var comparabilityChecker = new BaselineComparabilityChecker();
         var classifier = new PullRequestClassifier();
-        var gate = new CoverageGate(reportReader, baselineReader, changesReader, aggregator, evaluator, comparabilityChecker, classifier);
+        var gate = new CoverageGate(reportReader, baselineReader, changesReader, aggregator, evaluator, comparabilityChecker, classifier, new ReconciliationReader(fileReader));
         var fileWriter = new FileWriter();
         var baselineWriter = new BaselineWriter(reportReader, aggregator, fileWriter);
         var resultWriter = new JsonResultWriter(output);

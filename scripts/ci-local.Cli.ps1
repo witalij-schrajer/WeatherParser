@@ -1,21 +1,12 @@
-# Example CLI stage and CLI coverage gate of ci-local.ps1 (P3.03, CL-01, CL-19 option C, REQ-086 amendment). Dot-sourced; not run on its own.
+# Example CLI stage and CLI coverage gate of ci-local.ps1 (P3.03, CL-01, CL-19 option C, REQ-086 amendments of 2026-10-29 and 2026-10-31). Dot-sourced; not run on its own.
 $script:CliProjectPath = 'examples/WeatherParser.Cli/WeatherParser.Cli.csproj'
 $script:CliTestsProject = 'tests/WeatherParser.Cli.Tests'
 $script:CliLockFiles = @('examples/WeatherParser.Cli/packages.lock.json', 'tests/WeatherParser.Cli.Tests/packages.lock.json')
-$script:LibraryGatedInputs = @('src/', 'Directory.Build.props', 'Directory.Packages.props', 'global.json', 'NuGet.Config', '.editorconfig', 'coverage.runsettings')
 $script:CliGateExclusions = @('--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--exclude', 'WeatherParser.Parsing.dll', '--exclude', 'WeatherParser.Cli.SignalHost.dll')
 
 # The CLI gate measures only the CLI assembly WeatherParser.dll (CL-19 C); the signal test host started by the process tests is measured on Linux and excluded.
 function Test-CliPresent([string]$CloneDir) {
     return Test-Path -LiteralPath (Join-Path $CloneDir $script:CliProjectPath) -PathType Leaf
-}
-
-function Get-GatedInputArguments() {
-    $result = @()
-    foreach ($gatedInput in $script:LibraryGatedInputs) {
-        $result += @('--gated-input', $gatedInput)
-    }
-    return $result
 }
 
 function Get-LibraryVersion([string]$CloneDir) {
@@ -218,6 +209,16 @@ function Invoke-CliTargetStage([string]$TargetDir, [string]$ToolVersion) {
     Write-CiLog "CLI target complete"
 }
 
+# Gate arguments of the REQ-086 amendments: the gated-input set of the gate and, when the pull request identity is known,
+# the recorded baseline reconciliations of the commit under test (coverage-reconciliation.json; a missing file means none).
+function Get-GateArguments([string]$GateName) {
+    $result = @('--gated-input-set', $GateName)
+    if (-not [string]::IsNullOrWhiteSpace($PullRequestHeadRepository) -and -not [string]::IsNullOrWhiteSpace($PullRequestBranch)) {
+        $result += @('--gate-name', $GateName, '--reconciliation', (Join-Path "$script:WorkDir/src" 'coverage-reconciliation.json'), '--head-repository', $PullRequestHeadRepository, '--head-branch', $PullRequestBranch)
+    }
+    return $result
+}
+
 function Invoke-CliGate([string]$ToolVersion) {
     Write-CiLog "=== CLI GATE ==="
     $script:CurrentStageCode = 90
@@ -226,7 +227,7 @@ function Invoke-CliGate([string]$ToolVersion) {
     $gateArgs = @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', (Join-Path $script:RunDir 'current/cli-coverage/coverage.xml'), '--changed-files', (Join-Path $script:RunDir 'changed-files.txt'), '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $ToolVersion) + $script:CliGateExclusions
 
     if (Test-Path -LiteralPath $baseline) {
-        $gateArgs += @('--baseline', $baseline, '--expected-baseline-commit', $script:TargetSha)
+        $gateArgs += @('--baseline', $baseline, '--expected-baseline-commit', $script:TargetSha) + (Get-GateArguments 'cli')
         Write-CiLog "CLI gate: comparison with the CLI baseline of the target"
     } else {
         $probe = Invoke-Native 91 'git' @('cat-file', '-e', "$($script:TargetSha):$($script:CliProjectPath)") -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 128)

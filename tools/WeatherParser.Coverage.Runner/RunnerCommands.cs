@@ -17,6 +17,10 @@ public abstract record RunnerCommand;
 /// <param name="Exclusions">List of exclusion patterns for module filtering.</param>
 /// <param name="Bootstrap">True if this is the initial bootstrap run with no baseline yet.</param>
 /// <param name="GatedInputs">List of gated inputs for coverage evaluation.</param>
+/// <param name="GateName">Gate name (<c>library</c> or <c>cli</c>) that selects reconciliation entries; null when no reconciliation applies.</param>
+/// <param name="ReconciliationPath">Path to <c>coverage-reconciliation.json</c>, or null.</param>
+/// <param name="HeadRepository">Head repository of the pull request as <c>owner/name</c>, or null.</param>
+/// <param name="HeadBranch">Head branch of the pull request, or null.</param>
 public sealed record EvaluateCommand(
     string ReportPath,
     string? BaselinePath,
@@ -26,7 +30,11 @@ public sealed record EvaluateCommand(
     string ToolVersion,
     IReadOnlyList<string> Exclusions,
     bool Bootstrap,
-    IReadOnlyList<string>? GatedInputs = null) : RunnerCommand;
+    IReadOnlyList<string>? GatedInputs = null,
+    string? GateName = null,
+    string? ReconciliationPath = null,
+    string? HeadRepository = null,
+    string? HeadBranch = null) : RunnerCommand;
 
 /// <summary>
 /// Command to write a baseline.

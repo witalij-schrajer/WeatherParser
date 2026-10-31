@@ -3,6 +3,7 @@ namespace WeatherParser.Coverage.Runner;
 /// <summary>
 /// Parses runner command-line arguments into <see cref="EvaluateCommand"/>, <see cref="WriteBaselineCommand"/>
 /// or a <see cref="UsageError"/>. Option names are matched case-sensitively; user input never causes an exception.
+/// The options <c>--gated-input-set</c>, <c>--gate-name</c>, <c>--reconciliation</c>, <c>--head-repository</c> and <c>--head-branch</c> implement the REQ-086 amendment 2.
 /// </summary>
 public sealed class CommandLineParser : ICommandLineParser
 {
@@ -11,10 +12,16 @@ public sealed class CommandLineParser : ICommandLineParser
     private const string Bootstrap = "bootstrap";
     private const string Exclude = "exclude";
     private const string GatedInput = "gated-input";
+    private const string GatedInputSet = "gated-input-set";
+    private const string GateName = "gate-name";
+    private const string Reconciliation = "reconciliation";
+    private const string HeadRepository = "head-repository";
+    private const string HeadBranch = "head-branch";
 
     private static readonly HashSet<string> EvaluateOptions = new(StringComparer.Ordinal)
     {
         "report", "baseline", "changed-files", "expected-baseline-commit", "tool-name", "tool-version", Exclude, Bootstrap, GatedInput,
+        GatedInputSet, GateName, Reconciliation, HeadRepository, HeadBranch
     };
 
     private static readonly HashSet<string> WriteBaselineOptions = new(StringComparer.Ordinal)
@@ -133,6 +140,38 @@ public sealed class CommandLineParser : ICommandLineParser
             return new UsageError("Options '--bootstrap' and '--baseline' cannot be combined.");
         }
 
+        values.TryGetValue(GatedInputSet, out var gatedInputSet);
+        values.TryGetValue(GateName, out var gateName);
+        values.TryGetValue(Reconciliation, out var reconciliation);
+        values.TryGetValue(HeadRepository, out var headRepository);
+        values.TryGetValue(HeadBranch, out var headBranch);
+
+        if (gatedInputSet is not null)
+        {
+            if (gatedInputs.Count > 0)
+            {
+                return new UsageError("Options '--gated-input' and '--gated-input-set' cannot be combined.");
+            }
+
+            var set = GatedInputSets.ForGate(gatedInputSet);
+            if (set is null)
+            {
+                return new UsageError($"Unknown gated-input set '{gatedInputSet}'. Expected library or cli.");
+            }
+
+            gatedInputs = set.ToList();
+        }
+
+        if (gateName is not null && GatedInputSets.ForGate(gateName) is null)
+        {
+            return new UsageError($"Unknown gate name '{gateName}'. Expected library or cli.");
+        }
+
+        if (reconciliation is not null && gateName is null)
+        {
+            return new UsageError("Option '--reconciliation' requires '--gate-name'.");
+        }
+
         return new EvaluateCommand(
             values["report"],
             baseline,
@@ -142,7 +181,11 @@ public sealed class CommandLineParser : ICommandLineParser
             values["tool-version"],
             exclusions,
             bootstrap,
-            gatedInputs);
+            gatedInputs,
+            gateName,
+            reconciliation,
+            headRepository,
+            headBranch);
     }
 
     private static RunnerCommand CreateWriteBaseline(Dictionary<string, string> values, List<string> exclusions)

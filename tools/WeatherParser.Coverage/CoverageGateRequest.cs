@@ -12,6 +12,10 @@ namespace WeatherParser.Coverage;
 /// <param name="Exclusions">List of exclusion patterns for module filtering.</param>
 /// <param name="IsInitialBootstrap">True if this is the initial bootstrap run with no baseline yet.</param>
 /// <param name="GatedInputs">Gated inputs of the gate (REQ-086 amendment); null or empty when every code change requires strict improvement.</param>
+/// <param name="GateName">Gate name (<c>library</c> or <c>cli</c>) used to select reconciliation entries; null when no reconciliation applies.</param>
+/// <param name="ReconciliationPath">Path to <c>coverage-reconciliation.json</c>; null or a missing file means no recorded reconciliation.</param>
+/// <param name="HeadRepository">Head repository of the pull request as <c>owner/name</c>; without it no reconciliation applies.</param>
+/// <param name="HeadBranch">Head branch of the pull request; without it no reconciliation applies.</param>
 public sealed record CoverageGateRequest(
     string ReportPath,
     string? BaselinePath,
@@ -21,4 +25,8 @@ public sealed record CoverageGateRequest(
     string ToolVersion,
     IReadOnlyList<string> Exclusions,
     bool IsInitialBootstrap,
-    IReadOnlyList<string>? GatedInputs = null);
+    IReadOnlyList<string>? GatedInputs = null,
+    string? GateName = null,
+    string? ReconciliationPath = null,
+    string? HeadRepository = null,
+    string? HeadBranch = null);

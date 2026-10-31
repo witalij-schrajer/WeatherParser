@@ -19,6 +19,7 @@ public sealed class CoverageGateGatedInputsTests
     private Mock<IRuleEvaluator> _mockEvaluator = null!;
     private Mock<IBaselineComparabilityChecker> _mockComparabilityChecker = null!;
     private Mock<IPullRequestClassifier> _mockClassifier = null!;
+    private Mock<IReconciliationReader> _mockReconciliationReader = null!;
 
     private CoverageGate _coverageGate = null!;
 
@@ -33,6 +34,7 @@ public sealed class CoverageGateGatedInputsTests
         _mockEvaluator = _mockRepository.Create<IRuleEvaluator>();
         _mockComparabilityChecker = _mockRepository.Create<IBaselineComparabilityChecker>();
         _mockClassifier = _mockRepository.Create<IPullRequestClassifier>();
+        _mockReconciliationReader = _mockRepository.Create<IReconciliationReader>();
 
         _coverageGate = new CoverageGate(
             _mockReportReader.Object,
@@ -41,7 +43,8 @@ public sealed class CoverageGateGatedInputsTests
             _mockAggregator.Object,
             _mockEvaluator.Object,
             _mockComparabilityChecker.Object,
-            _mockClassifier.Object);
+            _mockClassifier.Object,
+            _mockReconciliationReader.Object);
     }
 
     [TestCleanup]
