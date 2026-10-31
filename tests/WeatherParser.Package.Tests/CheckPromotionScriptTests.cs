@@ -46,7 +46,7 @@ public sealed class CheckPromotionScriptTests
         File.WriteAllText(pkgPath, "package bytes");
         var sha256 = ComputeSha256(pkgPath);
         File.WriteAllText(Path.Combine(artifactsDir, "SHA256SUMS"), $"{sha256}  pkg.nupkg");
-        File.WriteAllText(Path.Combine(artifactsDir, "evidence.json"), $"{{\"commit\":\"{_candidate}\"}}");
+        File.WriteAllText(Path.Combine(artifactsDir, "evidence.json"), $"{{\"commit\":\"{_candidate}\",\"artifacts\":[{{\"name\":\"pkg.nupkg\",\"sha256\":\"{sha256}\"}}]}}");
     }
 
     [TestCleanup]
@@ -99,7 +99,7 @@ public sealed class CheckPromotionScriptTests
         {
             var fullPath = Path.Combine(_dir, "repo", path);
             if (content is null)
-            {
+                       {
                 File.Delete(fullPath);
             }
             else
@@ -267,7 +267,7 @@ public sealed class CheckPromotionScriptTests
     {
         var target = Commit("docs", ("docs/notes.md", "changed"));
         var evidencePath = Path.Combine(_dir, "artifacts", "evidence.json");
-        File.WriteAllText(evidencePath, "{\"commit\":\"0000000000000000000000000000000000000000\"}");
+        File.WriteAllText(evidencePath, "{\"commit\":\"0000000000000000000000000000000000000000\",\"artifacts\":[{\"name\":\"pkg.nupkg\",\"sha256\":\"1234567890123456789012345678901234567890123456789012345678901234\"}]}");
         var (exitCode, output) = Run(_candidate, target);
         exitCode.Should().Be(5);
         output.Should().Contain("EVIDENCE-COMMIT-MISMATCH");
