@@ -362,6 +362,23 @@ public sealed class FixtureHostTests
         var response = await httpClient.GetAsync(new Uri(uri, "data/sample.txt"));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        // The host logs a request after its response, so the line is awaited while the host still runs.
+        var found = false;
+        for (int i = 0; i < 200 && !found; i++)
+        {
+            lock (_stderr)
+            {
+                found = _stderr.ToString().Contains("GET /data/sample.txt 200");
+            }
+
+            if (!found)
+            {
+                await Task.Delay(50);
+            }
+        }
+
+        found.Should().BeTrue("the host logs every request on standard error");
+
         _process!.Kill(entireProcessTree: true);
         await _process.WaitForExitAsync();
 
@@ -378,22 +395,6 @@ public sealed class FixtureHostTests
         var announcedUriString = _stdoutLines.Single(l => l.StartsWith("LISTENING ")).Substring("LISTENING ".Length);
         var announcedUri = new Uri(announcedUriString);
         announcedUriString.Should().MatchRegex(@"^http://127\.0\.0\.1:[0-9]+/$");
-
-        var stderrContent = _stderr.ToString();
-        var found = false;
-        for (int i = 0; i < 200; i++)
-        {
-            if (stderrContent.Contains("GET /data/sample.txt 200"))
-            {
-                found = true;
-                break;
-            }
-
-            await Task.Delay(50);
-            stderrContent = _stderr.ToString();
-        }
-
-        found.Should().BeTrue();
 
         _stdoutLines.Should().ContainSingle().Which.Should().MatchRegex(@"^LISTENING http://127\.0\.0\.1:[0-9]+/$");
     }
