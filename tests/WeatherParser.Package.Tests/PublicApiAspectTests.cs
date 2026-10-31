@@ -102,4 +102,17 @@ public sealed class PublicApiAspectTests
     {
         Listing().Should().Contain($"T:{A}.ApiFlags (public enum) : System.Enum @Flags");
     }
+
+    /// <summary>
+    /// Tests that parameter directions are listed.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-04")]
+    public void Inventory_ParameterDirection_IsListed()
+    {
+        var listing = Listing();
+        listing.Should().Contain($"M:{A}.ApiDirection.TryGet(out int& value) : bool [public]");
+        listing.Should().Contain($"M:{A}.ApiDirection.Update(ref int& value) : void [public]");
+        listing.Should().Contain(line => line.StartsWith($"M:{A}.ApiDirection.Read(in int& ", StringComparison.Ordinal));
+    }
 }

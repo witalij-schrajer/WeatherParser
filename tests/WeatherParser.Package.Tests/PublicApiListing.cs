@@ -274,6 +274,24 @@ internal sealed class PublicApiListing : IPublicApiListing
             var paramType = signature.ParameterTypes[paramDef.SequenceNumber - 1];
             var paramName = reader.GetString(paramDef.Name);
             var sbParam = new StringBuilder();
+            
+            // Handle parameter direction for by-ref types
+            if (paramType.EndsWith('&') || paramType.Contains("& "))
+            {
+                if ((paramDef.Attributes & ParameterAttributes.Out) != 0)
+                {
+                    sbParam.Append("out ");
+                }
+                else if ((paramDef.Attributes & ParameterAttributes.In) != 0)
+                {
+                    sbParam.Append("in ");
+                }
+                else
+                {
+                    sbParam.Append("ref ");
+                }
+            }
+            
             sbParam.Append(paramType);
             sbParam.Append(' ');
             sbParam.Append(paramName);

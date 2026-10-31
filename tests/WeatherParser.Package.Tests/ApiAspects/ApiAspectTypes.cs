@@ -98,3 +98,29 @@ public static class ApiExtensions
 /// </summary>
 [Flags]
 public enum ApiFlags { None = 0, A = 1 }
+
+/// <summary>
+/// Represents a type with parameter directions.
+/// </summary>
+public sealed class ApiDirection
+{
+    /// <summary>
+    /// Tries to get a value.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns>A boolean.</returns>
+    public bool TryGet(out int value) { value = 1; return true; }
+
+    /// <summary>
+    /// Updates a value.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    public void Update(ref int value) { value++; }
+
+    /// <summary>
+    /// Reads a value.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns>The value.</returns>
+    public int Read(in int value) => value;
+}
