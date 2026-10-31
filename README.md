@@ -148,7 +148,7 @@ An item whose output or publication failed counts as failed. Notices (for exampl
 
 ### Error IDs
 
-Every log line carries an ID. The CLI's own IDs are listed below; the IDs of the library (for example `STATION-ID-INVALID`, `OSTHESSEN-PAGE-UNAVAILABLE`, `MQTT-MAPPING-MISSING`) are passed through unchanged, in the logs and in `errors[].error_id` of the export document.
+Every log line carries an ID. The CLI's own IDs are listed below; the IDs of the library (for example `STATION-ID-INVALID`, `OSTHESSEN-PAGE-UNAVAILABLE`, `MQTT-MAPPING-MISSING`) are passed through unchanged, in the logs and in `errors[].error_id` of the export document. One ID is assigned by the CLI to a library failure without an ID: `OBSERVATION-NO-USABLE-READING`, a `--ParseDWD` station without any usable reading (the library's `ObservationDatasetRejectedException`, C-60), an item failure with source `dwd:<station id>` (CL-09 amendment of 2026-10-31).
 
 | Error ID | Level | Meaning |
 |---|---|---|

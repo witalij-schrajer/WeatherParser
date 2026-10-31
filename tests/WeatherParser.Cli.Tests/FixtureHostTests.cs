@@ -488,6 +488,52 @@ public sealed class FixtureHostTests
     }
 
     /// <summary>
+    /// Verifies that --ParseDWD against the fixture host, whose station 90001 has no now archives, reports an item failure in the export document (CL-09 amendment of 2026-10-31).
+    /// </summary>
+    [TestMethod]
+    [Timeout(90000)]
+    public async Task Cli_ParseDwd_AgainstFixtureHost_NoUsableReading_ItemFailure()
+    {
+        var workingDir = Path.Combine(Path.GetTempPath(), "weatherparser-cli-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(workingDir);
+
+        try
+        {
+            var uri = await StartHostAsync(Path.Combine(AppContext.BaseDirectory, "fixtures"));
+
+            var configPath = Path.Combine(workingDir, "config.json");
+            File.WriteAllText(configPath, ProcessFixtures.DwdConfiguration(uri));
+
+            var result = await CliProcess.RunCliAsync(
+                new[] { "--ParseDWD", "--StationID", "90001", "--Output", "json", "--Config", "config.json" },
+                workingDir,
+                TimeSpan.FromSeconds(60),
+                new Dictionary<string, string?> { ["WEATHERPARSER_CONFIG"] = null });
+
+            result.TimedOut.Should().BeFalse();
+            result.ExitCode.Should().Be(1);
+            var parse = () => { using var document = JsonDocument.Parse(result.StandardOutput); };
+            parse.Should().NotThrow();
+            using (var document = JsonDocument.Parse(result.StandardOutput))
+            {
+                var errors = document.RootElement.GetProperty("errors");
+                errors.GetArrayLength().Should().Be(1);
+                var error = errors[0];
+                error.GetProperty("error_id").GetString().Should().Be("OBSERVATION-NO-USABLE-READING");
+                error.GetProperty("source").GetString().Should().Be("dwd:90001");
+                document.RootElement.GetProperty("observations").GetArrayLength().Should().Be(0);
+            }
+
+            result.StandardError.Should().Contain(" ERROR OBSERVATION-NO-USABLE-READING ");
+            result.StandardError.Should().NotContain("CLI-UNEXPECTED");
+        }
+        finally
+        {
+            Directory.Delete(workingDir, recursive: true);
+        }
+    }
+
+    /// <summary>
     /// Verifies that the CLI produces a non-empty OsthessenWetter document from the synthetic page served by the fixture host.
     /// </summary>
     [TestMethod]

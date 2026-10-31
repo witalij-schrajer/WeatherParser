@@ -17,6 +17,7 @@ public sealed class ExportErrorMessages : IExportErrorMessages
         ["CATALOG-TOO-LARGE"] = "A source file exceeded its size limit.",
         ["CATALOG-FORMAT-INVALID"] = "A source file has an unexpected format.",
         ["OBSERVATION-DEADLINE-EXCEEDED"] = "The observation retrieval exceeded its deadline.",
+        ["OBSERVATION-NO-USABLE-READING"] = "The DWD station has no usable reading.",
         ["MOSMIX-FORMAT-INVALID"] = "The MOSMIX forecast file has an unexpected format.",
         ["MOSMIX-ISSUE-TIME-MISSING"] = "The MOSMIX forecast file has no issue time.",
         ["MOSMIX-LOCATION-MISMATCH"] = "The MOSMIX forecast file describes a different location.",

@@ -37,6 +37,7 @@ public class ExportErrorMessagesTests
     [DataRow("OSTHESSEN-STATION-METADATA-MISSING", "No metadata is configured for the OsthessenWetter station.")]
     [DataRow("OSTHESSEN-STATION-NO-READING", "The OsthessenWetter station shows no usable reading.")]
     [DataRow("OSTHESSEN-FORMAT-CHANGED", "The OsthessenWetter page deviates from the supported revision.")]
+    [DataRow("OBSERVATION-NO-USABLE-READING", "The DWD station has no usable reading.")]
     public void For_KnownErrorId_FixedEnglishText(string errorId, string expected)
     {
         _messages.For(errorId).Should().Be(expected);
