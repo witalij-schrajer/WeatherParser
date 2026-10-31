@@ -26,6 +26,8 @@ The directory where artifacts will be placed.
 The dotnet executable to use. Defaults to 'dotnet'.
 .PARAMETER RuntimeIdentifier
 The runtime identifier for publishing the CLI. Defaults to 'linux-arm64'.
+.PARAMETER WorkRoot
+Parent folder of the temporary work folder; default: the system temp folder.
 #>
 [CmdletBinding()]
 param(
@@ -34,20 +36,19 @@ param(
     [Parameter(Mandatory)][string]$Version,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [string]$Dotnet = 'dotnet',
-    [string]$RuntimeIdentifier = 'linux-arm64'
+    [string]$RuntimeIdentifier = 'linux-arm64',
+    [string]$WorkRoot = [IO.Path]::GetTempPath()
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $script:Work = $null
+$script:ExitCode = 0
 
 function Fail([int]$Code, [string]$Line) {
-    Write-Output $Line
-    Set-Location -LiteralPath ([IO.Path]::GetTempPath())
-    if ($script:Work -and (Test-Path -LiteralPath $script:Work)) {
-        Get-ChildItem -LiteralPath $script:Work -Recurse -File -Force | ForEach-Object { $_.Attributes = 'Normal' }
-        Remove-Item -LiteralPath $script:Work -Recurse -Force -ErrorAction SilentlyContinue
-    }
-    exit $Code
+    # Written to the console directly: Fail is also called inside Invoke-Dotnet, whose pipeline output callers discard.
+    [Console]::Out.WriteLine($Line)
+    $script:ExitCode = $Code
+    throw [System.OperationCanceledException]::new('release-build-failed')
 }
 
 function Invoke-Dotnet([string[]]$Arguments, [int]$FailCode, [string]$FailLine) {
@@ -76,6 +77,7 @@ function Invoke-Dotnet([string[]]$Arguments, [int]$FailCode, [string]$FailLine) 
     return $output
 }
 
+try {
 # Step 1: Input validation and commit resolution
 if (Test-Path -LiteralPath $OutputDirectory) {
     if (@(Get-ChildItem -LiteralPath $OutputDirectory -Force).Count -ne 0) {
@@ -93,7 +95,7 @@ $tree = git -C $Repository rev-parse "$fullCommit^{tree}"
 $commitTime = [DateTime]::Parse((git -C $Repository show -s --format=%cI $fullCommit), [Globalization.CultureInfo]::InvariantCulture).ToUniversalTime()
 
 # Step 2: Clone repository
-$script:Work = Join-Path ([IO.Path]::GetTempPath()) ("wp-release-work-" + [guid]::NewGuid().ToString('N'))
+$script:Work = Join-Path $WorkRoot ("wp-release-work-" + [guid]::NewGuid().ToString('N'))
 $script:Clone = Join-Path $script:Work 'src'
 git clone -q --no-hardlinks $Repository $script:Clone
 if ($LASTEXITCODE -ne 0) {
@@ -167,9 +169,22 @@ $null = Invoke-Dotnet @('publish', 'examples/WeatherParser.Cli', '-c', 'Release'
 
 # Same-run check
 $expected = [Convert]::ToBase64String([Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes($nupkg)))
-$restoredFile = Join-Path $env:NUGET_PACKAGES "weatherparser.parsing/$($Version.ToLowerInvariant())/weatherparser.parsing.$($Version.ToLowerInvariant()).nupkg.sha512"
-if (!(Test-Path $restoredFile) -or (Get-Content $restoredFile).Trim() -ne $expected) {
-    Fail 5 'PACKAGE-MISMATCH the CLI did not restore the same-run package'
+$assetsPath = Join-Path $script:Clone 'examples/WeatherParser.Cli/obj/project.assets.json'
+if (-not (Test-Path -LiteralPath $assetsPath -PathType Leaf)) {
+    Fail 5 'PACKAGE-MISMATCH the CLI restore assets cannot be read'
+}
+$assets = Get-Content -LiteralPath $assetsPath -Raw | ConvertFrom-Json -AsHashtable
+if (-not ($assets -is [System.Collections.IDictionary] -and $assets.Contains('libraries') -and $assets['libraries'] -is [System.Collections.IDictionary])) {
+    Fail 5 'PACKAGE-MISMATCH the CLI restore assets cannot be read'
+}
+$libraries = @($assets['libraries'].Keys | Where-Object { $_.StartsWith('WeatherParser.Parsing/', [System.StringComparison]::Ordinal) })
+if ($libraries.Count -ne 1 -or $libraries[0] -cne "WeatherParser.Parsing/$Version") {
+    Fail 5 'PACKAGE-MISMATCH the CLI did not resolve the same-run package'
+}
+$library = $assets['libraries'][$libraries[0]]
+$actual = if ($library -is [System.Collections.IDictionary] -and $library.Contains('sha512')) { [string]$library['sha512'] } else { '' }
+if ($actual -cne $expected) {
+    Fail 5 'PACKAGE-MISMATCH the CLI did not resolve the same-run package'
 }
 
 # Step 11: Create CLI archive
@@ -194,38 +209,58 @@ finally {
 }
 
 # Step 12: Output artifacts
-New-Item -ItemType Directory -Force $OutputDirectory | Out-Null
-Copy-Item -Path $nupkg, $snupkg, $zipPath -Destination $OutputDirectory
+$stage = Join-Path $script:Work 'stage'
+New-Item -ItemType Directory -Force $stage | Out-Null
+Copy-Item -LiteralPath $nupkg, $snupkg, $zipPath -Destination $stage
 
 # SHA256SUMS
 $artifactNames = [string[]]@("WeatherParser.Parsing.$Version.nupkg", "WeatherParser.Parsing.$Version.snupkg", $zipName)
 [Array]::Sort($artifactNames, [StringComparer]::Ordinal)
 $sumLines = foreach ($name in $artifactNames) {
-    '{0}  {1}' -f (Get-FileHash -LiteralPath (Join-Path $OutputDirectory $name) -Algorithm SHA256).Hash.ToLowerInvariant(), $name
+    '{0}  {1}' -f (Get-FileHash -LiteralPath (Join-Path $stage $name) -Algorithm SHA256).Hash.ToLowerInvariant(), $name
 }
-[IO.File]::WriteAllText((Join-Path $OutputDirectory 'SHA256SUMS'), (($sumLines -join "`n") + "`n"), [Text.UTF8Encoding]::new($false))
+[IO.File]::WriteAllText((Join-Path $stage 'SHA256SUMS'), (($sumLines -join "`n") + "`n"), [Text.UTF8Encoding]::new($false))
 
 # evidence.json
 $artifacts = foreach ($name in $artifactNames) {
-    @{ name = $name; sha256 = (Get-FileHash -LiteralPath (Join-Path $OutputDirectory $name) -Algorithm SHA256).Hash.ToLowerInvariant() }
+    [ordered]@{ name = $name; sha256 = (Get-FileHash -LiteralPath (Join-Path $stage $name) -Algorithm SHA256).Hash.ToLowerInvariant() }
 }
-$evidence = @{
+$evidence = [ordered]@{
     commit = $fullCommit
     tree = $tree
     version = $Version
     sdk = $sdk
     runtimeIdentifier = $RuntimeIdentifier
     dotnetRollForward = 'Disable'
-    runId = if ($env:GITHUB_RUN_ID) { [int]$env:GITHUB_RUN_ID } else { $null }
+    runId = if ($env:GITHUB_RUN_ID) { [string]$env:GITHUB_RUN_ID } else { $null }
     createdUtc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss', [Globalization.CultureInfo]::InvariantCulture)
     artifacts = $artifacts
 }
-[IO.File]::WriteAllText((Join-Path $OutputDirectory 'evidence.json'), (ConvertTo-Json -InputObject $evidence -Depth 4), [Text.UTF8Encoding]::new($false))
+[IO.File]::WriteAllText((Join-Path $stage 'evidence.json'), (ConvertTo-Json -InputObject $evidence -Depth 4), [Text.UTF8Encoding]::new($false))
+
+# Expose the complete set only now: the three artifacts, SHA256SUMS and evidence.json.
+New-Item -ItemType Directory -Force $OutputDirectory | Out-Null
+foreach ($stagedName in @($artifactNames) + @('SHA256SUMS', 'evidence.json')) {
+    Move-Item -LiteralPath (Join-Path $stage $stagedName) -Destination $OutputDirectory
+}
 
 # Step 13: Cleanup and exit
-if ($script:Work -and (Test-Path -LiteralPath $script:Work)) {
-    Get-ChildItem -LiteralPath $script:Work -Recurse -File -Force | ForEach-Object { $_.Attributes = 'Normal' }
-    Remove-Item -LiteralPath $script:Work -Recurse -Force -ErrorAction SilentlyContinue
-}
 Write-Output "RELEASE-BUILT $Version $fullCommit"
-exit 0
+}
+catch {
+    if ($_.Exception -is [System.OperationCanceledException] -and $_.Exception.Message -eq 'release-build-failed') {
+        # Do not overwrite the exit code or write UNEXPECTED for this marker.
+    }
+    else {
+        Write-Output "UNEXPECTED $($_.Exception.Message)"
+        $script:ExitCode = 6
+    }
+}
+finally {
+    Set-Location -LiteralPath ([IO.Path]::GetTempPath())
+    if ($script:Work -and (Test-Path -LiteralPath $script:Work)) {
+        Get-ChildItem -LiteralPath $script:Work -Recurse -File -Force | ForEach-Object { $_.Attributes = 'Normal' }
+        Remove-Item -LiteralPath $script:Work -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+exit $script:ExitCode

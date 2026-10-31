@@ -117,7 +117,10 @@ public sealed class BuildReleaseScriptTests
             "        $pkg = Join-Path $PWD 'artifacts/local-nuget/WeatherParser.Parsing.0.1.0.nupkg'\n" +
             "        $hash = if ($env:FAKE_WRONG_HASH -eq '1') { 'wrong' } else { [Convert]::ToBase64String([Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes($pkg))) }\n" +
             "        $cache = Join-Path $env:NUGET_PACKAGES 'weatherparser.parsing/0.1.0'; New-Item -ItemType Directory -Force $cache | Out-Null\n" +
-            "        Set-Content -LiteralPath (Join-Path $cache 'weatherparser.parsing.0.1.0.nupkg.sha512') -Value $hash -NoNewline; exit 0 }\n" +
+            "        Set-Content -LiteralPath (Join-Path $cache 'weatherparser.parsing.0.1.0.nupkg.sha512') -Value $hash -NoNewline\n" +
+            "        $obj = Join-Path $PWD 'examples/WeatherParser.Cli/obj'; New-Item -ItemType Directory -Force $obj | Out-Null\n" +
+            "        $assets = @{ version = 3; libraries = @{ \"WeatherParser.Parsing/0.1.0\" = @{ type = 'package'; sha512 = $hash } } } | ConvertTo-Json -Depth 5\n" +
+            "        Set-Content -LiteralPath (Join-Path $obj 'project.assets.json') -Value $assets; exit 0 }\n" +
             "    default { exit 0 }\n" +
             "}\n");
     }
@@ -325,7 +328,7 @@ public sealed class BuildReleaseScriptTests
         doc.RootElement.GetProperty("sdk").GetString().Should().Be("10.0.402");
         doc.RootElement.GetProperty("runtimeIdentifier").GetString().Should().Be("linux-arm64");
         doc.RootElement.GetProperty("dotnetRollForward").GetString().Should().Be("Disable");
-        doc.RootElement.GetProperty("runId").GetInt32().Should().Be(4242);
+        doc.RootElement.GetProperty("runId").GetString().Should().Be("4242");
         var artifacts = doc.RootElement.GetProperty("artifacts");
         artifacts.GetArrayLength().Should().Be(3);
         var names = new[] { "WeatherParser.Cli.0.1.0.linux-arm64.zip", "WeatherParser.Parsing.0.1.0.nupkg", "WeatherParser.Parsing.0.1.0.snupkg" };
