@@ -180,6 +180,88 @@ public sealed class FixtureHostTests
     }
 
     /// <summary>
+    /// Performs a raw HTTP request with a custom request string.
+    /// </summary>
+    private async Task<int> RawRequestAsync(Uri baseUri, string request)
+    {
+        using var client = new TcpClient();
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        try
+        {
+            await client.ConnectAsync(IPAddress.Loopback, baseUri.Port, cts.Token);
+        }
+        catch (OperationCanceledException) when (cts.Token.IsCancellationRequested)
+        {
+            Assert.Fail("Connection timed out");
+        }
+        catch (SocketException)
+        {
+            Assert.Fail("Connection failed");
+        }
+
+        using var stream = client.GetStream();
+
+        var requestBytes = Encoding.ASCII.GetBytes(request);
+        await stream.WriteAsync(requestBytes);
+
+        var response = new List<byte>();
+        var buffer = new byte[1024];
+        int read;
+        while ((read = await stream.ReadAsync(buffer)) > 0)
+        {
+            response.AddRange(buffer.Take(read));
+        }
+
+        var responseString = Encoding.ASCII.GetString(response.ToArray());
+        var firstLine = responseString.Substring(0, responseString.IndexOf('\r'));
+        var statusCode = int.Parse(firstLine.Split(' ')[1]);
+        return statusCode;
+    }
+
+    /// <summary>
+    /// Creates a request head of exactly the specified length.
+    /// </summary>
+    private static string HeadOfLength(int length)
+    {
+        var head = "GET /data/sample.txt HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\nX-Pad: ";
+        var padLength = length - head.Length - 4; // -4 for \r\n\r\n
+        if (padLength < 0)
+        {
+            Assert.Fail($"Cannot create a head of {length} bytes, minimum is {head.Length + 4}");
+        }
+
+        return head + new string('a', padLength) + "\r\n\r\n";
+    }
+
+    /// <summary>
+    /// Verifies that a request head of exactly 8192 bytes, the limit, is accepted.
+    /// </summary>
+    [TestMethod]
+    [Timeout(90000)]
+    public async Task FixtureHost_HeadOf8192Bytes_Accepted()
+    {
+        var uri = await StartHostAsync(_root);
+        var request = HeadOfLength(8192);
+        request.Length.Should().Be(8192);
+        var statusCode = await RawRequestAsync(uri, request);
+        statusCode.Should().Be(200);
+    }
+
+    /// <summary>
+    /// Verifies that a request head one byte over the 8192-byte limit is rejected with 400.
+    /// </summary>
+    [TestMethod]
+    [Timeout(90000)]
+    public async Task FixtureHost_HeadOf8193Bytes_Rejected()
+    {
+        var uri = await StartHostAsync(_root);
+        var request = HeadOfLength(8193);
+        request.Length.Should().Be(8193);
+        var statusCode = await RawRequestAsync(uri, request);
+        statusCode.Should().Be(400);
+    }
+
+    /// <summary>
     /// Verifies that the fixture host serves files only on loopback.
     /// </summary>
     [TestMethod]

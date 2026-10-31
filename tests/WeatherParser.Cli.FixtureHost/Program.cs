@@ -35,10 +35,7 @@ if (!root.EndsWith(Path.DirectorySeparatorChar))
 var listener = new TcpListener(IPAddress.Loopback, port);
 listener.Start();
 
-var actualPort = ((IPEndPoint)listener.LocalEndpoint).Port;
-Console.Out.WriteLine($"LISTENING http://127.0.0.1:{actualPort}/");
-Console.Out.Flush();
-
+// The shutdown handlers are registered before the announcement, so a signal sent right after it ends the loop with exit code 0.
 using var stopping = new CancellationTokenSource();
 
 using var sigint = PosixSignalRegistration.Create(PosixSignal.SIGINT, context => { context.Cancel = true; stopping.Cancel(); });
@@ -49,6 +46,10 @@ Console.CancelKeyPress += (_, e) =>
     e.Cancel = true;
     stopping.Cancel();
 };
+
+var actualPort = ((IPEndPoint)listener.LocalEndpoint).Port;
+Console.Out.WriteLine($"LISTENING http://127.0.0.1:{actualPort}/");
+Console.Out.Flush();
 
 while (!stopping.IsCancellationRequested)
 {
@@ -181,6 +182,11 @@ static async Task<(string? Head, bool TooLarge)> ReadHeadAsync(NetworkStream str
             for (int i = 0; i < read; i++)
             {
                 bytes.Add(buffer[i]);
+                if (bytes.Count > 8192)
+                {
+                    return (null, true);
+                }
+
                 if (bytes.Count >= 4)
                 {
                     var lastFour = bytes[^4..];
@@ -188,11 +194,6 @@ static async Task<(string? Head, bool TooLarge)> ReadHeadAsync(NetworkStream str
                     {
                         return (Encoding.ASCII.GetString(bytes.ToArray()), false);
                     }
-                }
-
-                if (bytes.Count > 8192)
-                {
-                    return (null, true);
                 }
             }
         }

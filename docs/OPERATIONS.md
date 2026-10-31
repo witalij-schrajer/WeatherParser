@@ -36,11 +36,17 @@ sudo install -d -m 0750 -o root -g weatherparser /etc/weatherparser
 - Configuration files under `/etc/weatherparser/`: owner `root`, group `weatherparser`, mode `0640`. Copy `examples/weatherparser.example.json` and replace the placeholder endpoints; never overwrite an existing configuration.
 - Broker credential file (MQTT mode only): owned by `weatherparser`, mode `0600` (CL-06); the CLI rejects a file that another user owns or that the group or others can access, with `CLI-CREDENTIALS-INVALID` and exit code 2, before any request.
 
+  First installation only; the command refuses to replace an existing file, so repeating it during an update never truncates working credentials:
+
 ```bash
-sudo install -m 0600 -o weatherparser -g weatherparser /dev/null /etc/weatherparser/broker.credentials.json
+sudo test ! -e /etc/weatherparser/broker.credentials.json && sudo install -m 0600 -o weatherparser -g weatherparser /dev/null /etc/weatherparser/broker.credentials.json
 ```
 
   Then write the members `Username` and `Password` into it with an editor run as root; never put credentials on a command line or into the configuration file.
+
+### Updates
+
+An update unpacks the new version into its own folder and moves the symlink (`sudo ln -sfn /opt/weatherparser/<new version> /opt/weatherparser/current`); it does not touch `/etc/weatherparser/`. Configuration files and the credential file are created only at the first installation and are never copied over an existing file; compare a new example configuration with the existing one by hand.
 
 ### Invocation
 
