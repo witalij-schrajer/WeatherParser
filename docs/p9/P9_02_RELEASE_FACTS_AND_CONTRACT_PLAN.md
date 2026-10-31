@@ -1,6 +1,6 @@
 # P9.02 – Release Facts and Release Contract: Implementation Plan
 
-**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row; P9 starts only on a separate instruction.** Refines the P9.02 row of section 5 and section 3 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
+**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row. P9 started on 2026-10-31 on the user's instruction ("P9 Execution"); this step is in progress: the [release contract](P9_RELEASE_CONTRACT.md) draft is under the automatic review of pull request #18; the user's approval is pending.** Refines the P9.02 row of section 5 and section 3 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the release contract RL-01 to RL-18, based on facts retrieved from official sources, reviewed through the automatic Codex review to 0 findings and approved by the user, with the P9 plans reconciled to it.
