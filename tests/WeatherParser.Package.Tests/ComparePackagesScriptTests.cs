@@ -169,4 +169,33 @@ public sealed class ComparePackagesScriptTests
         exitCode.Should().Be(1);
         output.Should().Contain("ONLY-FIRST README.md").And.Contain("ONLY-SECOND readme.md");
     }
+
+    /// <summary>
+    /// Tests that identical non-ZIP files result in exit code two.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-03")]
+    public void ComparePackages_IdenticalNonZipFiles_ExitTwo()
+    {
+        var a = Path.Combine(_dir, "a.nupkg");
+        File.WriteAllText(a, "not a zip", Encoding.UTF8);
+        var b = Path.Combine(_dir, "b.nupkg");
+        File.Copy(a, b);
+        var (exitCode, output) = Run("-First", a, "-Second", b);
+        exitCode.Should().Be(2);
+    }
+
+    /// <summary>
+    /// Tests that archives with duplicate member names result in exit code two and mention the duplicate.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-03")]
+    public void ComparePackages_DuplicateMemberName_ExitTwo()
+    {
+        var a = Zip("a.nupkg", ("x.txt", "old", T1), ("x.txt", "current", T1));
+        var b = Zip("b.nupkg", ("x.txt", "current", T1));
+        var (exitCode, output) = Run("-First", a, "-Second", b);
+        exitCode.Should().Be(2);
+        output.Should().Contain("duplicate member x.txt");
+    }
 }

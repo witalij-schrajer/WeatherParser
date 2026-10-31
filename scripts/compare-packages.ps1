@@ -6,7 +6,7 @@ Compares two NuGet packages (or any ZIP archives) byte for byte and member by me
 Exit 0 and IDENTICAL: the files are byte-identical.
 Exit 3 and CONTENT-IDENTICAL: same member names and identical member bytes, but the archive bytes differ; one TIMESTAMP <member> line per member whose last-write time differs.
 Exit 1: the members differ; one line per difference: ONLY-FIRST <member>, ONLY-SECOND <member>, DIFFERENT <member> (same name, different size or SHA-256).
-Exit 2: a file is missing or is not a ZIP archive.
+Exit 2: a file is missing, is not a ZIP archive or contains a duplicate member name.
 .PARAMETER First
 The first package.
 .PARAMETER Second
@@ -25,8 +25,12 @@ function Get-ZipEntries {
     
     try {
         $zip = [IO.Compression.ZipFile]::OpenRead($Path)
+        $seen = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
         $entries = @()
         foreach ($entry in $zip.Entries) {
+            if (-not $seen.Add($entry.FullName)) {
+                throw "duplicate member $($entry.FullName)"
+            }
             $stream = $entry.Open()
             try {
                 $hash = [Security.Cryptography.SHA256]::HashData($stream)
@@ -62,19 +66,11 @@ if (-not (Test-Path $Second -PathType Leaf)) {
     exit 2
 }
 
-$firstHash = Get-FileHash -Algorithm SHA256 $First
-$secondHash = Get-FileHash -Algorithm SHA256 $Second
-
-if ($firstHash.Hash -eq $secondHash.Hash) {
-    Write-Output "IDENTICAL"
-    exit 0
-}
-
 try {
     $firstEntries = Get-ZipEntries -Path $First
 }
 catch {
-    [Console]::Error.WriteLine("Input error: '$First' is not a ZIP archive: $_")
+    [Console]::Error.WriteLine("Input error: '$First' cannot be read as a package: $_")
     exit 2
 }
 
@@ -82,8 +78,16 @@ try {
     $secondEntries = Get-ZipEntries -Path $Second
 }
 catch {
-    [Console]::Error.WriteLine("Input error: '$Second' is not a ZIP archive: $_")
+    [Console]::Error.WriteLine("Input error: '$Second' cannot be read as a package: $_")
     exit 2
+}
+
+$firstHash = Get-FileHash -Algorithm SHA256 $First
+$secondHash = Get-FileHash -Algorithm SHA256 $Second
+
+if ($firstHash.Hash -eq $secondHash.Hash) {
+    Write-Output "IDENTICAL"
+    exit 0
 }
 
 $firstDict = [System.Collections.Generic.Dictionary[string,object]]::new([StringComparer]::Ordinal)

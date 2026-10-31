@@ -13,6 +13,17 @@ namespace WeatherParser.Package.Tests;
 [TestClass]
 public sealed class PublicApiInventoryTests
 {
+    private IPublicApiListing _listing = null!;
+
+    /// <summary>
+    /// Initializes the test fixture.
+    /// </summary>
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _listing = new PublicApiListing();
+    }
+
     private static readonly string FixtureAssembly = typeof(ApiFixture.ApiSample).Assembly.Location;
     private const string FixtureNamespace = "WeatherParser.Package.Tests.ApiFixture";
 
@@ -23,16 +34,30 @@ public sealed class PublicApiInventoryTests
     {
         return new[]
         {
-            "F:WeatherParser.Package.Tests.ApiFixture.ApiColor.Green : WeatherParser.Package.Tests.ApiFixture.ApiColor",
-            "F:WeatherParser.Package.Tests.ApiFixture.ApiColor.Red : WeatherParser.Package.Tests.ApiFixture.ApiColor",
-            "F:WeatherParser.Package.Tests.ApiFixture.ApiColor.value__ : int",
-            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample..ctor() : void",
-            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Describe(string, int) : string",
-            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.get_Count() : int",
-            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.set_Count(int) : void",
-            "T:WeatherParser.Package.Tests.ApiFixture.ApiColor",
-            "T:WeatherParser.Package.Tests.ApiFixture.ApiSample"
-        };
+            "F:WeatherParser.Package.Tests.ApiFixture.ApiColor.Green : WeatherParser.Package.Tests.ApiFixture.ApiColor [public const] = 1",
+            "F:WeatherParser.Package.Tests.ApiFixture.ApiColor.Red : WeatherParser.Package.Tests.ApiFixture.ApiColor [public const] = 0",
+            "F:WeatherParser.Package.Tests.ApiFixture.ApiColor.value__ : int [public]",
+            "F:WeatherParser.Package.Tests.ApiFixture.ApiSample.Limit : int [public const] = 5",
+            "F:WeatherParser.Package.Tests.ApiFixture.ApiSample.Tag : string [public static readonly]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiBase..ctor() : void [protected]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiBase.Draw() : void [protected abstract]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiBase.get_Name() : string [public virtual]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample..ctor() : void [public]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Area() : int [public]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Describe(string prefix, int times = 1) : string [public]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Draw() : void [protected override]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Pick``1<T: class>(!!0 value) : !!0 [public]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Twice(int x) : int [public static]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.get_Count() : int [public]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.get_Label() : string [public]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.set_Count(int value) : void [public]",
+            "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.set_Label(string value) : void modreq(System.Runtime.CompilerServices.IsExternalInit) [public]",
+            "M:WeatherParser.Package.Tests.ApiFixture.IApiShape.Area() : int [public abstract]",
+            "T:WeatherParser.Package.Tests.ApiFixture.ApiBase (class abstract) : System.Object",
+            "T:WeatherParser.Package.Tests.ApiFixture.ApiColor (enum) : System.Enum",
+            "T:WeatherParser.Package.Tests.ApiFixture.ApiSample (class sealed) : WeatherParser.Package.Tests.ApiFixture.ApiBase, WeatherParser.Package.Tests.ApiFixture.IApiShape",
+            "T:WeatherParser.Package.Tests.ApiFixture.IApiShape (interface)"
+        }.OrderBy(l => l, StringComparer.Ordinal).ToList();
     }
 
     /// <summary>
@@ -42,7 +67,7 @@ public sealed class PublicApiInventoryTests
     [TestCategory("T-P9-04")]
     public void PublicApiInventory_Fixture_MatchesKnownListing()
     {
-        var actual = PublicApiListing.Generate(FixtureAssembly, FixtureNamespace);
+        var actual = _listing.Generate(FixtureAssembly, FixtureNamespace);
         actual.Should().Equal(FixtureBaseline());
     }
 
@@ -54,10 +79,10 @@ public sealed class PublicApiInventoryTests
     public void PublicApiInventory_AddedMember_Detected()
     {
         var baseline = FixtureBaseline();
-        var expected = baseline.Where(l => !l.Contains("Describe(string, int)")).ToList();
-        var actual = PublicApiListing.Generate(FixtureAssembly, FixtureNamespace);
-        var (added, removed) = PublicApiListing.Compare(expected, actual);
-        added.Should().ContainSingle().Which.Should().Be("M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Describe(string, int) : string");
+        var expected = baseline.Where(l => !l.Contains("Twice(int x)")).ToList();
+        var actual = _listing.Generate(FixtureAssembly, FixtureNamespace);
+        var (added, removed) = _listing.Compare(expected, actual);
+        added.Should().ContainSingle().Which.Should().Be("M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Twice(int x) : int [public static]");
         removed.Should().BeEmpty();
     }
 
@@ -69,11 +94,11 @@ public sealed class PublicApiInventoryTests
     public void PublicApiInventory_RemovedMember_Detected()
     {
         var baseline = FixtureBaseline();
-        var expected = baseline.Concat(new[] { "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Reset() : void" }).ToList();
-        var actual = PublicApiListing.Generate(FixtureAssembly, FixtureNamespace);
-        var (added, removed) = PublicApiListing.Compare(expected, actual);
+        var expected = baseline.Concat(new[] { "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Reset() : void [public]" }).ToList();
+        var actual = _listing.Generate(FixtureAssembly, FixtureNamespace);
+        var (added, removed) = _listing.Compare(expected, actual);
         added.Should().BeEmpty();
-        removed.Should().ContainSingle().Which.Should().Be("M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Reset() : void");
+        removed.Should().ContainSingle().Which.Should().Be("M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Reset() : void [public]");
     }
 
     /// <summary>
@@ -84,11 +109,41 @@ public sealed class PublicApiInventoryTests
     public void PublicApiInventory_ChangedSignature_Detected()
     {
         var baseline = FixtureBaseline();
-        var expected = baseline.Select(l => l.Contains("Describe(string, int)") ? "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Describe(string) : string" : l).ToList();
-        var actual = PublicApiListing.Generate(FixtureAssembly, FixtureNamespace);
-        var (added, removed) = PublicApiListing.Compare(expected, actual);
-        added.Should().ContainSingle().Which.Should().Be("M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Describe(string, int) : string");
-        removed.Should().ContainSingle().Which.Should().Be("M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Describe(string) : string");
+        var expected = baseline.Select(l => l.Contains("Describe(string prefix, int times = 1)") ? "M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Describe(string prefix, int times) : string [public]" : l).ToList();
+        var actual = _listing.Generate(FixtureAssembly, FixtureNamespace);
+        var (added, removed) = _listing.Compare(expected, actual);
+        added.Should().ContainSingle().Which.Should().Be("M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Describe(string prefix, int times = 1) : string [public]");
+        removed.Should().ContainSingle().Which.Should().Be("M:WeatherParser.Package.Tests.ApiFixture.ApiSample.Describe(string prefix, int times) : string [public]");
+    }
+
+    /// <summary>
+    /// Tests that init and set are distinct.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-04")]
+    public void PublicApiInventory_InitAndSetAreDistinct()
+    {
+        var actual = _listing.Generate(FixtureAssembly, FixtureNamespace);
+        var setCountLine = actual.Single(l => l.Contains("set_Count"));
+        var setLabelLine = actual.Single(l => l.Contains("set_Label"));
+
+        setLabelLine.Should().Contain("modreq(");
+        setCountLine.Should().NotContain("modreq(");
+    }
+
+    /// <summary>
+    /// Tests that constraints and constants are listed.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-04")]
+    public void PublicApiInventory_ConstraintAndConstantAreListed()
+    {
+        var actual = _listing.Generate(FixtureAssembly, FixtureNamespace);
+        var pickLine = actual.Single(l => l.Contains("Pick``1<T: class>"));
+        var limitLine = actual.Single(l => l.Contains("Limit : int [public const] = 5"));
+
+        pickLine.Should().Contain("T: class");
+        limitLine.Should().Contain("= 5");
     }
 
     /// <summary>
@@ -99,8 +154,8 @@ public sealed class PublicApiInventoryTests
     public void PublicApi_PackedAssembly_EqualsCheckedInListing()
     {
         var assemblyPath = Path.Combine(PackageArtifacts.PackageRoot, "lib", "net10.0", "WeatherParser.Parsing.dll");
-        var actual = PublicApiListing.Generate(assemblyPath);
-        var (added, removed) = PublicApiListing.Compare(PublicApiListing.ReadListing(PublicApiListing.ListingPath), actual);
+        var actual = _listing.Generate(assemblyPath);
+        var (added, removed) = _listing.Compare(_listing.ReadListing(_listing.ListingPath), actual);
 
         if (added.Any() || removed.Any())
         {
