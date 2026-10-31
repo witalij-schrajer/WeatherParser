@@ -1,6 +1,6 @@
 # WeatherParser Operations
 
-**Status: draft of P9.07 (2026-10-31): the deployment section only; P9.08 completes the guide (configuration and secrets, scheduling, exit codes, logs, request volume, broker set-up, freshness, limitations).** This guide covers the example CLI `WeatherParser` on Debian 13 ARM64 (`linux-arm64`, for example the NanoPi R76S). The library itself is consumed as a NuGet package and needs no deployment of its own.
+**Status (2026-10-31): written in P9.07 (deployment) and P9.08 (the rest of the guide); the examples carry their verification status (section 11) and are checked on the NanoPi R76S in P9.10.** This guide covers the example CLI `WeatherParser` on Debian 13 ARM64 (`linux-arm64`, for example the NanoPi R76S). The library itself is consumed as a NuGet package and needs no deployment of its own; its consumers follow the README sections of each source. Every host, ID, path and topic below is a placeholder.
 
 ## 1. Deployment (RL-07 A)
 
@@ -15,7 +15,7 @@ sudo apt-get install dotnet-runtime-10.0
 dotnet --list-runtimes
 ```
 
-Follow Microsoft's instructions for adding the package feed on Debian 13 first. A runtime installed by other means (for example the `dotnet-install` script into a user folder) works as well when `DOTNET_ROOT` points to it; the installer and the update path are then the operator's responsibility.
+Follow Microsoft's instructions for adding the package feed on Debian 13 first ([Install .NET on Debian](https://learn.microsoft.com/dotnet/core/install/linux-debian)). A runtime installed by other means (for example the `dotnet-install` script into a user folder) works as well when `DOTNET_ROOT` points to it; the installer and the update path are then the operator's responsibility.
 
 ### Layout, user and permissions
 
@@ -44,20 +44,133 @@ sudo test ! -e /etc/weatherparser/broker.credentials.json && sudo install -m 060
 
   Then write the members `Username` and `Password` into it with an editor run as root; never put credentials on a command line or into the configuration file.
 
+- MOSMIX_S evidence cache (only for `--SelectMOSMIX`): an existing directory that only the cache uses, writable by the service user, named absolute in `Mosmix.Catalog.EvidenceCacheDirectory`:
+
+```bash
+sudo install -d -m 0750 -o weatherparser -g weatherparser /var/lib/weatherparser/mosmix-evidence
+```
+
 ### Updates
 
-An update unpacks the new version into its own folder and moves the symlink (`sudo ln -sfn /opt/weatherparser/<new version> /opt/weatherparser/current`); it does not touch `/etc/weatherparser/`. Configuration files and the credential file are created only at the first installation and are never copied over an existing file; compare a new example configuration with the existing one by hand.
+An update unpacks the new version into its own folder and moves the symlink (`sudo ln -sfn /opt/weatherparser/<new version> /opt/weatherparser/current`); it does not touch `/etc/weatherparser/`. Configuration files and the credential file are created only at the first installation and are never copied over an existing file; compare a new example configuration with the existing one by hand. Read the [changelog](../CHANGELOG.md) of the new version first.
 
 ### Invocation
 
-Every invocation runs exactly one command and exits; there is no service, timer or daemon to install. A scheduler (cron, n8n) starts it as the service user without a terminal, for example:
+Every invocation runs exactly one command and exits; there is no service, timer or daemon to install. A scheduler starts it as the service user without a terminal, for example:
 
 ```bash
 sudo -u weatherparser /opt/weatherparser/current/WeatherParser --ParseDWD --Output json --Config /etc/weatherparser/weatherparser.json < /dev/null
 ```
 
-The document goes to standard output (or `--OutputFile`), logs go to standard error, and the exit code reports the result (README section "Example CLI"). Scheduling examples follow in P9.08.
+The document goes to standard output (or `--OutputFile`), logs go to standard error, and the exit code reports the result (section 4).
 
-### Verification on the target (P9.07)
+## 2. Configuration and secrets
 
-The deployment was checked on the NanoPi R76S on 2026-10-31 without root, in a disposable folder that mirrored this layout and as the login user instead of `weatherparser` ([P9 verification record](p9/P9_VERIFICATION.md) section 8): checksum, `--Help`, a usage error, the CL-06 mode check, `--SelectDWD` and `--ParseOstHessen` against the offline fixture host, all without a terminal. The service user, the system paths, the CL-06 owner check and the runtime 10.0.14 were not verified on the device.
+- One JSON configuration file per use, given by `--Config` or `WEATHERPARSER_CONFIG`; there is no implicit search path (CL-04). Its sections, members, defaults and ranges are listed in the README section "Example CLI", subsection "Configuration". Unknown members, comments and trailing commas are rejected (`CLI-CONFIG-INVALID`, exit code 2), so a typo never silently falls back to a default.
+- Several files are fine, for example one per command or per source: each invocation reads exactly the one it is given.
+- Secrets are only the broker credentials. They come either from the credential file (section 1) or from the environment variables `WEATHERPARSER_MQTT_USERNAME` and `WEATHERPARSER_MQTT_PASSWORD`, never from both and never from arguments or the configuration file. Prefer the file: environment variables of a scheduled job are visible to the job's owner and to root and may end up in the scheduler's own logs.
+- JSON and XML mode read no credentials and never contact a broker.
+- `OsthessenWetter.PublicationPermitted` stays `false` (section 9).
+- Set `Http.UserAgent` to a value that identifies the operator's installation (for example `WeatherParser/<version> (contact: ops@example.invalid)`); the default is `WeatherParser/<version>`.
+
+## 3. Scheduling
+
+Scheduling and retries across invocations belong to the caller (REQ-007, REQ-008); nothing has to be installed for WeatherParser itself, and neither cron nor n8n is a dependency.
+
+### cron
+
+A file in `/etc/cron.d/` names the user, so the job runs as the service user (placeholder paths and IDs; one command per line):
+
+```text
+# /etc/cron.d/weatherparser
+WEATHERPARSER_CONFIG=/etc/weatherparser/weatherparser.json
+*/10 * * * * weatherparser /opt/weatherparser/current/WeatherParser --ParseDWD --StationID <DWD-STATION-ID> < /dev/null >> /var/log/weatherparser/weatherparser.log 2>&1 || logger -t weatherparser "ParseDWD failed with exit code $?"
+50 * * * * weatherparser /opt/weatherparser/current/WeatherParser --ParseMOSMIX --Product MOSMIX_S --MOSMIXID <MOSMIX-ID> < /dev/null >> /var/log/weatherparser/weatherparser.log 2>&1 || logger -t weatherparser "ParseMOSMIX MOSMIX_S failed with exit code $?"
+25 4,10,16,22 * * * weatherparser /opt/weatherparser/current/WeatherParser --ParseMOSMIX --Product MOSMIX_L --MOSMIXID <MOSMIX-ID> < /dev/null >> /var/log/weatherparser/weatherparser.log 2>&1 || logger -t weatherparser "ParseMOSMIX MOSMIX_L failed with exit code $?"
+```
+
+cron runs each line with `/bin/sh`; `|| logger …` reports every exit code other than 0 to the system log (`$?` is the CLI's exit code there). The log directory is created once with `sudo install -d -m 0750 -o weatherparser -g weatherparser /var/log/weatherparser` and rotated as in section 5; to use the journal instead, replace the redirection by `2>&1 | systemd-cat -t weatherparser` (the exit code is then the pipe's and is not reported). In MQTT mode (the default) standard output stays empty; in JSON or XML mode use `--OutputFile` with a new file name per run, because the CLI never overwrites an existing file (`CLI-OUTPUT-EXISTS`).
+
+### n8n
+
+An "Execute Command" node runs the CLI on the machine that runs n8n, for example `/opt/weatherparser/current/WeatherParser --ParseDWD --StationID <DWD-STATION-ID> --Output json --Config /etc/weatherparser/weatherparser.json`, takes the JSON document from standard output and branches on the exit code (section 4). The node runs as the n8n user: that user then needs read access to the configuration (for example membership in the group `weatherparser`) and, in MQTT mode, must own the credential file (CL-06), so give n8n its own configuration and credential file rather than sharing the cron user's. n8n's schedule trigger replaces cron; WeatherParser itself never schedules or repeats anything.
+
+## 4. Exit codes for callers
+
+| Exit code | Meaning | Typical caller reaction |
+|---|---|---|
+| `0` | Complete success, also an empty selection and `--Help` | Use the result |
+| `1` | Complete failure at run time (retrieval, output, connection or publication; an expired command deadline without a published message) | Retry at the next scheduled run; alert after repeated failures |
+| `2` | Usage or configuration error, detected before any retrieval | Fix the configuration or the call; a retry does not help |
+| `3` | Partial failure: at least one item succeeded and at least one failed | Use the successful items; the `errors` list of the document and the log name the failed ones |
+| `4` | Cancelled by SIGINT, SIGTERM or Ctrl+C | No result; the next run starts normally |
+
+A partial failure is normal for multi-item commands, for example an OsthessenWetter station the page marks offline. Notices such as `SELECTION-EMPTY`, `MOSMIX-RUN-STALE` or `MOSMIX-S-EVIDENCE-STALE` are logged and leave the exit code unchanged; check freshness in the data (section 8), not in the exit code. The error IDs are listed in the README section "Example CLI", subsection "Error IDs".
+
+## 5. Logs
+
+Logs go to standard error only, one line per entry: `<UTC time> UTC <LEVEL> <ID> command=<command> [source=<source>] <message>`. They contain no credentials, no configuration objects and no stack traces. Keep them where the scheduler puts them:
+
+- the systemd journal (`systemd-cat -t weatherparser`, read with `journalctl -t weatherparser`), whose size limits apply; or
+- a file appended by the job, rotated by `logrotate`, for example `/etc/logrotate.d/weatherparser` with `/var/log/weatherparser/*.log { weekly rotate 8 compress missingok notifempty }` and the directory owned by `weatherparser`.
+
+`--Verbose` adds debug lines; use it for diagnosis, not in scheduled jobs.
+
+## 6. Request volume and intervals
+
+The project recommends these intervals; they are bounded by the providers' cycles and conditions, not by a rule of the providers (DWD documents no request-rate limit; OsthessenWetter documents none). The schedule is the operator's decision (REQ-008).
+
+| Command | Requests per run | Recommended interval |
+|---|---|---|
+| `--ParseDWD` | The station lists and the `now` files of one station (a few small files) | At most once every 10 minutes per station; DWD updates the 10-minute `now` data within the hour |
+| `--ParseMOSMIX --Product MOSMIX_S` | One download of the complete MOSMIX_S file (about 36 MB) per location | At most once per hourly run, about 45 minutes after the full hour |
+| `--ParseMOSMIX --Product MOSMIX_L` | One file per location (about 17 KB) | At most once per main run, after about 04:20, 10:15, 16:20 and 22:15 UTC (runs at 03, 09, 15 and 21 UTC) |
+| `--ParseOstHessen` | One page | At most once every 10 minutes |
+| `--SelectDWD`, `--SelectMOSMIX` | The catalogs and per-station evidence | Configuration-time only: when a station or location is chosen or reviewed, at most once per day per search |
+| `--SelectMOSMIX --RefreshMosmixSEvidence` | One complete MOSMIX_S download | Rarely, for example once per day before a selection |
+
+Several locations of MOSMIX_S each download the whole file; parse only the locations that are needed. DWD stores the requesting IP address for at most 7 days (section 9).
+
+## 7. Broker set-up
+
+- **Dedicated credentials**: one broker user per CLI installation (and a separate one for an n8n-driven installation), with a long random password, stored as in section 1.
+- **TLS with validation**: keep TLS on (the default) and give `Mqtt.Broker.Tls.CaFile` the PEM of a private CA if the broker certificate is not in the system trust store; the CLI always validates the chain and the host name and has no switch to turn that off. `AllowUnencrypted: true` is only for a trusted local network and logs a warning per run.
+- **Scoped permissions**: allow the CLI's broker user to publish only below its configured topic trees and to subscribe to nothing. For Mosquitto, for example, an ACL file with `user weatherparser` followed by `topic write haus/weather/measurements/#`, `topic write haus/weather/forecasts/#` and `topic write haus/weather/stations/#` (placeholder topics of the example configuration).
+- **MQTT 5.0**: prefer protocol 5.0; with 3.1.1 a broker can acknowledge a message it then drops (for example for a missing permission), which the CLI cannot detect (section 10).
+- **Retained state**: observations and complete forecast runs are published with retain, station lists without; QoS is 1 for all. A new run of the same source replaces the retained message of its topic, so the topic templates must keep sources and products apart (for example `{source}` in the template, and separate templates for observations and forecasts; MOSMIX_S and MOSMIX_L have different sources). To clear a retained message, publish an empty retained message to its topic with a broker tool. A retried QoS 1 message may reach subscribers twice.
+
+## 8. Estimated dates and freshness
+
+- **DWD observations** carry the measurement time of every value in UTC; the CLI does not filter old values. Consumers compare `measured_at` with their own clock.
+- **OsthessenWetter** shows only a time of day. The date is inferred in `Europe/Berlin` from the retrieval time and every reading is marked `timestamp_quality` `estimated_date` (REQ-042); a display older than one day cannot be detected. Readings in a daylight-saving gap or overlap are not exported (`OSTHESSEN-TIME-UNRESOLVED`).
+- **MOSMIX** runs keep `issued_at`, `retrieved_at` and each step's validity separate. A run older than `Mosmix.L.MaxRunAge` or `Mosmix.S.MaxRunAge` is still exported, with a `MOSMIX-RUN-STALE` warning and the freshness marker in the document. Guidance, not a default: MOSMIX_S 2 hours, MOSMIX_L 8 hours.
+- **MOSMIX_S evidence index**: an index older than `MosmixSEvidenceMaxAge` is still used, with one `MOSMIX-S-EVIDENCE-STALE` warning; refresh it with `--RefreshMosmixSEvidence`.
+
+## 9. Source conditions
+
+- **DWD** (observations, MOSMIX, catalogs): open data under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) with acknowledgement of the source ([DWD legal notice](https://www.dwd.de/EN/service/legal_notice/legal_notice_node.html)). Wherever values are shown or republished, for example over MQTT or in files, keep the attribution "Deutscher Wetterdienst (DWD)". The open-data server stores the requesting IP address for at most 7 days.
+- **OsthessenWetter** publishes no licence for its measured values and no interface, and its imprint forbids using its content in other publications without the author's express consent. Its values are therefore **not published** by this project (contract OW-14): keep `OsthessenWetter.PublicationPermitted` `false`, which makes `--ParseOstHessen --Output mqtt` fail before any request; JSON and XML output are for the local user only and must not be redistributed. OW-14 is lifted only by a recorded decision after the operator's consent or other clarified conditions. Name the source "Osthessen-Wetter.de" wherever values are shown.
+- The MIT licence of WeatherParser covers the code, not the data or the websites.
+
+## 10. Limitations
+
+The known limitations of the release, with their owners, are listed in the [changelog](../CHANGELOG.md). For operation in particular:
+
+- TLS and authenticated broker connections are verified against a real broker only as recorded for the release (P9.09); see the changelog.
+- With MQTT 3.1.1 a dropped message can look acknowledged; use 5.0.
+- After a cancellation or an expired deadline the broker disconnect is bounded by `Limits.ConnectTimeout`, so the process can end up to that long after `Limits.CommandDeadline`.
+- Windows is a development platform, not a release target; a Windows system shutdown during a run is not tested.
+- The OsthessenWetter parser supports only the documented page revision; a changed page fails with `OSTHESSEN-FORMAT-CHANGED`.
+
+## 11. Verification status of the examples
+
+Status values as in CONTRIBUTING.md ("Status values").
+
+| Example | Status |
+|---|---|
+| Section 1, checksum, unpack, symlink, configuration and credential modes, invocation without a terminal | Verified on the NanoPi R76S in P9.07 in a disposable home folder as the login user, without root ([P9 verification record](p9/P9_VERIFICATION.md) section 8, [target run](p9/P9_07_TARGET_RUN.md)); the service user, the system paths and the runtime 10.0.14 are Planned for P9.10 |
+| Section 1, MOSMIX_S evidence cache directory; updates and rollback | Planned for P9.10 |
+| Section 3, cron entries; n8n | cron Planned for P9.10 (RL-15 long run with the fixture host); n8n is an example only, not verified |
+| Section 4, exit codes | Verified by the CLI tests (P3) and on the NanoPi in P3.11 and P9.07 |
+| Section 5, journal and logrotate | Planned for P9.10 (journal); logrotate is an example only, not verified |
+| Section 7, broker set-up with TLS, credentials and ACL | Planned for P9.09 |
