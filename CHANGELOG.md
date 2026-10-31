@@ -39,7 +39,7 @@ Build: .NET SDK 10.0.402 (pinned). The update to SDK 10.0.403 is an open item of
 
 - The MIT licence covers the code only, not weather data or websites.
 - DWD data (observations, MOSMIX, catalogs) are open data under CC BY 4.0; keep the attribution "Deutscher Wetterdienst (DWD)" when republishing. The DWD open-data server stores the requesting IP address for at most 7 days.
-- OsthessenWetter publishes no licence for its values and forbids reuse in other publications without the author's consent: its values are not published by this project (OW-14); `PublicationPermitted` stays `false` in the example configuration.
+- OsthessenWetter publishes no licence for its values and forbids reuse in other publications without the author's consent: production use and redistribution of its values are not accepted until the operator's consent or other clarified conditions are recorded (OW-14); `PublicationPermitted` stays `false` in the example configuration.
 
 ### Known limitations
 
@@ -57,7 +57,12 @@ Build: .NET SDK 10.0.402 (pinned). The update to SDK 10.0.403 is an open item of
 | Builders and root validation implement the same rules separately (guarded by equivalence tests) | Recorded |
 | MOSMIX_S costs one complete download (about 36 MB) per parse; schedule it at most once per hourly run | Recorded (operating guide) |
 | MOSMIX elements not exported in v1 (probabilities, longer totals and gusts, weather codes, cloud cover, visibility, sunshine); MOSMIX `pressure_reference` is `unknown`; the first interval period may start before `issued_at` | Recorded decisions of P7 |
-| OsthessenWetter: only the documented page revision is supported; the date is inferred (`estimated_date`); its values must not be redistributed (OW-14) | The user (OW-14) |
+| OsthessenWetter: only the documented page revision is supported; the date is inferred (`estimated_date`); production use and redistribution of its values are not accepted (OW-14) | The user (OW-14) |
+| The MOSMIX_S evidence refresher (P4) has no CRC-32 member check; only the forecast paths check it (P7.04) | Recorded; a P4 amendment only by a new decision |
+| Consumers that do not use MOSMIX forecasts still register its four option and endpoint types; option failures surface on first resolution, not at `ValidateOnBuild` | Recorded (README) |
+| Schema compatibility: consumers that validated against the committed v1 schema of P2 must take the schema packaged with this version (C-105); exhaustive switches over `IntervalAggregation` must handle `maximum` and `sum` (C-121) | Consumers (README) |
+| Resource evidence: MOSMIX_S duration and peak memory were measured once with a synthetic workload on an idle NanoPi; the live parses are single snapshots on Windows (MF-17) | Recorded |
+| DI under load: shown only for the tested mix of P8.07; other loads and long runs are not shown | P9.10 (long run), recorded |
 | The public API inventory does not record nullable annotations (P9.05) | The user |
 | `debian13-arm64` in the hosted CI is a container on GitHub's runners, not target evidence | Recorded |
 | The example CLI's offline fixture host is not covered by the CLI gate's gated-input list (P9.07, open decision) | The user |

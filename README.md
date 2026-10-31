@@ -605,7 +605,7 @@ Planned versus implemented (REQ-090), as of 2026-10-31:
 | Installation from a feed: `dotnet add package WeatherParser.Parsing --version 0.1.0` | Planned; works only after a publication, which needs a separate decision |
 | Example CLI on Debian 13 ARM64 | Implemented; deployment documented in [docs/OPERATIONS.md](docs/OPERATIONS.md) (RL-07 A); the CLI is not part of the package and is built from the source against the package (RL-08 A) |
 
-Until a publication, consumers use the checksummed `.nupkg` of the release build from a local package source (CONTRIBUTING.md section 4). Every change, the verified platforms and the known limitations with their owners are listed in [CHANGELOG.md](CHANGELOG.md). The source conditions of DWD and OsthessenWetter are summarized under [Data sources](#data-sources) and in the operating guide; OsthessenWetter values are not published (OW-14).
+Until a publication, consumers use the checksummed `.nupkg` of the release build from a local package source (CONTRIBUTING.md section 4). Every change, the verified platforms and the known limitations with their owners are listed in [CHANGELOG.md](CHANGELOG.md). The source conditions of DWD and OsthessenWetter are summarized under [Data sources](#data-sources) and in the operating guide; production use and redistribution of OsthessenWetter values are not accepted until clarified (OW-14).
 
 ## Data sources
 
@@ -618,7 +618,7 @@ Until a publication, consumers use the checksummed `.nupkg` of the release build
 - [DWD MOSMIX: catalog, formats and element definitions](https://www.dwd.de/DE/leistungen/opendata/hilfe.html)
 - [DWD MOSMIX_L: individual forecast locations](https://opendata.dwd.de/weather/local_forecasts/mos/MOSMIX_L/single_stations/)
 
-Code is licensed under [MIT](LICENSE). This does not grant rights to third-party weather data or websites. DWD data are open data under CC BY 4.0 and keep the attribution "Deutscher Wetterdienst (DWD)" when republished; the DWD open-data server stores the requesting IP address for at most 7 days. OsthessenWetter publishes no licence for its values and its imprint forbids reuse in other publications without the author's consent, so its values are not published (OW-14). Source conditions, attribution and permitted retrieval frequency must be documented separately for each adapter and checked before production use. A publicly available OsthessenWetter API is not assumed.
+Code is licensed under [MIT](LICENSE). This does not grant rights to third-party weather data or websites. DWD data are open data under CC BY 4.0 and keep the attribution "Deutscher Wetterdienst (DWD)" when republished; the DWD open-data server stores the requesting IP address for at most 7 days. OsthessenWetter publishes no licence for its values and its imprint forbids reuse in other publications without the author's consent, so production use and redistribution of its values are not accepted until clarified (OW-14). Source conditions, attribution and permitted retrieval frequency must be documented separately for each adapter and checked before production use. A publicly available OsthessenWetter API is not assumed.
 
 ## Binding MOSMIX schema source
 

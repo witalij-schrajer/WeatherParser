@@ -89,7 +89,7 @@ WEATHERPARSER_CONFIG=/etc/weatherparser/weatherparser.json
 25 4,10,16,22 * * * weatherparser /opt/weatherparser/current/WeatherParser --ParseMOSMIX --Product MOSMIX_L --MOSMIXID <MOSMIX-ID> < /dev/null >> /var/log/weatherparser/weatherparser.log 2>&1 || logger -t weatherparser "ParseMOSMIX MOSMIX_L failed with exit code $?"
 ```
 
-cron runs each line with `/bin/sh`; `|| logger …` reports every exit code other than 0 to the system log (`$?` is the CLI's exit code there). The log directory is created once with `sudo install -d -m 0750 -o weatherparser -g weatherparser /var/log/weatherparser` and rotated as in section 5; to use the journal instead, replace the redirection by `2>&1 | systemd-cat -t weatherparser` (the exit code is then the pipe's and is not reported). In MQTT mode (the default) standard output stays empty; in JSON or XML mode use `--OutputFile` with a new file name per run, because the CLI never overwrites an existing file (`CLI-OUTPUT-EXISTS`).
+cron schedules in the system time zone of the host (`timedatectl`), and a `TZ` setting in the crontab does not change that. The MOSMIX_L line above assumes a host in UTC; on a host in `Europe/Berlin` use `30 0,6,12,18 * * *`, which is after the publication of each run in both winter (CET) and summer (CEST) time. The other lines do not depend on the time zone. cron runs each line with `/bin/sh`; `|| logger …` reports every exit code other than 0 to the system log (`$?` is the CLI's exit code there). The log directory is created once with `sudo install -d -m 0750 -o weatherparser -g weatherparser /var/log/weatherparser` and rotated as in section 5; to use the journal instead, replace the redirection by `2>&1 | systemd-cat -t weatherparser` (the exit code is then the pipe's and is not reported). In MQTT mode (the default) standard output stays empty; in JSON or XML mode use `--OutputFile` with a new file name per run, because the CLI never overwrites an existing file (`CLI-OUTPUT-EXISTS`).
 
 ### n8n
 
@@ -103,7 +103,7 @@ An "Execute Command" node runs the CLI on the machine that runs n8n, for example
 | `1` | Complete failure at run time (retrieval, output, connection or publication; an expired command deadline without a published message) | Retry at the next scheduled run; alert after repeated failures |
 | `2` | Usage or configuration error, detected before any retrieval | Fix the configuration or the call; a retry does not help |
 | `3` | Partial failure: at least one item succeeded and at least one failed | Use the successful items; the `errors` list of the document and the log name the failed ones |
-| `4` | Cancelled by SIGINT, SIGTERM or Ctrl+C | No result; the next run starts normally |
+| `4` | Cancelled by SIGINT, SIGTERM or Ctrl+C, also when some items succeeded before the signal | The command was interrupted: messages acknowledged before the signal stay published (and retained), no output file appears; read the `CLI-PUBLICATION-SUMMARY` line for the counts. The next run starts normally and may publish the same values again |
 
 A partial failure is normal for multi-item commands, for example an OsthessenWetter station the page marks offline. Notices such as `SELECTION-EMPTY`, `MOSMIX-RUN-STALE` or `MOSMIX-S-EVIDENCE-STALE` are logged and leave the exit code unchanged; check freshness in the data (section 8), not in the exit code. The error IDs are listed in the README section "Example CLI", subsection "Error IDs".
 
@@ -112,7 +112,18 @@ A partial failure is normal for multi-item commands, for example an OsthessenWet
 Logs go to standard error only, one line per entry: `<UTC time> UTC <LEVEL> <ID> command=<command> [source=<source>] <message>`. They contain no credentials, no configuration objects and no stack traces. Keep them where the scheduler puts them:
 
 - the systemd journal (`systemd-cat -t weatherparser`, read with `journalctl -t weatherparser`), whose size limits apply; or
-- a file appended by the job, rotated by `logrotate`, for example `/etc/logrotate.d/weatherparser` with `/var/log/weatherparser/*.log { weekly rotate 8 compress missingok notifempty }` and the directory owned by `weatherparser`.
+- a file appended by the job, rotated by `logrotate`, for example `/etc/logrotate.d/weatherparser` (one directive per line; check it with `sudo logrotate --debug /etc/logrotate.d/weatherparser`):
+
+```text
+/var/log/weatherparser/*.log {
+    weekly
+    rotate 8
+    compress
+    missingok
+    notifempty
+    su weatherparser weatherparser
+}
+```
 
 `--Verbose` adds debug lines; use it for diagnosis, not in scheduled jobs.
 
@@ -125,7 +136,7 @@ The project recommends these intervals; they are bounded by the providers' cycle
 | `--ParseDWD` | The station lists and the `now` files of one station (a few small files) | At most once every 10 minutes per station; DWD updates the 10-minute `now` data within the hour |
 | `--ParseMOSMIX --Product MOSMIX_S` | One download of the complete MOSMIX_S file (about 36 MB) per location | At most once per hourly run, about 45 minutes after the full hour |
 | `--ParseMOSMIX --Product MOSMIX_L` | One file per location (about 17 KB) | At most once per main run, after about 04:20, 10:15, 16:20 and 22:15 UTC (runs at 03, 09, 15 and 21 UTC) |
-| `--ParseOstHessen` | One page | At most once every 10 minutes |
+| `--ParseOstHessen` | One page | At most once every 10 minutes; production use is not accepted while OW-14 applies (section 9) |
 | `--SelectDWD`, `--SelectMOSMIX` | The catalogs and per-station evidence | Configuration-time only: when a station or location is chosen or reviewed, at most once per day per search |
 | `--SelectMOSMIX --RefreshMosmixSEvidence` | One complete MOSMIX_S download | Rarely, for example once per day before a selection |
 
@@ -149,7 +160,7 @@ Several locations of MOSMIX_S each download the whole file; parse only the locat
 ## 9. Source conditions
 
 - **DWD** (observations, MOSMIX, catalogs): open data under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) with acknowledgement of the source ([DWD legal notice](https://www.dwd.de/EN/service/legal_notice/legal_notice_node.html)). Wherever values are shown or republished, for example over MQTT or in files, keep the attribution "Deutscher Wetterdienst (DWD)". The open-data server stores the requesting IP address for at most 7 days.
-- **OsthessenWetter** publishes no licence for its measured values and no interface, and its imprint forbids using its content in other publications without the author's express consent. Its values are therefore **not published** by this project (contract OW-14): keep `OsthessenWetter.PublicationPermitted` `false`, which makes `--ParseOstHessen --Output mqtt` fail before any request; JSON and XML output are for the local user only and must not be redistributed. OW-14 is lifted only by a recorded decision after the operator's consent or other clarified conditions. Name the source "Osthessen-Wetter.de" wherever values are shown.
+- **OsthessenWetter** publishes no licence for its measured values and no interface, and its imprint forbids using its content in other publications without the author's express consent. **Production use and redistribution of its values are not accepted** by this project until the operator's consent or other clarified conditions are recorded (contract OW-14): keep `OsthessenWetter.PublicationPermitted` `false`, which makes `--ParseOstHessen --Output mqtt` fail before any request, do not schedule `--ParseOstHessen` for production, and keep JSON and XML output for the local user only, never redistributed. OW-14 is lifted only by a recorded decision after the operator's consent or other clarified conditions. Name the source "Osthessen-Wetter.de" wherever values are shown.
 - The MIT licence of WeatherParser covers the code, not the data or the websites.
 
 ## 10. Limitations
