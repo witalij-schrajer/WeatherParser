@@ -75,7 +75,8 @@ Pending: the user is asked for the acceptance after the automatic review of pull
 
 ## 7. Ready for review and review rounds
 
-Pending.
+- A9: pull request #18 marked ready for review under AGENTS.md "Phase implementation" step 2 on head `736cdb9`.
+- Automatic review round 1 (head `736cdb9b6d10ff79d38b5145fbf6ac1c6e472d79`, [run 41501987104](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41501987104), implementation brief, 85 of 118 changed files are code): 1 finding, rejected after verification: [P2] "the reconciliation entries do not cover the current pull request target", because `develop` moved to `78690d0` and the automatic runs pass `base.sha` as the target. Rejected: GitHub reports `base.sha` `ed7fc7a03db2f5554c490451f918da9fc6828c84` for pull request #18 (`gh api repos/witalij-schrajer/WeatherParser/pulls/18`, 2026-11-02), the automatic run 41498427219 on the candidate passed `CI_TARGET` `ed7fc7a…` to all three jobs, and both gates applied the entries there; `ed7fc7a` is also the merge base of the branch with `develop`. Documentation addition: the [P9.11 record](P9_11_INTEGRATED_VERIFICATION.md) section 1 now states where the target comes from. If GitHub ever reports another base for this pull request, the entries no longer apply and a new entry needs the user's approval (plan section 10).
 
 ## 8. Authorship and per-step review
 
