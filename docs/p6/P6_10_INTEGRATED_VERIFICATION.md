@@ -1,6 +1,6 @@
 # P6.10 – Integrated Coverage and Platform Verification: Record
 
-**Status (2026-10-26): S0 to S4 executed on candidate `4373399`; outcome in section 7; after the PR #9 review S1 to S3 repeated on the new candidate `12e7205`: READY (section 8).** Plan: [P6_10_INTEGRATED_VERIFICATION_PLAN.md](P6_10_INTEGRATED_VERIFICATION_PLAN.md). Step evidence of S0 is in [P6_VERIFICATION.md](P6_VERIFICATION.md) section 10.
+**Status (2026-10-26): S0 to S4 executed on candidate `4373399`; outcome in section 7; after the PR #9 review S1 to S3 repeated on the new candidate `12e7205`: READY (section 8).** Plan: [P6_10_INTEGRATED_VERIFICATION_PLAN.md](../development/p6/P6_10_INTEGRATED_VERIFICATION_PLAN.md). Step evidence of S0 is in [P6_VERIFICATION.md](P6_VERIFICATION.md) section 10.
 
 ## 1. Candidate, target and authorizations
 

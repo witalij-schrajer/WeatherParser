@@ -1,6 +1,6 @@
 # P1.11 – Developer Instructions and Evidence: Result Record
 
-**Status (2026-10-19): implemented and verified on Windows x64; parts (a) and (b) done together; accepted by the user ([acceptance](#p111-acceptance-2026-10-19)).** Implements the [P1.11 plan](P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md).
+**Status (2026-10-19): implemented and verified on Windows x64; parts (a) and (b) done together; accepted by the user ([acceptance](#p111-acceptance-2026-10-19)).** Implements the [P1.11 plan](../development/p1/P1_11_DEVELOPER_INSTRUCTIONS_PLAN.md).
 
 ## Decision (user, 2026-10-19)
 

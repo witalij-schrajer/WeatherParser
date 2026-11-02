@@ -1,6 +1,6 @@
 # Contributing to WeatherParser
 
-This guide covers all developer procedures for restoring, building, packing, testing, and evaluating coverage in the WeatherParser repository. It is the single source of truth for development workflows, with each item tagged by platform (Windows, Debian/ARM64, or any) and status. README.md holds only the library purpose, the product status, quickstart, and links; the phase status is in PHASE_STATUS.md; contributor rules are in AGENTS.md; requirements in REQUIREMENTS.md; versions and licenses in DEPENDENCIES.md; platform matrix in docs/COMPATIBILITY.md.
+This guide covers all developer procedures for restoring, building, packing, testing, and evaluating coverage in the WeatherParser repository. It is the single source of truth for development workflows, with each item tagged by platform (Windows, Debian/ARM64, or any) and status. README.md holds only the library purpose, the product status, quickstart, and links; the phase status is in docs/development/PHASE_STATUS.md; contributor rules are in AGENTS.md; requirements in REQUIREMENTS.md; versions and licenses in DEPENDENCIES.md; platform matrix in docs/COMPATIBILITY.md.
 
 ## Status values
 
@@ -250,7 +250,7 @@ Each run writes to a new, timestamped results directory under the gitignored `Te
 - Per-assembly gates (REQ-086 amendment of 2026-10-29, CL-19 option C): `evaluate` accepts the repeatable option `--gated-input <path or directory prefix ending with />`; a code change that touches none of the gated inputs is classified `GatedInputsUnchanged` and may keep equal coverage. `ci-local.ps1` passes the library's build inputs (`src/`, `Directory.Build.props`, `Directory.Packages.props`, `global.json`, `NuGet.Config`, `.editorconfig`, `coverage.runsettings`) to the library gate, and evaluates the example CLI assembly (`WeatherParser.dll`, with `--exclude WeatherParser.Parsing.dll --exclude WeatherParser.Cli.SignalHost.dll --exclude WeatherParser.Cli.FixtureHost.dll`; the coverage can also measure the test executables that the process tests start, the signal test host and the fixture host) in a second gate: `--bootstrap` (80 % minimum, no comparison) while the target has no CLI, otherwise against a CLI baseline measured on the target. Both gates must pass.
 - REQ-086 amendment 2 (2026-10-31, [P9 release contract](docs/p9/P9_RELEASE_CONTRACT.md) RL-11 A and RL-20 A): the gated-input lists live in the coverage tool (`GatedInputSets`); `evaluate --gated-input-set library|cli` selects them (it cannot be combined with `--gated-input`). The CLI gate now has its own gated inputs: `examples/`, `tests/WeatherParser.Cli.Tests/`, `tests/WeatherParser.Cli.SignalHost/`, `src/` and the root build inputs listed above; a code change that touches none of them may keep equal CLI coverage. A recorded baseline reconciliation is an entry of the checked-in file `coverage-reconciliation.json` (gate, full target commit, pull request number, head repository, head branch, approval date, record of the user's approval); `evaluate --gate-name <gate> --reconciliation <file> --head-repository <owner/name> --head-branch <branch>` applies an entry only to a code change with a comparable baseline whose target commit, head repository and head branch match, accepts coverage at or above the baseline and still rejects a decrease; the gate result lists the applied entry as the rule `Reconciliation`. An invalid file fails the gate as an input error (exit code 2 of the runner); a missing file means no entry. Entries exist only with the user's recorded approval and are removed after their pull request is merged.
 
-The binding coverage contract is [PHASE_P1_PLAN.md section 5](PHASE_P1_PLAN.md).
+The binding coverage contract is [PHASE_P1_PLAN.md section 5](docs/development/PHASE_P1_PLAN.md).
 
 `--bootstrap` is reserved for the project's genuine first measurement, which was taken on `0a2dabe` ([P1.09 record](docs/p1/P1_09_LOCAL_CI.md)); later runs always use a baseline.
 
@@ -439,7 +439,7 @@ Older script revisions shared the per-user tool resolver cache, so a deleted run
 * Hosted CI: the GitHub Actions workflow runs the same script for pull requests on hosted runners (see [section 6](#6-local-ci)); its checks cannot be made required on the current plan, and local and hosted runs are recorded separately.
 * Windows evidence is not ARM64 evidence.
 * The Debian/ARM64 evidence covers the package foundation at P1 scope only, not release readiness.
-* Coverage is measured as Microsoft.CodeCoverage native block coverage with the rules of [PHASE_P1_PLAN.md section 5](PHASE_P1_PLAN.md).
+* Coverage is measured as Microsoft.CodeCoverage native block coverage with the rules of [PHASE_P1_PLAN.md section 5](docs/development/PHASE_P1_PLAN.md).
 * Test counts, coverage figures and hashes are kept in the [records](docs/p1/), not here.
 
 ## Version literals

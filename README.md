@@ -1,6 +1,6 @@
 # WeatherParser
 
-The phase status (acceptances, merges and the binding phase sequence) is kept in [PHASE_STATUS.md](PHASE_STATUS.md). Changes per version and the known limitations are in [CHANGELOG.md](CHANGELOG.md); deployment and operation of the example CLI on Debian 13 ARM64 are described in [docs/OPERATIONS.md](docs/OPERATIONS.md).
+The phase status (acceptances, merges and the binding phase sequence) is kept in [PHASE_STATUS.md](docs/development/PHASE_STATUS.md). Changes per version and the known limitations are in [CHANGELOG.md](CHANGELOG.md); deployment and operation of the example CLI on Debian 13 ARM64 are described in [docs/OPERATIONS.md](docs/OPERATIONS.md).
 
 WeatherParser is primarily a C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts (implemented; not yet published). The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
@@ -254,7 +254,7 @@ Source, checked 2026-10-14: [DWD procedure description, section 2.1.3/table 2.1]
 - Automated tests use synthetic fixtures and mocks, without mandatory live websites or production MQTT brokers.
 - Code-block coverage (as defined above) must reach at least 80%. During initial bootstrap without a measurable target-branch baseline, only this minimum applies; target-branch comparison is not applicable. An unexpectedly missing, stale or incomparable baseline in subsequent operation remains an error. Documentation-only PRs may retain the same coverage for the block metric as the target branch; decreases are forbidden. Other PRs must strictly improve the block metric below a 100% baseline; an exact 100% baseline accepts an exact 100% result. Use current commit IDs, comparable collection conditions and unrounded counter ratios. Missing PR measurements, invalid counts and zero denominators cannot pass. Microsoft.CodeCoverage reports, including the code-block breakdown, are the basis for verification; Cobertura line-rate, branch-rate or any Cobertura-derived value must never be used as or substituted for the block metric; missing or unreadable native block counters fail. Verify metric mapping and report format against real reports in P1.
 
-See the [development plan](DEVELOPMENT_PLAN.md) for phases, dependencies and acceptance gates. The [P1 detailed plan](PHASE_P1_PLAN.md) breaks the first implementation phase into work packages and tests. See [REQUIREMENTS.md](REQUIREMENTS.md) for detailed requirements and acceptance criteria, and [AGENTS.md](AGENTS.md) for contributor rules. Developer procedures (restore, build, tests, pack, coverage, local CI, Debian/ARM64) are in [CONTRIBUTING.md](CONTRIBUTING.md).
+See the [development plan](DEVELOPMENT_PLAN.md) for phases, dependencies and acceptance gates. The [P1 detailed plan](docs/development/PHASE_P1_PLAN.md) breaks the first implementation phase into work packages and tests. See [REQUIREMENTS.md](REQUIREMENTS.md) for detailed requirements and acceptance criteria, and [AGENTS.md](AGENTS.md) for contributor rules. Developer procedures (restore, build, tests, pack, coverage, local CI, Debian/ARM64) are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Station and location selection (library)
 
@@ -661,4 +661,4 @@ dotnet build WeatherParser.Ci.slnf --configuration Release
 pwsh ./scripts/ci-local.ps1 -TargetRef <comparison branch> -RunSettings coverage.runsettings
 ```
 
-Every developer procedure, its platform and its verification status are in [CONTRIBUTING.md](CONTRIBUTING.md); contributor rules are in [AGENTS.md](AGENTS.md), versions and licenses in [DEPENDENCIES.md](DEPENDENCIES.md), and the verified platform matrix in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md). Phase history and acceptance records: [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md), [PHASE_P1_PLAN.md](PHASE_P1_PLAN.md) and [docs/p1](docs/p1/).
+Every developer procedure, its platform and its verification status are in [CONTRIBUTING.md](CONTRIBUTING.md); contributor rules are in [AGENTS.md](AGENTS.md), versions and licenses in [DEPENDENCIES.md](DEPENDENCIES.md), and the verified platform matrix in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md). Phase history and acceptance records: [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md), [PHASE_P1_PLAN.md](docs/development/PHASE_P1_PLAN.md) and [docs/p1](docs/p1/).

@@ -1,6 +1,6 @@
 # P9.09 – Broker TLS and Authentication, Windows Shutdown: Run Record
 
-**Status (2026-10-31): S1 to S3 done; RL-13 A verified against a test broker with a test CA and test credentials on Windows and on the NanoPi R76S; RL-14 A recorded as a limitation.** Plan: [P9_09_BROKER_AND_SHUTDOWN_CHECKS_PLAN.md](P9_09_BROKER_AND_SHUTDOWN_CHECKS_PLAN.md). Contract: [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) RL-13 A, RL-14 A. Written by the orchestrating agent; no address, credential, key or certificate is recorded here.
+**Status (2026-10-31): S1 to S3 done; RL-13 A verified against a test broker with a test CA and test credentials on Windows and on the NanoPi R76S; RL-14 A recorded as a limitation.** Plan: [P9_09_BROKER_AND_SHUTDOWN_CHECKS_PLAN.md](../development/p9/P9_09_BROKER_AND_SHUTDOWN_CHECKS_PLAN.md). Contract: [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) RL-13 A, RL-14 A. Written by the orchestrating agent; no address, credential, key or certificate is recorded here.
 
 ## 1. Authorization and decisions
 

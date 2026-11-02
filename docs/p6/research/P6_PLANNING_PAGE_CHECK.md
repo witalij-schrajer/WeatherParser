@@ -1,6 +1,6 @@
 # P6 Planning Check – OsthessenWetter Page Structure and Source Conditions
 
-Planning input for [PHASE_P6_PLAN.md](../../../PHASE_P6_PLAN.md), written by the orchestrating agent on 2026-10-25. It records what one manual retrieval showed. It is not the P6.02 source-fact record: P6.02 re-checks every fact below on its own retrieval date and records the result in the OsthessenWetter contract.
+Planning input for [PHASE_P6_PLAN.md](../../development/PHASE_P6_PLAN.md), written by the orchestrating agent on 2026-10-25. It records what one manual retrieval showed. It is not the P6.02 source-fact record: P6.02 re-checks every fact below on its own retrieval date and records the result in the OsthessenWetter contract.
 
 The retrieved pages are not committed. The site reserves its copyright (see section 4), and REQ-083 requires synthetic fixtures. This note therefore records only structural facts, sizes and hashes, not page content beyond short identifiers needed to describe the structure, such as header labels and station names.
 

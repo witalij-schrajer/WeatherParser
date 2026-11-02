@@ -2,7 +2,7 @@
 
 **Status (2026-10-24): P4.01 complete (READY; Codex review rounds 5, 4, 1, 0 findings, record section 11); P4.02 complete: slices S1 to S5 (selection contract approved by the user on 2026-10-21) and S6 (plan reconciliation, 2026-10-21); P4.03 complete (`a3b79d7`, CI green, section 3); P4.04 complete (`abe6d64`, CI green, section 4); P4.05 complete (`0195b4f`, CI green, section 5); P4.06 complete (`643475f`, CI green, section 6); P4.07 complete (`0f29842`, CI green, section 7); P4.08 complete (`97ced0b`, CI green, section 8); P4.09 complete (`f22bc7a`, CI green, section 9); P4.10 complete (`2f85c2f`, CI green, section 10); P4.11 complete, outcome READY (`98122e5`, evidence `807d29a`, CI green, section 11), rerun on `b6bc47f` after the A10 review fixes with outcome READY (CI green, section 11); P4.12: P4 accepted by the user on 2026-10-24 ([acceptance record](P4_12_ACCEPTANCE.md); this record section 12); P4 complete: pull request #5 merged into `develop` on 2026-10-24 (merge commit `95bcb1e`).**
 
-Collects the evidence of every P4 step as required by [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md) section 7; model output is never evidence; only runs executed by the orchestrating agent count.
+Collects the evidence of every P4 step as required by [PHASE_P4_PLAN.md](../development/PHASE_P4_PLAN.md) section 7; model output is never evidence; only runs executed by the orchestrating agent count.
 
 ## 1. P4.01 – Foundation check
 

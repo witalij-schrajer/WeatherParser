@@ -1,6 +1,6 @@
 # P8.10 – P8 Acceptance Record
 
-**Status (2026-10-29): P8 and the complete library accepted by the user on 2026-10-29 on candidate `ce166eb` (A7, section 7), after the automatic Codex review of pull request #14 reached 0 findings (round 5, section 8) and the integrated verification was repeated READY on `ce166eb` on Windows, hosted CI and the NanoPi R76S ([P8.09 record](P8_09_INTEGRATED_VERIFICATION.md) section 6); P8 is complete: the user merged pull request #14 into `develop` on 2026-10-29 (merge commit `21b7210`, A11, section 8).** Plan: [P8_10_ACCEPTANCE_HANDOFF_PLAN.md](P8_10_ACCEPTANCE_HANDOFF_PLAN.md).
+**Status (2026-10-29): P8 and the complete library accepted by the user on 2026-10-29 on candidate `ce166eb` (A7, section 7), after the automatic Codex review of pull request #14 reached 0 findings (round 5, section 8) and the integrated verification was repeated READY on `ce166eb` on Windows, hosted CI and the NanoPi R76S ([P8.09 record](P8_09_INTEGRATED_VERIFICATION.md) section 6); P8 is complete: the user merged pull request #14 into `develop` on 2026-10-29 (merge commit `21b7210`, A11, section 8).** Plan: [P8_10_ACCEPTANCE_HANDOFF_PLAN.md](../development/p8/P8_10_ACCEPTANCE_HANDOFF_PLAN.md).
 
 ## 1. Review identity (A1)
 

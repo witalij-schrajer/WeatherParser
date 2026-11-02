@@ -1,6 +1,6 @@
 # P9.10 – ARM64 Release Acceptance: Run Record
 
-**Status (2026-11-02): outcome READY on release candidate `86e77eb` on the NanoPi R76S (S1 to S5), with the deviations of section 8.** Plan: [P9_10_ARM64_RELEASE_ACCEPTANCE_PLAN.md](P9_10_ARM64_RELEASE_ACCEPTANCE_PLAN.md). Contract: [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) RL-06 A, RL-07 A, RL-13 A, RL-15 A. Summary and history (the superseded first candidate `2a084be`, the CL-09 fix): [P9 verification record](P9_VERIFICATION.md) section 11. Written by the orchestrating agent; no address, credential, key, certificate or OsthessenWetter value is recorded here.
+**Status (2026-11-02): outcome READY on release candidate `86e77eb` on the NanoPi R76S (S1 to S5), with the deviations of section 8.** Plan: [P9_10_ARM64_RELEASE_ACCEPTANCE_PLAN.md](../development/p9/P9_10_ARM64_RELEASE_ACCEPTANCE_PLAN.md). Contract: [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) RL-06 A, RL-07 A, RL-13 A, RL-15 A. Summary and history (the superseded first candidate `2a084be`, the CL-09 fix): [P9 verification record](P9_VERIFICATION.md) section 11. Written by the orchestrating agent; no address, credential, key, certificate or OsthessenWetter value is recorded here.
 
 ## 1. Authorizations and decisions (verbatim)
 

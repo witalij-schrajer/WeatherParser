@@ -1,6 +1,6 @@
 # P5.11 – P5 Acceptance Record
 
-**Status (2026-10-25): the evidence audit (section 5) accepts the implementation candidate `fd461c8`. P5 was accepted by the user on 2026-10-25 (section 6), and the status documents are updated (section 7). P5 is complete: pull request #7 merged into `develop` on 2026-10-25 (merge commit `29fd553`) (A11, section 8).** Plan: [P5_11_ACCEPTANCE_HANDOFF_PLAN.md](P5_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P6_HANDOFF.md](P6_HANDOFF.md).
+**Status (2026-10-25): the evidence audit (section 5) accepts the implementation candidate `fd461c8`. P5 was accepted by the user on 2026-10-25 (section 6), and the status documents are updated (section 7). P5 is complete: pull request #7 merged into `develop` on 2026-10-25 (merge commit `29fd553`) (A11, section 8).** Plan: [P5_11_ACCEPTANCE_HANDOFF_PLAN.md](../development/p5/P5_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P6_HANDOFF.md](P6_HANDOFF.md).
 
 ## 1. Review identity (A1)
 

@@ -1,6 +1,6 @@
 # P6.11 – P6 Acceptance Record
 
-**Status (2026-10-26): the evidence audit (section 5) accepts the implementation candidate `4373399` and, after the PR #9 review fixes, `12e7205` (section 10). P6 was accepted by the user on 2026-10-26 on candidate `12e7205` (A7, section 6); pull request #9 was marked ready for review on the user's instruction on 2026-10-26 (A9, section 8). P6 is complete: the user merged pull request #9 into `develop` on 2026-10-26 (merge commit `de9d4ba`, A11, section 8).** Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](P6_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
+**Status (2026-10-26): the evidence audit (section 5) accepts the implementation candidate `4373399` and, after the PR #9 review fixes, `12e7205` (section 10). P6 was accepted by the user on 2026-10-26 on candidate `12e7205` (A7, section 6); pull request #9 was marked ready for review on the user's instruction on 2026-10-26 (A9, section 8). P6 is complete: the user merged pull request #9 into `develop` on 2026-10-26 (merge commit `de9d4ba`, A11, section 8).** Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](../development/p6/P6_11_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
 
 ## 1. Review identity (A1)
 

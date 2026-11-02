@@ -2,7 +2,7 @@
 
 **Status (2026-10-20): P2.01 complete (READY); P2.02 completed (commit `b1ba0d2`, candidate run section 2.7, marked completed by the user); P2.03 completed (commit `0f59e1c`, marked completed by the user; section 3); P2.04 completed (commit `15928cf`, marked completed by the user; section 4); P2.05 completed (commit `02393bb`, marked completed by the user; section 5); P2.06 completed (commit `90106eb`, marked completed by the user; section 6); P2.07 completed (commit `41c29d6`, marked completed by the user; section 7); P2.08 completed (commit `7c9b919`, marked completed by the user; section 8); P2.09 completed (commit `77c92a9`, marked completed by the user; section 9); P2.10 completed (commits `f7b9b9e` and `186f900`, marked completed by the user; section 10); hosted CI of the draft pull request #3 checks every push.**
 
-This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
+This record collects the evidence of every P2 step as required by [PHASE_P2_PLAN.md](../development/PHASE_P2_PLAN.md) section 8; model output is never evidence; only the runs listed here, executed by the orchestrating agent, count.
 
 ## 1. P2.01 – Foundation check
 
@@ -83,7 +83,7 @@ Record note: qwen drafted this section's values as a list; the orchestrating age
 ### 2.8 Hosted CI and completion (2026-10-20)
 
 - Hosted CI run 39383342526 of draft pull request #3 on head `6d4b6a2` (contains `b1ba0d2`) passed: `windows-x64`, `ubuntu-x64` and `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
-- The user marked P2.02 completed on 2026-10-20; all acceptance criteria of the [P2.02 plan](P2_02_CONTRACT_AND_FIRST_SLICE_PLAN.md) are checked, with the deviations of section 2.4. This is step completion, not P2 acceptance (P2.11/P2.12).
+- The user marked P2.02 completed on 2026-10-20; all acceptance criteria of the [P2.02 plan](../development/p2/P2_02_CONTRACT_AND_FIRST_SLICE_PLAN.md) are checked, with the deviations of section 2.4. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
 
 ## 3. P2.03 – CDC and MOSMIX list graphs
@@ -126,7 +126,7 @@ Record note: qwen drafted the slice rows of 3.2 as a list; the orchestrating age
 ### 3.7 Hosted CI and completion (2026-10-20)
 
 - Commit `0f59e1c` pushed to `features/develop/P2`; hosted CI run 39396695630 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
-- The user marked P2.03 completed on 2026-10-20; all acceptance criteria of the [P2.03 plan](P2_03_LIST_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- The user marked P2.03 completed on 2026-10-20; all acceptance criteria of the [P2.03 plan](../development/p2/P2_03_LIST_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
 
 ## 4. P2.04 – UTC and source-time normalization
@@ -163,7 +163,7 @@ qwen3-coder:30b generated all production code and tests of S1–S8 and the chara
 
 ### 4.5 Completion (2026-10-20)
 
-- The user reviewed the P2.04 implementation without findings and marked P2.04 completed on 2026-10-20; all acceptance criteria of the [P2.04 plan](P2_04_TIME_NORMALIZATION_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- The user reviewed the P2.04 implementation without findings and marked P2.04 completed on 2026-10-20; all acceptance criteria of the [P2.04 plan](../development/p2/P2_04_TIME_NORMALIZATION_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Before checking "Every example value from the behavior facts asserted", the orchestrating agent found the +01:00 example of C-28 unasserted; qwen3-coder:30b added the characterization test from the agent's brief, and the agent re-ran build (0 warnings), tests (186/99/56 passed) and coverage (510/512).
 - Recorded by the orchestrating agent (user decision and run results).
 
@@ -219,7 +219,7 @@ Authorship: qwen3-coder:30b generated the regression tests, both fixes and the r
 ### 5.7 Hosted CI and completion (2026-10-20)
 
 - Commit `02393bb` pushed to `features/develop/P2`; hosted CI run 39411112653 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
-- The user asked to mark P2.05 completed once the hosted CI succeeded; all acceptance criteria of the [P2.05 plan](P2_05_UNITS_PRESSURE_ROUNDING_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- The user asked to mark P2.05 completed once the hosted CI succeeded; all acceptance criteria of the [P2.05 plan](../development/p2/P2_05_UNITS_PRESSURE_ROUNDING_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
 
 ## 6. P2.06 – Observation graph
@@ -267,7 +267,7 @@ qwen3-coder:30b drafted the contract rows and their revisions, generated the ent
 ### 6.7 Hosted CI and completion (2026-10-20)
 
 - Commit `90106eb` pushed to `features/develop/P2`; hosted CI run 39431824712 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
-- The user asked to mark P2.06 completed once the hosted CI succeeded; all acceptance criteria of the [P2.06 plan](P2_06_OBSERVATION_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- The user asked to mark P2.06 completed once the hosted CI succeeded; all acceptance criteria of the [P2.06 plan](../development/p2/P2_06_OBSERVATION_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
 
 ## 7. P2.07 – Forecast run
@@ -314,7 +314,7 @@ qwen3-coder:30b (through the `/api/chat` invocation of AGENTS.md) drafted the co
 ### 7.7 Hosted CI and completion (2026-10-20)
 
 - Commit `41c29d6` pushed to `features/develop/P2`; hosted CI run 39446243064 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
-- The user marked P2.07 completed on 2026-10-20; all acceptance criteria of the [P2.07 plan](P2_07_FORECAST_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- The user marked P2.07 completed on 2026-10-20; all acceptance criteria of the [P2.07 plan](../development/p2/P2_07_FORECAST_GRAPHS_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
 
 ## 8. P2.08 – Serializer envelope, errors and supported roots
@@ -375,7 +375,7 @@ qwen3-coder:30b (through the `/api/chat` invocation of AGENTS.md) drafted the co
 ### 8.8 Hosted CI and completion (2026-10-20)
 
 - Commit `7c9b919` pushed to `features/develop/P2`; hosted CI run 39466213992 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence).
-- The user marked P2.08 completed on 2026-10-20; all acceptance criteria of the [P2.08 plan](P2_08_SERIALIZER_ENVELOPE_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- The user marked P2.08 completed on 2026-10-20; all acceptance criteria of the [P2.08 plan](../development/p2/P2_08_SERIALIZER_ENVELOPE_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
 
 ## 9. P2.09 – Reproducible output XSDs
@@ -454,7 +454,7 @@ qwen3-coder:30b (through the `/api/chat` invocation of AGENTS.md) drafted the co
 ### 9.9 Hosted CI and completion (2026-10-20)
 
 - Commit `77c92a9` pushed to `features/develop/P2`; hosted CI run 39482435638 of draft pull request #3 (against its PR base) passed: `windows-x64` success, `ubuntu-x64` success, `debian13-arm64` success (Debian 13 ARM64 container on a GitHub-hosted runner, not NanoPi R76S target evidence); `WeatherParser.SchemaGeneration.Tests` ran in each job with 43 executed and passed tests, including the golden-file comparison (section 9.6).
-- The user marked P2.09 completed on 2026-10-20; all acceptance criteria of the [P2.09 plan](P2_09_OUTPUT_SCHEMAS_PLAN.md) are checked. The schema-delivery decision (C-106, inside the package) is implemented in P2.10. This is step completion, not P2 acceptance (P2.11/P2.12).
+- The user marked P2.09 completed on 2026-10-20; all acceptance criteria of the [P2.09 plan](../development/p2/P2_09_OUTPUT_SCHEMAS_PLAN.md) are checked. The schema-delivery decision (C-106, inside the package) is implemented in P2.10. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
 
 ## 10. P2.10 – DI and actual package consumption
@@ -529,7 +529,7 @@ qwen3-coder:30b drafted the contract rows and generated all tests, the consumer 
 
 ### 10.11 Completion (2026-10-20)
 
-- The user marked P2.10 completed on 2026-10-20 after hosted CI run 39487633043 and the S6 run passed (section 10.10); all acceptance criteria of the [P2.10 plan](P2_10_DI_PACKAGE_CONSUMPTION_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
+- The user marked P2.10 completed on 2026-10-20 after hosted CI run 39487633043 and the S6 run passed (section 10.10); all acceptance criteria of the [P2.10 plan](../development/p2/P2_10_DI_PACKAGE_CONSUMPTION_PLAN.md) are checked. This is step completion, not P2 acceptance (P2.11/P2.12).
 - Recorded by the orchestrating agent (run results and user decision).
 
 ## 11. P2.11 – Integrated coverage and platform verification

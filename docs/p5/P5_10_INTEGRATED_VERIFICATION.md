@@ -2,7 +2,7 @@
 
 **Status (2026-10-25): complete. S0 to S5 executed on candidate `a87c7bb` (outcome READY, section 8). The PR #7 review fixes made `fd461c8` the new implementation candidate; S1 to S3 were rerun on it with outcome READY, S4 not repeated (section 9).**
 
-Plan: [P5_10_INTEGRATED_VERIFICATION_PLAN.md](P5_10_INTEGRATED_VERIFICATION_PLAN.md).
+Plan: [P5_10_INTEGRATED_VERIFICATION_PLAN.md](../development/p5/P5_10_INTEGRATED_VERIFICATION_PLAN.md).
 
 ## 1. Decisions
 

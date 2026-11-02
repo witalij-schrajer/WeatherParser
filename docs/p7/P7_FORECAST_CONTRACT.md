@@ -1,6 +1,6 @@
 # WeatherParser MOSMIX Forecast Contract (P7)
 
-**Status (2026-10-26): approved by the user on 2026-10-26 (section 1): MF-01 to MF-18 with the recommended option in every row, after four Codex review rounds and one pull-request review (section 9). Binding for P7.03 to P7.12; the phase plan and the step plans are reconciled with it (P7.02 S6).** Plan: [P7_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md](P7_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md); phase plan [PHASE_P7_PLAN.md](../../PHASE_P7_PLAN.md) section 3.
+**Status (2026-10-26): approved by the user on 2026-10-26 (section 1): MF-01 to MF-18 with the recommended option in every row, after four Codex review rounds and one pull-request review (section 9). Binding for P7.03 to P7.12; the phase plan and the step plans are reconciled with it (P7.02 S6).** Plan: [P7_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md](../development/p7/P7_02_SOURCE_FACTS_AND_CONTRACT_PLAN.md); phase plan [PHASE_P7_PLAN.md](../development/PHASE_P7_PLAN.md) section 3.
 
 Written by the orchestrating agent from its own retrievals of 2026-10-26 (section 2), REQUIREMENTS.md, the export contract ([P2_EXPORT_CONTRACT.md](../p2/P2_EXPORT_CONTRACT.md)), the selection contract ([P4_SELECTION_CONTRACT.md](../p4/P4_SELECTION_CONTRACT.md)) and the repository code on `features/develop/P7`. The retrieved files and the probe programs are kept outside the repository (REQ-083); this record holds URLs, times, sizes, hashes and structural facts only, never forecast values.
 

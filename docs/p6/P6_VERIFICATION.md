@@ -76,7 +76,7 @@
   - [P2] OW-11 does not explicitly cover a single deviating wind row: confirmed. The approved contract names a missing wind table and a changed wind header as notices and a row without the A5 cells or an undocumented status as format failures, without saying which applies to wind rows. The implemented interim rule (one deviating wind row makes the whole wind table deviate: `OSTHESSEN-WIND-TABLE-MISSING`, no wind readings) is an interpretation, not an approved decision. Decided by the user on 2026-10-25 (below).
   - [P3] header tests did not prove exact label matching: confirmed; `ReadAsync_OverviewLabelWithAppendedText_ThrowsFormatChanged`, `ReadAsync_OverviewLabelWithPrependedText_ThrowsFormatChanged` and `ReadAsync_WindLabelWithAppendedText_WindTableMissing` added; they passed on their first run (the reader already compares exactly). Parsing 2045 passed, 0 failed, 2 skipped; library coverage unchanged by these tests (7781/7784).
 - ci-local on the checkpoint `74c8bcf` (artifacts `artifacts/ci/74c8bcf-20261025T165354Z`, gitignored): exit 0; gate passed with 7781/7784 against 7491/7494; Parsing 2045 passed, 2 skipped (live); package consumer 36 passed (the first package-consumer run against the packed library with its AngleSharp dependency); Coverage 99, Coverage.Runner 56, SchemaGeneration 46 passed.
-- Wind-row decision (user, 2026-10-25): "only the deviating wind row is ignored; its station gets an OSTHESSEN-WIND-ROW-UNMATCHED notice and no wind readings, all other stations keep their wind readings." Recorded as the OW-11 amendment in [P6_OSTHESSEN_CONTRACT.md](P6_OSTHESSEN_CONTRACT.md) (sections 1 and 6) and in [PHASE_P6_PLAN.md](../../PHASE_P6_PLAN.md) section 3; it replaces the interim rule of round 1.
+- Wind-row decision (user, 2026-10-25): "only the deviating wind row is ignored; its station gets an OSTHESSEN-WIND-ROW-UNMATCHED notice and no wind readings, all other stations keep their wind readings." Recorded as the OW-11 amendment in [P6_OSTHESSEN_CONTRACT.md](P6_OSTHESSEN_CONTRACT.md) (sections 1 and 6) and in [PHASE_P6_PLAN.md](../development/PHASE_P6_PLAN.md) section 3; it replaces the interim rule of round 1.
   - Red: qwen changed the expectation of the five deviating-row tests from the table notice to `OSTHESSEN-WIND-ROW-UNMATCHED` for the named station and renamed them `..._RowIgnoredStationUnmatched` (missing cell, no name, unknown status, missing status, status cell without image); `ReadAsync_OneDeviatingWindRow_NoStationGetsWind` became `ReadAsync_OneDeviatingWindRow_OnlyThatStationLosesWind` (the valid station keeps its wind); three tests added: `ReadAsync_DeviatingAndValidWindRowForSameStation_StationUnmatched`, `ReadAsync_WindRowWithMissingCell_OtherStationKeepsWind`, `ReadAsync_WindRowWithSingleCell_IgnoredWithoutNotice`. 9 failing (the interim rule returned the table notice and no wind for every station); the method counts stayed 36 and became 13 as briefed.
   - Green: the reader ignores a deviating row and collects the join key of the name it carries (read only when the name cell exists); a station whose key belongs to a deviating row, or without exactly one valid row, gets the unmatched notice; `OSTHESSEN-WIND-TABLE-MISSING` remains for a missing table or a changed header. qwen's first version contained the placeholder `...` from the brief (CS8635) and was corrected compiler-guided. Build 0 warnings, 0 errors; Parsing 2048 passed, 0 failed, 2 skipped; gate (results `TestResults/p6-precommit-20261025T190012Z/`) passed with 7784/7787 against 7491/7494, `evaluate.json` SHA-256 `4dc218914ee702612f9ec9f7e2bc91fab5946b4a2b989402f2824b4ea9dbf7a5`.
   - Authorship: qwen3-coder:30b generated the test changes, the implementation and the correction; the orchestrating agent wrote the contract amendment and this record, reviewed the diffs and ran every build and test.
@@ -138,7 +138,7 @@
 
 ## 6. P6.06 – Retrieval boundary
 
-Plan: [P6_06_RETRIEVAL_BOUNDARY_PLAN.md](P6_06_RETRIEVAL_BOUNDARY_PLAN.md). Contract rows OW-10 and OW-13. One commit for the step: S1 alone would leave the stubbed `ReadAsync` uncovered and fail the strict block-coverage gate, so S1 and S2 are committed together.
+Plan: [P6_06_RETRIEVAL_BOUNDARY_PLAN.md](../development/p6/P6_06_RETRIEVAL_BOUNDARY_PLAN.md). Contract rows OW-10 and OW-13. One commit for the step: S1 alone would leave the stubbed `ReadAsync` uncovered and fail the strict block-coverage gate, so S1 and S2 are committed together.
 
 ### S1 Endpoints and options (OW-10, T-P6-09, T-P6-19)
 
@@ -169,7 +169,7 @@ Plan: [P6_06_RETRIEVAL_BOUNDARY_PLAN.md](P6_06_RETRIEVAL_BOUNDARY_PLAN.md). Cont
 
 ## 7. P6.07 – Parser service and dataset assembly
 
-Plan: [P6_07_PARSER_SERVICE_PLAN.md](P6_07_PARSER_SERVICE_PLAN.md). Contract rows OW-03, OW-04, OW-07, OW-08, OW-10 to OW-13, OW-16. One commit for the step.
+Plan: [P6_07_PARSER_SERVICE_PLAN.md](../development/p6/P6_07_PARSER_SERVICE_PLAN.md). Contract rows OW-03, OW-04, OW-07, OW-08, OW-10 to OW-13, OW-16. One commit for the step.
 
 - Files: `IOsthessenWetterParser.cs`, `OsthessenWetterParser.cs`, `OsthessenWetterParseResult.cs`, `OsthessenWetterStationFailure.cs`; `OsthessenWetterException.StationFailures` (copied, empty unless `OSTHESSEN-NO-USABLE-STATION`) with a second constructor; registration in `ServiceCollectionExtensions`. Tests: `OsthessenWetterParserTests.cs` (19 methods, strict mocks of the source, reader, mapper and builder, the real matcher, `ManualTimeProvider`), `OsthessenWetterParserStationTests.cs` (16 methods, station set, failures and logging), `ComposedOsthessenWetterPipelineTests.cs` (13 methods, every service from `AddWeatherParsing` with only HTTP, time, options, endpoint and logger replaced), three methods added to `OsthessenWetterExceptionTests.cs`.
 - Behaviour: the pattern is validated before any request and before the deadline timer; one deadline per parse from `PageDeadline` and the injected `TimeProvider`; the page is read through the page source with the page reader as the read function; `retrieved_at` is sampled once after the page source returns, truncated to whole seconds, and passed to the mapper and every dataset (OW-16); the mapper checks the IDs of all overview names (OW-03), then the matched stations are processed in page order; an offline station (even with values), a station without metadata and a station whose build is rejected are station failures; no match raises `OSTHESSEN-PATTERN-NO-MATCH`, matches without any dataset raise `OSTHESSEN-NO-USABLE-STATION` carrying the failures; precedence caller cancellation, then the page deadline, then every other failure is checked after retrieval, after mapping, before each station, after each build and before returning.
@@ -189,7 +189,7 @@ Plan: [P6_07_PARSER_SERVICE_PLAN.md](P6_07_PARSER_SERVICE_PLAN.md). Contract row
 
 ## 8. P6.08 – Export equivalence and schema validation
 
-Plan: [P6_08_EXPORT_EQUIVALENCE_PLAN.md](P6_08_EXPORT_EQUIVALENCE_PLAN.md). Contract rows OW-06, OW-16; export contract unchanged.
+Plan: [P6_08_EXPORT_EQUIVALENCE_PLAN.md](../development/p6/P6_08_EXPORT_EQUIVALENCE_PLAN.md). Contract rows OW-06, OW-16; export contract unchanged.
 
 - Files: `tests/WeatherParser.Parsing.Tests/Observations/Osthessen/OsthessenWetterExportContractTests.cs` (11 methods): the composed parser from `AddWeatherParsing` with only HTTP, time, options, endpoint and logger replaced, serialized through the registered real `IJsonExportSerializer` and `IXmlExportSerializer`, compared with `ExportEquivalence` and validated with `ExportSchemaValidation` against the v1 schema. No production code changed; no fixture files were needed (the synthetic page builder `OsthessenWetterHtml` covers ties and umlauts).
 - Characterization (as planned): the tests describe finished behaviour. qwen's first file disposed the service provider inside its `Parse` helper (all tests failed with `ObjectDisposedException`, a test defect) and wrote two literal umlauts, which the orchestrating agent replaced by `\u` escapes; after qwen's correction 10 of 11 passed on their first run. `Export_SeveralDatasets_EachSerializedSeparately` failed because it read `source` as an XML attribute (a test defect; the contract has no attributes); qwen corrected it to read the element in both documents and compare exact lists. No product defect was found.
@@ -205,7 +205,7 @@ Plan: [P6_08_EXPORT_EQUIVALENCE_PLAN.md](P6_08_EXPORT_EQUIVALENCE_PLAN.md). Cont
 
 ## 9. P6.09 – DI registration, README and package consumption
 
-Plan: [P6_09_DI_README_PACKAGE_PLAN.md](P6_09_DI_README_PACKAGE_PLAN.md). Contract rows OW-04, OW-10, OW-13, OW-14.
+Plan: [P6_09_DI_README_PACKAGE_PLAN.md](../development/p6/P6_09_DI_README_PACKAGE_PLAN.md). Contract rows OW-04, OW-10, OW-13, OW-14.
 
 ### S1 DI and package consumption (characterization)
 
@@ -229,7 +229,7 @@ Plan: [P6_09_DI_README_PACKAGE_PLAN.md](P6_09_DI_README_PACKAGE_PLAN.md). Contra
 
 ## 10. P6.10 – Integrated verification
 
-Plan: [P6_10_INTEGRATED_VERIFICATION_PLAN.md](P6_10_INTEGRATED_VERIFICATION_PLAN.md). User authorizations (2026-10-26, chat): "You have my go-ahed for run at nano pi r76s at p6.10" and, separately, "I authorize you to run  live check against OsthessenWetter page." The runs S1 to S4 and the outcome are recorded in [P6_10_INTEGRATED_VERIFICATION.md](P6_10_INTEGRATED_VERIFICATION.md).
+Plan: [P6_10_INTEGRATED_VERIFICATION_PLAN.md](../development/p6/P6_10_INTEGRATED_VERIFICATION_PLAN.md). User authorizations (2026-10-26, chat): "You have my go-ahed for run at nano pi r76s at p6.10" and, separately, "I authorize you to run  live check against OsthessenWetter page." The runs S1 to S4 and the outcome are recorded in [P6_10_INTEGRATED_VERIFICATION.md](P6_10_INTEGRATED_VERIFICATION.md).
 
 ### S0 Live-check mode (test project only)
 
@@ -245,7 +245,7 @@ Plan: [P6_10_INTEGRATED_VERIFICATION_PLAN.md](P6_10_INTEGRATED_VERIFICATION_PLAN
 
 ## 11. P6.11 – Acceptance preparation
 
-Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](P6_11_ACCEPTANCE_HANDOFF_PLAN.md). Record: [P6_11_ACCEPTANCE.md](P6_11_ACCEPTANCE.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
+Plan: [P6_11_ACCEPTANCE_HANDOFF_PLAN.md](../development/p6/P6_11_ACCEPTANCE_HANDOFF_PLAN.md). Record: [P6_11_ACCEPTANCE.md](P6_11_ACCEPTANCE.md); handoff: [P7_HANDOFF.md](P7_HANDOFF.md).
 
 - A1 to A6 written by the orchestrating agent on 2026-10-26: review identity, evidence matrix T-P6-01 to T-P6-19, contract summary, limitations with owners (including the OW-14 source-condition status), audit decision ACCEPTED, P7 handoff. A7 (the user's acceptance) was pending at that time; it was recorded on 2026-10-26 (entry A7 below).
 - A8 status passages (documentation only): AGENTS.md (twice), README.md (twice), DEVELOPMENT_PLAN.md, PHASE_P1_PLAN.md, PHASE_P6_PLAN.md, the contract status line, this record, the P6.10 and P6.11 plan status lines; COMPATIBILITY.md gains the P6 scope section and limit.

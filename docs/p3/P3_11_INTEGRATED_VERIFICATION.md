@@ -1,6 +1,6 @@
 # P3.11 – Integrated Verification of the Example CLI
 
-**Status (2026-10-30): outcome READY on candidate `5696357` on Windows, hosted CI and the NanoPi R76S, with the authorized broker run and live checks (section 7); two README statements corrected afterwards (section 8); the review of this record corrected the CLI gate's assembly scope and a forbidden test attribute, which makes the commit of section 10 the new candidate.** Plan: [P3_11_INTEGRATED_VERIFICATION_PLAN.md](P3_11_INTEGRATED_VERIFICATION_PLAN.md). Contract: [P3_CLI_CONTRACT.md](P3_CLI_CONTRACT.md).
+**Status (2026-10-30): outcome READY on candidate `5696357` on Windows, hosted CI and the NanoPi R76S, with the authorized broker run and live checks (section 7); two README statements corrected afterwards (section 8); the review of this record corrected the CLI gate's assembly scope and a forbidden test attribute, which makes the commit of section 10 the new candidate.** Plan: [P3_11_INTEGRATED_VERIFICATION_PLAN.md](../development/p3/P3_11_INTEGRATED_VERIFICATION_PLAN.md). Contract: [P3_CLI_CONTRACT.md](P3_CLI_CONTRACT.md).
 
 ## 1. Candidate, target and authorization
 

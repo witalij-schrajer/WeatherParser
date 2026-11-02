@@ -2,7 +2,7 @@
 
 **Status (2026-10-25): P5.01 complete, outcome READY ([record](P5_01_FOUNDATION_CHECK.md), checkpoint `ca76114`); P5.02 complete (contract approved 2026-10-24, checkpoint `248d270`, review fix `485d492`); P5.03 complete (`c01d0fa`, section 3); P5.04 complete (`b32985c`, section 4); P5.05 complete (`a1a1928`, section 5); P5.06 complete (`eba34c2`, section 6); P5.07 complete (`18c984a`, section 7); P5.08 complete (`b65e660`, section 8); P5.09 complete (`1301b84`, section 9); P5.10 complete, outcome READY on `fd461c8` (section 10); P5.11: P5 accepted by the user on 2026-10-25 and complete: pull request #7 merged into `develop` on 2026-10-25 (merge commit `29fd553`) (section 11).**
 
-Collects the evidence of every P5 step as required by [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md) section 7; model output is never evidence; only runs executed by the orchestrating agent count.
+Collects the evidence of every P5 step as required by [PHASE_P5_PLAN.md](../development/PHASE_P5_PLAN.md) section 7; model output is never evidence; only runs executed by the orchestrating agent count.
 
 ## 1. P5.01 – Foundation check
 
