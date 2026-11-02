@@ -17,6 +17,10 @@ public sealed class CheckPromotionScriptTests
     private string _dir = null!;
     private string _candidate = null!;
 
+    private const string Nupkg = "WeatherParser.Parsing.0.1.0.nupkg";
+    private const string Snupkg = "WeatherParser.Parsing.0.1.0.snupkg";
+    private const string CliZip = "WeatherParser.Cli.0.1.0.linux-arm64.zip";
+
     [TestInitialize]
     public void TestInitialize()
     {
@@ -42,11 +46,30 @@ public sealed class CheckPromotionScriptTests
 
         _candidate = Commit("candidate");
 
-        var pkgPath = Path.Combine(artifactsDir, "pkg.nupkg");
-        File.WriteAllText(pkgPath, "package bytes");
-        var sha256 = ComputeSha256(pkgPath);
-        File.WriteAllText(Path.Combine(artifactsDir, "SHA256SUMS"), $"{sha256}  pkg.nupkg");
-        File.WriteAllText(Path.Combine(artifactsDir, "evidence.json"), $"{{\"commit\":\"{_candidate}\",\"artifacts\":[{{\"name\":\"pkg.nupkg\",\"sha256\":\"{sha256}\"}}]}}");
+        var nupkgPath = Path.Combine(artifactsDir, Nupkg);
+        File.WriteAllText(nupkgPath, "package bytes");
+        var nupkgHash = ComputeSha256(nupkgPath);
+
+        var snupkgPath = Path.Combine(artifactsDir, Snupkg);
+        File.WriteAllText(snupkgPath, "symbols bytes");
+        var snupkgHash = ComputeSha256(snupkgPath);
+
+        var cliZipPath = Path.Combine(artifactsDir, CliZip);
+        File.WriteAllText(cliZipPath, "cli bytes");
+        var cliZipHash = ComputeSha256(cliZipPath);
+
+        var sb = new StringBuilder();
+        sb.Append(nupkgHash).Append("  ").Append(Nupkg).Append('\n');
+        sb.Append(snupkgHash).Append("  ").Append(Snupkg).Append('\n');
+        sb.Append(cliZipHash).Append("  ").Append(CliZip).Append('\n');
+        File.WriteAllText(Path.Combine(artifactsDir, "SHA256SUMS"), sb.ToString());
+
+        var json = "{";
+        json += $"\"commit\":\"{_candidate}\"";
+        json += ",\"version\":\"0.1.0\"";
+        json += ",\"runtimeIdentifier\":\"linux-arm64\"";
+        json += $",\"artifacts\":[{{\"name\":\"{Nupkg}\",\"sha256\":\"{nupkgHash}\"}},{{\"name\":\"{Snupkg}\",\"sha256\":\"{snupkgHash}\"}},{{\"name\":\"{CliZip}\",\"sha256\":\"{cliZipHash}\"}}]}}";
+        File.WriteAllText(Path.Combine(artifactsDir, "evidence.json"), json);
     }
 
     [TestCleanup]
@@ -236,11 +259,11 @@ public sealed class CheckPromotionScriptTests
     public void Promotion_ModifiedArtifact_ChecksumFails()
     {
         var target = Commit("docs", ("docs/notes.md", "changed"));
-        var pkgPath = Path.Combine(_dir, "artifacts", "pkg.nupkg");
+        var pkgPath = Path.Combine(_dir, "artifacts", Nupkg);
         File.WriteAllText(pkgPath, "tampered");
         var (exitCode, output) = Run(_candidate, target);
         exitCode.Should().Be(5);
-        output.Should().Contain("CHECKSUM-MISMATCH pkg.nupkg");
+        output.Should().Contain("CHECKSUM-MISMATCH " + Nupkg);
     }
 
     /// <summary>
@@ -251,11 +274,11 @@ public sealed class CheckPromotionScriptTests
     public void Promotion_MissingArtifact_Fails()
     {
         var target = Commit("docs", ("docs/notes.md", "changed"));
-        var pkgPath = Path.Combine(_dir, "artifacts", "pkg.nupkg");
+        var pkgPath = Path.Combine(_dir, "artifacts", Nupkg);
         File.Delete(pkgPath);
         var (exitCode, output) = Run(_candidate, target);
         exitCode.Should().Be(5);
-        output.Should().Contain("MISSING-ARTIFACT pkg.nupkg");
+        output.Should().Contain("MISSING-ARTIFACT " + Nupkg);
     }
 
     /// <summary>
@@ -266,8 +289,11 @@ public sealed class CheckPromotionScriptTests
     public void Promotion_EvidenceForOtherCommit_Fails()
     {
         var target = Commit("docs", ("docs/notes.md", "changed"));
+        var nupkgHash = ComputeSha256(Path.Combine(_dir, "artifacts", Nupkg));
+        var snupkgHash = ComputeSha256(Path.Combine(_dir, "artifacts", Snupkg));
+        var cliZipHash = ComputeSha256(Path.Combine(_dir, "artifacts", CliZip));
         var evidencePath = Path.Combine(_dir, "artifacts", "evidence.json");
-        File.WriteAllText(evidencePath, "{\"commit\":\"0000000000000000000000000000000000000000\",\"artifacts\":[{\"name\":\"pkg.nupkg\",\"sha256\":\"1234567890123456789012345678901234567890123456789012345678901234\"}]}");
+        File.WriteAllText(evidencePath, $"{{\"commit\":\"0000000000000000000000000000000000000000\",\"version\":\"0.1.0\",\"runtimeIdentifier\":\"linux-arm64\",\"artifacts\":[{{\"name\":\"{Nupkg}\",\"sha256\":\"{nupkgHash}\"}},{{\"name\":\"{Snupkg}\",\"sha256\":\"{snupkgHash}\"}},{{\"name\":\"{CliZip}\",\"sha256\":\"{cliZipHash}\"}}]}}");
         var (exitCode, output) = Run(_candidate, target);
         exitCode.Should().Be(5);
         output.Should().Contain("EVIDENCE-COMMIT-MISMATCH");

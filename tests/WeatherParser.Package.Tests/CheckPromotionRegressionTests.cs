@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace WeatherParser.Package.Tests;
 
 /// <summary>
-/// Regression tests for scripts/check-promotion.ps1: manifest and evidence validation and literal paths (RL-06 A, T-P9-05).
+/// Regression tests for scripts/check-promotion.ps1: manifest and evidence validation, the complete release set and literal paths (RL-06 A, T-P9-05).
 /// </summary>
 [TestClass]
 public sealed class CheckPromotionRegressionTests
@@ -17,6 +17,10 @@ public sealed class CheckPromotionRegressionTests
     private string _dir = null!;
     private string _candidate = null!;
     private string _artifacts = null!;
+
+    private const string Nupkg = "WeatherParser.Parsing.0.1.0.nupkg";
+    private const string Snupkg = "WeatherParser.Parsing.0.1.0.snupkg";
+    private const string CliZip = "WeatherParser.Cli.0.1.0.linux-arm64.zip";
 
     [TestInitialize]
     public void TestInitialize()
@@ -43,11 +47,20 @@ public sealed class CheckPromotionRegressionTests
 
         _candidate = Commit("candidate");
 
-        var pkgPath = Path.Combine(_artifacts, "pkg.nupkg");
-        File.WriteAllText(pkgPath, "package bytes");
-        var pkgHash = ComputeSha256(pkgPath);
-        File.WriteAllText(Path.Combine(_artifacts, "SHA256SUMS"), $"{pkgHash}  pkg.nupkg\n");
-        File.WriteAllText(Path.Combine(_artifacts, "evidence.json"), $"{{\"commit\":\"{_candidate}\",\"artifacts\":[{{\"name\":\"pkg.nupkg\",\"sha256\":\"{pkgHash}\"}}]}}");
+        var nupkgPath = Path.Combine(_artifacts, Nupkg);
+        File.WriteAllText(nupkgPath, "package bytes");
+        var nupkgHash = ComputeSha256(nupkgPath);
+
+        var snupkgPath = Path.Combine(_artifacts, Snupkg);
+        File.WriteAllText(snupkgPath, "symbols bytes");
+        var snupkgHash = ComputeSha256(snupkgPath);
+
+        var cliZipPath = Path.Combine(_artifacts, CliZip);
+        File.WriteAllText(cliZipPath, "cli bytes");
+        var cliZipHash = ComputeSha256(cliZipPath);
+
+        WriteManifest(Nupkg, Snupkg, CliZip);
+        WriteEvidence(_candidate, "0.1.0", "linux-arm64", Nupkg, Snupkg, CliZip);
     }
 
     [TestCleanup]
@@ -164,6 +177,41 @@ public sealed class CheckPromotionRegressionTests
         return (process.ExitCode, output);
     }
 
+    private void WriteEvidence(string commit, string? version, string? runtimeIdentifier, params string[] names)
+    {
+        var artifacts = new StringBuilder();
+        foreach (var name in names)
+        {
+            var filePath = Path.Combine(_artifacts, name);
+            var hash = ComputeSha256(filePath);
+            if (artifacts.Length > 0)
+                artifacts.Append(",");
+            artifacts.Append($"{{\"name\":\"{name}\",\"sha256\":\"{hash}\"}}");
+        }
+
+        var json = "{";
+        json += $"\"commit\":\"{commit}\"";
+        if (version != null)
+            json += $",\"version\":\"{version}\"";
+        if (runtimeIdentifier != null)
+            json += $",\"runtimeIdentifier\":\"{runtimeIdentifier}\"";
+        json += $",\"artifacts\":[{artifacts}]}}";
+
+        File.WriteAllText(Path.Combine(_artifacts, "evidence.json"), json);
+    }
+
+    private void WriteManifest(params string[] names)
+    {
+        var sb = new StringBuilder();
+        foreach (var name in names)
+        {
+            var filePath = Path.Combine(_artifacts, name);
+            var hash = ComputeSha256(filePath);
+            sb.Append(hash).Append("  ").Append(name).Append('\n');
+        }
+        File.WriteAllText(Path.Combine(_artifacts, "SHA256SUMS"), sb.ToString());
+    }
+
     /// <summary>
     /// Tests that promotion fails with exit code 2 when SHA256SUMS is empty.
     /// </summary>
@@ -195,7 +243,7 @@ public sealed class CheckPromotionRegressionTests
     [TestCategory("T-P9-05")]
     public void Promotion_InvalidHashSyntax_ExitTwo()
     {
-        File.WriteAllText(Path.Combine(_artifacts, "SHA256SUMS"), "zz  pkg.nupkg\n");
+        File.WriteAllText(Path.Combine(_artifacts, "SHA256SUMS"), "zz  " + Nupkg + "\n");
         var (exitCode, output) = Run(_candidate, _candidate);
         exitCode.Should().Be(2);
     }
@@ -207,7 +255,7 @@ public sealed class CheckPromotionRegressionTests
     [TestCategory("T-P9-05")]
     public void Promotion_DuplicateManifestEntry_ExitTwo()
     {
-        File.WriteAllText(Path.Combine(_artifacts, "SHA256SUMS"), "1234567890123456789012345678901234567890123456789012345678901234  pkg.nupkg\n1234567890123456789012345678901234567890123456789012345678901234  pkg.nupkg\n");
+        File.WriteAllText(Path.Combine(_artifacts, "SHA256SUMS"), "1234567890123456789012345678901234567890123456789012345678901234  " + Nupkg + "\n1234567890123456789012345678901234567890123456789012345678901234  " + Nupkg + "\n");
         var (exitCode, output) = Run(_candidate, _candidate);
         exitCode.Should().Be(2);
     }
@@ -219,14 +267,18 @@ public sealed class CheckPromotionRegressionTests
     [TestCategory("T-P9-05")]
     public void Promotion_ManifestOmitsEvidenceArtifact_Fails()
     {
-        var pkgHash = ComputeSha256(Path.Combine(_artifacts, "pkg.nupkg"));
+        var nupkgHash = ComputeSha256(Path.Combine(_artifacts, Nupkg));
+        var snupkgHash = ComputeSha256(Path.Combine(_artifacts, Snupkg));
+        var cliZipHash = ComputeSha256(Path.Combine(_artifacts, CliZip));
         var otherHash = new string('a', 64);
-        File.WriteAllText(Path.Combine(_artifacts, "SHA256SUMS"), $"{pkgHash}  pkg.nupkg\n");
-        File.WriteAllText(Path.Combine(_artifacts, "evidence.json"), $"{{\"commit\":\"{_candidate}\",\"artifacts\":[{{\"name\":\"pkg.nupkg\",\"sha256\":\"{pkgHash}\"}},{{\"name\":\"other.zip\",\"sha256\":\"{otherHash}\"}}]}}");
+        WriteManifest(Nupkg, Snupkg, CliZip);
+        File.WriteAllText(Path.Combine(_artifacts, "evidence.json"), $"{{\"commit\":\"{_candidate}\",\"version\":\"0.1.0\",\"runtimeIdentifier\":\"linux-arm64\",\"artifacts\":[{{\"name\":\"{Nupkg}\",\"sha256\":\"{nupkgHash}\"}},{{\"name\":\"{Snupkg}\",\"sha256\":\"{snupkgHash}\"}},{{\"name\":\"{CliZip}\",\"sha256\":\"{cliZipHash}\"}},{{\"name\":\"other.zip\",\"sha256\":\"{otherHash}\"}}]}}");
         var (exitCode, output) = Run(_candidate, _candidate);
         exitCode.Should().Be(5);
         output.Should().Contain("MANIFEST-MISMATCH other.zip");
-        output.Should().NotContain("MANIFEST-MISMATCH pkg.nupkg");
+        output.Should().NotContain("MANIFEST-MISMATCH " + Nupkg);
+        output.Should().NotContain("MANIFEST-MISMATCH " + Snupkg);
+        output.Should().NotContain("MANIFEST-MISMATCH " + CliZip);
     }
 
     /// <summary>
@@ -266,5 +318,87 @@ public sealed class CheckPromotionRegressionTests
         var (exitCode, output) = Run(_candidate, _candidate);
         exitCode.Should().Be(0);
         output.Should().Contain("PROMOTABLE");
+    }
+
+    /// <summary>
+    /// Tests that promotion passes with the complete release set.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-05")]
+    public void Promotion_CompleteReleaseSet_Passes()
+    {
+        var (exitCode, output) = Run(_candidate, _candidate);
+        exitCode.Should().Be(0);
+        output.Should().Contain("PROMOTABLE");
+    }
+
+    /// <summary>
+    /// Tests that promotion fails when the release set is missing symbols.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-05")]
+    public void Promotion_ReleaseSetWithoutSymbols_Fails()
+    {
+        File.Delete(Path.Combine(_artifacts, Snupkg));
+        WriteManifest(Nupkg, CliZip);
+        WriteEvidence(_candidate, "0.1.0", "linux-arm64", Nupkg, CliZip);
+        var (exitCode, output) = Run(_candidate, _candidate);
+        exitCode.Should().Be(5);
+        output.Should().Contain("INCOMPLETE-SET " + Snupkg);
+        output.Should().NotContain("PROMOTABLE");
+    }
+
+    /// <summary>
+    /// Tests that promotion fails when the release set contains an unexpected artifact.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-05")]
+    public void Promotion_ReleaseSetWithExtraArtifact_Fails()
+    {
+        var extraPath = Path.Combine(_artifacts, "extra.txt");
+        File.WriteAllText(extraPath, "extra");
+        WriteManifest(Nupkg, Snupkg, CliZip, "extra.txt");
+        WriteEvidence(_candidate, "0.1.0", "linux-arm64", Nupkg, Snupkg, CliZip, "extra.txt");
+        var (exitCode, output) = Run(_candidate, _candidate);
+        exitCode.Should().Be(5);
+        output.Should().Contain("UNEXPECTED-ARTIFACT extra.txt");
+    }
+
+    /// <summary>
+    /// Tests that promotion fails when the CLI archive is for a different runtime.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-05")]
+    public void Promotion_CliArchiveOfOtherRuntime_Fails()
+    {
+        WriteEvidence(_candidate, "0.1.0", "linux-x64", Nupkg, Snupkg, CliZip);
+        var (exitCode, output) = Run(_candidate, _candidate);
+        exitCode.Should().Be(5);
+        output.Should().Contain("INCOMPLETE-SET WeatherParser.Cli.0.1.0.linux-x64.zip");
+        output.Should().Contain("UNEXPECTED-ARTIFACT WeatherParser.Cli.0.1.0.linux-arm64.zip");
+    }
+
+    /// <summary>
+    /// Tests that promotion fails with exit code 2 when evidence.json does not contain a version.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-05")]
+    public void Promotion_EvidenceWithoutVersion_ExitTwo()
+    {
+        WriteEvidence(_candidate, null, "linux-arm64", Nupkg, Snupkg, CliZip);
+        var (exitCode, output) = Run(_candidate, _candidate);
+        exitCode.Should().Be(2);
+    }
+
+    /// <summary>
+    /// Tests that promotion fails with exit code 2 when evidence.json does not contain a runtime identifier.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("T-P9-05")]
+    public void Promotion_EvidenceWithoutRuntimeIdentifier_ExitTwo()
+    {
+        WriteEvidence(_candidate, "0.1.0", null, Nupkg, Snupkg, CliZip);
+        var (exitCode, output) = Run(_candidate, _candidate);
+        exitCode.Should().Be(2);
     }
 }

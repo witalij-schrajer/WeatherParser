@@ -17,9 +17,33 @@ dotnet --list-runtimes
 
 Follow Microsoft's instructions for adding the package feed on Debian 13 first ([Install .NET on Debian](https://learn.microsoft.com/dotnet/core/install/linux-debian)). A runtime installed by other means (for example the `dotnet-install` script into a user folder) works as well when `DOTNET_ROOT` points to it; the installer and the update path are then the operator's responsibility.
 
+### Building the CLI from the tagged source (RL-08 A)
+
+The CLI is not attached to a release. An operator builds it from the release tag against the released package, with the .NET SDK that `global.json` pins (`rollForward` `disable`; CONTRIBUTING.md section 1), on any machine with that SDK; the output is framework-dependent `linux-arm64` and runs on the target with the runtime above. Until the package is published, the released `.nupkg` (verified against the release's `SHA256SUMS`) is the only copy of `WeatherParser.Parsing` in the local package source `artifacts/local-nuget`, which `NuGet.Config` names; after a publication it comes from nuget.org. A fresh package cache prevents a stale earlier `0.1.0` build from being used (CONTRIBUTING.md section 4):
+
+```bash
+git clone <repository URL> weatherparser
+cd weatherparser
+git checkout --detach v<version>
+mkdir -p artifacts/local-nuget
+cp <release folder>/WeatherParser.Parsing.<version>.nupkg artifacts/local-nuget/
+export NUGET_PACKAGES="$PWD/.nuget-packages"
+dotnet restore examples/WeatherParser.Cli -r linux-arm64 --force-evaluate
+dotnet publish examples/WeatherParser.Cli -c Release -r linux-arm64 --self-contained false --no-restore -o publish
+```
+
+Check that the CLI resolved exactly the released package: `examples/WeatherParser.Cli/obj/project.assets.json` must list the library `WeatherParser.Parsing/<version>` with a `sha512` equal to the Base64 SHA-512 of the released `.nupkg` (the release build makes the same check, `PACKAGE-MISMATCH`):
+
+```bash
+python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['libraries']['WeatherParser.Parsing/'+sys.argv[2]]['sha512'])" examples/WeatherParser.Cli/obj/project.assets.json <version>
+openssl dgst -sha512 -binary artifacts/local-nuget/WeatherParser.Parsing.<version>.nupkg | base64 -w0; echo
+```
+
+The two lines must be equal. The folder `publish` then takes the place of the unpacked archive in the commands below (`sudo cp -r publish/. /opt/weatherparser/<version>/` instead of the `python3 … extractall` line). The private CLI acceptance artifact of the release build, `WeatherParser.Cli.<version>.linux-arm64.zip`, is built the same way; it is used for the release acceptance (P9.07 to P9.10) and is not a release download.
+
 ### Layout, user and permissions
 
-The CLI acceptance artifact `WeatherParser.Cli.<version>.linux-arm64.zip` of the release build is verified against its `SHA256SUMS` line and unpacked into a versioned folder; a stable symlink names the current version, so an update is an unpack plus a symlink change and a rollback is the reverse:
+The CLI, either the folder `publish` built above or, for the release acceptance, the CLI acceptance artifact `WeatherParser.Cli.<version>.linux-arm64.zip` verified against its `SHA256SUMS` line, goes into a versioned folder; a stable symlink names the current version, so an update is an unpack plus a symlink change and a rollback is the reverse:
 
 ```bash
 sha256sum -c --ignore-missing SHA256SUMS
@@ -180,6 +204,7 @@ Status values as in CONTRIBUTING.md ("Status values").
 | Example | Status |
 |---|---|
 | Section 1, checksum, unpack, symlink, configuration and credential modes, invocation without a terminal | Verified on the NanoPi R76S in P9.07 in a disposable home folder as the login user, without root ([P9 verification record](p9/P9_VERIFICATION.md) section 8, [target run](p9/P9_07_TARGET_RUN.md)), and in P9.10 with the service user, the system paths, the credential file and the runtime 10.0.14 ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) sections 4 and 7) |
+| Section 1, building the CLI from the tagged source | Planned for P9.12 (the post-publication check of RL-08 A repeats this build once); the same restore, publish and package check run in every release build (`scripts/build-release.ps1`, verified in P9.06 and P9.10) |
 | Section 1, MOSMIX_S evidence cache directory; updates and rollback | Evidence cache directory Verified in P9.10 (created with its owner, filled by the live `--SelectMOSMIX --RefreshMosmixSEvidence`); updates and rollback Verified in P9.10 by moving `current` to a second version folder and back, with `/etc/weatherparser` and the credential file unchanged (the same artifact in both folders; [P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 7) |
 | Section 3, cron entries; n8n | cron Verified in P9.10: the guide's cron line with `logger` under `/bin/sh`, and a 36.5-hour series of the documented entries, MOSMIX_L at `30 0,6,12,18` on a `Europe/Berlin` host ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) sections 5 and 7); n8n is an example only: its command line ran as a shell command, n8n itself not verified |
 | Section 4, exit codes | Verified by the CLI tests (P3) and on the NanoPi in P3.11 and P9.07 |
