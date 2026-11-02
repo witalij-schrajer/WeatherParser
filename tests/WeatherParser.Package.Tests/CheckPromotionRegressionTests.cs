@@ -288,9 +288,13 @@ public sealed class CheckPromotionRegressionTests
     [TestCategory("T-P9-05")]
     public void Promotion_EvidenceWithoutCommit_ExitTwo()
     {
-        File.WriteAllText(Path.Combine(_artifacts, "evidence.json"), "{\"artifacts\":[]}");
+        var nupkgHash = ComputeSha256(Path.Combine(_artifacts, Nupkg));
+        var snupkgHash = ComputeSha256(Path.Combine(_artifacts, Snupkg));
+        var cliZipHash = ComputeSha256(Path.Combine(_artifacts, CliZip));
+        File.WriteAllText(Path.Combine(_artifacts, "evidence.json"), $"{{\"version\":\"0.1.0\",\"runtimeIdentifier\":\"linux-arm64\",\"artifacts\":[{{\"name\":\"{Nupkg}\",\"sha256\":\"{nupkgHash}\"}},{{\"name\":\"{Snupkg}\",\"sha256\":\"{snupkgHash}\"}},{{\"name\":\"{CliZip}\",\"sha256\":\"{cliZipHash}\"}}]}}");
         var (exitCode, output) = Run(_candidate, _candidate);
         exitCode.Should().Be(2);
+        output.Should().Contain("commit");
     }
 
     /// <summary>
