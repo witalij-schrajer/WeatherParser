@@ -18,7 +18,7 @@ Status legend:
 | Microsoft.CodeCoverage dynamic instrumentation on `linux-arm64` | not required | Vendor: unsupported on Linux ARM64 ([P1.02 tooling review](p1/P1_02_TOOLING_REVIEW.md)) | Not used; disabled by `coverage.runsettings` |
 | `dotnet-coverage` 18.11.0 on `linux-arm64` | conversion of raw reports | Pinned local tool (`.config/dotnet-tools.json`) | Class B: conversion ran on the target (`converterRid` `linux-arm64`, tool version 18.11.0); the Windows fallback (`-CollectOnly` + `-ResumeFrom`) was also verified with ARM64 raw reports ([P1.10 record](p1/P1_10_DEBIAN_ARM64.md)) |
 | PowerShell 7 on Debian ARM64 | required by the single CI script (P1.09 decision a) | PowerShell supports Debian 13 until 2030-06-30 ([Install PowerShell on Debian](https://learn.microsoft.com/powershell/scripting/install/install-debian)); the documented Debian packages are amd64; the binary-archive install used on ARM64 is described under alternate methods, which "may work but aren't officially supported by Microsoft" ([Alternate ways to install PowerShell](https://learn.microsoft.com/powershell/scripting/install/alternate-install-methods)) | Class B: PowerShell 7.6.7 `linux-arm64` archive, SHA-256 verified against the release `hashes.sha256`, user-directory install; ran every CI run ([P1.10 record](p1/P1_10_DEBIAN_ARM64.md)) |
-| MSTest/VSTest on `linux-arm64` | test execution on the target | MSTest 4.5.1 / Microsoft.NET.Test.Sdk as pinned in `Directory.Packages.props` | Class B: all four test projects ran on the target; `-FaultInjection FailingTest` exits 50 with the TRX kept ([P1.10 record](p1/P1_10_DEBIAN_ARM64.md)) |
+| MSTest/VSTest on `linux-arm64` | test execution on the target | MSTest as pinned in `Directory.Packages.props` (4.5.1 at the P1.10 evidence; 4.5.2 since P9.03 on 2026-10-31) / Microsoft.NET.Test.Sdk as pinned | Class B: all four test projects ran on the target; `-FaultInjection FailingTest` exits 50 with the TRX kept ([P1.10 record](p1/P1_10_DEBIAN_ARM64.md)) |
 | `linux-x64` | only if used | — | Not used ([P1.10 record](p1/P1_10_DEBIAN_ARM64.md)) |
 
 ## P2 scope (P2.11, 2026-10-20)
@@ -76,6 +76,19 @@ Candidate `a36d15a538e6ddc9cdf01d47b2ff45073a36cd95` against PR base `8009f1c413
 | NanoPi R76S | Offline MOSMIX_S resource check on the target (MF-05, MF-07 readiness) | Duration 58,710 ms of the 300,000 ms deadline; process peak 143,413,248 bytes of the 268,435,456-byte threshold; within both |
 | GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40615010706 on `a36d15a`) | All jobs succeeded; recorded separately and not counted as target evidence |
 | Windows x64 (developer machine), live DWD MOSMIX files | Explicitly enabled live checks (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=mosmix-l` and `mosmix-s`), one authorized run per product on candidate `a36d15a` | MOSMIX_L: 1 request of a budget of 1, HTTP 200, 247 steps, fresh, schema-valid, no omissions; MOSMIX_S: 1 request, HTTP 200, 35,966,201 bytes, 240 steps, fresh, schema-valid, no omissions, parse 8,967 ms; forecast values not recorded (MF-17) |
+
+## Release 0.1.0 scope (P9.10, verified 2026-11-01 to 2026-11-02)
+
+Rows prepared in P9.08 and filled in by P9.10 on release candidate `86e77eb` (RL-15 A, [P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); the CLI deployment check without root in P9.07 ([P9 verification record](p9/P9_VERIFICATION.md) section 8) is superseded by these rows.
+
+| Platform | Evidence class | Result |
+|---|---|---|
+| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, runtime 10.0.14 or newer | Class B: candidate CLI installed per RL-07 A from its checksummed artifact, as the service user | Verified on `86e77eb` with runtime 10.0.14 on Debian 13.7: checksums `OK`, the RL-07 A layout and modes, every run as `weatherparser` without a terminal ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 4) |
+| NanoPi R76S | Class B: package consumer against the release `.nupkg` without a source checkout | Verified on `86e77eb`: `WeatherParser.Package.Tests` 131/131 on the NanoPi and on Windows ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 3) |
+| NanoPi R76S | Class B: every CLI command once offline against the fixture host and once live in JSON mode (OsthessenWetter JSON only, OW-14) | Verified on `86e77eb`: offline exit codes 0, 2, 1 and 3 as expected (the MOSMIX commands only on their failure paths, no MOSMIX fixtures); live every command exit 0 except OsthessenWetter in the second setup (station reported offline, `OSTHESSEN-STATION-OFFLINE`, exit 1) ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 4) |
+| NanoPi R76S | Class B: one MQTT run against the test broker with TLS and credentials (RL-13 A) | Verified in P9.09 and on `86e77eb`: published with QoS 1 over TLS through an SSH tunnel to the Windows test broker and observed live ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 4) |
+| NanoPi R76S | Class B: signals and cleanup; cron every 10 minutes over 24 hours against the fixture host plus one live invocation per source per hour | Verified on `86e77eb`: SIGINT and SIGTERM exit 4 without output; 374 invocations over 36.5 hours, 369 exit 0 and 5 reported live item failures, peak memory at most 202,492 KB, no leftover process, file or user ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 5) |
+| GitHub-hosted `ubuntu-x64` | Release build of the candidate (`release-build.yml`) | Verified: run 41239327847 on `86e77eb` (SDK 10.0.402); dry runs on `a563fc4` recorded in P9.06 |
 
 ## Limits
 

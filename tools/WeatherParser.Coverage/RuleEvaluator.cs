@@ -99,6 +99,18 @@ public sealed class RuleEvaluator : IRuleEvaluator
                 results.Add(new RuleResult("Comparison", false, $"Block coverage {current.Covered}/{current.Total} ({currentPercent}%) is below baseline {baseline.Covered}/{baseline.Total} ({baselinePercent}%)."));
             }
         }
+        else if (category == PullRequestCategory.Reconciled)
+        {
+            // Code PR covered by a user-approved, recorded baseline reconciliation (REQ-086 amendment 2)
+            if (currentScaled >= baselineScaled)
+            {
+                results.Add(new RuleResult("Comparison", true, $"Block coverage {current.Covered}/{current.Total} ({currentPercent}%) is at or above baseline {baseline.Covered}/{baseline.Total} ({baselinePercent}%); a recorded baseline reconciliation applies, so equal coverage is accepted."));
+            }
+            else
+            {
+                results.Add(new RuleResult("Comparison", false, $"Block coverage {current.Covered}/{current.Total} ({currentPercent}%) is below baseline {baseline.Covered}/{baseline.Total} ({baselinePercent}%); a recorded baseline reconciliation never accepts a decrease."));
+            }
+        }
         else
         {
             // Code PR

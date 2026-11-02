@@ -23,6 +23,10 @@ Run settings file for coverage collection; copied once into the run directory an
 Injects one fault inside the clone or the run directory.
 .PARAMETER ResumeFrom
 Run directory of a -CollectOnly run: verify its resume package, convert both raw reports with the pinned tool, write the baseline and run the gate.
+.PARAMETER PullRequestHeadRepository
+Head repository of the pull request as owner/name (REQ-086 amendment 2); together with -PullRequestBranch it selects the recorded baseline reconciliations of coverage-reconciliation.json in the commit under test. Without both, no reconciliation applies.
+.PARAMETER PullRequestBranch
+Head branch of the pull request (REQ-086 amendment 2); see -PullRequestHeadRepository.
 .EXAMPLE
 ci-local.ps1 -Commit 2f8c670 -TargetRef HEAD
 .EXAMPLE
@@ -37,9 +41,11 @@ param(
     [switch]$Bootstrap,
     [switch]$CollectOnly,
     [switch]$KeepWorkDir,
-    [ValidateSet('SdkMismatch','LockDrift','FailingTest','MissingCoverage','ConsumerLockDrift','IncomparableTarget','GateFailure','RunSettingsTamper')]
+    [ValidateSet('SdkMismatch','LockDrift','FailingTest','MissingCoverage','ConsumerLockDrift','IncomparableTarget','GateFailure','RunSettingsTamper','InvalidReconciliation')]
     [string]$FaultInjection,
-    [string]$ResumeFrom
+    [string]$ResumeFrom,
+    [string]$PullRequestHeadRepository,
+    [string]$PullRequestBranch
 )
 
 $script:BoundParameterNames = @($PSBoundParameters.Keys)
@@ -387,7 +393,7 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
     
     New-CiDirectory $PassDir
     
-    $version = ([xml](Get-Content (Join-Path $CloneDir "src\WeatherParser.Parsing\WeatherParser.Parsing.csproj"))).Project.PropertyGroup.Version
+    $version = ([xml](Get-Content (Join-Path $CloneDir "src\WeatherParser.Parsing\WeatherParser.Parsing.csproj"))).SelectNodes('/Project/PropertyGroup/Version') | ForEach-Object { $_.InnerText.Trim() } | Where-Object { $_ } | Select-Object -First 1
     if ($version -is [array]) {
         $version = ($version | Where-Object { $_ -ne '' } | Select-Object -First 1)
     }
@@ -405,6 +411,7 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
         $zip = [IO.Compression.ZipFile]::OpenRead($nupkgPath)
         $expectedEntries = @(
             'lib/net10.0/WeatherParser.Parsing.dll',
+            'lib/net10.0/WeatherParser.Parsing.xml',
             'schemas/export/v1/weatherparser-export-v1.xsd',
             'README.md',
             'LICENSE',
@@ -449,6 +456,21 @@ function Invoke-PackStage([string]$CloneDir, [string]$PassDir) {
             Fail 60 "Expected exactly one psmdcp entry, found $($psmdcpEntries.Count): $($psmdcpEntries -join ', ')"
         }
 
+        # The symbols package (RL-03 A) is produced next to the package and carries exactly the library PDB besides the NuGet metadata.
+        $snupkgPath = Join-Path $script:RunDir "WeatherParser.Parsing.$version.snupkg"
+        if (!(Test-Path $snupkgPath)) {
+            Fail 60 "Pack failed, no .snupkg created"
+        }
+        $symbolZip = [IO.Compression.ZipFile]::OpenRead($snupkgPath)
+        try {
+            $symbolEntries = @($symbolZip.Entries | ForEach-Object { $_.FullName } | Where-Object { $_ -notmatch $psmdcpPattern -and $_ -notin @('WeatherParser.Parsing.nuspec', '[Content_Types].xml', '_rels/.rels') })
+        } finally {
+            $symbolZip.Dispose()
+        }
+        if (($symbolEntries -join ',') -ne 'lib/net10.0/WeatherParser.Parsing.pdb') {
+            Fail 60 "Unexpected entries in .snupkg: $($symbolEntries -join ', ')"
+        }
+
         $hash = [Convert]::ToBase64String([System.Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes($nupkgPath)))
         $hash | Out-File -FilePath (Join-Path $script:RunDir 'package-hash.txt') -Encoding utf8NoBOM
     } finally {
@@ -473,7 +495,7 @@ function Invoke-ConsumerStage([string]$CloneDir, [string]$PassDir) {
         Fail 70 "Package consumer must not use a ProjectReference (T-P1-22)"
     }
 
-    $version = ([xml](Get-Content (Join-Path $CloneDir "src\WeatherParser.Parsing\WeatherParser.Parsing.csproj"))).Project.PropertyGroup.Version
+    $version = ([xml](Get-Content (Join-Path $CloneDir "src\WeatherParser.Parsing\WeatherParser.Parsing.csproj"))).SelectNodes('/Project/PropertyGroup/Version') | ForEach-Object { $_.InnerText.Trim() } | Where-Object { $_ } | Select-Object -First 1
     if ($version -is [array]) {
         $version = ($version | Where-Object { $_ -ne '' } | Select-Object -First 1)
     }
@@ -832,6 +854,12 @@ function New-ResumePackage() {
 function Invoke-GateStage() {
     Write-CiLog "=== GATE ==="
     $script:CurrentStageCode = 90
+
+    if ($FaultInjection -eq 'InvalidReconciliation') {
+        # Verification only: a malformed reconciliation file in the commit under test must fail the gate as an input error (exit code 91).
+        Write-CiLog "FAULT INJECTION: InvalidReconciliation"
+        Set-Content -LiteralPath (Join-Path "$script:WorkDir/src" 'coverage-reconciliation.json') -Value '{ not json'
+    }
     
     $changedFiles = Join-Path $script:RunDir 'changed-files.txt'
     
@@ -841,7 +869,7 @@ function Invoke-GateStage() {
 
     if ($Bootstrap) {
         Write-CiLog "Running bootstrap gate"
-        $gate = Invoke-Native 90 'dotnet' @('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--bootstrap') -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--bootstrap') + (Get-GateArguments 'library')) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
         switch ($gate.ExitCode) {
             1 {
                 $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
@@ -875,7 +903,7 @@ function Invoke-GateStage() {
         $settingsSha256 = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData([IO.File]::ReadAllBytes($copiedSettings)))
         Write-CiLog "External baseline settings SHA-256: $settingsSha256"
         
-        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', $copiedBaseline, '--expected-baseline-commit', $script:TargetSha) + (Get-GatedInputArguments)) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', $copiedBaseline, '--expected-baseline-commit', $script:TargetSha) + (Get-GateArguments 'library')) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
         switch ($gate.ExitCode) {
             1 {
                 $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
@@ -888,7 +916,7 @@ function Invoke-GateStage() {
         }
     } else {
         Write-CiLog "Running gate with two-pass baseline"
-        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', (Join-Path $script:RunDir 'target/baseline.json'), '--expected-baseline-commit', $script:TargetSha) + (Get-GatedInputArguments)) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
+        $gate = Invoke-Native 90 'dotnet' (@('run', '--project', "$script:WorkDir/src/tools/WeatherParser.Coverage.Runner", '-c', 'Release', '--no-build', '--', 'evaluate', '--report', $coverageXmlPath, '--changed-files', $changedFiles, '--tool-name', 'Microsoft.CodeCoverage', '--tool-version', $microsoftCodeCoverageVersion, '--exclude', '*.Tests.dll', '--exclude', 'WeatherParser.Coverage*.dll', '--baseline', (Join-Path $script:RunDir 'target/baseline.json'), '--expected-baseline-commit', $script:TargetSha) + (Get-GateArguments 'library')) -WorkingDirectory "$script:WorkDir/src" -AllowedExitCodes @(0, 1, 2) -CaptureStdOut (Join-Path $script:RunDir 'gate-result.json')
         switch ($gate.ExitCode) {
             1 {
                 $gateResult = Get-Content (Join-Path $script:RunDir 'gate-result.json') | ConvertFrom-Json
@@ -1240,7 +1268,7 @@ try {
         Fail 20 "CollectOnly requires two-pass mode (no BaselinePath and no Bootstrap)"
     }
 
-    if ($FaultInjection -in @('GateFailure', 'IncomparableTarget') -and $CollectOnly) {
+    if ($FaultInjection -in @('GateFailure', 'IncomparableTarget', 'InvalidReconciliation') -and $CollectOnly) {
         Fail 20 "FaultInjection $FaultInjection requires a run with conversion and gate"
     }
 

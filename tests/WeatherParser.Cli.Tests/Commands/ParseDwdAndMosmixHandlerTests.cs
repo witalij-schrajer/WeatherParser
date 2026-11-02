@@ -23,6 +23,7 @@ using WeatherParser.Parsing.Forecasts;
 using WeatherParser.Parsing.Forecasts.Mosmix;
 using WeatherParser.Parsing.Mqtt;
 using WeatherParser.Parsing.Observations.Dwd;
+using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Serialization;
 
 namespace WeatherParser.Cli.Tests.Commands;
@@ -147,6 +148,36 @@ public sealed class ParseDwdAndMosmixHandlerTests
         var error = doc.RootElement.GetProperty("errors")[0];
         error.GetProperty("error_id").GetString().Should().Be("STATION-UNKNOWN");
         error.GetProperty("source").GetString().Should().Be("dwd:00044");
+    }
+
+    [TestMethod]
+    public async Task ParseDwd_NoUsableReading_ItemFailure_ExportDocumentWithError()
+    {
+        _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ThrowsAsync(new ObservationDatasetRejectedException("The observation dataset for source 'dwd:00044' has no usable reading."));
+        var outcome = await _dwdDocument.HandleAsync(DwdRequest(OutputFormat.Json), Context(OutputFormat.Json), CancellationToken.None);
+        outcome.Should().Be(new CommandOutcome(0, 1, false));
+        new ExitCodePolicy().ForOutcome(outcome).Should().Be(ExitCodes.Failure);
+        using var doc = JsonDocument.Parse(_stdout.ToString());
+        doc.RootElement.GetProperty("errors").GetArrayLength().Should().Be(1);
+        var error = doc.RootElement.GetProperty("errors")[0];
+        error.GetProperty("error_id").GetString().Should().Be("OBSERVATION-NO-USABLE-READING");
+        error.GetProperty("source").GetString().Should().Be("dwd:00044");
+        error.GetProperty("message").GetString().Should().Be("The DWD station has no usable reading.");
+        doc.RootElement.GetProperty("observations").GetArrayLength().Should().Be(0);
+        _stderr.ToString().Should().Contain(" ERROR OBSERVATION-NO-USABLE-READING ");
+        _stderr.ToString().Should().NotContain("CLI-UNEXPECTED");
+    }
+
+    [TestMethod]
+    public async Task ParseDwd_NoUsableReading_Mqtt_NothingPublished_LoggedOnly()
+    {
+        _dwdParser.Setup(p => p.ParseAsync("00044", It.IsAny<CancellationToken>())).ThrowsAsync(new ObservationDatasetRejectedException("The observation dataset for source 'dwd:00044' has no usable reading."));
+        var outcome = await _dwdMqtt.HandleAsync(DwdRequest(OutputFormat.Mqtt), Context(OutputFormat.Mqtt), CancellationToken.None);
+        outcome.Should().Be(new CommandOutcome(0, 1, false));
+        _queue.Messages.Should().HaveCount(0);
+        _stdout.ToString().Should().BeEmpty();
+        _stderr.ToString().Should().Contain(" ERROR OBSERVATION-NO-USABLE-READING ");
+        _stderr.ToString().Should().Contain("source=dwd:00044");
     }
 
     [TestMethod]

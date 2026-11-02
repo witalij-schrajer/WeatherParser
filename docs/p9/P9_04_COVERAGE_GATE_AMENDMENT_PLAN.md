@@ -1,6 +1,6 @@
 # P9.04 – Coverage Gate Amendment: Implementation Plan
 
-**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row; P9 starts only on a separate instruction. Conditional: applies only if the user approves RL-11 option A in P9.02; with option B or C the step is recorded as not applicable and the approved rule is applied per pull request.** Refines the P9.04 row of section 5 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
+**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row. Conditional at planning time on RL-11 A; the user approved RL-11 A and RL-20 A on 2026-10-31 ("Approve all"), which made the step mandatory (section 10). P9 started on 2026-10-31 on the user's instruction ("P9 Execution"); this step is complete (2026-10-31; [verification record](P9_VERIFICATION.md) section 3).** Refines the P9.04 row of section 5 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: remove the CL-19 C asymmetry: a pull request that leaves the example CLI and its build inputs unchanged may retain equal CLI coverage, as the library gate already allows for its own gated inputs.
@@ -56,3 +56,12 @@ Record the amendment in REQUIREMENTS.md, AGENTS.md and DEVELOPMENT_PLAN.md befor
 - [ ] Amendment recorded before the code change
 - [ ] Every listed test green with recorded Red; library gate rule unchanged
 - [ ] CONTRIBUTING.md updated; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- The step is mandatory and runs before P9.03 (RL-20 A); its scope grows by the RL-20 reconciliation.
+- S1 amendment text: in addition to the RL-11 CLI gated-input rule, both gates accept "a user-approved baseline reconciliation recorded in the repository for the exact target commit" (REQUIREMENTS.md, AGENTS.md "Tests", DEVELOPMENT_PLAN.md).
+- CLI gated inputs (RL-11 A; the section 3 decision is made): every file under `examples/`, `tests/WeatherParser.Cli.Tests/`, `tests/WeatherParser.Cli.SignalHost/` and `src/`, and `Directory.Build.props`, `Directory.Packages.props`, `global.json`, `NuGet.Config`, `.editorconfig`, `coverage.runsettings`.
+- S2 adds the reconciliation slice with the Red tests named in RL-20 A: `Gate_ReconciliationForTarget_EqualCoverageAccepted`, `Gate_ReconciliationForTarget_DecreaseRejected`, `Gate_ReconciliationForOtherTarget_StrictImprovementRequired`, `Gate_ReconciliationForOtherGate_NotApplied`, `Gate_ReconciliationForOtherBranch_StrictImprovementRequired`, `Gate_ReconciliationForOtherHeadRepository_StrictImprovementRequired`, `Gate_ReconciliationWithoutBranch_NotApplied`, `Gate_ReconciliationFileMissing_RulesUnchanged`, `Gate_ReconciliationFileInvalid_Fails`; the file `coverage-reconciliation.json` with the entries for pull request #18 (target `ed7fc7a03db2f5554c490451f918da9fc6828c84`, head repository `witalij-schrajer/WeatherParser`, branch `features/develop/P9`, both gates); the `ci-local.ps1` parameters `-PullRequestHeadRepository` and `-PullRequestBranch`; `.github/workflows/ci.yml` passes the identity (consistency table: CONTRIBUTING.md sections 5 and 6, `DEPENDENCIES.md` for the workflow).
+- S3: the step's own changes are under `tools/`, `tests/WeatherParser.Coverage*`, `scripts/`, `.github/`, the root reconciliation file and documentation, none of them a library or CLI gated input, so both gates must hold at least equal coverage under the amended rules.

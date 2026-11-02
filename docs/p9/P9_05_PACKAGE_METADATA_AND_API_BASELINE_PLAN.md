@@ -1,6 +1,6 @@
 # P9.05 – Package Metadata, Reproducibility and API Baseline: Implementation Plan
 
-**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row; P9 starts only on a separate instruction.** Refines the P9.05 row of section 5 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
+**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row. P9 started on 2026-10-31 on the user's instruction ("P9 Execution"); this step is complete (2026-10-31; [verification record](P9_VERIFICATION.md) section 6).** Refines the P9.05 row of section 5 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: a release package with complete, tested metadata and contents, reproducible as decided in RL-03, and a public API inventory that fails on every unrecorded change.
@@ -69,3 +69,13 @@ Code, tests, scripts and the listing by qwen from briefs with the real declarati
 - [ ] Every listed test green with recorded Red
 - [ ] Reproducibility shown or every difference named, as decided
 - [ ] API listing checked in and enforced; gates passed under the recorded rule; Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- RL-01 A: version `0.1.0` in the project file, a new `Description`, `PackageTags`, `PackageReleaseNotes` pointing to `CHANGELOG.md`, `Authors` as the user names it (asked when the step starts), the XML documentation generated and packed with CS1591 as an error in the library project; the consumer pin and the lock files in the same change; `Invoke-PackStage` gains `lib/net10.0/WeatherParser.Parsing.xml`.
+- RL-19 open: `RepositoryUrl`, `PackageProjectUrl` and `PublishRepositoryUrl` are set only if the user chooses RL-19 B; otherwise they stay unset.
+- RL-03 A: `ContinuousIntegrationBuild` (verified by a two-directory rebuild, `PathMap` if needed), `.gitattributes` `eol=lf` for `README.md` and `LICENSE`, input modification times set to the commit time before packing, `.snupkg`; a member-by-member comparison with the remaining NuGet metadata timestamps named if byte identity is not reached.
+- RL-04 A: `src/WeatherParser.Parsing/PublicApi.txt` and a package test; package validation only after the first release.
+- Gates: the changed project file, `Directory.Build.props` and `PublicApi.txt` are gated inputs covered by the RL-20 entries.
+- 2026-10-31, the user's decision "We do not public the nuget now and do not go public. It will be made later": RL-19 A; `RepositoryUrl`, `PackageProjectUrl` and `PublishRepositoryUrl` stay unset. `Authors` stays "WeatherParser contributors" until the user names another one before any publication (open item).

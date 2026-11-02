@@ -18,4 +18,11 @@
     <None Include="$(PkgWeatherParser_Parsing)/schemas/export/v1/weatherparser-export-v1.xsd" Link="Schemas/weatherparser-export-v1.xsd" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../schemas/export/v1/weatherparser-export-v1.xsd" Link="ReferenceSchemas/weatherparser-export-v1.xsd" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- The restored WeatherParser.Parsing package folder, for the package metadata and contents tests (P9.05). -->
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>WeatherParserPackageRoot</_Parameter1>
+      <_Parameter2>$(PkgWeatherParser_Parsing)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

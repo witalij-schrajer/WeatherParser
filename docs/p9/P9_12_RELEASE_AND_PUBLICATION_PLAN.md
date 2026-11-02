@@ -67,3 +67,9 @@ On a post-release branch with its pull request: the next prerelease version toge
 - [ ] Promotion check passed; tag and release created with authorization; publication by the user recorded
 - [ ] Post-publication consumer check passed; the CLI built from the tagged source against the published package (RL-08 A) or the attached archive (RL-08 B) passed the smoke check
 - [ ] Follow-ups on `develop` in their own pull request
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- RL-05 A: tag `v0.1.0`, `develop` continues with `0.2.0-dev`; RL-02 A: the user pushes to nuget.org; the release pull request into `master` is evaluated under the normal gate rules (its target differs from the RL-20 entries), and the RL-20 entries are removed after the release; while the repository is private (RL-19 A) the GitHub release is visible to collaborators only; the SDK update (RL-09 A) stays an open item with owner the user.
+- 2026-10-31, the user's decision "We do not public the nuget now and do not go public. It will be made later": the nuget.org publication (S4) and the post-publication consumer check (S5) are not part of this phase; they and making the repository public wait for a later decision of the user. The release pull request into `master`, the tag and a (private) GitHub release still need their separate authorizations when P9.12 starts.

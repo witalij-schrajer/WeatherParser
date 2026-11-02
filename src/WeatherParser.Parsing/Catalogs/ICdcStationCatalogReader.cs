@@ -12,7 +12,7 @@ public interface ICdcStationCatalogReader
     /// <param name="endpointName">The endpoint name used in diagnostics.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The catalog with records and diagnostics.</returns>
-    /// <exception cref="CatalogFormatException">
+    /// <exception cref="WeatherParser.Parsing.Exceptions.CatalogFormatException">
     /// Thrown when the stream is empty, a line is longer than 2048 characters,
     /// or there is a header or dash-line mismatch.
     /// </exception>

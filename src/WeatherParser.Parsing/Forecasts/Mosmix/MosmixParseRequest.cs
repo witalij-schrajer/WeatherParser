@@ -31,20 +31,13 @@ public sealed class MosmixParseRequest
     /// <summary>
     /// Gets or sets the retrieval function.
     /// </summary>
-    /// <param name="mosmixId">The MOSMIX ID.</param>
-    /// <param name="read">The read function.</param>
-    /// <param name="deadline">The deadline cancellation token.</param>
-    /// <param name="cancellationToken">The caller cancellation token.</param>
-    /// <returns>The retrieved document.</returns>
+    /// <remarks>Arguments: the MOSMIX ID, the read function, the deadline cancellation token and the caller cancellation token; result: the retrieved document.</remarks>
     public required Func<string, Func<Stream, CancellationToken, Task<MosmixForecastDocument>>, CancellationToken, CancellationToken, Task<MosmixForecastDocument>> Retrieve { get; init; }
 
     /// <summary>
     /// Gets or sets the read function.
     /// </summary>
-    /// <param name="stream">The stream.</param>
-    /// <param name="mosmixId">The MOSMIX ID.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The parsed document.</returns>
+    /// <remarks>Arguments: the stream, the MOSMIX ID and the cancellation token; result: the parsed document.</remarks>
     public required Func<Stream, string, CancellationToken, Task<MosmixForecastDocument>> Read { get; init; }
 
     /// <summary>

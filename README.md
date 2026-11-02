@@ -1,6 +1,6 @@
 # WeatherParser
 
-The phase status (acceptances, merges and the binding phase sequence) is kept in [PHASE_STATUS.md](PHASE_STATUS.md).
+The phase status (acceptances, merges and the binding phase sequence) is kept in [PHASE_STATUS.md](PHASE_STATUS.md). Changes per version and the known limitations are in [CHANGELOG.md](CHANGELOG.md); deployment and operation of the example CLI on Debian 13 ARM64 are described in [docs/OPERATIONS.md](docs/OPERATIONS.md).
 
 WeatherParser is primarily a C# NuGet library for DWD/OsthessenWetter observations and MOSMIX forecasts (implemented; not yet published). The published product is the package containing parsers, output entities, a generic MQTT serializer and DI integration. The CLI is only a usage example consuming that package.
 
@@ -23,7 +23,7 @@ English is the sole maintained language for project documentation and instructio
 
 ## Project status
 
-As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md); its version 1 is frozen since the P2 acceptance on 2026-10-20 (only additive optional changes, C-03). Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). Since P4.09 (2026-10-23) it also selects CDC stations and MOSMIX forecast locations around a reference point (see [Station and location selection](#station-and-location-selection-library)). Since P5.07 (2026-10-25) it also parses the DWD 10-minute observations of one CDC station into an observation dataset (see [DWD observations](#dwd-observations-library)). Since P6.07 (2026-10-26) it also parses the OsthessenWetter measurement page into one observation dataset per matching station (see [OsthessenWetter observations](#osthessenwetter-observations-library)). Since P3 (2026-10-30) the repository also contains the [example CLI](#example-cli) with its five commands, JSON/XML output and the MQTT broker transport, verified offline with local fake sources and, on Windows, against a local test broker; its live and target-hardware runs follow in P3.11. No public package publication is claimed. Since P7 (2026-10-28) the library also contains the MOSMIX_L and MOSMIX_S forecast parsers (`IMosmixLParser`, `IMosmixSParser`) with their retrieval sources, the secure KMZ/KML reader, the element mapping and the shared parse pipeline. Since P8 (2026-10-29) the library also contains the generic MQTT message serializer (`IMqttMessageSerializer`) with consumer-configured topic templates, topic and placeholder validation, QoS and retain, without any broker access (see [MQTT serializer](#mqtt-serializer-library)).
+As of 2026-10-20, the solution contains the library, source-reference tests, isolated package-consumer tests, the coverage tooling and the export-schema generator. The library implements parser-endpoint validation, the `AddWeatherParsing` DI entry point, the export entities of the five export roots (envelope, CDC station list, MOSMIX location list, observation dataset, forecast run), the JSON and XML serializers, the observation-dataset and forecast-run builders, UTC source-time normalization, unit conversion and output rounding, and the output schema `schemas/export/v1/weatherparser-export-v1.xsd`, which the package contains. The contract is recorded in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md); its version 1 is frozen since the P2 acceptance on 2026-10-20 (only additive optional changes, C-03). Test and coverage evidence is kept in the [P1 records](docs/p1/) and the [P2 verification record](docs/p2/P2_VERIFICATION.md). Since P4.09 (2026-10-23) it also selects CDC stations and MOSMIX forecast locations around a reference point (see [Station and location selection](#station-and-location-selection-library)). Since P5.07 (2026-10-25) it also parses the DWD 10-minute observations of one CDC station into an observation dataset (see [DWD observations](#dwd-observations-library)). Since P6.07 (2026-10-26) it also parses the OsthessenWetter measurement page into one observation dataset per matching station (see [OsthessenWetter observations](#osthessenwetter-observations-library)). Since P3 (2026-10-30) the repository also contains the [example CLI](#example-cli) with its five commands, JSON/XML output and the MQTT broker transport, verified offline with local fake sources and, on Windows, against a local test broker, and in P3.11 (2026-10-30) against the live sources and on the NanoPi R76S. No public package publication is claimed. Since P7 (2026-10-28) the library also contains the MOSMIX_L and MOSMIX_S forecast parsers (`IMosmixLParser`, `IMosmixSParser`) with their retrieval sources, the secure KMZ/KML reader, the element mapping and the shared parse pipeline. Since P8 (2026-10-29) the library also contains the generic MQTT message serializer (`IMqttMessageSerializer`) with consumer-configured topic templates, topic and placeholder validation, QoS and retain, without any broker access (see [MQTT serializer](#mqtt-serializer-library)). Since P9 (2026-10-31) the package carries the version 0.1.0, XML documentation, a symbols package and a public API listing, and a release build produces checksummed release artifacts; the release acceptance on the target and any publication are still open (see [Release and installation](#release-and-installation)).
 
 ## Workflow role and execution
 
@@ -40,13 +40,13 @@ There is no hard dependency on n8n; other programs and shell scripts can invoke 
 
 ## Target platform
 
-Binding platform policy (2026-10-14): .NET version 10 or newer and Debian version 13 Trixie or newer. The initial library/example target framework is `net10.0`; the minimum architecture is ARM64 (`linux-arm64`), particularly NanoPi R76S. Add newer stable .NET/Debian releases to the verified compatibility matrix; previews are not automatically guaranteed. The pinned SDK and the verified toolchain are listed in [DEPENDENCIES.md](DEPENDENCIES.md), the developer setup in [CONTRIBUTING.md](CONTRIBUTING.md) and the verified platforms in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md); extra ARM variants and the deployment model remain undecided. Verify the library, actual package consumer and example on Debian 13/ARM64 with .NET 10. Distinguish platform requirements from verified compatibility; never claim runtime success without documented tests.
+Binding platform policy (2026-10-14): .NET version 10 or newer and Debian version 13 Trixie or newer. The initial library/example target framework is `net10.0`; the minimum architecture is ARM64 (`linux-arm64`), particularly NanoPi R76S. Add newer stable .NET/Debian releases to the verified compatibility matrix; previews are not automatically guaranteed. The pinned SDK and the verified toolchain are listed in [DEPENDENCIES.md](DEPENDENCIES.md), the developer setup in [CONTRIBUTING.md](CONTRIBUTING.md) and the verified platforms in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md); the deployment model of the example CLI is a framework-dependent `linux-arm64` publish on runtime 10.0.14 or newer ([docs/OPERATIONS.md](docs/OPERATIONS.md), RL-07 A); extra ARM variants remain undecided. Verify the library, actual package consumer and example on Debian 13/ARM64 with .NET 10. Distinguish platform requirements from verified compatibility; never claim runtime success without documented tests.
 
 Sources (checked 2026-10-14): [.NET support](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core), [.NET 10 OS matrix](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md), [Debian releases](https://www.debian.org/releases/).
 
 ## Example CLI
 
-The example CLI `WeatherParser` (project `examples/WeatherParser.Cli`, assembly `WeatherParser.dll`) shows how an application consumes the package: it references `WeatherParser.Parsing` as a versioned package and contains no copied library code. Its contract is the [P3 CLI contract](docs/p3/P3_CLI_CONTRACT.md) (CL-01 to CL-22, approved on 2026-10-29). All commands, output modes, the MQTT transport and the cancellation behavior are implemented. The tests run offline with local fake sources and a fake broker endpoint on Windows and in the hosted CI jobs (Windows x64, Ubuntu x64, Debian 13 ARM64); the broker integration tests ran only on Windows, against a local Mosquitto without TLS and without credentials, so TLS and authenticated connections are not yet verified against a real broker ([P3 verification record](docs/p3/P3_VERIFICATION.md)). The runs against the live sources and on the NanoPi R76S follow in P3.11. Build and run it as described in [CONTRIBUTING.md](CONTRIBUTING.md#example-cli-examplesweatherparsercli-p3); after a Release build it starts with `dotnet <output>/WeatherParser.dll`.
+The example CLI `WeatherParser` (project `examples/WeatherParser.Cli`, assembly `WeatherParser.dll`) shows how an application consumes the package: it references `WeatherParser.Parsing` as a versioned package and contains no copied library code. Its contract is the [P3 CLI contract](docs/p3/P3_CLI_CONTRACT.md) (CL-01 to CL-22, approved on 2026-10-29). All commands, output modes, the MQTT transport and the cancellation behavior are implemented. The tests run offline with local fake sources and a fake broker endpoint on Windows and in the hosted CI jobs (Windows x64, Ubuntu x64, Debian 13 ARM64); in P3 the broker integration tests ran only on Windows, against a local Mosquitto without TLS and without credentials ([P3 verification record](docs/p3/P3_VERIFICATION.md)); TLS with a custom CA and authenticated connections were verified in P9.09 against a Mosquitto 2.1.2 test broker on Windows and on the NanoPi R76S ([P9.09 record](docs/p9/P9_09_BROKER_AND_SHUTDOWN_CHECKS.md)). The live sources and the NanoPi R76S were checked in P3.11 ([P3.11 record](docs/p3/P3_11_INTEGRATED_VERIFICATION.md)). Build and run it as described in [CONTRIBUTING.md](CONTRIBUTING.md#example-cli-examplesweatherparsercli-p3); after a Release build it starts with `dotnet <output>/WeatherParser.dll`.
 
 ```text
 WeatherParser --<command> [options]
@@ -148,7 +148,7 @@ An item whose output or publication failed counts as failed. Notices (for exampl
 
 ### Error IDs
 
-Every log line carries an ID. The CLI's own IDs are listed below; the IDs of the library (for example `STATION-ID-INVALID`, `OSTHESSEN-PAGE-UNAVAILABLE`, `MQTT-MAPPING-MISSING`) are passed through unchanged, in the logs and in `errors[].error_id` of the export document.
+Every log line carries an ID. The CLI's own IDs are listed below; the IDs of the library (for example `STATION-ID-INVALID`, `OSTHESSEN-PAGE-UNAVAILABLE`, `MQTT-MAPPING-MISSING`) are passed through unchanged, in the logs and in `errors[].error_id` of the export document. One ID is assigned by the CLI to a library failure without an ID: `OBSERVATION-NO-USABLE-READING`, a `--ParseDWD` station without any usable reading (the library's `ObservationDatasetRejectedException`, C-60), an item failure with source `dwd:<station id>` (CL-09 amendment of 2026-10-31).
 
 | Error ID | Level | Meaning |
 |---|---|---|
@@ -182,10 +182,10 @@ SIGINT, SIGTERM and Ctrl+C cancel the running command through one token passed t
 Run the CLI from a scheduler and evaluate its exit code; no scheduler has to be installed for WeatherParser itself (REQ-007, REQ-008). Example cron entry (every 10 minutes, placeholder paths) that keeps the log and reports every exit code other than 0 to the system log:
 
 ```text
-*/10 * * * * WEATHERPARSER_CONFIG=/etc/weatherparser/weatherparser.json dotnet /opt/weatherparser/WeatherParser.dll --ParseDWD >> /var/log/weatherparser.log 2>&1; rc=$?; [ $rc -eq 0 ] || logger -t weatherparser "--ParseDWD ended with exit code $rc"
+*/10 * * * * WEATHERPARSER_CONFIG=/etc/weatherparser/weatherparser.json /opt/weatherparser/current/WeatherParser --ParseDWD < /dev/null >> /var/log/weatherparser/weatherparser.log 2>&1 || logger -t weatherparser "--ParseDWD ended with exit code $?"
 ```
 
-In n8n, an "Execute Command" node can run `dotnet /opt/weatherparser/WeatherParser.dll --ParseDWD --Output json`, read the JSON document from standard output and branch on the exit code (0 success, 3 partial, 1, 2 or 4 failure). Choose the interval per source: DWD 10-minute data every 10 minutes at most, `MOSMIX_L` after its runs at 03, 09, 15 and 21 UTC, `MOSMIX_S` hourly, and a MOSMIX_S evidence refresh rarely (it downloads the complete MOSMIX_S file).
+The installation layout, the service user, log handling and more scheduling examples are in [docs/OPERATIONS.md](docs/OPERATIONS.md). In n8n, an "Execute Command" node can run `/opt/weatherparser/current/WeatherParser --ParseDWD --Output json`, read the JSON document from standard output and branch on the exit code (0 success, 3 partial, 1, 2 or 4 failure). Choose the interval per source: DWD 10-minute data every 10 minutes at most, `MOSMIX_L` after its runs at 03, 09, 15 and 21 UTC, `MOSMIX_S` hourly, and a MOSMIX_S evidence refresh rarely (it downloads the complete MOSMIX_S file).
 
 ## JSON and XML export
 
@@ -593,6 +593,20 @@ Station selection, source settings, MQTT connection and topics are configurable.
 
 The example CLI's broker transport uses dedicated credentials and scoped topic permissions. Sources have separate observation or forecast messages; observations, forecasts and both station-list types use separate topics. The CLI's configuration file, environment variables and credential handling are described in [Example CLI](#example-cli).
 
+## Release and installation
+
+Planned versus implemented (REQ-090), as of 2026-11-02:
+
+| Item | Status |
+|---|---|
+| Package `WeatherParser.Parsing` 0.1.0 with XML documentation, symbols package and public API listing | Implemented and built by the release build (P9.05, P9.06) |
+| Release acceptance of the candidate on the NanoPi R76S | Verified in P9.10 on Debian 13 ARM64 with runtime 10.0.14: the package consumed without the source, the CLI installed per [docs/OPERATIONS.md](docs/OPERATIONS.md) and run as a service user offline and live, signals, update and rollback, and a 36.5-hour scheduled series ([P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)) |
+| Publication on nuget.org | Not planned for this release (user decision of 2026-10-31); the repository stays private |
+| Installation from a feed: `dotnet add package WeatherParser.Parsing --version 0.1.0` | Planned; works only after a publication, which needs a separate decision |
+| Example CLI on Debian 13 ARM64 | Implemented; deployment documented in [docs/OPERATIONS.md](docs/OPERATIONS.md) (RL-07 A); the CLI is not part of the package and is built from the source against the package (RL-08 A) |
+
+Until a publication, consumers use the checksummed `.nupkg` of the release build from a local package source (CONTRIBUTING.md section 4). Every change, the verified platforms and the known limitations with their owners are listed in [CHANGELOG.md](CHANGELOG.md). The source conditions of DWD and OsthessenWetter are summarized under [Data sources](#data-sources) and in the operating guide; production use and redistribution of OsthessenWetter values are not accepted until clarified (OW-14).
+
 ## Data sources
 
 - [DWD Climate Data Center: 10-minute observations](https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/)
@@ -604,7 +618,7 @@ The example CLI's broker transport uses dedicated credentials and scoped topic p
 - [DWD MOSMIX: catalog, formats and element definitions](https://www.dwd.de/DE/leistungen/opendata/hilfe.html)
 - [DWD MOSMIX_L: individual forecast locations](https://opendata.dwd.de/weather/local_forecasts/mos/MOSMIX_L/single_stations/)
 
-Code is licensed under [MIT](LICENSE). This does not grant rights to third-party weather data or websites. Source conditions, attribution and permitted retrieval frequency must be documented separately for each adapter and checked before production use. A publicly available OsthessenWetter API is not assumed.
+Code is licensed under [MIT](LICENSE). This does not grant rights to third-party weather data or websites. DWD data are open data under CC BY 4.0 and keep the attribution "Deutscher Wetterdienst (DWD)" when republished; the DWD open-data server stores the requesting IP address for at most 7 days. OsthessenWetter publishes no licence for its values and its imprint forbids reuse in other publications without the author's consent, so production use and redistribution of its values are not accepted until clarified (OW-14). Source conditions, attribution and permitted retrieval frequency must be documented separately for each adapter and checked before production use. A publicly available OsthessenWetter API is not assumed.
 
 ## Binding MOSMIX schema source
 
@@ -617,7 +631,7 @@ The additional decisions and P0 clarifications dated 2026-10-14 (development env
 
 
 ## Development
-The solution [WeatherParser.slnx](WeatherParser.slnx) contains twelve projects:
+The solution [WeatherParser.slnx](WeatherParser.slnx) contains thirteen projects:
 
 ```text
 examples/
@@ -629,6 +643,7 @@ tests/
   WeatherParser.Package.Tests/          # Isolated NuGet PackageReference consumer tests
   WeatherParser.Cli.Tests/              # Example CLI tests (unit and process tests)
   WeatherParser.Cli.SignalHost/         # Signal test host of the CLI process tests (not packed, not a test project)
+  WeatherParser.Cli.FixtureHost/        # Offline fixture host for CLI process tests and target runs (not packed, not a test project)
   WeatherParser.Coverage.Tests/         # Coverage evaluator tests
   WeatherParser.Coverage.Runner.Tests/  # Coverage runner tests
   WeatherParser.SchemaGeneration.Tests/ # Export schema generator, golden-file and refinement tests

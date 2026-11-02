@@ -21,7 +21,8 @@ public sealed class CoverageGateRealReportTests
             aggregator: new ProvenanceAggregator(),
             evaluator: new RuleEvaluator(),
             comparabilityChecker: new BaselineComparabilityChecker(),
-            classifier: new PullRequestClassifier());
+            classifier: new PullRequestClassifier(),
+            reconciliationReader: new ReconciliationReader(new FileReader()));
     }
 
     [TestMethod]

@@ -79,6 +79,9 @@ jobs:
     env:
       CI_COMMIT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       CI_TARGET: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || inputs.target_ref }}
+      # Pull request identity for the recorded baseline reconciliations (REQ-086 amendment 2); passed through the environment, never interpolated into a script.
+      CI_HEAD_REPOSITORY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+      CI_HEAD_BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -96,7 +99,7 @@ jobs:
       - name: Local CI pipeline
         # bash calls pwsh -File so that the script's stage-specific exit code reaches the job result
         shell: bash
-        run: pwsh -NoProfile -File ./scripts/ci-local.ps1 -Commit "$CI_COMMIT" -TargetRef "$CI_TARGET" -RunSettings coverage.runsettings
+        run: pwsh -NoProfile -File ./scripts/ci-local.ps1 -Commit "$CI_COMMIT" -TargetRef "$CI_TARGET" -RunSettings coverage.runsettings -PullRequestHeadRepository "$CI_HEAD_REPOSITORY" -PullRequestBranch "$CI_HEAD_BRANCH"
       - name: Upload run directory
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
@@ -114,6 +117,9 @@ jobs:
     env:
       CI_COMMIT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       CI_TARGET: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || inputs.target_ref }}
+      # Pull request identity for the recorded baseline reconciliations (REQ-086 amendment 2); passed through the environment, never interpolated into a script.
+      CI_HEAD_REPOSITORY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+      CI_HEAD_BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -131,7 +137,7 @@ jobs:
       - name: Local CI pipeline
         # bash calls pwsh -File so that the script's stage-specific exit code reaches the job result
         shell: bash
-        run: pwsh -NoProfile -File ./scripts/ci-local.ps1 -Commit "$CI_COMMIT" -TargetRef "$CI_TARGET" -RunSettings coverage.runsettings
+        run: pwsh -NoProfile -File ./scripts/ci-local.ps1 -Commit "$CI_COMMIT" -TargetRef "$CI_TARGET" -RunSettings coverage.runsettings -PullRequestHeadRepository "$CI_HEAD_REPOSITORY" -PullRequestBranch "$CI_HEAD_BRANCH"
       - name: Upload run directory
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
@@ -150,6 +156,9 @@ jobs:
     env:
       CI_COMMIT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       CI_TARGET: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || inputs.target_ref }}
+      # Pull request identity for the recorded baseline reconciliations (REQ-086 amendment 2); passed through the environment, never interpolated into a script.
+      CI_HEAD_REPOSITORY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+      CI_HEAD_BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
     steps:
       - name: Install system prerequisites
         run: |
@@ -173,7 +182,7 @@ jobs:
         shell: bash
         run: |
           . "$RUNNER_TEMP/dotnet-env.sh"
-          pwsh ./scripts/ci-local.ps1 -Commit "$CI_COMMIT" -TargetRef "$CI_TARGET" -RunSettings coverage.runsettings
+          pwsh ./scripts/ci-local.ps1 -Commit "$CI_COMMIT" -TargetRef "$CI_TARGET" -RunSettings coverage.runsettings -PullRequestHeadRepository "$CI_HEAD_REPOSITORY" -PullRequestBranch "$CI_HEAD_BRANCH"
       - name: Upload run directory
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()

@@ -2,7 +2,7 @@
   <!-- Central package versions of the example CLI: the root versions plus packages only the CLI uses, kept outside the library's build inputs (REQ-086 amendment, CL-19). -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Packages.props', '$(MSBuildThisFileDirectory)../'))" />
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.14" />
     <PackageVersion Include="MQTTnet" Version="5.2.0.1603" />
   </ItemGroup>
 </Project>

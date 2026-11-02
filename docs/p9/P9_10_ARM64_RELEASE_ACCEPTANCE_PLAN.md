@@ -66,3 +66,8 @@ READY when S2 to S5 pass on the candidate's artifacts; otherwise NOT_READY with 
 - [ ] Every run on the candidate's checksummed artifacts; evidence classes recorded separately
 - [ ] Outcome READY; compatibility matrix and guide statuses updated
 - [ ] Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- RL-15 A approved as planned; the target runs on runtime 10.0.14 or newer (RL-09 A).

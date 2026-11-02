@@ -15,7 +15,7 @@ public interface IMosmixLocationSelector
     /// Selects the MOSMIX locations inside a search area.
     /// Copies and validates the five search parameters before any request (SC-11);
     /// reads the reference instant once from the <see cref="TimeProvider"/> (SC-13);
-    /// reads the stored MOSMIX_S evidence index before any request (missing → failure; older than <see cref="MosmixCatalogEndpoints.MosmixSEvidenceMaxAge"/> → used with one <c>MOSMIX-S-EVIDENCE-STALE</c> notice, SC-22);
+    /// reads the stored MOSMIX_S evidence index before any request (missing → failure; older than <see cref="WeatherParser.Parsing.Evidence.MosmixS.MosmixCatalogEndpoints.MosmixSEvidenceMaxAge"/> → used with one <c>MOSMIX-S-EVIDENCE-STALE</c> notice, SC-22);
     /// downloads the MOSMIX location catalog, applies the search-area filter and the candidate limit,
     /// downloads the MOSMIX_L file of each location inside the area (HTTP 404 → <c>unavailable</c>, SC-05 option A) and resolves one availability item per product with its evidence timestamps (SC-23);
     /// orders the entries through <see cref="IListEntryOrdering"/>;

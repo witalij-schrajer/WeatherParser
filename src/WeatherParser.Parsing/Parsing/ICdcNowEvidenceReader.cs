@@ -13,7 +13,7 @@ public interface ICdcNowEvidenceReader
     /// at most 2000 data rows,
     /// the header and row rules of SC-19.
     /// Everything is read in memory and nothing is written to disk.
-    /// Any violation throws <see cref="CatalogFormatException"/> with <see cref="CatalogFormatException.ErrorId"/> <c>CDC-EVIDENCE-INVALID</c>.
+    /// Any violation throws <see cref="WeatherParser.Parsing.Exceptions.CatalogFormatException"/> with <see cref="WeatherParser.Parsing.Exceptions.CatalogFormatException.ErrorId"/> <c>CDC-EVIDENCE-INVALID</c>.
     /// An unknown product code or a station ID that is not five digits throws <see cref="ArgumentException"/>.
     /// </summary>
     /// <param name="archive">The stream to read the archive from.</param>
@@ -21,8 +21,8 @@ public interface ICdcNowEvidenceReader
     /// <param name="productCode">The product code, one of "tu", "ff", "rr" or "sd".</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The validated rows with their UTC measurement times, the trimmed QN token (<see cref="CdcNowEvidenceRow.QualityLevel"/>) and the raw trimmed tokens of every data column of the header; only the product's own columns are validated (SC-19, OC-14).</returns>
-    /// <exception cref="CatalogFormatException">
-    /// Thrown with <see cref="CatalogFormatException.ErrorId"/> <c>CDC-EVIDENCE-INVALID</c> when the archive is not a valid ZIP archive,
+    /// <exception cref="WeatherParser.Parsing.Exceptions.CatalogFormatException">
+    /// Thrown with <see cref="WeatherParser.Parsing.Exceptions.CatalogFormatException.ErrorId"/> <c>CDC-EVIDENCE-INVALID</c> when the archive is not a valid ZIP archive,
     /// does not contain exactly one correctly named member,
     /// exceeds 1 MiB compressed or uncompressed,
     /// has more than 2000 data rows,

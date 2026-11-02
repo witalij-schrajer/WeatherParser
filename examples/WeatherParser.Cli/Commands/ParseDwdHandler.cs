@@ -6,6 +6,7 @@ using WeatherParser.Cli.Diagnostics;
 using WeatherParser.Cli.Output;
 using WeatherParser.Parsing.Export;
 using WeatherParser.Parsing.Exceptions;
+using WeatherParser.Parsing.Observations;
 using WeatherParser.Parsing.Observations.Dwd;
 
 /// <summary>
@@ -82,9 +83,20 @@ public sealed class ParseDwdHandler : ICommandHandler<ParseDwdRequest>
         return new CommandOutcome(1, 0, false);
     }
 
+    /// <summary>
+    /// The CLI-assigned error ID of a station without any usable reading (CL-09 amendment of 2026-10-31); the library's exception carries no ID.
+    /// </summary>
+    public const string NoUsableReadingErrorId = "OBSERVATION-NO-USABLE-READING";
+
     // CL-09 lists the exception types that are item failures of --ParseDWD; a pre-request ID such as STATION-ID-INVALID stays command-level.
     private bool IsItemFailure(Exception exception, out string errorId)
     {
+        if (exception is ObservationDatasetRejectedException)
+        {
+            errorId = NoUsableReadingErrorId;
+            return true;
+        }
+
         errorId = string.Empty;
         return exception is DwdStationException or CatalogRetrievalException or CatalogFormatException or ObservationLimitException
             && _libraryErrors.TryGetErrorId(exception, out errorId)

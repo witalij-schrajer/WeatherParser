@@ -26,7 +26,7 @@ public interface IMosmixSEvidenceRefresher
     /// Thrown when the refresh deadline is exceeded.
     /// </exception>
     /// <exception cref="CatalogRetrievalException">
-    /// Thrown for timeouts, non-success status, connection failure or a body shorter than <see cref="HttpContent.ContentLength"/>.
+    /// Thrown for timeouts, non-success status, connection failure or a body shorter than <see cref="System.Net.Http.Headers.HttpContentHeaders.ContentLength"/>.
     /// </exception>
     /// <exception cref="CatalogFormatException">
     /// Thrown when the file format or bound is invalid.

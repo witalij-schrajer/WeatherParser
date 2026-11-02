@@ -1,6 +1,6 @@
 # P9.01 – Foundation Check and Plan Adjustment: Implementation Plan
 
-**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row; P9 starts only on a separate instruction.** Refines the P9.01 row of section 5 and section 1 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
+**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row. P9 started on 2026-10-31 on the user's instruction ("P9 Execution"); this step is complete with outcome READY ([record](P9_01_FOUNDATION_CHECK.md)).** Refines the P9.01 row of section 5 and section 1 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: confirm that P3 is complete and merged, fix the integration target, extract every release-relevant fact of the repository, name the causes of package differences between two clean builds, remeasure both coverage gates and adjust the P9 plans before any decision or change.

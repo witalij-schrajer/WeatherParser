@@ -69,3 +69,8 @@ Per-step Codex review; commit and push.
 - [ ] Fixture host tested with recorded Red and excluded from the CLI gate; acceptance artifact recorded; script (if approved) tested with recorded Red
 - [ ] Authorized target check passed and cleaned up
 - [ ] Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- RL-07 A: framework-dependent `linux-arm64`, runtime from the Microsoft package feed (`dotnet-runtime-10.0`, 10.0.14 or newer), `/opt/weatherparser/<version>` with the symlink `current`, system user `weatherparser`, `/etc/weatherparser/` `0640`, credential file `0600` owned by `weatherparser`; on the NanoPi the runtime installation of P1.10 stays if it provides 10.0.14 or newer.

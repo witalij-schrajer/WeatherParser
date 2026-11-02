@@ -15,6 +15,8 @@
     <ProjectReference Include="../../examples/WeatherParser.Cli/WeatherParser.Cli.csproj" />
     <!-- The signal host is started as a process; the alias keeps its linked copies of the CLI types out of the test code's namespaces. -->
     <ProjectReference Include="../WeatherParser.Cli.SignalHost/WeatherParser.Cli.SignalHost.csproj" Aliases="SignalHost" />
+    <!-- The fixture host is started as a process; the alias keeps its top-level program out of the test code's namespaces. -->
+    <ProjectReference Include="../WeatherParser.Cli.FixtureHost/WeatherParser.Cli.FixtureHost.csproj" Aliases="FixtureHost" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="WeatherParser.Parsing" GeneratePathProperty="true" />

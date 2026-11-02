@@ -1,6 +1,6 @@
 # P9.03 – Toolchain and Dependency Update: Implementation Plan
 
-**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row; P9 starts only on a separate instruction. Conditional: applies only as far as the user approves RL-09 and RL-10 in P9.02; otherwise the step is recorded as not applicable.** Refines the P9.03 row of section 5 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
+**Status: planned on 2026-10-31 on the user's instruction ("Generate the step plans for P9"); reviewed through the automatic Codex review of pull request #17 to 0 findings; accepted by the user on 2026-10-31 ("Accept the plans"); accepting the plans neither starts P9 nor approves any RL row. Conditional at planning time on RL-09 and RL-10; the user approved RL-09 A and RL-10 A on 2026-10-31 ("Approve all"). P9 started on 2026-10-31 on the user's instruction ("P9 Execution"); this step is complete (2026-10-31; [verification record](P9_VERIFICATION.md) section 4).** Refines the P9.03 row of section 5 of [PHASE_P9_PLAN.md](../../PHASE_P9_PLAN.md).
 
 ## 1. Goal and Scope
 Goal: the SDK, runtime and package pins of the release at the approved versions, with every dependent document updated in the same change and both coverage gates passing under the approved rule.
@@ -58,3 +58,11 @@ No new tests are planned: the change is covered by the existing suites; a defect
 - [ ] Pins, lock files and documents updated in one change
 - [ ] All suites green on Windows and hosted CI; both gates passed under the approved rule, the decision recorded
 - [ ] Codex 0 findings or reported
+
+## 10. Reconciliation with the approved contract
+
+The release contract [P9_RELEASE_CONTRACT.md](P9_RELEASE_CONTRACT.md) was approved by the user on 2026-10-31 ("Approve all"; RL-19 open). Where this plan and the contract differ, the contract wins. Changes for this step:
+- Prerequisite changed: P9.04 is complete first (RL-20 entries for pull request #18 in force).
+- RL-09 A: `global.json` stays at SDK 10.0.402 (the comparability check of `ci-local.ps1` rejects an SDK change, contract RL-09); the update covers `Microsoft.Extensions.DependencyInjection`, `.DependencyInjection.Abstractions`, `.Logging.Abstractions` (root) and `Microsoft.Extensions.Logging` (`examples/`, RL-10 A) to 10.0.14, and `MSTest.TestFramework`, `MSTest.TestAdapter` to 4.5.2; AngleSharp 1.8.5 and dotnet-coverage 18.11.0 stay. Section 1 "`global.json`" and the section 3 order decision "SDK and packages together" are superseded; CONTRIBUTING.md section 1 is touched only if it lists a changed version.
+- Section 3 "Gates for changed gated inputs": decided by RL-20 A (the reconciliation entries for the target `ed7fc7a`, both gates); no new question to the user unless a gate decreases or the target changes.
+- Runtime: RL-09 A requires runtime 10.0.14 or newer on the target (the NanoPi R76S, P9.07 and P9.10) and in the release documentation; the Windows development runs and the hosted jobs use the runtime of the pinned SDK 10.0.402 (10.0.13), recorded per run. (Corrected on 2026-10-31 after round 1 of the P9.03 review: an earlier wording of this bullet also named Windows, which the approved contract does not require.)

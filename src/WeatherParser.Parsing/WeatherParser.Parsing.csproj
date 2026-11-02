@@ -2,11 +2,25 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>WeatherParser.Parsing</PackageId>
-    <Version>0.1.0-initial</Version>
+    <Version>0.1.0</Version>
     <Authors>WeatherParser contributors</Authors>
-    <Description>Work-in-progress weather parsing library. Parser implementations are not available yet.</Description>
+    <Description>Parsers, normalized output entities, JSON and XML serialization with an XML schema, station selection and a generic MQTT message serializer for DWD observations, OsthessenWetter observations and DWD MOSMIX_S and MOSMIX_L forecasts, with dependency-injection integration (AddWeatherParsing). Timestamps are UTC. The public API may change between 0.x minor versions.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>weather dwd mosmix forecast observations osthessenwetter mqtt parser</PackageTags>
+    <PackageReleaseNotes>Release notes: CHANGELOG.md of the WeatherParser repository, version 0.1.0.</PackageReleaseNotes>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- XML documentation is packed (RL-01 A); missing or broken documentation comments fail the build. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1570;CS1572;CS1573;CS1574;CS1584;CS1587;CS1591;CS1734</WarningsAsErrors>
+    <!-- Symbols as a separate .snupkg (RL-03 A). -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <!-- Release and CI builds map the build paths (deterministic source paths), so the package does not depend on the clone directory (RL-03 A). -->
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="/" />
