@@ -1,6 +1,6 @@
 # P9.11 – Integrated Verification of the Release Candidate
 
-**Status (2026-11-02): outcome READY on release candidate `41bcffe` on Windows, hosted CI and the NanoPi R76S (section 5); the P9.10 target evidence of `86e77eb` carries over by the user's decision, because `41bcffe` changes only the packed `README.md` (section 4).** Plan: [P9_11_INTEGRATED_VERIFICATION_AND_ACCEPTANCE_PLAN.md](P9_11_INTEGRATED_VERIFICATION_AND_ACCEPTANCE_PLAN.md). Acceptance record: [P9_11_ACCEPTANCE.md](P9_11_ACCEPTANCE.md). Written by the orchestrating agent.
+**Status (2026-11-02): outcome READY on release candidate `89a83d1` on Windows, hosted CI and the NanoPi R76S (section 5); the P9.10 target evidence of `86e77eb` carries over by the user's decision on the README correction, because the compiled library and CLI are unchanged since `86e77eb` (sections 4 and 4a). `89a83d1` holds the fixes of the pull request review round 2 (a build-input change of `scripts/check-promotion.ps1` and its tests); `41bcffe` was the candidate before (section 3).** Plan: [P9_11_INTEGRATED_VERIFICATION_AND_ACCEPTANCE_PLAN.md](P9_11_INTEGRATED_VERIFICATION_AND_ACCEPTANCE_PLAN.md). Acceptance record: [P9_11_ACCEPTANCE.md](P9_11_ACCEPTANCE.md). Written by the orchestrating agent.
 
 ## 1. Candidates, target and decisions
 
@@ -19,7 +19,7 @@
 
 A first bundle (`19f2c1c7…`) contained only remote-tracking references, which `git clone` does not check out; it was replaced by a bundle of the local branch at the same commit. The skips are the documented opt-in and platform cases (P3.11 record section 10, the P9.07 fixture-host signal tests on Windows).
 
-## 3. Runs on the release candidate `41bcffe`
+## 3. Runs on the candidate `41bcffe` (superseded by `89a83d1`)
 
 | Platform | Run | Result |
 |---|---|---|
@@ -36,9 +36,22 @@ The P9.10 target runs were made on the artifacts of `86e77eb` (release build 412
 - Cause, checked rather than assumed: the build embeds the commit ID (the nuspec's repository commit and the assemblies' `AssemblyInformationalVersion`, P9.01 record). After replacing the old commit ID by the new one in the old bytes (a script in the session scratchpad, not in the repository): both nuspec files are identical; in both DLLs every remaining differing byte lies in a field the deterministic compiler derives from the content hash: the COFF time stamp, the MVID, the debug directory table and its CodeView and PDB-checksum data (library DLL 72 bytes, CLI DLL 100 bytes; 0 bytes outside these fields). The PDBs differ as the debug data of these DLLs. `WeatherParser.deps.json` differs in one line: the `sha512` of `WeatherParser.Parsing`, which equals the Base64 SHA-512 of the new release `.nupkg`, i.e. the CLI resolved the same-run package (as `build-release.ps1` checks).
 - Conclusion: the IL, the metadata and every resource of the library and the CLI are the same as in `86e77eb`; the package differs in its README text and in identity data that follows from the commit. The P9.10 target evidence (package consumer, installed CLI, live runs, MQTT, signals, scheduled series, guide examples) therefore applies to `41bcffe` as decided by the user; it was not repeated. The package consumer tests (131) ran on `41bcffe` on both platforms inside `ci-local.ps1` against the same-commit pack, not against the release `.nupkg` from a folder feed without a source checkout (the P9.10 S2 method); a named limitation.
 
+## 4a. Release candidate `89a83d1` after the pull request review
+
+The automatic review round 2 of pull request #18 found two defects, fixed in `db06163` (the RL-08 A build procedure in `docs/OPERATIONS.md`; `scripts/check-promotion.ps1` now requires the complete release set, test-first) and `89a83d1` (a test isolated after the per-step review); [acceptance record](P9_11_ACCEPTANCE.md) section 7. The script and its tests are build inputs (RL-06), so `89a83d169398467ddba767b78e27defcf201db11` (tree `a2a7804b…`) is the release candidate; the later commits change only Markdown files (`check-promotion.ps1` with the new rules: `PROMOTABLE` from `89a83d1` to the head of this record).
+
+| Platform | Run | Result |
+|---|---|---|
+| Windows x64 | the same `ci-local.ps1` command on `89a83d1`, run directory `artifacts/ci/89a83d1-20261102T191200Z` | exit 0; Parsing 3213 of 3220, coverage 170, runner 72, schema generation 46, package 137/137 (the six new promotion tests), CLI 719 of 733; library gate 11102/11103, CLI gate 2875/2920, both passed with the entries applied |
+| NanoPi R76S | as in section 2, bundle `8bcbf252…5321` (identical on the device), `ci-commit` at `89a83d1`; run directory `artifacts/ci/arm64-89a83d1-20261102T191204Z` | exit 0 (the script reported "Run completed in 00:14:25"); Parsing 3213 of 3220, coverage 170, runner 72, schema generation 46, package 137/137, CLI 724 of 733; library gate 11102/11103, CLI gate 2884/2920, both passed with the entries applied |
+| Hosted CI | run 41506975152, `pull_request` (synchronize) on head `89a83d1…`, the exact candidate | success: `changes`, `windows-x64`, `ubuntu-x64` and `debian13-arm64`; comparison target `ed7fc7a` |
+| Release build | run 41507675695 on `commit` `89a83d1…`, version 0.1.0; evidence tree `a2a7804ba529afdc43f1caf3fb82a7cb50044e7b`, SDK 10.0.402, `linux-arm64`, `Disable` | success; `SHA256SUMS`: `WeatherParser.Parsing.0.1.0.nupkg` `72dcc8680ce9dfe01dd5e1ab94590ddae88a6b10952caa27547c9e513c3cde37`, `WeatherParser.Parsing.0.1.0.snupkg` `e56511d839277dc8f466a43caf60402e922a308e53640718df7f62529fc8aa6c`, `WeatherParser.Cli.0.1.0.linux-arm64.zip` `95b349317f49b27f33058573170791f193b78c92038e937ea934c763237892f5` |
+
+Equivalence with `41bcffe`, by the same method as section 4: `README.md` is now identical; `compare-packages.ps1` reports `DIFFERENT` for the nuspec files, the two DLLs, the PDBs and `WeatherParser.deps.json` only. After replacing the commit ID, both nuspec files are identical, and every remaining DLL byte lies in the hash-derived fields (library DLL 72 bytes, CLI DLL 98 bytes; 0 bytes outside them); the `deps.json` names the SHA-512 of the new release `.nupkg`. So the library and the CLI of `89a83d1` are those of `41bcffe` and `86e77eb`, and the package differs from the `86e77eb` package only in the README and the commit-derived identity data. The P9.10 target evidence was not repeated (the user's decision of section 1 covered a README-only change; that it also covers this script fix is presented with the acceptance).
+
 ## 5. Outcome
 
-**READY** on `41bcffe`: `ci-local.ps1` exit 0 on Windows and on the NanoPi R76S, hosted CI run 41498427219 on the exact candidate with all three jobs passed, both coverage gates passed everywhere under the amended REQ-086 with the reconciliation entries for pull request #18 applied, the release build of the candidate succeeded, and its artifacts are equivalent to the P9.10 candidate's as shown in section 4. The first candidate `86e77eb` was also READY (section 2), with the hosted run on the documentation-only head `8470bd7` by the user's decision.
+**READY** on `89a83d1`: `ci-local.ps1` exit 0 on Windows and on the NanoPi R76S, hosted CI run 41506975152 on the exact candidate with all three jobs passed, both coverage gates passed everywhere under the amended REQ-086 with the reconciliation entries for pull request #18 applied, the release build of the candidate succeeded, and its library and CLI equal those of the P9.10 candidate (sections 4 and 4a). The earlier candidates `86e77eb` (section 2, with the hosted run on the documentation-only head `8470bd7` by the user's decision) and `41bcffe` (section 3) were READY as well.
 
 ## 6. Review
 
