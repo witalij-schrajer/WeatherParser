@@ -1,6 +1,6 @@
 # WeatherParser Operations
 
-**Status (2026-10-31): written in P9.07 (deployment) and P9.08 (the rest of the guide); the examples carry their verification status (section 11) and are checked on the NanoPi R76S in P9.10.** This guide covers the example CLI `WeatherParser` on Debian 13 ARM64 (`linux-arm64`, for example the NanoPi R76S). The library itself is consumed as a NuGet package and needs no deployment of its own; its consumers follow the README sections of each source. Every host, ID, path and topic below is a placeholder.
+**Status (2026-10-31): written in P9.07 (deployment) and P9.08 (the rest of the guide); the examples carry their verification status (section 11); checked on the NanoPi R76S in P9.10 on release candidate `86e77eb` (2026-11-01 to 2026-11-02).** This guide covers the example CLI `WeatherParser` on Debian 13 ARM64 (`linux-arm64`, for example the NanoPi R76S). The library itself is consumed as a NuGet package and needs no deployment of its own; its consumers follow the README sections of each source. Every host, ID, path and topic below is a placeholder.
 
 ## 1. Deployment (RL-07 A)
 
@@ -179,9 +179,9 @@ Status values as in CONTRIBUTING.md ("Status values").
 
 | Example | Status |
 |---|---|
-| Section 1, checksum, unpack, symlink, configuration and credential modes, invocation without a terminal | Verified on the NanoPi R76S in P9.07 in a disposable home folder as the login user, without root ([P9 verification record](p9/P9_VERIFICATION.md) section 8, [target run](p9/P9_07_TARGET_RUN.md)); the service user, the system paths and the runtime 10.0.14 are Planned for P9.10 |
-| Section 1, MOSMIX_S evidence cache directory; updates and rollback | Planned for P9.10 |
-| Section 3, cron entries; n8n | cron Planned for P9.10 (RL-15 long run with the fixture host); n8n is an example only, not verified |
+| Section 1, checksum, unpack, symlink, configuration and credential modes, invocation without a terminal | Verified on the NanoPi R76S in P9.07 in a disposable home folder as the login user, without root ([P9 verification record](p9/P9_VERIFICATION.md) section 8, [target run](p9/P9_07_TARGET_RUN.md)), and in P9.10 with the service user, the system paths, the credential file and the runtime 10.0.14 ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) sections 4 and 7) |
+| Section 1, MOSMIX_S evidence cache directory; updates and rollback | Evidence cache directory Verified in P9.10 (created with its owner, filled by the live `--SelectMOSMIX --RefreshMosmixSEvidence`); updates and rollback Verified in P9.10 by moving `current` to a second version folder and back, with `/etc/weatherparser` and the credential file unchanged (the same artifact in both folders; [P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 7) |
+| Section 3, cron entries; n8n | cron Verified in P9.10: the guide's cron line with `logger` under `/bin/sh`, and a 36.5-hour series of the documented entries, MOSMIX_L at `30 0,6,12,18` on a `Europe/Berlin` host ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) sections 5 and 7); n8n is an example only: its command line ran as a shell command, n8n itself not verified |
 | Section 4, exit codes | Verified by the CLI tests (P3) and on the NanoPi in P3.11 and P9.07 |
-| Section 5, journal and logrotate | Planned for P9.10 (journal); logrotate is an example only, not verified |
+| Section 5, journal and logrotate | journal Verified in P9.10; the logrotate stanza checked with `logrotate --debug` (exit 0, no errors), no rotation performed ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 7) |
 | Section 7, broker set-up with TLS, credentials and ACL | Verified in P9.09 with Mosquitto 2.1.2, a test CA in `Tls.CaFile`, a credential file and a write-only publisher identity, on Windows and on the NanoPi R76S ([P9.09 record](p9/P9_09_BROKER_AND_SHUTDOWN_CHECKS.md)); the system trust store not shown |

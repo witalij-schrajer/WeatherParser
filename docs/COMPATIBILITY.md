@@ -77,18 +77,18 @@ Candidate `a36d15a538e6ddc9cdf01d47b2ff45073a36cd95` against PR base `8009f1c413
 | GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40615010706 on `a36d15a`) | All jobs succeeded; recorded separately and not counted as target evidence |
 | Windows x64 (developer machine), live DWD MOSMIX files | Explicitly enabled live checks (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=mosmix-l` and `mosmix-s`), one authorized run per product on candidate `a36d15a` | MOSMIX_L: 1 request of a budget of 1, HTTP 200, 247 steps, fresh, schema-valid, no omissions; MOSMIX_S: 1 request, HTTP 200, 35,966,201 bytes, 240 steps, fresh, schema-valid, no omissions, parse 8,967 ms; forecast values not recorded (MF-17) |
 
-## Release 0.1.0 scope (P9.10, prepared 2026-10-31)
+## Release 0.1.0 scope (P9.10, verified 2026-11-01 to 2026-11-02)
 
-Rows prepared in P9.08 for the release acceptance; the evidence is filled in by P9.10 on the release candidate (RL-15 A). Until then every row is **Planned**; the CLI deployment was checked once without root in P9.07 ([P9 verification record](p9/P9_VERIFICATION.md) section 8), which does not replace these rows.
+Rows prepared in P9.08 and filled in by P9.10 on release candidate `86e77eb` (RL-15 A, [P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); the CLI deployment check without root in P9.07 ([P9 verification record](p9/P9_VERIFICATION.md) section 8) is superseded by these rows.
 
 | Platform | Evidence class | Result |
 |---|---|---|
-| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, runtime 10.0.14 or newer | Class B: candidate CLI installed per RL-07 A from its checksummed artifact, as the service user | Planned (P9.10) |
-| NanoPi R76S | Class B: package consumer against the release `.nupkg` without a source checkout | Planned (P9.10) |
-| NanoPi R76S | Class B: every CLI command once offline against the fixture host and once live in JSON mode (OsthessenWetter JSON only, OW-14) | Planned (P9.10) |
-| NanoPi R76S | Class B: one MQTT run against the test broker with TLS and credentials (RL-13 A) | Planned (P9.09, P9.10) |
-| NanoPi R76S | Class B: signals and cleanup; cron every 10 minutes over 24 hours against the fixture host plus one live invocation per source per hour | Planned (P9.10) |
-| GitHub-hosted `ubuntu-x64` | Release build of the candidate (`release-build.yml`) | Planned (candidate build before P9.10); dry runs on `a563fc4` recorded in P9.06 |
+| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, runtime 10.0.14 or newer | Class B: candidate CLI installed per RL-07 A from its checksummed artifact, as the service user | Verified on `86e77eb` with runtime 10.0.14 on Debian 13.7: checksums `OK`, the RL-07 A layout and modes, every run as `weatherparser` without a terminal ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 4) |
+| NanoPi R76S | Class B: package consumer against the release `.nupkg` without a source checkout | Verified on `86e77eb`: `WeatherParser.Package.Tests` 131/131 on the NanoPi and on Windows ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 3) |
+| NanoPi R76S | Class B: every CLI command once offline against the fixture host and once live in JSON mode (OsthessenWetter JSON only, OW-14) | Verified on `86e77eb`: offline exit codes 0, 2, 1 and 3 as expected (the MOSMIX commands only on their failure paths, no MOSMIX fixtures); live every command exit 0 except OsthessenWetter in the second setup (station reported offline, `OSTHESSEN-STATION-OFFLINE`, exit 1) ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 4) |
+| NanoPi R76S | Class B: one MQTT run against the test broker with TLS and credentials (RL-13 A) | Verified in P9.09 and on `86e77eb`: published with QoS 1 over TLS through an SSH tunnel to the Windows test broker and observed live ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 4) |
+| NanoPi R76S | Class B: signals and cleanup; cron every 10 minutes over 24 hours against the fixture host plus one live invocation per source per hour | Verified on `86e77eb`: SIGINT and SIGTERM exit 4 without output; 374 invocations over 36.5 hours, 369 exit 0 and 5 reported live item failures, peak memory at most 202,492 KB, no leftover process, file or user ([P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 5) |
+| GitHub-hosted `ubuntu-x64` | Release build of the candidate (`release-build.yml`) | Verified: run 41239327847 on `86e77eb` (SDK 10.0.402); dry runs on `a563fc4` recorded in P9.06 |
 
 ## Limits
 

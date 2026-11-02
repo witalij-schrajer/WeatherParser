@@ -4,7 +4,7 @@ All notable changes to WeatherParser are recorded here, one section per version,
 
 ## [0.1.0] – not yet released
 
-**Status (2026-10-31): release candidate in preparation (phase P9).** The package `WeatherParser.Parsing` 0.1.0 is built and checksummed by the release build (`.github/workflows/release-build.yml`); the target acceptance on the NanoPi R76S (P9.10) and the user's acceptance (P9.11) are still open. The package is **not published** on nuget.org or any other feed (user decision of 2026-10-31), and the repository stays private (RL-19 A), so the package carries no repository or project URL. The date is set when the user releases the version.
+**Status (2026-11-02): release candidate `86e77eb` accepted on the target (phase P9).** The package `WeatherParser.Parsing` 0.1.0 is built and checksummed by the release build (`.github/workflows/release-build.yml`, run 41239327847); the target acceptance on the NanoPi R76S (P9.10) is READY ([P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); the user's acceptance (P9.11) is still open. The package is **not published** on nuget.org or any other feed (user decision of 2026-10-31), and the repository stays private (RL-19 A), so the package carries no repository or project URL. The date is set when the user releases the version.
 
 ### Added
 
@@ -28,8 +28,8 @@ Example CLI `WeatherParser` (not part of the package; built from source against 
 
 | Platform | Status |
 |---|---|
-| .NET 10 runtime 10.0.14 or newer (`Microsoft.NETCore.App`) | Required. The library and the CLI were tested on runtime 10.0.13 (Windows, hosted CI, NanoPi R76S); 10.0.14 on the target is checked in P9.10 |
-| Debian 13 (trixie), `linux-arm64`, NanoPi R76S | Verified per phase on the target: P1.10 to P7.11 in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md), P8.09 in [its record](docs/p8/P8_09_INTEGRATED_VERIFICATION.md) and P3.11 in [its record](docs/p3/P3_11_INTEGRATED_VERIFICATION.md); the release acceptance on the candidate follows in P9.10 |
+| .NET 10 runtime 10.0.14 or newer (`Microsoft.NETCore.App`) | Required. The library and the CLI were tested on runtime 10.0.13 (Windows, hosted CI, NanoPi R76S) and the release candidate on runtime 10.0.14 on the NanoPi R76S (P9.10) |
+| Debian 13 (trixie), `linux-arm64`, NanoPi R76S | Verified per phase on the target: P1.10 to P7.11 in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md), P8.09 in [its record](docs/p8/P8_09_INTEGRATED_VERIFICATION.md) and P3.11 in [its record](docs/p3/P3_11_INTEGRATED_VERIFICATION.md); the release candidate `86e77eb` in P9.10 ([its record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md), with its deviations and limitations) |
 | Windows x64 | Development platform; tested, not a release target |
 | GitHub-hosted `ubuntu-x64`, `windows-x64`, `debian13-arm64` container | CI only; never counted as target evidence |
 
@@ -46,7 +46,8 @@ Build: .NET SDK 10.0.402 (pinned). The update to SDK 10.0.403 is an open item of
 | Limitation | Owner |
 |---|---|
 | Not published on any feed; repository private, no repository URL in the package metadata (RL-19 A) | The user |
-| Runtime 10.0.14 on the target and the release acceptance on the NanoPi R76S are still open (P9.10) | P9.10, the user (runtime installation) |
+| The packed `README.md` of the candidate still lists the release acceptance on the NanoPi R76S as Planned (P9.10); changing it changes the package and needs a new candidate | The user (P9.11) |
+| A failed MOSMIX file retrieval is reported as `MOSMIX-RETRIEVAL-FAILED` with the cause `CATALOG-RETRIEVAL-FAILED` only; the HTTP status or timeout is not named (seen three times in the P9.10 series, [P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 9) | The user (P9.11) |
 | TLS and authentication were verified against one broker product (Mosquitto 2.1.2) with a self-signed test CA given in `Tls.CaFile` (P9.09); the system trust store, a public CA and an ACL denial of a single message were not shown | Recorded |
 | MQTT 3.1.1: a broker can acknowledge a message it then drops; only 5.0 reports such a refusal (`CLI-MQTT-MESSAGE-REFUSED`) | Recorded (CL-13) |
 | After a cancellation or an expired deadline the broker disconnect is bounded by `ConnectTimeout` and runs outside the command token | Recorded |
@@ -62,7 +63,7 @@ Build: .NET SDK 10.0.402 (pinned). The update to SDK 10.0.403 is an open item of
 | Consumers that do not use MOSMIX forecasts still register its four option and endpoint types; option failures surface on first resolution, not at `ValidateOnBuild` | Recorded (README) |
 | Schema compatibility: consumers that validated against the committed v1 schema of P2 must take the schema packaged with this version (C-105); exhaustive switches over `IntervalAggregation` must handle `maximum` and `sum` (C-121) | Consumers (README) |
 | Resource evidence: MOSMIX_S duration and peak memory were measured once with a synthetic workload on an idle NanoPi; the live parses are single snapshots on Windows (MF-17) | Recorded |
-| DI under load: shown only for the tested mix of P8.07; other loads and long runs are not shown | P9.10 (long run), recorded |
+| DI under load: shown only for the tested mix of P8.07; long runs of the CLI are shown by the 36.5-hour series of P9.10 on the NanoPi R76S (one process per invocation, [P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 5); other loads are not shown | Recorded |
 | The public API inventory does not record nullable annotations (P9.05) | The user |
 | `debian13-arm64` in the hosted CI is a container on GitHub's runners, not target evidence | Recorded |
 | The example CLI's offline fixture host is not covered by the CLI gate's gated-input list (P9.07, open decision) | The user |
