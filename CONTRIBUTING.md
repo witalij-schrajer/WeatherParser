@@ -1,6 +1,6 @@
 # Contributing to WeatherParser
 
-This guide covers all developer procedures for restoring, building, packing, testing, and evaluating coverage in the WeatherParser repository. It is the single source of truth for development workflows, with each item tagged by platform (Windows, Debian/ARM64, or any) and status. README.md holds only the library purpose, the product status, quickstart, and links; the phase status is in docs/development/PHASE_STATUS.md; contributor rules are in AGENTS.md; requirements in REQUIREMENTS.md; versions and licenses in DEPENDENCIES.md; platform matrix in docs/COMPATIBILITY.md.
+This guide covers all developer procedures for restoring, building, packing, testing, and evaluating coverage in the WeatherParser repository. It is the single source of truth for development workflows, with each item tagged by platform (Windows, Debian/ARM64, or any) and status. README.md holds only the library purpose, the product status, quickstart, and links; the phase status is in docs/development/PHASE_STATUS.md; library usage is in docs/LIBRARY_USAGE.md, adding a data source in docs/EXTENDING_DATA_SOURCES.md and reporting problems in docs/REPORTING_ISSUES.md; contributor rules are in AGENTS.md; requirements in REQUIREMENTS.md; versions and licenses in DEPENDENCIES.md; platform matrix in docs/COMPATIBILITY.md.
 
 ## Status values
 

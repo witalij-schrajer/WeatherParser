@@ -1,0 +1,50 @@
+name: Data source request
+description: Propose a weather data source for WeatherParser. A request is not an approval to implement it.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read docs/EXTENDING_DATA_SOURCES.md section 3 for the facts a source needs. Answer what you know and write "unknown" for the rest. Do not paste copies of pages or files whose licence does not allow it.
+  - type: input
+    id: provider
+    attributes:
+      label: Provider
+    validations:
+      required: true
+  - type: textarea
+    id: documentation
+    attributes:
+      label: Official format documentation
+      description: Links to the provider's description of the files or the interface.
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Observations or forecasts
+      options:
+        - Observations
+        - Forecasts
+        - Both
+    validations:
+      required: true
+  - type: textarea
+    id: quantities
+    attributes:
+      label: Quantities you need
+      description: For example temperature, pressure, wind speed, rain rate, with their units if known.
+    validations:
+      required: true
+  - type: textarea
+    id: conditions
+    attributes:
+      label: Licence, attribution and access conditions
+      description: Licence of the data, required attribution, whether automated retrieval is allowed, rate limits, registration or keys.
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Sample data
+      description: Whether a small sample file may be shared, with its source and licence.
