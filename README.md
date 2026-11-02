@@ -595,12 +595,12 @@ The example CLI's broker transport uses dedicated credentials and scoped topic p
 
 ## Release and installation
 
-Planned versus implemented (REQ-090), as of 2026-10-31:
+Planned versus implemented (REQ-090), as of 2026-11-02:
 
 | Item | Status |
 |---|---|
 | Package `WeatherParser.Parsing` 0.1.0 with XML documentation, symbols package and public API listing | Implemented and built by the release build (P9.05, P9.06) |
-| Release acceptance of the candidate on the NanoPi R76S | Planned (P9.10) |
+| Release acceptance of the candidate on the NanoPi R76S | Verified in P9.10 on Debian 13 ARM64 with runtime 10.0.14: the package consumed without the source, the CLI installed per [docs/OPERATIONS.md](docs/OPERATIONS.md) and run as a service user offline and live, signals, update and rollback, and a 36.5-hour scheduled series ([P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)) |
 | Publication on nuget.org | Not planned for this release (user decision of 2026-10-31); the repository stays private |
 | Installation from a feed: `dotnet add package WeatherParser.Parsing --version 0.1.0` | Planned; works only after a publication, which needs a separate decision |
 | Example CLI on Debian 13 ARM64 | Implemented; deployment documented in [docs/OPERATIONS.md](docs/OPERATIONS.md) (RL-07 A); the CLI is not part of the package and is built from the source against the package (RL-08 A) |

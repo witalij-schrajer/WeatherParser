@@ -46,7 +46,6 @@ Build: .NET SDK 10.0.402 (pinned). The update to SDK 10.0.403 is an open item of
 | Limitation | Owner |
 |---|---|
 | Not published on any feed; repository private, no repository URL in the package metadata (RL-19 A) | The user |
-| The packed `README.md` of the candidate still lists the release acceptance on the NanoPi R76S as Planned (P9.10); changing it changes the package and needs a new candidate | The user (P9.11) |
 | A failed MOSMIX file retrieval is reported as `MOSMIX-RETRIEVAL-FAILED` with the cause `CATALOG-RETRIEVAL-FAILED` only; the HTTP status or timeout is not named (seen three times in the P9.10 series, [P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 9) | The user (P9.11) |
 | TLS and authentication were verified against one broker product (Mosquitto 2.1.2) with a self-signed test CA given in `Tls.CaFile` (P9.09); the system trust store, a public CA and an ACL denial of a single message were not shown | Recorded |
 | MQTT 3.1.1: a broker can acknowledge a message it then drops; only 5.0 reports such a refusal (`CLI-MQTT-MESSAGE-REFUSED`) | Recorded (CL-13) |
