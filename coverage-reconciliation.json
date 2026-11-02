@@ -1,22 +1,3 @@
 {
-  "entries": [
-    {
-      "gate": "library",
-      "targetCommit": "ed7fc7a03db2f5554c490451f918da9fc6828c84",
-      "pullRequest": 18,
-      "headRepository": "witalij-schrajer/WeatherParser",
-      "headBranch": "features/develop/P9",
-      "approvedOn": "2026-10-31",
-      "record": "docs/p9/P9_RELEASE_CONTRACT.md#1-approval"
-    },
-    {
-      "gate": "cli",
-      "targetCommit": "ed7fc7a03db2f5554c490451f918da9fc6828c84",
-      "pullRequest": 18,
-      "headRepository": "witalij-schrajer/WeatherParser",
-      "headBranch": "features/develop/P9",
-      "approvedOn": "2026-10-31",
-      "record": "docs/p9/P9_RELEASE_CONTRACT.md#1-approval"
-    }
-  ]
+  "entries": []
 }
