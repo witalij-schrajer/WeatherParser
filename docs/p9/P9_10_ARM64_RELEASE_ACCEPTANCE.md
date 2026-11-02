@@ -99,7 +99,7 @@ Standard output carried only the documents and standard error only the log lines
 ## 8. Deviations
 
 - The series ran 36.5 hours instead of the approved 24 hours, because `finish` was run at 17:36Z on 2026-11-02; the hourly live runs therefore exceed the 24-hour share: 37 runs each of DWD, OsthessenWetter and (36) MOSMIX_S instead of about 24, and 7 MOSMIX_L runs instead of 4; one OsthessenWetter page request per hour stays within the documented intervals (OPERATIONS section 7).
-- The setup ran twice on this candidate (section 6); together with the two setups on `2a084be` the one-time live runs of the authorization were made four times.
+- The setup ran twice on this candidate (section 6); together with the one setup on `2a084be` (verification record section 11.1) the one-time live runs of the authorization were made three times.
 - The root parts were run by the user as one script prepared by the orchestrating agent (option 2), not as individual guide commands.
 
 ## 9. Observations and limitations

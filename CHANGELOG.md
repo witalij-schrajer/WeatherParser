@@ -4,7 +4,7 @@ All notable changes to WeatherParser are recorded here, one section per version,
 
 ## [0.1.0] – not yet released
 
-**Status (2026-11-02): release candidate `86e77eb` accepted on the target (phase P9).** The package `WeatherParser.Parsing` 0.1.0 is built and checksummed by the release build (`.github/workflows/release-build.yml`, run 41239327847); the target acceptance on the NanoPi R76S (P9.10) is READY ([P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); the user's acceptance (P9.11) is still open. The package is **not published** on nuget.org or any other feed (user decision of 2026-10-31), and the repository stays private (RL-19 A), so the package carries no repository or project URL. The date is set when the user releases the version.
+**Status (2026-11-02): release candidate `41bcffe` verified (phase P9).** The package `WeatherParser.Parsing` 0.1.0 is built and checksummed by the release build (`.github/workflows/release-build.yml`, run 41498465182 on `41bcffe`); the target acceptance on the NanoPi R76S (P9.10, on candidate `86e77eb`, whose artifacts differ from `41bcffe` only in the README text and commit-derived identity data) is READY ([P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); the integrated verification on `41bcffe` is READY ([P9.11 record](docs/p9/P9_11_INTEGRATED_VERIFICATION.md)); the user's acceptance (P9.11) is still open. The package is **not published** on nuget.org or any other feed (user decision of 2026-10-31), and the repository stays private (RL-19 A), so the package carries no repository or project URL. The date is set when the user releases the version.
 
 ### Added
 

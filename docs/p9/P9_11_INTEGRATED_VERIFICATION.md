@@ -1,0 +1,45 @@
+# P9.11 – Integrated Verification of the Release Candidate
+
+**Status (2026-11-02): outcome READY on release candidate `41bcffe` on Windows, hosted CI and the NanoPi R76S (section 5); the P9.10 target evidence of `86e77eb` carries over by the user's decision, because `41bcffe` changes only the packed `README.md` (section 4).** Plan: [P9_11_INTEGRATED_VERIFICATION_AND_ACCEPTANCE_PLAN.md](P9_11_INTEGRATED_VERIFICATION_AND_ACCEPTANCE_PLAN.md). Acceptance record: [P9_11_ACCEPTANCE.md](P9_11_ACCEPTANCE.md). Written by the orchestrating agent.
+
+## 1. Candidates, target and decisions
+
+- Target: `ed7fc7a03db2f5554c490451f918da9fc6828c84`, the merge base of the phase branch with `develop`; the coverage reconciliation entries of `coverage-reconciliation.json` name it (RL-20 A). `develop` has moved to `78690d0` (the user's merge of pull request #19, which added only `.github/workflows/release-build.yml`, identical to this branch's file); every gate run below, local and hosted, compared against `ed7fc7a`, so the entries applied (plan section 10).
+- First candidate: `86e77eb430326a066c4cf09921c8145b4d44acbe`, READY in P9.10. Its automatic hosted run (41239331632) was documentation-only, so its three CI jobs did not run, and the branch head had moved to `8470bd7` (the P9.10 record) before a manual run was started. `scripts/check-promotion.ps1 -Candidate 86e77eb -Target 8470bd7` with the stored artifacts of release build 41239327847: `PROMOTABLE` (exit 0). Asked how to handle the exact-SHA rule of plan S1, the user decided "Keep 86e77eb, run head" (2026-11-02): the manual CI run on the head `8470bd7`, whose build inputs equal the candidate's, counts for it (a recorded deviation from S1).
+- README: the packed `README.md` still listed the release acceptance on the NanoPi R76S as Planned (P9.10), contrary to T-P9-15. Offered either a README fix with a new build or a named open item, the user decided "Fix README, new build" (2026-11-02); the option stated that the P9.10 target runs and the scheduled series are not repeated, because the compiled library and CLI stay identical. The fix is commit `41bcffee2201888cc2bea9b773025ecdbda04ce8` (the README table and one changelog row; tree `b6df5e16…`), the new release candidate.
+- NanoPi gate run: authorized by the user on 2026-10-31 ("I authorize all required runs"); the user did not object when this was stated before the run on 2026-11-02.
+
+## 2. Runs on the first candidate `86e77eb`
+
+| Platform | Run | Result |
+|---|---|---|
+| Windows x64 (SDK 10.0.402) | `pwsh ./scripts/ci-local.ps1 -Commit 86e77eb… -TargetRef ed7fc7a -RunSettings coverage.runsettings -PullRequestHeadRepository witalij-schrajer/WeatherParser -PullRequestBranch features/develop/P9`, run directory `artifacts/ci/86e77eb-20261102T175114Z` | exit 0; Parsing 3213 of 3220, coverage 170, runner 72, schema generation 46, package 131/131, CLI 719 of 733; library gate 11102/11103, CLI gate 2875/2920 (target 2872/2917), both passed with the reconciliation entries applied |
+| NanoPi R76S (Debian 13.7, SDK 10.0.402 and runtime 10.0.13 from `scripts/prepare-debian-arm64.sh` in the login user's `~/.dotnet`) | CONTRIBUTING.md section 7: a Git bundle of `features/develop/P9` (SHA-256 `ca6d2ef2…0485`, identical on the device), a fresh clone, `ci-commit` at `86e77eb`, `ci-target` at `ed7fc7a`, the same command with the same head identity; run directory copied to `artifacts/ci/arm64-86e77eb-20261102T175311Z` | exit 0 (the script reported "Run completed in 00:14:14"); Parsing 3213 of 3220, coverage 170, runner 72, schema generation 46, package 131/131, CLI 724 of 733; library gate 11102/11103, CLI gate 2884/2920 (target 2881/2917), both passed with the entries applied |
+| Hosted CI | run 41495179140, `workflow_dispatch` on `features/develop/P9` with `target_ref` `ed7fc7a…`; head `8470bd7314a44204b5fa1cdf778bee8cbb652cf9` (the user's decision above) | success: `changes`, `windows-x64`, `ubuntu-x64` and `debian13-arm64` all ran and passed; comparison target `ed7fc7a` in every job |
+
+A first bundle (`19f2c1c7…`) contained only remote-tracking references, which `git clone` does not check out; it was replaced by a bundle of the local branch at the same commit. The skips are the documented opt-in and platform cases (P3.11 record section 10, the P9.07 fixture-host signal tests on Windows).
+
+## 3. Runs on the release candidate `41bcffe`
+
+| Platform | Run | Result |
+|---|---|---|
+| Windows x64 | the same `ci-local.ps1` command on `41bcffe`, run directory `artifacts/ci/41bcffe-20261102T181325Z` | exit 0; Parsing 3213 of 3220, coverage 170, runner 72, schema generation 46, package 131/131 (the package-content tests compare the packed `README.md` with the committed file), CLI 719 of 733; library gate 11102/11103, CLI gate 2875/2920, both passed with the entries applied |
+| NanoPi R76S | as in section 2, bundle `e8545f55…088b` (identical on the device), `ci-commit` at `41bcffe`; run directory `artifacts/ci/arm64-41bcffe-20261102T181328Z` | exit 0 (the script reported "Run completed in 00:13:11"); Parsing 3213 of 3220, coverage 170, runner 72, schema generation 46, package 131/131, CLI 724 of 733; library gate 11102/11103, CLI gate 2884/2920, both passed with the entries applied |
+| Hosted CI | run 41498427219, `pull_request` (synchronize) on head `41bcffe…`, the exact candidate; the README is a code input, so the three jobs ran | success: `changes`, `windows-x64`, `ubuntu-x64` and `debian13-arm64`; comparison target `ed7fc7a` |
+| Release build | run 41498465182, `release-build.yml` dispatched on `features/develop/P9` with `commit` `41bcffe…` and `version` 0.1.0; evidence: tree `b6df5e16e49fcdb198b6dd47afba4c3cd131e363`, SDK 10.0.402, `linux-arm64`, `Disable` | success; `SHA256SUMS`: `WeatherParser.Parsing.0.1.0.nupkg` `206db3cef2ef064f4e86a64e8979637af952197b2be9491784b3b887008a0aee`, `WeatherParser.Parsing.0.1.0.snupkg` `5acfd0c53d9955556b334e00f988a30fa90a7a908ee2244992bd38e0e02d5664`, `WeatherParser.Cli.0.1.0.linux-arm64.zip` `eb925ae9e3574f0518309c208a2bbef72bddee5305dd222e34fb02d3002b58e7` |
+
+## 4. Equivalence of `41bcffe` with the P9.10 candidate `86e77eb`
+
+The P9.10 target runs were made on the artifacts of `86e77eb` (release build 41239327847). The artifacts of `41bcffe` were compared with them member by member:
+
+- `scripts/compare-packages.ps1` reports `DIFFERENT` for: in the `.nupkg` `README.md`, `WeatherParser.Parsing.nuspec` and `lib/net10.0/WeatherParser.Parsing.dll`; in the `.snupkg` the nuspec and `WeatherParser.Parsing.pdb`; in the CLI archive `WeatherParser.dll`, `WeatherParser.Parsing.dll`, `WeatherParser.pdb` and `WeatherParser.deps.json`. Every other member is identical.
+- Cause, checked rather than assumed: the build embeds the commit ID (the nuspec's repository commit and the assemblies' `AssemblyInformationalVersion`, P9.01 record). After replacing the old commit ID by the new one in the old bytes (a script in the session scratchpad, not in the repository): both nuspec files are identical; in both DLLs every remaining differing byte lies in a field the deterministic compiler derives from the content hash: the COFF time stamp, the MVID, the debug directory table and its CodeView and PDB-checksum data (library DLL 72 bytes, CLI DLL 100 bytes; 0 bytes outside these fields). The PDBs differ as the debug data of these DLLs. `WeatherParser.deps.json` differs in one line: the `sha512` of `WeatherParser.Parsing`, which equals the Base64 SHA-512 of the new release `.nupkg`, i.e. the CLI resolved the same-run package (as `build-release.ps1` checks).
+- Conclusion: the IL, the metadata and every resource of the library and the CLI are the same as in `86e77eb`; the package differs in its README text and in identity data that follows from the commit. The P9.10 target evidence (package consumer, installed CLI, live runs, MQTT, signals, scheduled series, guide examples) therefore applies to `41bcffe` as decided by the user; it was not repeated. The package consumer tests (131) ran on `41bcffe` on both platforms inside `ci-local.ps1` against the same-commit pack, not against the release `.nupkg` from a folder feed without a source checkout (the P9.10 S2 method); a named limitation.
+
+## 5. Outcome
+
+**READY** on `41bcffe`: `ci-local.ps1` exit 0 on Windows and on the NanoPi R76S, hosted CI run 41498427219 on the exact candidate with all three jobs passed, both coverage gates passed everywhere under the amended REQ-086 with the reconciliation entries for pull request #18 applied, the release build of the candidate succeeded, and its artifacts are equivalent to the P9.10 candidate's as shown in section 4. The first candidate `86e77eb` was also READY (section 2), with the hosted run on the documentation-only head `8470bd7` by the user's decision.
+
+## 6. Review
+
+Per-step Codex review: section 8 of the [acceptance record](P9_11_ACCEPTANCE.md).
