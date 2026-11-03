@@ -178,8 +178,10 @@ Evidence (Windows, SDK 10.0.402):
 - Red: before the example files existed the package test project failed to compile (`CS0246` for `IDwdJsonExporter` and `DwdJsonExporter`, `CS1061` for `AddMyWeatherParsing`); with the example and without the guide, the two example tests passed and the two documentation tests failed. Green: 4 of 4. A mutation of the guide (one option value, one JSON value) made both documentation tests fail.
 - Package tests 141 of 141 (137 before), `ReadmeCliSectionTests` 6 of 6, package check of the changed README (packed README, LICENSE and schema byte-identical, restored package hash equal).
 - A new console application outside the repository, following the commands of the guide with an empty package cache, restored the local `0.1.0` package and its dependencies from nuget.org and built `Program.cs` with the example files without warnings. It was not run, because running it contacts the DWD server; no live request was made.
+- The checks above ran on the working tree that was committed unchanged as `ac37bd8`. The P1.09 script then ran on the committed revision: `scripts/ci-local.ps1` against `origin/develop` `69604b9`, commit `ac37bd8`, two-pass mode, 2026-11-02T21:36:15Z to 21:39:18Z, exit code 0, run directory `artifacts/ci/ac37bd8-20261102T213615Z` (local, not committed). Tests: Parsing 3213 passed of 3220 (0 failed, the rest skipped), Coverage 170 of 170, Coverage.Runner 72 of 72, SchemaGeneration 46 of 46, Package 141 of 141, CLI 719 passed of 733 (0 failed, 14 skipped). Library gate (`gate-result.json`) 11102 of 11103 blocks and CLI gate (`cli-gate-result.json`) 2875 of 2920 blocks, each equal to its baseline and accepted because the gated inputs are unchanged. The packed package's hash (`package-hash.txt`) is `hvLyYQQlmzenvI40FYnCDIQdG0JcQQFEzSJPS7ueLG8lwcLVXm3Eis7YFG8FDwhAn20HUypJPPD2BFrnZPRgNw==`.
+- Hosted CI on `ac37bd8`: run 41529831257 succeeded (Windows x64, Ubuntu x64, Debian 13 ARM64).
 
-Codex reviews (read-only, five-angle audit frame):
+Codex reviews (read-only, five-angle audit frame), local CLI runs on the uncommitted changes that became `ac37bd8`, on top of `d6a3199`. The outputs were written outside the repository and are not committed; the table records each round's finding count and disposition:
 
 | Round | Findings | Disposition |
 | --- | --- | --- |
@@ -187,6 +189,12 @@ Codex reviews (read-only, five-angle audit frame):
 | 2 | 1 | Confirmed and fixed: the packed readme still linked other files relatively; they are now absolute `develop` links, except in the "Example CLI" section, whose links stay relative because `ReadmeCliSectionTests` allows only source hosts there and the CLI is built from a checkout |
 | 3 | 1 | Confirmed and fixed: the extension guide said every serializer accepts every export root; the MQTT serializer rejects `ExportDocument` (`MQTT-MESSAGE-TYPE-UNSUPPORTED`), which the guide now states |
 | 4 | 0 | No findings |
+
+Automatic pull request review (`.github/workflows/review.yml`) of pull request #21:
+
+| Round | Head | Run | Findings | Disposition |
+| --- | --- | --- | --- | --- |
+| 1 | `ac37bd8` | 41590374029 | 2 | Both confirmed and fixed: this record did not name the revisions, runs and hashes of its evidence and lacked the P1.09 run on the committed revision (added above); the change of `.github/review/prompt-documentation.md` had no companion note in CONTRIBUTING.md section 6, `DEPENDENCIES.md` and AGENTS.md "Second reviewer: Codex" as the consistency table requires (added: the brief names the status documents at their `docs/development/` paths; triggers, classification, pinned actions and the Codex version are unchanged) |
 
 Open items:
 
