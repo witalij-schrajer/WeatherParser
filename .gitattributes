@@ -3,3 +3,5 @@ schemas/**/*.xsd text eol=lf
 # Text files packed into the NuGet package are LF on every checkout, so packages built on Windows and Linux carry the same bytes (P9 release contract RL-03 A).
 README.md text eol=lf
 LICENSE text eol=lf
+# Shell scripts run by bash in Git Bash too, so they stay LF on every checkout.
+scripts/check-ci-changes-job.sh text eol=lf

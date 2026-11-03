@@ -56,10 +56,10 @@ bash scripts/check-ci-changes-job.sh /tmp/ci-before.yml
 bash scripts/check-ci-changes-job.sh
 ```
 
-| Workflow revision | Exit | Result |",
-"|---|---|---|",
-"| Before the change (`ebb3fa9`) | 1 | 6 of 7 passed; `FAIL documentation-only push to a code pull request: got false, want true` |",
-"| After the change (`d0e72e2`) | 0 | 7 of 7 passed |",
+| Workflow revision | Exit | Result |
+|---|---|---|
+| Before the change (`ebb3fa9`) | 1 | 6 of 7 passed; `FAIL documentation-only push to a code pull request: got false, want true` |
+| After the change (`d0e72e2`) | 0 | 7 of 7 passed |
 
 Both results are from Git Bash on Windows; `ci.yml` has not changed since `d0e72e2`. The script is run by hand and is not part of CI.
 
