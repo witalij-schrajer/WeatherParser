@@ -43,9 +43,14 @@ Translation revision: the English files at `develop` `58eac05`. In the same chan
 | Round | Head | Run | Findings | Disposition |
 |---|---|---|---|---|
 | 1 | `2f3014b` | 41622134307 | 3 | See below |
+| 2 | `0630885` | 41622597012 | 1 | See below |
 
 Round 1:
 
 1. [P2] The language exception is presented as a user decision without independent evidence. Confirmed in part: the decision was made by the user in the session, but no record in the repository held the user's wording. Fixed: section 1 records the questions and the verbatim answers, and AGENTS.md and REQ-093 link this record.
 2. [P2] No recorded package check and P1.09 run for the README change on the head revision. Confirmed: the run had passed but was not recorded. Fixed: section 3 records the command, revision, run folder, test counts, package and packed-README hashes and gate results.
 3. [P2] The new text of the review brief "suppresses findings" and is reviewer-directed text in the review target. Rejected: the brief is read from the base commit, so the change does not govern this pull request's review (the reviewer applied the base brief); the text implements the user's recorded decision of section 1 for later pull requests, as the brief's change process requires (AGENTS.md consistency table, companion notes in CONTRIBUTING.md section 6, DEPENDENCIES.md and AGENTS.md), and it narrows the "English only" check without removing any other check.
+
+Round 2:
+
+1. [P3] The clause "a translation that lags behind its source is not a finding before a release is prepared" in `.github/review/prompt-documentation.md` item 8 is a blanket instruction on how to classify findings and could let outdated operational or security guidance pass. Confirmed. Fixed: item 8 now states the facts instead: a translation must agree with its English source at the revision it names (no added, dropped or changed facts), English changes after that revision must reach the translation before the release of the next version, and a pull request that prepares a release must include them.
