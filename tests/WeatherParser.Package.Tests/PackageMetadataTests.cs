@@ -35,7 +35,7 @@ public sealed class PackageMetadataTests
     public void Package_Id_Version_Authors_License_AsDecided()
     {
         Value("id").Should().Be("WeatherParser.Parsing");
-        Value("version").Should().Be("1.0.0");
+        Value("version").Should().Be("1.1.0-dev");
         Value("authors").Should().Be("WeatherParser contributors");
 
         var metadata = Metadata();
@@ -82,7 +82,7 @@ public sealed class PackageMetadataTests
     /// </summary>
     public void Package_ReleaseNotesLink_Present()
     {
-        Value("releaseNotes").Should().Be("Release notes: CHANGELOG.md of the WeatherParser repository, version 1.0.0.");
+        Value("releaseNotes").Should().Be("Release notes: CHANGELOG.md of the WeatherParser repository, version 1.1.0-dev.");
     }
 
     [TestMethod]

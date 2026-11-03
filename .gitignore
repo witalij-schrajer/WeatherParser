@@ -29,3 +29,4 @@ secrets/
 weatherparser.json
 *.local.json
 *.credentials.json
+!eng/package-validation/WeatherParser.Parsing.1.0.0.nupkg
