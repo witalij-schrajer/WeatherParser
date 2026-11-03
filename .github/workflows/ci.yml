@@ -1,0 +1,193 @@
+# Continuous integration workflow for WeatherParser repository
+# Runs the same local CI script as documented in CONTRIBUTING.md section 6
+# For pull requests, compares against the PR base; for manual runs, uses a deliberate target
+# The three CI jobs run only when code changed; documentation-only changes skip them (see the changes job)
+name: CI
+on:
+  pull_request:
+    branches: [ "develop", "master" ]
+    # Explicit types: every push to a pull request starts the workflow, including drafts (work in progress), and marking a draft ready for review starts a fresh run;
+    # the changes job then decides whether the CI jobs run.
+    types: [ opened, synchronize, reopened, ready_for_review ]
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: 'Deliberate comparison target (commit or branch) for the coverage gate, for example the bootstrap seed 0a2dabe. Use a commit SHA or a remote branch such as origin/develop.'
+        required: true
+        type: string
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  TESTINGPLATFORM_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+  DOTNET_CLI_UI_LANGUAGE: en
+permissions:
+  contents: read
+# No cancel-in-progress: a later documentation-only push skips the CI jobs, so it must not cancel a run that still verifies earlier code changes.
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.detect.outputs.code }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Detect code changes
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          BEFORE_SHA: ${{ github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" != pull_request ]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "Manual run: the CI jobs run."
+            exit 0
+          fi
+          # A push (synchronize) is judged by its own commits; opened, reopened, ready_for_review and force pushes by the whole pull request.
+          if [ "$EVENT_ACTION" = synchronize ] && [ -n "$BEFORE_SHA" ] && git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null && git merge-base --is-ancestor "$BEFORE_SHA" "$HEAD_SHA"; then
+            range="$BEFORE_SHA..$HEAD_SHA"
+          else
+            range="$BASE_SHA...$HEAD_SHA"
+          fi
+          changed="$RUNNER_TEMP/changed-files.txt"
+          git -c core.quotePath=false diff --name-only --no-renames "$range" > "$changed"
+          count=$(wc -l < "$changed")
+          # --no-renames lists a rename as deletion plus addition, so moving a code file into docs/ still counts as code.
+          # Documentation: Markdown files and docs/. The root README.md is packed into the NuGet package and checked by ci-local.ps1, so it counts as code.
+          code_files=$(awk '/^README\.md$/ || !(/^docs\// || /(^|\/)[^\/]+\.md$/)' "$changed" | wc -l)
+          if [ "$count" -eq 0 ] || [ "$code_files" -gt 0 ]; then
+            code=true
+          else
+            code=false
+          fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "Range $range: $count changed files, $code_files of them code; CI jobs run: $code"
+
+  windows-x64:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      CI_COMMIT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      CI_TARGET: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || inputs.target_ref }}
+      # Pull request identity for the recorded baseline reconciliations (REQ-086 amendment 2); passed through the environment, never interpolated into a script.
+      CI_HEAD_REPOSITORY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+      CI_HEAD_BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Expose the tested commits as local branches
+        shell: pwsh
+        run: |
+          git branch --force ci-commit $env:CI_COMMIT
+          git branch --force ci-target $env:CI_TARGET
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Local CI pipeline
+        # bash calls pwsh -File so that the script's stage-specific exit code reaches the job result
+        shell: bash
+        run: pwsh -NoProfile -File ./scripts/ci-local.ps1 -Commit "$CI_COMMIT" -TargetRef "$CI_TARGET" -RunSettings coverage.runsettings -PullRequestHeadRepository "$CI_HEAD_REPOSITORY" -PullRequestBranch "$CI_HEAD_BRANCH"
+      - name: Upload run directory
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: ci-windows-x64
+          path: artifacts/ci/
+          retention-days: 30
+          if-no-files-found: warn
+
+  ubuntu-x64:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CI_COMMIT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      CI_TARGET: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || inputs.target_ref }}
+      # Pull request identity for the recorded baseline reconciliations (REQ-086 amendment 2); passed through the environment, never interpolated into a script.
+      CI_HEAD_REPOSITORY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+      CI_HEAD_BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Expose the tested commits as local branches
+        shell: pwsh
+        run: |
+          git branch --force ci-commit $env:CI_COMMIT
+          git branch --force ci-target $env:CI_TARGET
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Local CI pipeline
+        # bash calls pwsh -File so that the script's stage-specific exit code reaches the job result
+        shell: bash
+        run: pwsh -NoProfile -File ./scripts/ci-local.ps1 -Commit "$CI_COMMIT" -TargetRef "$CI_TARGET" -RunSettings coverage.runsettings -PullRequestHeadRepository "$CI_HEAD_REPOSITORY" -PullRequestBranch "$CI_HEAD_BRANCH"
+      - name: Upload run directory
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: ci-ubuntu-x64
+          path: artifacts/ci/
+          retention-days: 30
+          if-no-files-found: warn
+
+  debian13-arm64:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04-arm
+    container: debian:trixie
+    timeout-minutes: 60
+    env:
+      CI_COMMIT: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      CI_TARGET: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || inputs.target_ref }}
+      # Pull request identity for the recorded baseline reconciliations (REQ-086 amendment 2); passed through the environment, never interpolated into a script.
+      CI_HEAD_REPOSITORY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+      CI_HEAD_BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+    steps:
+      - name: Install system prerequisites
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git curl ca-certificates tar coreutils libc-bin libicu76 libssl3t64 libgssapi-krb5-2 libstdc++6 libgcc-s1 tzdata
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Expose the tested commits as local branches
+        shell: bash
+        run: |
+          git branch --force ci-commit "$CI_COMMIT"
+          git branch --force ci-target "$CI_TARGET"
+      - name: Prepare .NET SDK and PowerShell
+        shell: bash
+        run: bash scripts/prepare-debian-arm64.sh > "$RUNNER_TEMP/dotnet-env.sh"
+      - name: Local CI pipeline
+        shell: bash
+        run: |
+          . "$RUNNER_TEMP/dotnet-env.sh"
+          pwsh ./scripts/ci-local.ps1 -Commit "$CI_COMMIT" -TargetRef "$CI_TARGET" -RunSettings coverage.runsettings -PullRequestHeadRepository "$CI_HEAD_REPOSITORY" -PullRequestBranch "$CI_HEAD_BRANCH"
+      - name: Upload run directory
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: ci-debian13-arm64
+          path: artifacts/ci/
+          retention-days: 30
+          if-no-files-found: warn

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>WeatherParser.Cli.FixtureHost</AssemblyName>
+    <RootNamespace>WeatherParser.Cli.FixtureHost</RootNamespace>
+  </PropertyGroup>
+  <!-- Offline fixture host of P9.07: serves synthetic source files on the loopback interface for target runs; not part of the CLI coverage gate. -->
+  <ItemGroup>
+    <None Include="fixtures/**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

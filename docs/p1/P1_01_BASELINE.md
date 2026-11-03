@@ -1,48 +1,48 @@
-# P1.01 – Ausgangsprotokoll
+# P1.01 – Entry audit
 
-[Deutsch](P1_01_BASELINE.md) | [English](P1_01_BASELINE.en.md)
+This is a historical audit record from 2026-10-15. References to German/English parity and the former bilingual workflow describe that audit date. The current English-only maintenance policy is defined in [AGENTS.md](../../AGENTS.md); historical inventories and their hashes remain unchanged.
 
-**Status: abgeschlossen am 15.10.2026.** Umfang: Arbeitsstand und P0-Abschluss prüfen, P1-Umfang bestätigen. Die vorhandene Projektstruktur wurde geprüft und erhalten; sie wurde in diesem Schritt nicht neu erzeugt.
+**Status: completed on 2026-10-15.** Scope: inspect working state and P0 completion, confirm P1 boundaries. Existing project scaffolding was checked and preserved; this step did not recreate it.
 
-## Ausgangsstand
+## Starting state
 
-| Merkmal | Festgestellter Stand |
+| Item | Observed state |
 |---|---|
-| Git-Branch | `master` |
-| HEAD | Noch kein Commit; alle 26 erfassten Projektdateien sind untracked |
-| Git-Remotes | Keine |
-| Solution | `WeatherParser.slnx`, zwei Projekte |
-| Bibliothek | `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj` |
-| Unit-Testprojekt | `tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj`, Quellreferenz auf die Bibliothek |
-| Paketkonsument | Bereich mit zweisprachiger Dokumentation reserviert; noch kein Projekt |
-| SDK / Framework | SDK 10.0.303 fixiert; `net10.0` |
-| Restore | Lockdateien für beide Projekte vorhanden |
-| Fachimplementierung | Keine versionierbaren C#-Quelldateien und keine Testmethoden; generierte Builddateien gehören nicht zu diesem Befund |
-| Anforderungen | 84 eindeutige IDs, in Deutsch und Englisch in gleicher Reihenfolge |
+| Git branch | `master` |
+| HEAD | No commit yet; all 26 captured project files are untracked |
+| Git remotes | None |
+| Solution | `WeatherParser.slnx`, two projects |
+| Library | `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj` |
+| Unit test project | `tests/WeatherParser.Parsing.Tests/WeatherParser.Parsing.Tests.csproj`, source reference to the library |
+| Package consumer | Reserved area with bilingual documentation at the audit date; no project yet |
+| SDK / framework | Pinned SDK 10.0.303; `net10.0` |
+| Restore | Lock files exist for both projects |
+| Domain implementation | No versionable C# source files or test methods; generated build files are outside this finding |
+| Requirements | 84 unique IDs, identical order in German and English |
 
-Die [Ausgangsinventur](P1_01_BASELINE.json) enthält relative Dateipfade und SHA-256-Prüfsummen der 26 Projektdateien vor den Dokumentationsänderungen dieses Audits. Git-Metadaten sowie ignorierte Build-/Testausgaben sind nicht enthalten. Die Inventur ist eine Arbeitsstandsaufnahme, kein Git-Commit und kein Nachweis einer unveränderlichen Code-Baseline. Spätere beauftragte Änderungen führen erwartungsgemäß zu anderen Prüfsummen.
+The [starting inventory](P1_01_BASELINE.json) records relative paths and SHA-256 hashes of the 26 project files before this audit's documentation edits. It excludes Git metadata and ignored build/test output. This is a working-state snapshot, not a Git commit or immutable code-baseline proof. Later authorized edits are expected to change hashes.
 
-## P0-Abschluss und P1-Grenzen
+## P0 completion and P1 boundaries
 
-P0 bleibt abgeschlossen. Die Dokumentation ist konsistent zu NuGet als Hauptprodukt, .NET ≥10, Debian ≥13/ARM64, Konstruktor-Endpunkten, generischem MQTT-Serializer, DI, eigenen Exportentitäten und getrennten MOSMIX_S-/L-Parsern. Zeitangaben bleiben UTC ohne Suffix, Messzeitpunkte je Wert erhalten, exakte Mittelpunktwerte werden vom Nullpunkt weg gerundet. Programmausgaben und Kommentare sind Englisch, Dokumentation Deutsch/Englisch.
+P0 remains complete. Documentation agrees on NuGet as the primary product, .NET ≥10, Debian ≥13/ARM64, constructor endpoints, generic MQTT serialization, DI, dedicated export entities and separate MOSMIX_S/L parsers. Timestamps remain UTC without a suffix, preserve per-value measurement times and round midpoint ties away from zero. Program output/comments are English; documentation is German/English.
 
-Die Coverage-Entscheidungen sind dokumentiert: mindestens 80 % je geforderter Kennzahl; beim initialen Fehlen einer messbaren Baseline kein Zielbranch-Vergleich; Dokumentations-PRs dürfen Gleichstand haben; exakt 100 % dürfen bei exakt 100 % Baseline bleiben. Der Microsoft-CodeCoverage-Report und die tatsächlich nachweisbaren Kennzahlen werden erst in P1.07/P1.08 geprüft. Block-Coverage wird nicht als Branch-Coverage ausgegeben.
+Coverage decisions are recorded: at least 80% per required metric; no target comparison when a measurable baseline does not yet exist initially; documentation-only PRs may retain equal coverage; exact 100% may remain at an exact 100% baseline. Verify Microsoft.CodeCoverage reports and actually available metrics in P1.07/P1.08. Never relabel block coverage as branch coverage.
 
-Reihenfolge: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Das CLI-Beispiel entsteht erst nach vollständiger Bibliotheksabnahme. P1 liefert die Build-/Test-/Paket-/CI-Grundlage; Parser, Entitäten und echte Serializer folgen in ihren vorgesehenen Phasen. Kein Zielsystemzugriff oder produktiver Dienst ist für P1.01 erforderlich.
+Sequence: **P0 → P1 → P2 → P4 → P5 → P6 → P7 → P8 → P3 → P9**. Create the CLI example only after complete library acceptance. P1 establishes build/test/package/CI foundations; parsers, entities and real serializers follow in their assigned phases. P1.01 requires no target-system access or production service.
 
-## Durchgeführte Prüfungen
+## Checks performed
 
-- Repository-Regeln, Anforderungen, Gesamtplan und P1-Plan gelesen und abgeglichen.
-- Git-Branch, Commit-/Remote-Zustand sowie nicht ignorierte Dateien erfasst.
-- Gleichheit und Eindeutigkeit der Anforderungs-IDs geprüft.
-- Solution-Projektpfade, XML-Projektdateien, Unit-Test-Quellreferenz und beide `net10.0`-Lockdateien geprüft.
-- Ausgangsdateien vor Änderungen per Prüfsumme gesichert; Quell-/Projekt-/Build-/Paketdateien erhalten.
-- P1-Status und nächsten Arbeitsschritt in beiden Sprachfassungen aktualisiert.
+- Read and reconciled repository rules, requirements, overall plan and P1 plan.
+- Captured Git branch, commit/remote state and nonignored files.
+- Verified matching, unique requirement IDs.
+- Checked solution project paths, project XML, unit-test source reference and both `net10.0` lock files.
+- Captured original hashes before changes; preserved source/project/build/package files.
+- Updated P1 status and next work item in both languages.
 
-Ergebnis: Kein ungeklärter grundlegender P0-Punkt blockiert die Eingangsprüfung. Es wurde kein Commit erstellt und kein Push ausgeführt. Restore und Release-Build waren beim vorherigen Anlegen der Struktur erfolgreich; sie wurden in dieser reinen Eingangsprüfung nicht wiederholt. Es wurden keine neuen Tests ausgeführt und keine Coverage gemessen.
+Result: no unresolved foundational P0 question blocks entry verification. No commit or push was performed. Restore and Release build succeeded when the structure was created previously; they were not repeated for this entry audit. No new tests were executed and no coverage was measured.
 
-## Übergabe
+## Handoff
 
-**P1.01 abgeschlossen; P1 insgesamt offen.** Nächster Schritt ist P1.02: vollständige Werkzeug-/Abhängigkeits-, Lizenz- und Kompatibilitätsprüfung auf Basis der bestehenden Versionsauswahl. Danach den Struktur-/Reproduzierbarkeitsanteil P1.03 abschließen. Der isolierte Paketkonsument bleibt P1.04, TDD-Verhaltenstests P1.05, Coverage P1.07/P1.08 und Debian-/ARM64-Nachweis P1.10/P9 zugeordnet.
+**P1.01 complete; P1 as a whole remains open.** Next is P1.02: complete tooling/dependency/license/compatibility review based on the existing version selection. Then finish P1.03 structure/reproducibility acceptance. Isolated package consumption remains P1.04, TDD behavior tests P1.05, coverage P1.07/P1.08 and Debian/ARM64 evidence P1.10/P9.
 
-Die verbliebenen Nachweise sind Aufgaben ihrer Phasen und eröffnen P0 nicht erneut. Der aktuelle Auftrag führt ausschließlich P1.01 aus; nachfolgende Arbeitspakete werden nicht durch dieses Protokoll als umgesetzt oder abgenommen erklärt.
+Remaining evidence belongs to those phases and does not reopen P0. The current instruction executes P1.01 only; this record does not claim subsequent work packages are implemented or accepted.

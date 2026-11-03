@@ -2,18 +2,38 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>WeatherParser.Parsing</PackageId>
-    <Version>0.1.0-initial</Version>
+    <Version>1.0.0</Version>
     <Authors>WeatherParser contributors</Authors>
-    <Description>Work-in-progress weather parsing library. Parser implementations are not available yet.</Description>
+    <Description>Parsers, normalized output entities, JSON and XML serialization with an XML schema, station selection and a generic MQTT message serializer for DWD observations, OsthessenWetter observations and DWD MOSMIX_S and MOSMIX_L forecasts, with dependency-injection integration (AddWeatherParsing). Timestamps are UTC. The public API follows Semantic Versioning: within a major version it changes only compatibly.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>weather dwd mosmix forecast observations osthessenwetter mqtt parser</PackageTags>
+    <PackageReleaseNotes>Release notes: CHANGELOG.md of the WeatherParser repository, version 1.0.0.</PackageReleaseNotes>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- XML documentation is packed (RL-01 A); missing or broken documentation comments fail the build. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1570;CS1572;CS1573;CS1574;CS1584;CS1587;CS1591;CS1734</WarningsAsErrors>
+    <!-- Symbols as a separate .snupkg (RL-03 A). -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <!-- Release and CI builds map the build paths (deterministic source paths), so the package does not depend on the clone directory (RL-03 A). -->
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="/" />
-    <None Include="../../README.en.md" Pack="true" PackagePath="/" />
     <None Include="../../LICENSE" Pack="true" PackagePath="/" />
+    <None Include="../../schemas/export/v1/weatherparser-export-v1.xsd" Pack="true" PackagePath="schemas/export/v1/" Visible="false" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Test seam for bounds that cannot be exercised at full size in unit tests (P4.08: the 2 GiB MOSMIX_S member bound). -->
+    <InternalsVisibleTo Include="WeatherParser.Parsing.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AngleSharp" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 </Project>

@@ -14,4 +14,14 @@ public sealed class ParserEndpointValidationException : Exception
         : base(message)
     {
     }
+
+    /// <summary>
+    /// The stable error ID of every endpoint validation failure (contract SC-17).
+    /// </summary>
+    public const string EndpointInvalidErrorId = "ENDPOINT-INVALID";
+
+    /// <summary>
+    /// Gets the stable error ID <c>ENDPOINT-INVALID</c> (contract SC-17).
+    /// </summary>
+    public string ErrorId => EndpointInvalidErrorId;
 }

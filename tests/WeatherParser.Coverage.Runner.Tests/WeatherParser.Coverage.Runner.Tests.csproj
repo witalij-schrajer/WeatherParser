@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" PrivateAssets="all" />
+    <PackageReference Include="MSTest.TestAdapter" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeCoverage" PrivateAssets="all" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="FluentAssertions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../tools/WeatherParser.Coverage.Runner/WeatherParser.Coverage.Runner.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\WeatherParser.Coverage.Tests\Fixtures\**\*" Link="Fixtures\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

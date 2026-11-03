@@ -1,7 +1,7 @@
-# Paketkonsumententests – P1.04
+# Package consumer tests – P1.04
 
-[Deutsch](README.md) | [English](README.en.md)
+This MSTest project was created and added to `WeatherParser.slnx` in P1.04. It tests the actual locally built `WeatherParser.Parsing` package, at the version of `Directory.Packages.props` (`1.0.0` since 2026-11-03), using a versioned `PackageReference` and no `ProjectReference` to parser source. The version is declared centrally in `Directory.Packages.props`; `NuGet.Config` includes the project-local `artifacts/local-nuget` source.
 
-Dieser Bereich ist für Tests des tatsächlich gebauten NuGet-Pakets reserviert. Das Testprojekt wird in P1.04 angelegt, sobald lokales Pack und isolierter Paket-Restore zusammen eingerichtet werden. Es gehört noch nicht zur Solution.
+The two tests in `PackageConsumptionTests.cs` verify that dependency metadata identifies the library as a restored package and that the expected library assembly exposes no CLI/broker-transport assembly references. P1.04 records 2 of 2 tests passing; see the [completion record](../../docs/p1/P1_04_PACKAGE_CONSUMER.md). Version, isolated-source and PDB/source provenance remain part of package verification; the two tests alone do not prove every provenance condition. This is the technical package consumer; the CLI usage example follows the completed library in P3.
 
-Der spätere Konsument verwendet eine versionierte `PackageReference` auf das lokale `.nupkg`, keine `ProjectReference` auf den Parserquellcode. Paketversion, isolierte Quelle und PDB-/Quellzuordnung werden geprüft. Hier entsteht kein CLI-Nutzungsbeispiel; dieses folgt erst nach der fertigen Bibliothek in P3.
+Build, pack, consumer lock refresh and test procedure: [CONTRIBUTING.md, section 4](../../CONTRIBUTING.md#4-pack-and-package-consumer).

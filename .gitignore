@@ -9,6 +9,8 @@ artifacts/
 *.nupkg
 *.snupkg
 *.coverage
+# The case-insensitive pattern above would also hide the coverage tool project folder.
+!/tools/WeatherParser.Coverage/
 *.coveragexml
 .env
 .env.*
@@ -19,3 +21,11 @@ secrets/
 *.pfx
 *.p12
 *.key
+
+# Local AI-assistant scratch files (prompts, answers, run scripts)
+.copilot/temp/
+
+# Example CLI: local configuration and credential files (never committed; CL-06)
+weatherparser.json
+*.local.json
+*.credentials.json

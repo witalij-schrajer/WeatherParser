@@ -1,37 +1,33 @@
-```markdown
-# P1.03 – Minimale Solution, Bibliothek und Testprojekte vorbereiten
+# P1.03 – Prepare minimal solution, library and test projects
 
-[Deutsch](P1_03_BUILD_SETUP.md) | [English](P1_03_BUILD_SETUP.en.md)
+**Status: completed on 2026-10-15. The Visual Studio build limitation has been resolved; clean-checkout reproducibility remains outstanding (see below).** Scope: close the SDK finding from P1.02, prove reproducible restore/build with the selected SDK, verify build/secret exclusions. No new domain implementation, parsers, or CLI in this step.
 
-**Status: abgeschlossen am 15.10.2026. Die Einschränkung des Visual-Studio-Builds wurde behoben; die Reproduzierbarkeit auf sauberem Checkout steht weiterhin aus (siehe unten).** Umfang: SDK-Befund aus P1.02 schließen, reproduzierbaren Restore/Build mit dem ausgewählten SDK nachweisen, Build-/Secret-Ausschlüsse prüfen. Keine neue Fachimplementierung, keine Parser, kein CLI in diesem Schritt.
+## Steps performed
 
-## Durchgeführte Schritte
-
-| Schritt | Ergebnis |
+| Step | Result |
 |---|---|
-| SDK-Verfügbarkeit | `dotnet --list-sdks` zeigt `10.0.402 [C:\Program Files\dotnet\sdk]`; lokal bereits installiert |
-| `global.json` | `version` von `10.0.303` auf `10.0.402` umgestellt; `rollForward: disable` und `allowPrerelease: false` unverändert |
-| `dotnet --version` im Repo-Root | Liefert `10.0.402`; SDK-Auflösung über `global.json` bestätigt |
-| Locked Restore | `dotnet restore WeatherParser.slnx --locked-mode` erfolgreich; `packages.lock.json` beider Projekte unverändert, da keine Paketversionen angefasst wurden |
-| Release-Build (dotnet-CLI) | `dotnet build WeatherParser.slnx -c Release` erfolgreich für `WeatherParser.Parsing` und `WeatherParser.Parsing.Tests`; 0 Fehler |
-| Build-/Secret-Ausschlüsse | `.gitignore` deckt `bin/`, `obj/`, `TestResults/`, `artifacts/`, `*.nupkg`/`*.snupkg`, `*.coverage(xml)`, `.env*`, `secrets/`, `*.pfx`/`*.p12`/`*.key` bereits ab; keine Änderung erforderlich |
+| SDK availability | `dotnet --list-sdks` shows `10.0.402 [C:\Program Files\dotnet\sdk]`; already installed locally |
+| `global.json` | `version` changed from `10.0.303` to `10.0.402`; `rollForward: disable` and `allowPrerelease: false` unchanged |
+| `dotnet --version` in repo root | Reports `10.0.402`; SDK resolution via `global.json` confirmed |
+| Locked restore | `dotnet restore WeatherParser.slnx --locked-mode` succeeded; both projects' `packages.lock.json` unchanged since no package versions were touched |
+| Release build (dotnet CLI) | `dotnet build WeatherParser.slnx -c Release` succeeded for `WeatherParser.Parsing` and `WeatherParser.Parsing.Tests`; 0 errors |
+| Build/secret exclusions | `.gitignore` already covers `bin/`, `obj/`, `TestResults/`, `artifacts/`, `*.nupkg`/`*.snupkg`, `*.coverage(xml)`, `.env*`, `secrets/`, `*.pfx`/`*.p12`/`*.key`; no change needed |
 
-## Behoben: Visual-Studio-Build
+## Resolved: Visual Studio build
 
-Der Build über das in Visual Studio Community 2026 (18.11.0) eingebettete MSBuild schlug zuvor mit `NETSDK1141` (`GlobalJsonSDKResolutionFailed`) fehl, obwohl `dotnet build` über die CLI mit identischer `global.json` erfolgreich war. Ursache war ein veralteter SDK-Resolver-/Build-Server-Zustand der laufenden IDE-Instanz.
+Building through the MSBuild embedded in Visual Studio Community 2026 (18.11.0) previously failed with `NETSDK1141` (`GlobalJsonSDKResolutionFailed`), even though `dotnet build` via the CLI succeeded with the identical `global.json`. The cause was a stale SDK resolver / build-server state in the running IDE instance.
 
-**Behebung:** Durch Ausführen von `dotnet build-server shutdown` (Beenden gecachter MSBuild-/VBCSCompiler-Serverprozesse) und einen vollständigen Neustart von Visual Studio (alle `devenv.exe`-Prozesse beendet, IDE neu gestartet) wurde das Problem behoben. Ein anschließender Solution-Build über Visual Studio/MSBuild war erfolgreich, ohne `NETSDK1141`-Fehler. Dieser Befund gilt als geschlossen.
+**Resolution:** running `dotnet build-server shutdown` to terminate cached MSBuild/VBCSCompiler server processes, followed by a full restart of Visual Studio (all `devenv.exe` processes terminated and the IDE restarted), resolved the issue. A subsequent solution build executed through Visual Studio/MSBuild succeeded with no `NETSDK1141` error. This finding is now closed.
 
-## Reproduzierbarkeit auf sauberem Checkout
+## Reproducibility on a clean checkout
 
-Das Repository hat noch keinen Git-Commit (`git log` meldet „does not have any commits yet“, wie bereits in P1.01 festgestellt). Ein isolierter Worktree-/Klon-Nachweis (entspricht T-P1-08) ist daher aktuell nicht durchführbar und wird nicht behauptet. Dieser Nachweis ist einem künftigen Schritt nach dem ersten Commit zugeordnet.
+The repository has no Git commit yet (`git log` reports "does not have any commits yet", consistent with the P1.01 finding). An isolated worktree/clone proof (matching T-P1-08) is therefore not currently feasible and is not claimed. This evidence is deferred to a future step after the first commit.
 
-## Prüfungen und Übergabe
+## Checks and handoff
 
-- SDK-Band aktualisiert und `global.json` fixiert; SDK-Befund aus P1.02 geschlossen.
-- Locked Restore und CLI-Release-Build mit dem neuen SDK erfolgreich nachgewiesen.
-- Bestehende `.gitignore`-Ausschlüsse als ausreichend geprüft; keine Änderung notwendig.
-- Keine Paketversionen, Testcode oder Coverage-Werte in diesem Schritt verändert oder behauptet.
+- SDK band updated and `global.json` pinned; SDK finding from P1.02 closed.
+- Locked restore and CLI Release build proven successful with the new SDK.
+- Existing `.gitignore` exclusions reviewed as sufficient; no change required.
+- No package versions, test code, or coverage figures were changed or claimed in this step.
 
-**P1.03 im CLI-Build und im IDE-Build abgeschlossen; Reproduzierbarkeit auf sauberem Checkout steht noch aus.** Nächste Voraussetzung für P1.04 (isolierter Paketkonsument) ist unverändert erfüllbar, da die Bibliothek baut. Der ausstehende Clean-Checkout-Nachweis blockiert P1.04 nicht, sollte aber vor der P1-Gesamtabnahme (P1.12) nachgeholt werden.
-```
+**P1.03 complete for the CLI build and the IDE build; clean-checkout reproducibility remains outstanding.** The next prerequisite for P1.04 (isolated package consumer) remains satisfiable since the library builds. The pending clean-checkout evidence does not block P1.04 but should be closed before the overall P1 acceptance (P1.12).

@@ -1,0 +1,104 @@
+# Kompatibilität
+
+> Deutsche Übersetzung von [docs/COMPATIBILITY.md](../COMPATIBILITY.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `fde4c24` (2026-11-03, Version 1.0.0). Die verlinkten Protokolle und Herstellerseiten sind englisch.
+
+Verifizierte Kompatibilität der Paketgrundlage im Umfang von P1, Stand 2026-10-19. Die geforderte Unterstützung stammt aus REQUIREMENTS.md (REQ-004, REQ-017); die Herstellerunterstützung wird aus offiziellen Quellen mit Prüfdatum zitiert; Projektnachweise sind Klasse A (Build/Restore auf dem Windows-Entwicklungsrechner, nie ein Laufzeitnachweis) oder Klasse B (Laufzeitnachweis auf dem Debian-13-ARM64-Zielsystem) oder OFFEN.
+
+Legende:
+- **Klasse A**: Build- und Restore-Nachweis, erhoben auf dem Windows-Entwicklungsrechner
+- **Klasse B**: Laufzeitnachweis, erhoben auf dem Debian-13-ARM64-Zielsystem
+- **OFFEN**: nicht verifiziert
+
+| Komponente | Geforderte Unterstützung (REQ-004/REQ-017) | Offizielle Herstellerunterstützung (Quelle, geprüft am 2026-10-19) | Projektnachweis |
+|---|---|---|---|
+| .NET SDK 10.0.402 (festgelegt durch `global.json`, `rollForward: disable`) | .NET 10 oder neuer | .NET 10 ist ein LTS-Release ([Install .NET without a package manager](https://learn.microsoft.com/dotnet/core/install/linux-scripted-manual)) | Windows x64: Windows-Läufe des [P1.09-Protokolls](../p1/P1_09_LOCAL_CI.md) und des [P1.10-Protokolls](../p1/P1_10_DEBIAN_ARM64.md); Debian 13 ARM64: Klasse B, mit `dotnet-install.sh --version 10.0.402` in das Benutzerverzeichnis installiert; alle Läufe verwendeten 10.0.402 |
+| .NET-Laufzeit | Laufzeit von .NET 10 | wie Zeile 1 | Klasse B: `Microsoft.NETCore.App` 10.0.13 auf dem Zielsystem (`dotnet --list-runtimes`), getrennt von der SDK-Version festgehalten ([P1.10-Protokoll](../p1/P1_10_DEBIAN_ARM64.md)) |
+| Debian 13 Trixie | Debian 13 oder neuer | Debian 13 unterstützt .NET 10, 9 und 8 ([Install .NET on Debian](https://learn.microsoft.com/dotnet/core/install/linux-debian)); Liste der unterstützten Betriebssysteme für .NET 10: Debian 13 mit Arm32, Arm64, x64 ([.NET 10 supported OS list](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md)) | Klasse B: Debian GNU/Linux 13.3 (trixie); alle acht von Microsoft für Debian 13 genannten .NET-Abhängigkeiten vorhanden (ca-certificates, libc6, libgcc-s1, libgssapi-krb5-2, libicu76, libssl3t64, libstdc++6, tzdata) ([P1.10-Protokoll](../p1/P1_10_DEBIAN_ARM64.md)) |
+| `linux-arm64` (NanoPi R76S) | Mindestarchitektur ARM64, insbesondere NanoPi R76S | Arm64 für Debian 13 unterstützt (Liste der unterstützten Betriebssysteme oben) | Klasse B: FriendlyElec NanoPi R76S, `aarch64`, RID `linux-arm64`: gesperrte Wiederherstellung, Release-Build (0 Warnungen), 162 Tests bestanden (15 + 91 + 54 + 2), Pack, Prüfung des Paketinhalts, Paketkonsument gegen das auf dem Zielsystem gebaute Paket. Klasse A: Der RID-spezifische Build gelingt; die RID-spezifische gesperrte Wiederherstellung schlägt mit NU1004 fehl, weil die Lock-Dateien keinen Abschnitt `linux-arm64` haben (Befund; der Build auf dem Zielsystem ist RID-neutral und benötigt keinen) ([P1.10-Protokoll](../p1/P1_10_DEBIAN_ARM64.md)) |
+| Windows x64 (Entwicklungsrechner) | Entwicklungsumgebung | entfällt – Entwicklungsrechner | Windows-Läufe des [P1.09-Protokolls](../p1/P1_09_LOCAL_CI.md) und des [P1.10-Protokolls](../p1/P1_10_DEBIAN_ARM64.md) |
+| Statische verwaltete Instrumentierung von Microsoft.CodeCoverage 18.11.0 auf `linux-arm64` | Coverage auf dem Zielsystem | Einstellungen `EnableStaticManagedInstrumentation` / `EnableDynamicManagedInstrumentation`, dokumentiert in [Code Coverage configuration](https://github.com/microsoft/codecoverage/blob/main/docs/configuration.md) (die Seite macht keine Aussage je Plattform) | Klasse B: `coverage.runsettings` (statisch an, dynamisch aus); native Blockzähler für `WeatherParser.Parsing.dll` vorhanden: 54/56 aktuell, 52/56 Ziel. Windows: statische und dynamische Erhebung ergeben identische Zähler (54/56) ([P1.10-Protokoll](../p1/P1_10_DEBIAN_ARM64.md)) |
+| Dynamische Instrumentierung von Microsoft.CodeCoverage auf `linux-arm64` | nicht erforderlich | Hersteller: unter Linux ARM64 nicht unterstützt ([P1.02-Werkzeugprüfung](../p1/P1_02_TOOLING_REVIEW.md)) | Nicht verwendet; durch `coverage.runsettings` abgeschaltet |
+| `dotnet-coverage` 18.11.0 auf `linux-arm64` | Konvertierung der Rohberichte | Festgelegtes lokales Werkzeug (`.config/dotnet-tools.json`) | Klasse B: Die Konvertierung lief auf dem Zielsystem (`converterRid` `linux-arm64`, Werkzeugversion 18.11.0); der Windows-Ausweichweg (`-CollectOnly` + `-ResumeFrom`) wurde ebenfalls mit ARM64-Rohberichten verifiziert ([P1.10-Protokoll](../p1/P1_10_DEBIAN_ARM64.md)) |
+| PowerShell 7 auf Debian ARM64 | vom einzigen CI-Skript benötigt (P1.09-Entscheidung a) | PowerShell unterstützt Debian 13 bis 2030-06-30 ([Install PowerShell on Debian](https://learn.microsoft.com/powershell/scripting/install/install-debian)); die dokumentierten Debian-Pakete sind amd64; die auf ARM64 verwendete Installation aus dem Binärarchiv ist unter den alternativen Methoden beschrieben, die laut Microsoft funktionieren können, aber nicht offiziell unterstützt werden ([Alternate ways to install PowerShell](https://learn.microsoft.com/powershell/scripting/install/alternate-install-methods)) | Klasse B: PowerShell-7.6.7-Archiv für `linux-arm64`, SHA-256 gegen die `hashes.sha256` des Releases geprüft, Installation im Benutzerverzeichnis; lief in jedem CI-Lauf ([P1.10-Protokoll](../p1/P1_10_DEBIAN_ARM64.md)) |
+| MSTest/VSTest auf `linux-arm64` | Testausführung auf dem Zielsystem | MSTest wie in `Directory.Packages.props` festgelegt (4.5.1 zum Zeitpunkt des P1.10-Nachweises; 4.5.2 seit P9.03 am 2026-10-31) / Microsoft.NET.Test.Sdk wie festgelegt | Klasse B: alle vier Testprojekte liefen auf dem Zielsystem; `-FaultInjection FailingTest` endet mit 50, die TRX-Datei bleibt erhalten ([P1.10-Protokoll](../p1/P1_10_DEBIAN_ARM64.md)) |
+| `linux-x64` | nur bei Verwendung | — | Nicht verwendet ([P1.10-Protokoll](../p1/P1_10_DEBIAN_ARM64.md)) |
+
+## Umfang P2 (P2.11, 2026-10-20)
+
+Kandidat `bced7be380c3e637fdd042c4165cd074e25f25a6` gegen die PR-Basis `64e460b475b4a29b9e3ddd331394076e53982d9e`; Einzelheiten im [P2.11-Protokoll](../p2/P2_VERIFICATION.md#11-p211--integrated-coverage-and-platform-verification).
+
+| Plattform | Nachweisklasse | Ergebnis |
+|---|---|---|
+| Windows x64 (Entwicklungsrechner), SDK 10.0.402, Laufzeit 10.0.13 | Lokales `ci-local.ps1` mit zwei Durchläufen | Exit 0; Tests 880, 99, 56, 43, Konsument 18; Blockabdeckung 3035/3037 gegen die Basislinie 54/56; Gate bestanden |
+| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, SDK 10.0.402, Laufzeit 10.0.13, ICU 76, tzdata `2025b-4+deb13u1` | Lauf der Klasse B auf dem Zielsystem (CONTRIBUTING.md Abschnitt 7) | Exit 0; dieselben Tests und dasselbe Gate-Ergebnis; Serialisierer, Behandlung von `Europe/Berlin`, Kulturprüfungen `en-US`/`de-DE` mit ICU-Daten (Systemlocale nur `C.utf8`), Neuerzeugung des Schemas byteidentisch zu Windows, Paketkonsument mit Schemaauslieferung; alle Standard-Testprojekte bestehen auch in einem Netzwerk-Namespace nur mit Loopback |
+| Gehostete GitHub-Umgebungen `windows-x64`, `ubuntu-x64`, Container `debian13-arm64` | Gehosteter Workflow (Lauf 39493310294) | Alle Jobs erfolgreich; getrennt festgehalten und nicht als Nachweis auf dem Zielsystem gezählt |
+
+## Umfang P4 (P4.11, Wiederholung 2026-10-24)
+
+Kandidat `b6bc47f89147c05bf04e06cf0f87c1497bc651f3` (nach den Korrekturen des Reviews A10) gegen die PR-Basis `b7da8288d8746bc6e034222c0467a8fcebba55b3`. Einzelheiten stehen im [P4.11-Protokoll](../p4/P4_11_INTEGRATED_VERIFICATION.md), Abschnitt 9. Die erste Verifikation des Kandidaten `98122e5` (2026-10-23) steht in den Abschnitten 3 bis 8 dieses Protokolls.
+
+| Plattform | Nachweisklasse | Ergebnis |
+|---|---|---|
+| Windows x64 (Entwicklungsrechner), SDK 10.0.402, Laufzeit 10.0.13 | Lokales `ci-local.ps1` mit zwei Durchläufen | Exit 0; Tests 1662 bestanden (Live-Test nicht ausgeführt), 99, 56, 46, Konsument 31; Blockabdeckung 6811/6814 gegen die Basislinie 3035/3037; Gate bestanden |
+| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, SDK 10.0.402, Laufzeit 10.0.13, ICU 76 | Lauf der Klasse B auf dem Zielsystem (CONTRIBUTING.md Abschnitt 7) | Exit 0; dieselben Tests, Ergebnisse und dasselbe Gate-Ergebnis wie unter Windows (Geodäsie-Referenzentfernungen innerhalb ihrer Testtoleranzen: 1 mm für konvergierende Vincenty-Paare, 0,6 % für sphärische Berechnungen und den Ausweichweg für nahezu antipodische Punkte (SC-06)) |
+| Gehostete GitHub-Umgebungen `windows-x64`, `ubuntu-x64`, Container `debian13-arm64` | Gehosteter Workflow (Lauf 40041773136) | Alle Jobs erfolgreich; getrennt festgehalten und nicht als Nachweis auf dem Zielsystem gezählt |
+| Windows x64 (Entwicklungsrechner), Live-Quellen des DWD | Ausdrücklich eingeschaltete Live-Prüfung (`WEATHERPARSER_LIVE_CHECK=1`), ein Lauf am Kandidaten `98122e5` | 14 Anfragen bei einem Budget von 56, alle HTTP 200; beide Dokumente schemagültig. Als Momentaufnahme vom 2026-10-23 festgehalten und für `b6bc47f` nicht wiederholt (SC-16). Offline baut der MOSMIX_S-Parser von `b6bc47f` aus einer gespeicherten echten Datei denselben Index wie `98122e5` |
+
+## Umfang P5 (P5.10, Wiederholung 2026-10-25)
+
+Kandidat `fd461c8cededddf53a039c31adad68a110c1c7c9` (nach den Korrekturen des Reviews von PR #7) gegen die PR-Basis `1e604dc7b3f17826d19207cbec9a699e40e5a30f`. Einzelheiten stehen im [P5.10-Protokoll](../p5/P5_10_INTEGRATED_VERIFICATION.md), Abschnitt 9. Die erste Verifikation des Kandidaten `a87c7bb` steht in den Abschnitten 3 bis 8 dieses Protokolls.
+
+| Plattform | Nachweisklasse | Ergebnis |
+|---|---|---|
+| Windows x64 (Entwicklungsrechner), SDK 10.0.402, Laufzeit 10.0.13 | Lokales `ci-local.ps1` mit zwei Durchläufen | Exit 0; Tests 1937 bestanden (zwei Live-Tests nicht ausgeführt), 99, 56, 46, Konsument 36; Blockabdeckung 7491/7494 gegen die Basislinie 6811/6814; Gate bestanden |
+| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, SDK 10.0.402, Laufzeit 10.0.13, ICU 76 | Lauf der Klasse B auf dem Zielsystem (CONTRIBUTING.md Abschnitt 7) | Exit 0; dieselben Tests, Ergebnisse, Blockzähler und dasselbe Gate-Ergebnis wie unter Windows |
+| Gehostete GitHub-Umgebungen `windows-x64`, `ubuntu-x64`, Container `debian13-arm64` | Gehosteter Workflow (Lauf 40170729670) | Alle Jobs erfolgreich; getrennt festgehalten und nicht als Nachweis auf dem Zielsystem gezählt |
+| Windows x64 (Entwicklungsrechner), Live-Quellen des DWD | Ausdrücklich eingeschaltete Live-Prüfung der Beobachtungen (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=observation`), ein Lauf am Kandidaten `a87c7bb` | Station 01526: 6 Anfragen bei einem Budget von 8, alle HTTP 200; Datensatz schemagültig, JSON und XML gleichwertig. Als Momentaufnahme vom 2026-10-25 festgehalten und für `fd461c8` nicht wiederholt (nach dem Muster von SC-16) |
+
+## Umfang P6 (P6.10, 2026-10-26)
+
+Kandidat `4373399b278e65097452fe18d7029fee5461bdb1` gegen die PR-Basis `8d8079a4238514f7c9bcfc3846829e2408938ae3`; nach den Korrekturen des Reviews von PR #9 wurden S1 bis S3 am Kandidaten `12e7205385d1ad6ca1eb45cb4fcb1f7b50699554` mit denselben Ergebnissen wiederholt (Tests 2301 bestanden, Blockabdeckung 8486/8489; gehosteter Lauf 40284717931). Einzelheiten stehen im [P6.10-Protokoll](../p6/P6_10_INTEGRATED_VERIFICATION.md), Abschnitte 2 bis 8.
+
+| Plattform | Nachweisklasse | Ergebnis |
+|---|---|---|
+| Windows x64 (Entwicklungsrechner), SDK 10.0.402, Laufzeit 10.0.13 | Lokales `ci-local.ps1` mit zwei Durchläufen | Kandidat `12e7205`: Exit 0; Tests 2301 bestanden (drei Live-Tests nicht ausgeführt), 99, 56, 46, Konsument 41; Blockabdeckung 8486/8489 gegen die Basislinie 7491/7494; Gate bestanden (erster Kandidat `4373399`: 2295 bestanden, 8475/8478) |
+| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, SDK 10.0.402, Laufzeit 10.0.13, ICU 76 | Lauf der Klasse B auf dem Zielsystem (CONTRIBUTING.md Abschnitt 7) | Exit 0; dieselben Tests, Ergebnisse, Blockzähler und dasselbe Gate-Ergebnis wie unter Windows, einschließlich der Zeitzonentests für `Europe/Berlin` |
+| Gehostete GitHub-Umgebungen `windows-x64`, `ubuntu-x64`, Container `debian13-arm64` | Gehosteter Workflow (Lauf 40284717931 an `12e7205`; Lauf 40255069498 an `4373399`) | Alle Jobs erfolgreich; getrennt festgehalten und nicht als Nachweis auf dem Zielsystem gezählt |
+| Windows x64 (Entwicklungsrechner), Live-Seite von OsthessenWetter | Ausdrücklich eingeschaltete Live-Prüfung (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=osthessen`), ein genehmigter Lauf am Kandidaten `4373399`, für `12e7205` nicht wiederholt | 1 Anfrage bei einem Budget von 1, HTTP 200; 20 Stationen passend, 16 Datensätze, 4 Stationsfehler wegen offline; jeder Datensatz schemagültig, JSON und XML gleichwertig; Platzhalterkoordinaten; Momentaufnahme vom 2026-10-26, nicht wiederholt (OW-15) |
+
+## Umfang P7 (P7.11, 2026-10-28)
+
+Kandidat `a36d15a538e6ddc9cdf01d47b2ff45073a36cd95` gegen die PR-Basis `8009f1c413ead6b150f2c71bec8f669e81be5558` (Pull Request #11); nach den Korrekturen des Reviews von PR #11 wurden S1 bis S3 am Kandidaten `2f1115b8b89275b42408a6ee7b61b55c73219440` mit denselben Ergebnissen wiederholt (Tests 2946 bestanden, Blockabdeckung 10246/10249; gehosteter Lauf 40736417671; Ressourcenprüfung auf dem NanoPi 51.505 ms und 142.491.648 Bytes). Einzelheiten stehen im [P7.11-Protokoll](../p7/P7_11_INTEGRATED_VERIFICATION.md), Abschnitte 3 bis 7 und 9.
+
+| Plattform | Nachweisklasse | Ergebnis |
+|---|---|---|
+| Windows x64 (Entwicklungsrechner), SDK 10.0.402 | Lokales `ci-local.ps1` mit zwei Durchläufen | Exit 0; Tests 2935 bestanden (7 optionale Live- und Ressourcentests nicht ausgeführt), 99, 56, 46, Konsument 47; Blockabdeckung 10228/10231 gegen die Basislinie 8486/8489; Gate bestanden |
+| Windows x64 (Entwicklungsrechner) | Offline-Ressourcenprüfung für MOSMIX_S (synthetische Datei mit den festgehaltenen 5648 Placemarks × 40 Elementen × 240 Schritten, allein in einem frischen Prozess gemessen) | Dauer 6.900 ms; Prozessspitze 117.379.072 Bytes (zur Information; der Wert für die Einsatzbereitschaft ist die Messung auf dem Zielsystem) |
+| NanoPi R76S, Debian 13.3 (trixie), `linux-arm64`, SDK 10.0.402, ICU 76 | Lauf der Klasse B auf dem Zielsystem (CONTRIBUTING.md Abschnitt 7), vom Nutzer genehmigt | Exit 0; dieselben Tests, Ergebnisse, Blockzähler und dasselbe Gate-Ergebnis wie unter Windows |
+| NanoPi R76S | Offline-Ressourcenprüfung für MOSMIX_S auf dem Zielsystem (Einsatzbereitschaft MF-05, MF-07) | Dauer 58.710 ms von der Frist von 300.000 ms; Prozessspitze 143.413.248 Bytes von der Schwelle von 268.435.456 Bytes; innerhalb beider |
+| Gehostete GitHub-Umgebungen `windows-x64`, `ubuntu-x64`, Container `debian13-arm64` | Gehosteter Workflow (Lauf 40615010706 an `a36d15a`) | Alle Jobs erfolgreich; getrennt festgehalten und nicht als Nachweis auf dem Zielsystem gezählt |
+| Windows x64 (Entwicklungsrechner), Live-MOSMIX-Dateien des DWD | Ausdrücklich eingeschaltete Live-Prüfungen (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=mosmix-l` und `mosmix-s`), ein genehmigter Lauf je Produkt am Kandidaten `a36d15a` | MOSMIX_L: 1 Anfrage bei einem Budget von 1, HTTP 200, 247 Schritte, aktuell, schemagültig, keine Auslassungen; MOSMIX_S: 1 Anfrage, HTTP 200, 35.966.201 Bytes, 240 Schritte, aktuell, schemagültig, keine Auslassungen, Parse-Vorgang 8.967 ms; Vorhersagewerte nicht festgehalten (MF-17) |
+
+## Umfang Release 1.0.0 (P9.10, verifiziert 2026-11-01 bis 2026-11-02 am Build 0.1.0 derselben Bibliotheks- und CLI-Quellen)
+
+Zeilen in P9.08 vorbereitet und von P9.10 am Release-Kandidaten `86e77eb` ausgefüllt (RL-15 A, [P9.10-Protokoll](../p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); die Prüfung der CLI-Bereitstellung ohne root in P9.07 ([P9-Verifikationsprotokoll](../p9/P9_VERIFICATION.md) Abschnitt 8) wird durch diese Zeilen abgelöst.
+
+| Plattform | Nachweisklasse | Ergebnis |
+|---|---|---|
+| NanoPi R76S, Debian 13 (trixie), `linux-arm64`, Laufzeit 10.0.14 oder neuer | Klasse B: Kandidaten-CLI nach RL-07 A aus ihrem Artefakt mit Prüfsumme installiert, als Dienstbenutzer | Verifiziert an `86e77eb` mit der Laufzeit 10.0.14 auf Debian 13.7: Prüfsummen `OK`, die Struktur und Modi nach RL-07 A, jeder Lauf als `weatherparser` ohne Terminal ([P9.10-Protokoll](../p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) Abschnitt 4) |
+| NanoPi R76S | Klasse B: Paketkonsument gegen die Release-`.nupkg` ohne Quellcode-Checkout | Verifiziert an `86e77eb`: `WeatherParser.Package.Tests` 131/131 auf dem NanoPi und unter Windows ([P9.10-Protokoll](../p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) Abschnitt 3) |
+| NanoPi R76S | Klasse B: jeder CLI-Befehl einmal offline gegen den Fixture-Host und einmal live im JSON-Modus (OsthessenWetter nur JSON, OW-14) | Verifiziert an `86e77eb`: offline Exit-Codes 0, 2, 1 und 3 wie erwartet (die MOSMIX-Befehle nur auf ihren Fehlerpfaden, keine MOSMIX-Testdaten); live jeder Befehl Exit 0 außer OsthessenWetter in der zweiten Einrichtung (Station als offline gemeldet, `OSTHESSEN-STATION-OFFLINE`, Exit 1) ([P9.10-Protokoll](../p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) Abschnitt 4) |
+| NanoPi R76S | Klasse B: ein MQTT-Lauf gegen den Testbroker mit TLS und Zugangsdaten (RL-13 A) | Verifiziert in P9.09 und an `86e77eb`: mit QoS 1 über TLS durch einen SSH-Tunnel zum Windows-Testbroker veröffentlicht und live beobachtet ([P9.10-Protokoll](../p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) Abschnitt 4) |
+| NanoPi R76S | Klasse B: Signale und Aufräumen; Cron alle 10 Minuten über 24 Stunden gegen den Fixture-Host plus ein Live-Aufruf je Quelle und Stunde | Verifiziert an `86e77eb`: SIGINT und SIGTERM enden mit 4 ohne Ausgabe; 374 Aufrufe über 36,5 Stunden, 369 mit Exit 0 und 5 gemeldete Live-Eintragsfehler, Spitzenspeicher höchstens 202.492 KB, kein zurückgebliebener Prozess, keine Datei, kein Benutzer ([P9.10-Protokoll](../p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) Abschnitt 5) |
+| Gehostete GitHub-Umgebung `ubuntu-x64` | Release-Build des Kandidaten (`release-build.yml`) | Verifiziert: Lauf 41239327847 an `86e77eb` (SDK 10.0.402); Probeläufe an `a563fc4` in P9.06 festgehalten |
+
+## Grenzen
+
+- Klasse B belegt die Paketgrundlage auf ARM64 nur im Umfang von P1, nicht die Release-Reife (P9).
+- Der Umfang von P2 (Serialisierer, Ausgabeschema, Zeitzonenbehandlung, DI und Paketnutzung) ist durch P2.11 auf dem Zielsystem verifiziert (Abschnitt oben); DI unter Last, CLI, MQTT und Netzwerkquellen sind noch nicht abgedeckt (spätere Phasen).
+- Der Umfang von P4 (Koordinaten, Geodäsie, CDC- und MOSMIX-Kataloge und -Verfügbarkeit, die Abrufgrenze mit simuliertem HTTP, der MOSMIX_S-Nachweiscache, Auswahldienste, DI und Paketnutzung) ist durch P4.11 auf dem Zielsystem verifiziert; der Live-Abruf wurde einmal nur unter Windows geprüft, nicht auf dem Zielsystem; CLI und MQTT sind noch nicht abgedeckt (spätere Phasen).
+- Der Umfang von P5 (Auflösung der DWD-Station, Lesen der Beobachtungsdateien, Abbildung der Größen, die Abrufgrenze der Beobachtungen mit simuliertem HTTP, der Parserdienst, Exportgleichwertigkeit, DI und Paketnutzung) ist durch P5.10 auf dem Zielsystem verifiziert; der Live-Parse-Vorgang der Beobachtungen wurde einmal nur unter Windows geprüft, nicht auf dem Zielsystem; CLI und MQTT sind noch nicht abgedeckt (spätere Phasen).
+- Der Umfang von P6 (Muster für Stationsnamen, Lesen der OsthessenWetter-Seite, Abbildung der Größen, Identität und Zeiten, die Abrufgrenze der Seite mit simuliertem HTTP, der Parserdienst, Exportgleichwertigkeit, DI und Paketnutzung) ist durch P6.10 auf dem Zielsystem verifiziert; die Live-Prüfung lief einmal nur unter Windows, nicht auf dem Zielsystem; die produktive Nutzung von OsthessenWetter-Werten ist offen, bis die Quellenbedingungen geklärt sind (OW-14); CLI und MQTT sind noch nicht abgedeckt (spätere Phasen).
+- Der Umfang von P7 (Lesen der MOSMIX-Vorhersagen mit dem sicheren KML/KMZ-Leser, Abbildung der Elemente, die Abrufgrenze mit simuliertem HTTP, die Parserdienste für MOSMIX_L und MOSMIX_S, Produktunabhängigkeit, Exportgleichwertigkeit, DI und Paketnutzung) ist durch P7.11 auf dem Zielsystem verifiziert, einschließlich der Messung von Dauer und Spitzenspeicher für MOSMIX_S auf dem Zielsystem; die Live-Parse-Vorgänge liefen einmal je Produkt nur unter Windows, nicht auf dem Zielsystem; CLI und MQTT sind noch nicht abgedeckt (spätere Phasen).
+- Blockzähler von Windows und ARM64 im Vergleich sind nur beschreibend; das Gate verwendet immer eine auf derselben Plattform gemessene Basislinie.
+- Ergebnisse aus Emulation oder auf x64 zählen nie als ARM64-Nachweis.

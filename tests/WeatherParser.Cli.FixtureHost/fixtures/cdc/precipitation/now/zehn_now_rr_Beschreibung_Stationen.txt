@@ -1,0 +1,4 @@
+Stations_id von_datum bis_datum Stationshoehe geoBreite geoLaenge Stationsname Bundesland Abgabe
+----------- --------- --------- ------------- --------- --------- ----------------------------------------- ---------- --------
+90001 20000101 20261030             310     50.5500   9.6700 Fixturestadt                             Hessen                                   Frei
+90002 20000101 20261030             120     53.5500   9.9900 Fernstadt                                Hamburg                                  Frei

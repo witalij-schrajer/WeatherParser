@@ -1,0 +1,76 @@
+name: Bug report
+description: The library or the example CLI behaves differently from its documentation.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read docs/REPORTING_ISSUES.md first. Never post passwords, tokens, broker credentials, private host names, addresses or paths, unchecked logs, or copies of pages or files whose licence does not allow it; replace them with placeholders such as `<broker host>`. Do not describe security problems here: no confidential channel exists yet; open an issue titled "Security: request for a private contact" without any details instead.
+  - type: input
+    id: package
+    attributes:
+      label: Package version and origin
+      description: For example "WeatherParser.Parsing 1.0.0, GitHub release, SHA256SUMS checked" or "source build of commit <id>".
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Runtime and platform
+      description: For example ".NET runtime 10.0.14, Debian 13 ARM64".
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected part
+      options:
+        - Library only
+        - Example CLI only
+        - Library and example CLI
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: component
+    attributes:
+      label: Interface, command or source
+      description: For example "IDwdObservationParser", "--ParseMOSMIX --Product MOSMIX_S" or "OsthessenWetter".
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: The registration and the call, or the command line, without secrets. For observations give the station ID with its leading zeros; for forecasts the product and the MOSMIX ID.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the stable error ID or exception type, for example "CATALOG-TIMEOUT" or "MosmixForecastException".
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log lines (sanitized)
+      render: text
+  - type: input
+    id: frequency
+    attributes:
+      label: How often does it happen?
+      description: For example "every call" or "once in 50 hourly runs".
+  - type: textarea
+    id: input
+    attributes:
+      label: Source input
+      description: A small fixture you may share, or the public URL and the UTC time of retrieval when the content may not be shared. For forecasts add issued_at and the affected valid_at steps; for observations measured_at and retrieved_at.

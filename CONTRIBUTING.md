@@ -1,0 +1,452 @@
+# Contributing to WeatherParser
+
+This guide covers all developer procedures for restoring, building, packing, testing, and evaluating coverage in the WeatherParser repository. It is the single source of truth for development workflows, with each item tagged by platform (Windows, Debian/ARM64, or any) and status. README.md holds only the library purpose, the product status, quickstart, and links; the phase status is in docs/development/PHASE_STATUS.md; library usage is in docs/LIBRARY_USAGE.md, adding a data source in docs/EXTENDING_DATA_SOURCES.md and reporting problems in docs/REPORTING_ISSUES.md; contributor rules are in AGENTS.md; requirements in REQUIREMENTS.md; versions and licenses in DEPENDENCIES.md; platform matrix in docs/COMPATIBILITY.md.
+
+## Status values
+
+- **Verified** — the command passed against a named revision. On Windows this is the P1.11 walkthrough or a package record that ran exactly that command on the current project structure. On Debian/ARM64 it is the recorded P1.10 target execution.
+- **Planned** — the package or walkthrough that will verify it is named.
+- **OPEN** — required but not achievable yet; the reason is given.
+
+## 1. Prerequisites
+
+### SDK selection via `global.json` (rollForward disable)
+
+*Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md); historical: [P1.03](docs/p1/P1_03_BUILD_SETUP.md)*
+
+```powershell
+dotnet --version
+```
+
+### Git (clone, checkout)
+
+*Status: Verified (Windows, Debian/ARM64) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md), [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
+
+```bash
+git clone <repository URL>
+cd WeatherParser
+```
+
+### PowerShell 7
+
+*Status: Verified (Windows, Debian/ARM64) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md), [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
+
+```powershell
+pwsh --version
+```
+
+### `dotnet tool restore` for the pinned `dotnet-coverage`
+
+*Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md); historical: [P1.08](docs/p1/P1_08_COVERAGE_EVALUATION.md)*
+
+```powershell
+dotnet tool restore
+```
+
+### Telemetry opt-out variables
+
+*Status: Verified (Windows, Debian/ARM64) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md), [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md); historical: [P1.02](docs/p1/P1_02_TOOLING_REVIEW.md)*
+
+```powershell
+$env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
+$env:TESTINGPLATFORM_TELEMETRY_OPTOUT = '1'
+```
+
+```bash
+export DOTNET_CLI_TELEMETRY_OPTOUT=1 TESTINGPLATFORM_TELEMETRY_OPTOUT=1
+```
+
+## 2. Restore and build
+
+### Restore and Release build of the solution filter
+
+*Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md); historical: [P1.03](docs/p1/P1_03_BUILD_SETUP.md)*
+
+```powershell
+New-Item -ItemType Directory -Force artifacts/local-nuget
+dotnet restore WeatherParser.Ci.slnf --locked-mode
+dotnet build WeatherParser.Ci.slnf --configuration Release --no-restore
+```
+
+`NuGet.Config` lists the project-local package source `artifacts/local-nuget`, which is gitignored and missing in a fresh clone; restores fail with NU1301 until it exists. `WeatherParser.Ci.slnf` contains every project except the package consumer, the example CLI with its tests, the signal test host `tests/WeatherParser.Cli.SignalHost` and the fixture host `tests/WeatherParser.Cli.FixtureHost`: the first three consume the packed library and are built after the pack step ([section 4](#4-pack-and-package-consumer)); the two hosts do not, but they exist only for the CLI tests, which build them through their project references. Do not restore or build the whole `WeatherParser.slnx` from the command line: the committed consumer locks (package consumer and example CLI) are stale by design (the package embeds the commit ID), so it fails with NU1403; build them as described in [section 4](#4-pack-and-package-consumer).
+
+Lock files are tracked. For a requested package update, resolve once without `--locked-mode` and review the lock changes.
+
+## 3. Tests
+
+### Offline test runs of the four source-reference test projects
+
+*Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md); historical: [P1.05](docs/p1/P1_05_TDD_BASELINE.md), [P1.06](docs/p1/P1_06_DI_CONTRACTS.md), [P1.08](docs/p1/P1_08_COVERAGE_EVALUATION.md)*
+
+```powershell
+dotnet test tests/WeatherParser.Parsing.Tests --configuration Release --no-build
+dotnet test tests/WeatherParser.Coverage.Tests --configuration Release --no-build
+dotnet test tests/WeatherParser.Coverage.Runner.Tests --configuration Release --no-build
+dotnet test tests/WeatherParser.SchemaGeneration.Tests --configuration Release --no-build
+```
+
+Test conventions (MSTest, Moq, FluentAssertions, TDD) are defined in [AGENTS.md](AGENTS.md#tests).
+
+### Export schema generation (P2.09)
+
+*Status: Verified (Windows) – [P2.09 verification record](docs/p2/P2_VERIFICATION.md#9-p209--reproducible-output-xsds); contract decisions C-95 to C-106 in [P2_EXPORT_CONTRACT.md](docs/p2/P2_EXPORT_CONTRACT.md)*
+
+The XML Schema of the five export roots, `schemas/export/v1/weatherparser-export-v1.xsd`, is generated by the non-packable library `tools/WeatherParser.SchemaGeneration` (`XmlSchemaExporter` plus deterministic refinements) and is never edited by hand. `GeneratedSchema_MatchesCommittedFile` in `tests/WeatherParser.SchemaGeneration.Tests` compares a fresh generation byte for byte with the committed file; CI always compares.
+
+After a change to an export entity's XML mapping, regenerate the file from a fresh build (the command builds the test project and its references, so the generator never reads stale assemblies), review the difference and commit it with the mapping change:
+
+```powershell
+$env:WEATHERPARSER_REGENERATE_SCHEMAS = '1'
+dotnet test tests/WeatherParser.SchemaGeneration.Tests --configuration Release --filter "FullyQualifiedName~GoldenFileTests"
+$env:WEATHERPARSER_REGENERATE_SCHEMAS = $null
+git diff schemas/export/v1/weatherparser-export-v1.xsd
+```
+
+The regeneration run writes the file and ends as inconclusive (skipped), never as passed. `.gitattributes` keeps the schema at LF line endings on every checkout. `tests/WeatherParser.Parsing.Tests` validates real exports of all five roots and negative documents against the committed file.
+
+Validate documents offline with `XmlReaderSettings` set to `DtdProcessing = DtdProcessing.Prohibit`, `XmlResolver = null`, `ValidationType = ValidationType.Schema` and `ValidationFlags = XmlSchemaValidationFlags.ReportValidationWarnings` (no inline schemas, no schema locations), and an `XmlSchemaSet` with `XmlResolver = null` into which the local schema file is added explicitly; treat warnings as failures, because a root in an unknown namespace raises only a warning. The schema checks structure only; impossible calendar dates such as `2026-02-30T12:00:00` match the timestamp pattern and need a separate check.
+
+## 4. Pack and package consumer
+
+### Local feed `artifacts/local-nuget`, isolated consumer with a versioned PackageReference
+
+*Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md); historical: [P1.04](docs/p1/P1_04_PACKAGE_CONSUMER.md)*
+
+Pack the library into the local feed:
+
+```powershell
+dotnet pack src/WeatherParser.Parsing/WeatherParser.Parsing.csproj --configuration Release --no-restore --output artifacts/local-nuget
+```
+
+The package consumer `tests/WeatherParser.Package.Tests` references the packed library from the local feed `artifacts/local-nuget` with a versioned `PackageReference` and no `ProjectReference`. After section 2, run it with the command below. A freshly packed library usually needs the refresh below first, because the committed consumer lock is stale by design.
+
+```powershell
+dotnet test tests/WeatherParser.Package.Tests/WeatherParser.Package.Tests.csproj --configuration Release --no-restore
+```
+
+### Package contents, reproducibility and public API (P9.05)
+
+*Status: Verified (Windows) – [P9 verification record](docs/p9/P9_VERIFICATION.md) section 6*
+
+Decided in the [P9 release contract](docs/p9/P9_RELEASE_CONTRACT.md) (RL-01 A, RL-03 A, RL-04 A, RL-19 A):
+- The package `WeatherParser.Parsing` `1.0.0` contains exactly `lib/net10.0/WeatherParser.Parsing.dll`, `lib/net10.0/WeatherParser.Parsing.xml` (the XML documentation; missing or broken documentation comments fail the library build), `README.md`, `LICENSE`, the export schema and the NuGet metadata files. `dotnet pack` also writes `WeatherParser.Parsing.1.0.0.snupkg` with the PDB. The package carries no repository or project URL (RL-19 A); the repository has been public since 2026-11-03, and setting the URLs is a change of the package metadata that needs its own decision ([record](docs/REPOSITORY_VISIBILITY.md)).
+- Release builds set `ContinuousIntegrationBuild`, so the DLL contains mapped paths (`/_/…`) instead of the clone directory; `.gitattributes` keeps `README.md` and `LICENSE` LF on every checkout. On Windows, two clean packs of one commit in different directories had identical member contents (P9.05); the zip entry timestamps still differ (file modification and pack times). Packages built on different platforms or with a different runtime hosting the compiler differ (source line endings, the platform newline of the NuGet metadata, the compiler's runtime version recorded in the PDB); the release build therefore runs on one platform and runner type, and the repeat-build proof on Linux belongs to the release procedure (P9.06).
+- `scripts/compare-packages.ps1 -First <a.nupkg> -Second <b.nupkg>` reads and validates both packages first and then compares them: exit 0 `IDENTICAL` (byte-identical), 3 `CONTENT-IDENTICAL` with `TIMESTAMP <member>` lines (same member bytes, different archive bytes), 1 with `ONLY-FIRST`, `ONLY-SECOND` or `DIFFERENT <member>` lines (member names compared case-sensitively), 2 for a missing file, a non-ZIP file or a duplicate member name.
+- `src/WeatherParser.Parsing/PublicApi.txt` lists every exported type (`T:`, with access, kind, modifiers, generic variance and constraints, base type and interfaces), every property with a visible accessor (`P:`, with its type and index parameters), public or protected method (`M:`, accessors and constructors included, with generic arity and constraints, parameter names, directions (`out`, `ref`, `in`) and default values, required modifiers such as the `init` marker, and the access, `static`, `abstract`, `virtual` or `override` modifiers) and field (`F:`, with modifiers and constant values) of the packed assembly, each line followed by the compile-relevant attributes `@Obsolete` (or `@Obsolete(error)`), `@RequiredMember`, `@SetsRequiredMembers`, `@Flags` and `@Extension` where present, sorted ordinally, generated from metadata only by the test helper `PublicApiListing` (behind `IPublicApiListing`); `PublicApiInventoryTests` in the package tests fails on any difference and writes the complete generated listing to `PublicApi.actual.txt` in the test output directory. A deliberate public API change updates the file in the same change after reviewing every changed line. Known limitation: nullable reference annotations (`NullableAttribute`, `NullableContextAttribute`) are not recorded, so a change between `string` and `string?` alone does not change the listing; they affect consumer warnings, not binary compatibility. SDK package validation against a released baseline is a follow-up after the first release (RL-04 A).
+
+### Stale cached package / consumer lock
+
+*Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md)*
+
+The exact local, uncommitted refresh procedure:
+
+```powershell
+# Package check: entries, README/LICENSE content and the packed hash
+$package = 'artifacts/local-nuget/WeatherParser.Parsing.1.0.0.nupkg'
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$zip = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $package).Path)
+$zip.Entries.FullName   # only lib/net10.0/WeatherParser.Parsing.dll, lib/net10.0/WeatherParser.Parsing.xml, README.md, LICENSE, schemas/export/v1/weatherparser-export-v1.xsd and NuGet metadata
+foreach ($name in 'README.md', 'LICENSE', 'schemas/export/v1/weatherparser-export-v1.xsd') {
+    $entry = $zip.GetEntry($name).Open(); $buffer = [IO.MemoryStream]::new(); $entry.CopyTo($buffer); $entry.Dispose()
+    $packedSha = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($buffer.ToArray()))
+    $sourceSha = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([IO.File]::ReadAllBytes((Resolve-Path $name).Path)))
+    if ($packedSha -cne $sourceSha) { throw "$name in the package is not byte-identical to the working tree ($packedSha, $sourceSha)" }
+}
+$zip.Dispose()
+$packedHash = [Convert]::ToBase64String([Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes((Resolve-Path $package).Path)))
+# Remove the stale cache entry
+$globalPackages = (dotnet nuget locals global-packages --list) -replace '^global-packages:\s*', ''
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $globalPackages 'weatherparser.parsing/1.0.0')
+# Refresh the consumer lock; the diff may change only the WeatherParser.Parsing contentHash
+dotnet restore tests/WeatherParser.Package.Tests --force-evaluate
+git diff tests/WeatherParser.Package.Tests/packages.lock.json
+# Locked restore and hash comparison
+dotnet restore tests/WeatherParser.Package.Tests --locked-mode
+$restoredHash = Get-Content (Join-Path $globalPackages 'weatherparser.parsing/1.0.0/weatherparser.parsing.1.0.0.nupkg.sha512')
+if ($restoredHash -ne $packedHash) { throw 'The restored package hash differs from the packed package' }
+# Run the consumer tests
+dotnet test tests/WeatherParser.Package.Tests --configuration Release --no-restore
+# Discard the refresh with git restore
+git restore tests/WeatherParser.Package.Tests/packages.lock.json
+```
+
+This is required because the package embeds the commit ID, so a committed consumer lock can never match the package built from its own commit.
+
+### Example CLI `examples/WeatherParser.Cli` (P3)
+
+*Status: Verified (Windows) – [P3.03 verification record](docs/p3/P3_VERIFICATION.md)*
+
+The example CLI (assembly and command `WeatherParser`) consumes the packed library like the package consumer: a versioned `PackageReference` to `WeatherParser.Parsing` from `artifacts/local-nuget`, no `ProjectReference` to the library (CL-01 of the [P3 CLI contract](docs/p3/P3_CLI_CONTRACT.md)). Its two lock files (`examples/WeatherParser.Cli/packages.lock.json`, `tests/WeatherParser.Cli.Tests/packages.lock.json`) contain the package hash and are refreshed locally like the consumer lock above, never committed back. After packing:
+
+```powershell
+dotnet restore tests/WeatherParser.Cli.Tests --force-evaluate
+dotnet build tests/WeatherParser.Cli.Tests --configuration Release --no-restore
+dotnet test tests/WeatherParser.Cli.Tests --configuration Release --no-build
+git restore examples/WeatherParser.Cli/packages.lock.json tests/WeatherParser.Cli.Tests/packages.lock.json
+```
+
+The process tests start the built CLI with `dotnet <output>/WeatherParser.dll` in a temporary working directory, each with a timeout after which the process tree is killed; the harness self-test needs `pwsh` on the `PATH`. The signal tests of P3.09 (`ProcessSignalTests`, `ProcessTerminationTests`) send SIGINT and SIGTERM to a child process and run on Linux only; on Windows they end inconclusive. `ProcessTerminationTests` start the signal test host `tests/WeatherParser.Cli.SignalHost` (built through the project reference of the CLI tests), which compiles the CLI's signal handling from its source files and ignores cancellation, so that only a second signal or the end of the grace period can end it. The host references no CLI project and no local package, so its lock file is an ordinary committed lock. The fixture host `tests/WeatherParser.Cli.FixtureHost` (P9.07, T-P9-13) is a standalone executable for offline runs on the target: `dotnet WeatherParser.Cli.FixtureHost.dll <root directory> <port>` (port `0` for any free port) listens on `127.0.0.1` only, writes one line `LISTENING http://127.0.0.1:<port>/` to standard output, serves the files under the root (404 for a missing file or a directory, 400 for a `..` segment, also percent-encoded, or a query), logs `<method> <path> <status>` per request to standard error and exits with 0 on SIGINT or SIGTERM. Its synthetic fixtures (`fixtures/cdc/…` station lists with the placeholder stations `90001` and `90002`, and `fixtures/osthessen/index.html`, the page of `ProcessFixtures.OsthessenPage()`) are copied to the output folder. `FixtureHostTests` start it as a process; the two signal cases run on Linux only. A static fixture set cannot make a CDC station active (`--SelectDWD` needs `now` rows of the last three hours), so `--SelectDWD` against it gives a complete document with an empty station list, while `--ParseOstHessen --StationNamePattern "M*"` gives one observation.
+
+### Opt-in broker integration test of the example CLI (P3.08)
+
+*Status: Verified (Windows, local Mosquitto 2.1.2 without TLS) – [P3.08 section of the P3 verification record](docs/p3/P3_VERIFICATION.md); with TLS, a test CA and credentials on Windows and on the NanoPi R76S – [P9.09 record](docs/p9/P9_09_BROKER_AND_SHUTDOWN_CHECKS.md)*
+
+The tests in `tests/WeatherParser.Cli.Tests/Mqtt/BrokerIntegrationTests.cs` (category `Broker`) publish through the CLI's own MQTT composition and check delivery with a separate subscriber; without the variable `WEATHERPARSER_TEST_BROKER` they end inconclusive, so the standard runs and the CI jobs never contact a broker (CL-20, REQ-083). Use only a test broker the maintainer authorized, never a production broker. Write the test configuration **outside the repository**; it holds only the broker section and, optionally, `Limits`, for example for a local Mosquitto that listens on the loopback interface without TLS:
+
+```json
+{
+  "Mqtt": {
+    "Broker": { "Host": "127.0.0.1", "Port": 1883, "AllowUnencrypted": true }
+  },
+  "Limits": { "MaxPublishAttempts": 1, "RetryDelay": "00:00:00" }
+}
+```
+
+For a broker with TLS and a test CA, use the TLS port and `"Tls": { "CaFile": "<path outside the repository>/ca.crt" }` instead of `AllowUnencrypted`; the certificate's name must match `Host`. Credentials, if the broker needs them, come only from `WEATHERPARSER_MQTT_USERNAME` and `WEATHERPARSER_MQTT_PASSWORD` (CL-06), never from the file. The test identity needs read and write permission on `weatherparser-test/#`, because the tests publish and subscribe with the same credentials. Then run, after the build of the CLI tests above:
+
+```powershell
+$env:WEATHERPARSER_TEST_BROKER = '<path outside the repository>\test-broker.json'
+dotnet test tests/WeatherParser.Cli.Tests --configuration Release --no-build --filter "TestCategory=Broker"
+Remove-Item Env:WEATHERPARSER_TEST_BROKER
+```
+
+Every test uses its own topic below `weatherparser-test/<GUID>/` and removes its retained messages afterwards. `Broker_WrongCredentials_Rejected` runs only when credentials are configured, and `Broker_TlsWithCustomCa` only when the configuration uses TLS with `Mqtt.Broker.Tls.CaFile`; otherwise they end inconclusive with the reason.
+
+### README changes
+
+*Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md)*
+
+README.md is the packed package readme (`PackageReadmeFile`). Check the package locally with the procedure above, commit only the Markdown files (without the consumer lock), then run `pwsh ./scripts/ci-local.ps1 -TargetRef <target branch> -RunSettings coverage.runsettings` on the committed revision. A Markdown-only commit is documentation-only for the coverage gate (equal coverage passes, a decrease fails).
+
+### Automated prevention
+
+*Status: Verified (Windows, Debian/ARM64) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md), [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
+
+The CI script's isolated `NUGET_PACKAGES`/`DOTNET_CLI_HOME` and contentHash rewrite prevent stale package issues.
+
+## 5. Coverage
+
+### Collection, conversion, runner evaluate/write-baseline
+
+*Status: Verified (Windows) – [P1.11 walkthrough](docs/p1/P1_11_DEVELOPER_INSTRUCTIONS.md); historical: [P1.07](docs/p1/P1_07_COVERAGE_CONTRACT.md), [P1.08](docs/p1/P1_08_COVERAGE_EVALUATION.md)*
+
+```powershell
+$results = Join-Path TestResults "product-$([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ'))"
+dotnet test tests/WeatherParser.Parsing.Tests --configuration Release --no-build --collect "Code Coverage" --settings coverage.runsettings --results-directory $results
+$raw = @(Get-ChildItem $results -Recurse -Filter *.coverage)
+if ($raw.Count -ne 1) { throw "Expected exactly one .coverage file in $results, found $($raw.Count)" }
+dotnet tool run dotnet-coverage merge $raw[0].FullName -f xml -o "$results/coverage.xml"
+git diff --name-only --no-renames <target commit sha>...HEAD > "$results/changed-files.txt"
+dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- write-baseline --report <target coverage.xml> --commit <target commit sha> --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --output "$results/baseline.json"
+dotnet run --project tools/WeatherParser.Coverage.Runner --configuration Release --no-build -- evaluate --report "$results/coverage.xml" --changed-files "$results/changed-files.txt" --tool-name Microsoft.CodeCoverage --tool-version 18.11.0 --exclude *.Tests.dll --exclude WeatherParser.Coverage*.dll --baseline "$results/baseline.json" --expected-baseline-commit <target commit sha>
+```
+
+Each run writes to a new, timestamped results directory under the gitignored `TestResults/`, so an older report is never evaluated. JSON result on stdout; runner exit codes: 0 (all rules passed), 1 (a coverage rule failed), 2 (usage or input error). Gate rules:
+- Minimum 80% block coverage.
+- Below a 100% baseline, a code change must strictly improve.
+- A Markdown-only change may stay equal.
+- Decreases always fail.
+- An exact 100% baseline accepts exactly 100%.
+- Per-assembly gates (REQ-086 amendment of 2026-10-29, CL-19 option C): `evaluate` accepts the repeatable option `--gated-input <path or directory prefix ending with />`; a code change that touches none of the gated inputs is classified `GatedInputsUnchanged` and may keep equal coverage. `ci-local.ps1` passes the library's build inputs (`src/`, `Directory.Build.props`, `Directory.Packages.props`, `global.json`, `NuGet.Config`, `.editorconfig`, `coverage.runsettings`) to the library gate, and evaluates the example CLI assembly (`WeatherParser.dll`, with `--exclude WeatherParser.Parsing.dll --exclude WeatherParser.Cli.SignalHost.dll --exclude WeatherParser.Cli.FixtureHost.dll`; the coverage can also measure the test executables that the process tests start, the signal test host and the fixture host) in a second gate: `--bootstrap` (80 % minimum, no comparison) while the target has no CLI, otherwise against a CLI baseline measured on the target. Both gates must pass.
+- REQ-086 amendment 2 (2026-10-31, [P9 release contract](docs/p9/P9_RELEASE_CONTRACT.md) RL-11 A and RL-20 A): the gated-input lists live in the coverage tool (`GatedInputSets`); `evaluate --gated-input-set library|cli` selects them (it cannot be combined with `--gated-input`). The CLI gate now has its own gated inputs: `examples/`, `tests/WeatherParser.Cli.Tests/`, `tests/WeatherParser.Cli.SignalHost/`, `src/` and the root build inputs listed above; a code change that touches none of them may keep equal CLI coverage. A recorded baseline reconciliation is an entry of the checked-in file `coverage-reconciliation.json` (gate, full target commit, pull request number, head repository, head branch, approval date, record of the user's approval); `evaluate --gate-name <gate> --reconciliation <file> --head-repository <owner/name> --head-branch <branch>` applies an entry only to a code change with a comparable baseline whose target commit, head repository and head branch match, accepts coverage at or above the baseline and still rejects a decrease; the gate result lists the applied entry as the rule `Reconciliation`. An invalid file fails the gate as an input error (exit code 2 of the runner); a missing file means no entry. Entries exist only with the user's recorded approval and are removed after their pull request is merged.
+
+The binding coverage contract is [PHASE_P1_PLAN.md section 5](docs/development/PHASE_P1_PLAN.md).
+
+`--bootstrap` is reserved for the project's genuine first measurement, which was taken on `0a2dabe` ([P1.09 record](docs/p1/P1_09_LOCAL_CI.md)); later runs always use a baseline.
+
+### Two-pass baseline and collection-settings comparison
+
+*Status: Verified (Windows, Debian/ARM64) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md), [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
+
+The CI script measures the target commit in a second pass with identical, recorded collection settings and compares them before the gate; see [section 6](#6-local-ci).
+
+## 6. Local CI
+
+### Purpose and isolation
+
+*Status: Verified (Windows) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md); Verified (Windows, Debian/ARM64) for the P1.10 parameters – [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
+
+The `scripts/ci-local.ps1` script runs a full local CI pipeline in an isolated environment, including SDK check, locked restore, Release build, tests, pack, package-content check, package consumer, coverage conversion, two-pass baseline from `-TargetRef` with collection-settings comparison, and gate. It tests only the committed state from a fresh clone in a temporary directory, with isolated `NUGET_PACKAGES` and `DOTNET_CLI_HOME`, and never touches the working tree.
+
+### Basic command
+
+```powershell
+pwsh ./scripts/ci-local.ps1 -TargetRef <comparison commit or branch> -RunSettings coverage.runsettings
+```
+
+### Parameters
+
+| Parameter | Meaning |
+|---|---|
+| `-Commit` | The commit to run CI on (default HEAD) |
+| `-TargetRef` | Required unless `-ResumeFrom`; the reference commit or branch for comparison |
+| `-BaselinePath` | External baseline JSON with its sibling `collection-settings.json`; skips the target pass |
+| `-Bootstrap` | For the genuine first measurement only |
+| `-RunSettings <file>` | Copied once into the run, hash-checked before each pass |
+| `-CollectOnly` | Every stage except conversion, baseline and gate; writes the resume package; exit 0 with "collection complete, gate pending" |
+| `-ResumeFrom <run directory>` | Alone; verifies the resume package hashes, converts both passes with the pinned tool, writes the baseline and runs the gate with the published runner |
+| `-KeepWorkDir` | Do not delete the temporary work directory |
+| `-FaultInjection` | Verification only (SdkMismatch, LockDrift, FailingTest, MissingCoverage, ConsumerLockDrift, IncomparableTarget, GateFailure, RunSettingsTamper, InvalidReconciliation: overwrites `coverage-reconciliation.json` of the commit under test with invalid JSON before the gate; expected exit code 91) |
+| `-PullRequestHeadRepository <owner/name>`, `-PullRequestBranch <branch>` | Pull request identity (REQ-086 amendment 2): every library and CLI gate (also the bootstrap gates) reads and validates `coverage-reconciliation.json` of the commit under test, so an invalid file fails the gate; a matching recorded baseline reconciliation applies only when both parameters are given. `-ResumeFrom` does not use it |
+
+### Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | Success |
+| 10 | Environment/SDK mismatch (`dotnet --version` in the clone differs from `global.json`) |
+| 20 | Setup/validation (clone, refs, parameters, resume-package hashes) |
+| 30 | Locked restore or lock drift |
+| 40 | Build |
+| 50 | Tests |
+| 60 | Pack or package content |
+| 70 | Package consumer |
+| 75 | Example CLI: lock refresh, restore, build, tests with coverage or conversion (current or target pass) |
+| 80 | Coverage collection or conversion |
+| 85 | Incomparable measurements (collection settings or run-settings copy differ) |
+| 90 | Gate rule failed |
+| 91 | Gate input invalid |
+
+### Run directory contents
+
+The run directory `artifacts/ci/<commit>-<UTC timestamp>/` contains `ci.log`, `commits.json`, test results, package and hash, coverage reports, `collection-settings.json` per pass, `changed-files.txt`, `gate-result.json`, `resume/`. The current pass writes one TRX file per test project to `trx/`: `WeatherParser.Parsing.Tests` (with coverage), `WeatherParser.Coverage.Tests`, `WeatherParser.Coverage.Runner.Tests` and, since P2.09, `WeatherParser.SchemaGeneration.Tests`; the target pass runs only `WeatherParser.Parsing.Tests`. When the commit contains the example CLI (P3), the current pass also writes `WeatherParser.Cli.Tests` to `trx/` and its coverage to `current/cli-coverage/`, and the run writes `cli-gate-result.json`; when the target contains the CLI too, the target pass packs its library into `target/package/`, measures `target/cli-coverage/` with a separate package folder and writes `target/cli-baseline.json`. `-CollectOnly` is rejected (exit 20) for a commit that contains the example CLI.
+
+### Hosted CI (GitHub Actions)
+*Status: Verified (Windows, Debian/ARM64 and Ubuntu x64 hosted runners) – [manual run 39332959206](https://github.com/witalij-schrajer/WeatherParser/actions/runs/39332959206) against the seed `0a2dabe`, all three jobs passed (2026-10-20)*
+
+The repository includes a GitHub Actions workflow `.github/workflows/ci.yml` that runs the same `scripts/ci-local.ps1` script as documented in CONTRIBUTING.md section 6, on Windows x64 (`windows-latest`), Ubuntu x64 (`ubuntu-latest`), and Debian 13 ARM64 (`debian:trixie` container on `ubuntu-24.04-arm`) runners.
+
+For pull requests, the workflow compares the PR head commit against the PR base commit; for manual runs, a deliberate target is specified via the `target_ref` input (e.g., the bootstrap seed `0a2dabe` or a remote branch like `origin/develop`). Each job passes the pull request identity to `-PullRequestHeadRepository` and `-PullRequestBranch` through the environment variables `CI_HEAD_REPOSITORY` and `CI_HEAD_BRANCH` (pull requests: the head repository's full name and `github.head_ref`; manual runs: `github.repository` and `github.ref_name`), never interpolated into the script. The workflow uses pinned actions by full commit SHA and has read-only permissions with no secrets or publishing. Run directories are uploaded as artifacts named `ci-<job>` (30 days retention) on success or failure.
+
+The workflow starts for pull requests into `develop` and `master` on `opened`, `synchronize`, `reopened` and `ready_for_review`, also while the pull request is a draft (work in progress); pushes to branches without a pull request do not run the workflow; manual runs stay available through `workflow_dispatch`.
+
+Since 2026-10-28 the first job, `changes`, decides whether the three CI jobs run (user decision recorded in AGENTS.md). Documentation means Markdown files and files under `docs/`; the root `README.md` counts as code because it is packed into the package and checked by `scripts/ci-local.ps1`. Paths are listed with `--no-renames`, so a renamed file counts with its old and its new path (moving a code file into `docs/` still runs the jobs). This classification only decides whether CI runs; the coverage gate keeps its own classification (`PullRequestClassifier`: a pull request whose files are all `.md`, including `README.md`, is documentation-only and may keep equal coverage), so a `README.md`-only pull request runs the jobs, including the package check, and passes the gate with unchanged coverage. For a push (`synchronize`) only the pushed commits (`before..head`) are judged; for `opened`, `reopened`, `ready_for_review` and for force pushes whose previous head is no ancestor, the whole pull request (`base...head`) is judged; an empty change list and manual runs always run the jobs. When no code changed, the three jobs are reported as skipped: no build, test, package check or coverage measurement takes place, and the coverage gate is not evaluated (a manual `workflow_dispatch` run always measures). The workflow has no `cancel-in-progress`, because a later documentation-only push would otherwise cancel a run that still verifies earlier code; concurrent runs of the same pull request therefore all complete. The repository has no branch protection with required checks, so skipped jobs block nothing.
+
+### Release build and promotion check (P9.06)
+
+*Status: Verified (Windows dry runs) – [P9 verification record](docs/p9/P9_VERIFICATION.md) section 7; the hosted workflow runs only after `release-build.yml` exists on the default branch*
+
+Decided in the [P9 release contract](docs/p9/P9_RELEASE_CONTRACT.md) (RL-02 A, RL-03 A, RL-06 A, RL-08 A). Nothing here publishes anything: there is no feed credential, no tag and no release step.
+
+```powershell
+pwsh ./scripts/build-release.ps1 -Commit <candidate commit> -Version <version> -OutputDirectory <empty or new folder>
+```
+
+`scripts/build-release.ps1` clones the commit into a temporary folder, checks the library project's `Version` against `-Version`, restores (library and library tests in locked mode), builds and runs the library tests, sets the modification time of the packed inputs to the commit time, packs `WeatherParser.Parsing.<version>.nupkg` and `.snupkg`, runs the package tests against that package, publishes the example CLI framework-dependent for `-RuntimeIdentifier` (default `linux-arm64`) and checks that the CLI restored exactly the same-run package. Every `dotnet` call that produces an artifact runs with `DOTNET_ROLL_FORWARD=Disable`, so the compiler runs on the runtime bundled with the pinned SDK (the PDB records that runtime version); `dotnet test` runs without it. The output folder receives the two packages, `WeatherParser.Cli.<version>.<rid>.zip`, `SHA256SUMS` (`<sha256>  <name>`, ordinal) and `evidence.json` (commit, tree, version, SDK, runtime identifier, roll-forward setting, `GITHUB_RUN_ID`, creation time, artifacts). Exit codes: 0 success; 2 input error (unknown commit, non-empty output folder, clone failure); 3 `VERSION-MISMATCH`; 4 `TEST-FAILURE`; 5 `PACKAGE-MISMATCH`; 6 `TOOL-FAILURE <command> <project>` (the failing call's output goes to standard error). The artifacts, `SHA256SUMS` and `evidence.json` are written to a staging folder inside the temporary work folder and moved into the output folder only after `evidence.json` is complete; if a move fails, the files this run already moved are removed again. An unexpected error ends with `UNEXPECTED <message>` and exit code 6, and the temporary work folder is removed on every path (`-WorkRoot` sets its parent folder; default: the system temp folder). On exit codes 3 to 6 the output folder receives no artifact of the run. Two builds of one commit give packages with identical member contents; the entry timestamps of the four NuGet-generated metadata files differ (pack time), and the CLI archive differs (its `deps.json` records the package hash, and the CLI build does not map paths).
+
+The workflow `.github/workflows/release-build.yml` runs the same script on `ubuntu-latest` for a manual run only (`workflow_dispatch` with the inputs `commit` and `version`), with `permissions: contents: read`, no secret and `persist-credentials: false`, and uploads the output folder as the workflow artifact `release-<version>` (90 days). GitHub dispatches a workflow only if a file of that name exists on the default branch.
+
+```powershell
+pwsh ./scripts/check-promotion.ps1 -Repository . -Candidate <candidate commit> -Target <target commit> -ArtifactDirectory <folder with SHA256SUMS and evidence.json>
+```
+
+`scripts/check-promotion.ps1` (RL-06 A) prints `PROMOTABLE` (exit 0) only when the candidate is an ancestor of the target, no build input differs (every path except Markdown files; the root `README.md` is an input), every `SHA256SUMS` line matches its file, `SHA256SUMS` and the `artifacts` of `evidence.json` list the same names with the same hashes, `SHA256SUMS` lists exactly the release set of the evidence (`WeatherParser.Parsing.<version>.nupkg`, `WeatherParser.Parsing.<version>.snupkg` and `WeatherParser.Cli.<version>.<runtimeIdentifier>.zip`), and `evidence.json` names the candidate. Otherwise exit 3 `NOT-AN-ANCESTOR`, exit 4 `CHANGED-INPUT <path>` lines, exit 5 `MISSING-ARTIFACT <name>`, `CHECKSUM-MISMATCH <name>`, `MANIFEST-MISMATCH <name>` (a name missing from one of the two lists or listed with different hashes), `INCOMPLETE-SET <name>` (a name of the release set missing from `SHA256SUMS`), `UNEXPECTED-ARTIFACT <name>` (a `SHA256SUMS` name outside the release set) or `EVIDENCE-COMMIT-MISMATCH`, exit 2 for input errors, among them an empty `SHA256SUMS`, a line that is not `<64 hex digits>  <file name>`, a name listed twice, and an `evidence.json` that is not valid JSON or lacks a string `commit`, `version` or `runtimeIdentifier` or an `artifacts` list of `name` and `sha256` strings.
+
+Before the release of a new version, bring the German translations of the user documentation in `docs/de/` in line with their English sources and update the translation revision each names (AGENTS.md "Language rules", user decision dated 2026-11-03). Neither script checks this: compare each English source with its translation since the named revision, for example `git diff <translation revision> -- README.md docs/LIBRARY_USAGE.md docs/OPERATIONS.md docs/COMPATIBILITY.md docs/REPORTING_ISSUES.md docs/EXTENDING_DATA_SOURCES.md`. The translations are Markdown files, so they are no build input of the promotion check.
+
+### Automatic Codex review (GitHub Actions)
+*Status: First hosted run succeeded on pull request #13 (run 40758968836, 2026-10-28) – [verification record](docs/ci/CODEX_REVIEW_WORKFLOW_VERIFICATION.md)*
+
+The workflow `.github/workflows/review.yml` runs a read-only Codex review when a pull request into `develop` or `master` is marked ready for review (`ready_for_review` only; pushes to the pull request run `ci.yml` alone). It runs on `ubuntu-latest` with `openai/codex-action` (permission profile `:read-only`, no network inside the sandbox), checks out the pull request head and posts the review as one pull request comment; the complete prompt and review are uploaded as the artifact `codex-review` (30 days) and shown in the job summary. The review never edits files, commits, approves or merges, and its result does not fail the workflow: like every Codex review it is third-party input that the orchestrating LLM verifies finding by finding (AGENTS.md, "Second reviewer: Codex").
+
+The workflow chooses one of two briefs:
+
+| Review kind | Brief | Chosen when |
+|---|---|---|
+| Documentation and planning | `.github/review/prompt-documentation.md` | label `review:docs`, or without a label every changed file is a Markdown file or under `docs/` |
+| Implementation | `.github/review/prompt-implementation.md` | label `review:implementation`, or without a label at least one other file changed |
+
+The documentation brief's status-consistency check names the status documents at their current paths, `docs/development/PHASE_STATUS.md` and `docs/development/PHASE_P1_PLAN.md` (documentation layout, user decision dated 2026-11-02), and its language check accepts the German translations of the user documentation in `docs/de/` (AGENTS.md "Language rules", user decision dated 2026-11-03); triggers, classification, pinned actions and the Codex version did not change with either. A pull request without changed files, or with both labels at once, fails the job with an error. Each brief is followed by the section "Five-angle audit review" copied verbatim from `AGENTS.md` and by the pull request context (number, base and head commit, review kind, changed files, title as untrusted data). The brief and the audit section are read from the base commit, so a pull request cannot weaken its own review; only the brief falls back to the head commit while the base has no brief yet (the pull request that adds the workflow), and the comment says which one was used. Labels are read from the pull request when the job runs, not from the event, so a re-run sees labels changed in the meantime. File names are classified unquoted (`core.quotePath=false`); a name Git still has to quote counts as an implementation file.
+
+Setup: add the secret `OPENAI_API_KEY` under Settings > Secrets and variables > Actions; the action installs the Codex CLI and its API proxy at the pinned version 0.165.0 (`codex-version`), and Codex runs with `project_doc_max_bytes=0`, so it does not load `AGENTS.md` or `AGENTS.override.md` from the pull request head as instructions (the briefs name the base commit's rules); optionally set the repository variables `CODEX_REVIEW_MODEL` and `CODEX_REVIEW_EFFORT` (empty uses the Codex defaults) and create the labels `review:docs` and `review:implementation`. The review runs only for branches of this repository, because pull requests from forks receive no secrets. To repeat a review, re-run the workflow run, or convert the pull request to a draft and mark it ready for review again.
+
+### Fault injection and lock drift
+
+*Status: Verified (Windows) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md), [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
+
+`-FaultInjection` values exist only to verify the exit codes; lock-file drift after restore fails with 30 (solution) or 70 (consumer).
+
+## 7. Debian/ARM64
+
+### Target preparation, transfer with a git bundle, the run command
+
+*Status: Verified (Debian/ARM64) – [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
+
+On Windows, create and copy the bundle:
+
+```powershell
+git bundle create weatherparser.bundle <branch> <target branch>
+git bundle verify weatherparser.bundle
+scp weatherparser.bundle <target>:<directory>/
+```
+
+On the target:
+
+```bash
+cd <directory>
+git clone weatherparser.bundle weatherparser
+cd weatherparser
+git checkout --detach origin/<branch>
+git branch --force ci-commit origin/<branch>
+git branch --force ci-target origin/<target branch>
+bash scripts/prepare-debian-arm64.sh > env.sh
+. ./env.sh
+pwsh ./scripts/ci-local.ps1 -Commit ci-commit -TargetRef ci-target -RunSettings coverage.runsettings
+```
+
+The bundle clone has no checked-out branch, so the checkout provides `scripts/`. `ci-local.ps1` clones the repository with `--no-local`, which copies local branches only; the two `ci-*` branches make the candidate and the target available even when the target is not an ancestor of the candidate (the hosted workflow creates the same branches). Without them the target pass fails with exit 20 (found in P2.11).
+
+Back on Windows, copy the run directory:
+
+```powershell
+scp -r <target>:<directory>/weatherparser/artifacts/ci/<run> artifacts/ci/arm64-<run>
+```
+
+Never `-Bootstrap` on the target.
+
+### `-CollectOnly`/`-ResumeFrom` fallback
+
+*Status: Verified (Windows, Debian/ARM64) – [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
+
+If conversion cannot run on the target, use `-CollectOnly` there, copy the run directory back, and run `pwsh ./scripts/ci-local.ps1 -ResumeFrom <copied run directory>` on Windows.
+
+Authorization note: run on a target only with the owner's recorded authorization (AGENTS.md).
+
+## 8. Troubleshooting
+
+### NETSDK1141 in Visual Studio
+
+*Status: historical remedy, not reproducible on demand – [P1.03](docs/p1/P1_03_BUILD_SETUP.md)*
+
+If Visual Studio reports NETSDK1141, run `dotnet build-server shutdown` and restart Visual Studio completely.
+
+### Stale cached package
+
+See [section 4](#4-pack-and-package-consumer).
+
+### Lock-file drift
+
+Exit codes 30 (solution) or 70 (consumer). Restore with `--locked-mode` and review lock changes; see [section 6](#6-local-ci).
+
+*Status: Verified (Windows) – [P1.09 record](docs/p1/P1_09_LOCAL_CI.md)*
+
+### Exit 80 "Run dotnet tool restore"
+
+Older script revisions shared the per-user tool resolver cache, so a deleted run folder broke later runs; the script now isolates `DOTNET_CLI_HOME` per run ([P1.10 record, finding 2](docs/p1/P1_10_DEBIAN_ARM64.md#findings)).
+
+*Status: Verified (Windows, Debian/ARM64) – [P1.10 record](docs/p1/P1_10_DEBIAN_ARM64.md)*
+
+## 9. Limits
+
+* Hosted CI: the GitHub Actions workflow runs the same script for pull requests on hosted runners (see [section 6](#6-local-ci)); its checks cannot be made required on the current plan, and local and hosted runs are recorded separately.
+* Windows evidence is not ARM64 evidence.
+* The Debian/ARM64 evidence covers the package foundation at P1 scope only, not release readiness.
+* Coverage is measured as Microsoft.CodeCoverage native block coverage with the rules of [PHASE_P1_PLAN.md section 5](docs/development/PHASE_P1_PLAN.md).
+* Test counts, coverage figures and hashes are kept in the [records](docs/p1/), not here.
+
+## Version literals
+
+| Literal | Used in | Source of truth |
+|---|---|---|
+| `18.11.0` | `--tool-version` of the runner commands (section 5) | `Microsoft.CodeCoverage` in `Directory.Packages.props` |
+| `1.0.0` | Package file name and stale cache entry path in section 4 | `Version` in `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj` and the `WeatherParser.Parsing` entry in `Directory.Packages.props` |

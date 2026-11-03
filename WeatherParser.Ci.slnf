@@ -1,0 +1,15 @@
+{
+  "solution": {
+    "path": "WeatherParser.slnx",
+    "projects": [
+      "src\\WeatherParser.Parsing\\WeatherParser.Parsing.csproj",
+      "tests\\WeatherParser.Parsing.Tests\\WeatherParser.Parsing.Tests.csproj",
+      "tools\\WeatherParser.Coverage\\WeatherParser.Coverage.csproj",
+      "tests\\WeatherParser.Coverage.Tests\\WeatherParser.Coverage.Tests.csproj",
+      "tools\\WeatherParser.Coverage.Runner\\WeatherParser.Coverage.Runner.csproj",
+      "tests\\WeatherParser.Coverage.Runner.Tests\\WeatherParser.Coverage.Runner.Tests.csproj",
+      "tools\\WeatherParser.SchemaGeneration\\WeatherParser.SchemaGeneration.csproj",
+      "tests\\WeatherParser.SchemaGeneration.Tests\\WeatherParser.SchemaGeneration.Tests.csproj"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>WeatherParser.Cli.SignalHost</AssemblyName>
+    <RootNamespace>WeatherParser.Cli.SignalHost</RootNamespace>
+  </PropertyGroup>
+  <!-- Test host of P3.09: the CLI's signal handling compiled from its source files, so the host needs no reference to the CLI or to its local library package. -->
+  <ItemGroup>
+    <Compile Include="../../examples/WeatherParser.Cli/Lifetime/IShutdownSignal.cs" Link="Lifetime/IShutdownSignal.cs" />
+    <Compile Include="../../examples/WeatherParser.Cli/Lifetime/ShutdownSignal.cs" Link="Lifetime/ShutdownSignal.cs" />
+    <Compile Include="../../examples/WeatherParser.Cli/Lifetime/IPosixSignalRegistrar.cs" Link="Lifetime/IPosixSignalRegistrar.cs" />
+    <Compile Include="../../examples/WeatherParser.Cli/Lifetime/PosixSignalRegistrar.cs" Link="Lifetime/PosixSignalRegistrar.cs" />
+    <Compile Include="../../examples/WeatherParser.Cli/Lifetime/IProcessTerminator.cs" Link="Lifetime/IProcessTerminator.cs" />
+    <Compile Include="../../examples/WeatherParser.Cli/Lifetime/ProcessTerminator.cs" Link="Lifetime/ProcessTerminator.cs" />
+    <Compile Include="../../examples/WeatherParser.Cli/Diagnostics/CliErrorIds.cs" Link="Diagnostics/CliErrorIds.cs" />
+    <Compile Include="../../examples/WeatherParser.Cli/Diagnostics/ExitCodes.cs" Link="Diagnostics/ExitCodes.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>
