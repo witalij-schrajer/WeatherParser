@@ -22,6 +22,10 @@ public sealed class PackageValidationTests
     {
         _dir = Path.Combine(Path.GetTempPath(), "wp-pv-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_dir);
+        
+        // Copy global.json to ensure the pinned SDK is used
+        var globalJsonPath = Path.Combine(PackageArtifacts.RepositoryRoot, "global.json");
+        File.Copy(globalJsonPath, Path.Combine(_dir, "global.json"));
     }
 
     [TestCleanup]
@@ -54,15 +58,17 @@ public sealed class PackageValidationTests
 
         using var process = Process.Start(startInfo)!;
         
+        var stdoutTask = process.StandardOutput.ReadToEndAsync();
         var stderrTask = process.StandardError.ReadToEndAsync();
-        var stdout = process.StandardOutput.ReadToEnd();
-        var output = stdout + stderrTask.Result;
-
+        
         if (!process.WaitForExit(300000))
         {
             process.Kill(true);
+            process.WaitForExit();
             Assert.Fail("dotnet did not finish within 300 s");
         }
+        
+        var output = stdoutTask.Result + stderrTask.Result;
         return (process.ExitCode, output);
     }
 
