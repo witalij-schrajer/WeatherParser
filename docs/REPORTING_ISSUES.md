@@ -1,5 +1,7 @@
 # Reporting a problem
 
+German translation: [de/REPORTING_ISSUES.md](de/REPORTING_ISSUES.md).
+
 ## Where to report
 
 Report problems and requests in the GitHub issues of this repository: <https://github.com/witalij-schrajer/WeatherParser/issues>. The repository is private, so only people with access to it can open and read issues. If you use the library without repository access, ask the person who gave you the package to report it for you.

@@ -1,5 +1,7 @@
 # WeatherParser Operations
 
+German translation: [de/OPERATIONS.md](de/OPERATIONS.md).
+
 **Status (2026-10-31): written in P9.07 (deployment) and P9.08 (the rest of the guide); the examples carry their verification status (section 11); checked on the NanoPi R76S in P9.10 on release candidate `86e77eb` (2026-11-01 to 2026-11-02).** This guide covers the example CLI `WeatherParser` on Debian 13 ARM64 (`linux-arm64`, for example the NanoPi R76S). The library itself is consumed as a NuGet package and needs no deployment of its own; its consumers follow the README sections of each source. Every host, ID, path and topic below is a placeholder.
 
 ## 1. Deployment (RL-07 A)

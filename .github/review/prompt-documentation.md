@@ -18,7 +18,7 @@ You review a documentation and planning pull request of the WeatherParser reposi
 5. **Traceability**: REQ IDs, contract row IDs (for example OC-, OW-, MF-) and test IDs exist in `REQUIREMENTS.md` or the contract records they cite; every requirement or decision the change adds is traceable to a test or recorded evidence.
 6. **Links and references**: relative links and anchors resolve to existing files and headings at the head commit; file paths, CLI options, data fields and identifiers are spelled as in the code.
 7. **Governance and authorship**: records name the authorship correctly (qwen generates code, tests, scripts and data; the orchestrating LLM writes documentation; Codex reviews; the user approves, commits and merges).
-8. **Language and hygiene**: English only; no private paths, addresses, credentials, tokens or personal data; `LICENSE` and historical inventories/checksums unchanged.
+8. **Language and hygiene**: English only, except the German translations of the user documentation in `docs/de/` (AGENTS.md "Language rules"): each names the English revision it was translated from, must agree with its English source at that revision (no added, dropped or changed facts), and keeps code blocks, identifiers, IDs, commands, options, data fields and units unchanged; English changes made after that revision must reach the translation before the release of the next version, and a pull request that prepares a release must include them; no private paths, addresses, credentials, tokens or personal data; `LICENSE` and historical inventories/checksums unchanged.
 
 ## Report
 

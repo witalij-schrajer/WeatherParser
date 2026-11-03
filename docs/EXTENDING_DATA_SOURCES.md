@@ -1,5 +1,7 @@
 # Adding a data source
 
+German translation: [de/EXTENDING_DATA_SOURCES.md](de/EXTENDING_DATA_SOURCES.md).
+
 This guide is for developers who want WeatherParser to read another weather data source. It names what has to be decided before any code is written, how the existing sources are built, which tests and evidence are required, and what has to be documented. It describes requirements and existing patterns. It does not approve a new source, and no source beyond DWD CDC observations, OsthessenWetter and DWD MOSMIX exists in the library.
 
 ## 1. Two ways to add a source
@@ -99,7 +101,7 @@ In this repository every change is test-first (Red, Green, Refactor) with MSTest
 
 ## 8. Documentation
 
-Document in the same change: the source in the README library reference (call, options, limits, exported quantities, error and notice IDs, source conditions and retrieval guidance), the new registrations in the [library usage guide](LIBRARY_USAGE.md), the data source and its attribution in the README "Data sources" section, the change in [CHANGELOG.md](../CHANGELOG.md), and any new or changed requirement in [REQUIREMENTS.md](../REQUIREMENTS.md). An open decision stays marked as open.
+Document in the same change: the source in the README library reference (call, options, limits, exported quantities, error and notice IDs, source conditions and retrieval guidance), the new registrations in the [library usage guide](LIBRARY_USAGE.md), the data source and its attribution in the README "Data sources" section, the change in [CHANGELOG.md](../CHANGELOG.md), and any new or changed requirement in [REQUIREMENTS.md](../REQUIREMENTS.md). An open decision stays marked as open. The English documents are authoritative; their German translations in [docs/de](de/README.md) are brought up to date before the next version.
 
 ## 9. Proposing a source
 

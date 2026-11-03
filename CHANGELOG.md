@@ -30,6 +30,7 @@ Documentation:
 - [docs/EXTENDING_DATA_SOURCES.md](docs/EXTENDING_DATA_SOURCES.md): what adding a data source requires.
 - [docs/REPORTING_ISSUES.md](docs/REPORTING_ISSUES.md) and the issue forms for bug reports and data source requests.
 - The README is organized around library use; the example CLI reference follows the library reference.
+- German translation of the user documentation in [docs/de/](docs/de/README.md): the README (without the contributor sections), the library usage guide, the operating guide, the compatibility overview, the issue reporting guide and the data source guide. English remains authoritative; the translation is updated before every new version (user decision dated 2026-11-03).
 
 ### Compatibility
 
