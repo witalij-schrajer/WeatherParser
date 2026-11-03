@@ -1,6 +1,6 @@
 # P3.12 – P3 Acceptance Record
 
-**Status (2026-10-31): P3 accepted by the user on 2026-10-31 on candidate `ec915fc` ("Accept, no rerun", section 6), after the user's pull request review was fixed and the automatic Codex review of pull request #16 reached 0 findings (section 7); P3 is complete: the user merged pull request #16 into `develop` on 2026-10-31 (merge commit `2ba5502`, A11, section 7); P9 starts only on a separate instruction.** Plan: [P3_12_ACCEPTANCE_HANDOFF_PLAN.md](P3_12_ACCEPTANCE_HANDOFF_PLAN.md). Handoff: [P9_HANDOFF.md](P9_HANDOFF.md).
+**Status (2026-10-31): P3 accepted by the user on 2026-10-31 on candidate `ec915fc` ("Accept, no rerun", section 6), after the user's pull request review was fixed and the automatic Codex review of pull request #16 reached 0 findings (section 7); P3 is complete: the user merged pull request #16 into `develop` on 2026-10-31 (merge commit `2ba5502`, A11, section 7); P9 starts only on a separate instruction.** Plan: [P3_12_ACCEPTANCE_HANDOFF_PLAN.md](../development/p3/P3_12_ACCEPTANCE_HANDOFF_PLAN.md). Handoff: [P9_HANDOFF.md](P9_HANDOFF.md).
 
 ## 1. Review identity (A1)
 

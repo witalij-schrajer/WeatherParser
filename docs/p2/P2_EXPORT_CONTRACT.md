@@ -2,7 +2,7 @@
 
 **Status (2026-10-20): P2.02 decisions C-01 to C-15 approved by the user (section 1); v1 stays provisional until P2 acceptance (C-03). Implementation of the slice follows in P2.02 S1–S7.**
 
-This record holds the public export contract decisions of phase P2 ([phase plan](../../PHASE_P2_PLAN.md), [P2.02 plan](P2_02_CONTRACT_AND_FIRST_SLICE_PLAN.md)); later steps add their decisions here. Drafted by qwen3-coder:30b from the orchestrating agent's decision brief and corrected by qwen once; the orchestrating agent removed output markers, restored dropped section 6 bullets and corrected the XML example text. User review (2026-10-20): qwen redefined C-05 (nullable scalars as the single presence source in both formats) and C-03/C-13 (v1 provisional until P2 acceptance); the orchestrating agent removed output markers again.
+This record holds the public export contract decisions of phase P2 ([phase plan](../development/PHASE_P2_PLAN.md), [P2.02 plan](../development/p2/P2_02_CONTRACT_AND_FIRST_SLICE_PLAN.md)); later steps add their decisions here. Drafted by qwen3-coder:30b from the orchestrating agent's decision brief and corrected by qwen once; the orchestrating agent removed output markers, restored dropped section 6 bullets and corrected the XML example text. User review (2026-10-20): qwen redefined C-05 (nullable scalars as the single presence source in both formats) and C-03/C-13 (v1 provisional until P2 acceptance); the orchestrating agent removed output markers again.
 
 ## 1. Approval
 

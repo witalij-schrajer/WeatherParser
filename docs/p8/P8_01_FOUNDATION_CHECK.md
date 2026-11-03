@@ -1,6 +1,6 @@
 # P8.01 – Foundation Check
 
-**Status (2026-10-28): complete, outcome READY (section 5).** Plan: [P8_01_FOUNDATION_CHECK_PLAN.md](P8_01_FOUNDATION_CHECK_PLAN.md).
+**Status (2026-10-28): complete, outcome READY (section 5).** Plan: [P8_01_FOUNDATION_CHECK_PLAN.md](../development/p8/P8_01_FOUNDATION_CHECK_PLAN.md).
 
 User instruction (2026-10-28, chat): "P8 implementation".
 

@@ -2,7 +2,7 @@
 
 **Status (2026-10-20): executed; outcome READY. P2 implementation is authorized; P2.02 starts on a separate instruction.**
 
-This record executes [the P2.01 plan](P2_01_FOUNDATION_CHECK_PLAN.md) and section 1 of [PHASE_P2_PLAN.md](../../PHASE_P2_PLAN.md).
+This record executes [the P2.01 plan](../development/p2/P2_01_FOUNDATION_CHECK_PLAN.md) and section 1 of [PHASE_P2_PLAN.md](../development/PHASE_P2_PLAN.md).
 
 ## 1. Authorization
 
@@ -13,7 +13,7 @@ This record executes [the P2.01 plan](P2_01_FOUNDATION_CHECK_PLAN.md) and sectio
 
 ## 2. Accepted records unchanged
 
-`git diff --stat 2cbee61 HEAD -- docs/p1 PHASE_P1_PLAN.md` returned no changes. Inspected acceptance/handoff document revision: `2cbee612df1159c8d1a9415223d3a1db95f979ca`. Records: [P1 acceptance record](../p1/P1_12_ACCEPTANCE.md), [P2 handoff](../p1/P2_HANDOFF.md), [P1 plan](../../PHASE_P1_PLAN.md).
+`git diff --stat 2cbee61 HEAD -- docs/p1 PHASE_P1_PLAN.md` returned no changes. Inspected acceptance/handoff document revision: `2cbee612df1159c8d1a9415223d3a1db95f979ca`. Records: [P1 acceptance record](../p1/P1_12_ACCEPTANCE.md), [P2 handoff](../p1/P2_HANDOFF.md), [P1 plan](../development/PHASE_P1_PLAN.md).
 
 ## 3. Commits since the inspected revision
 

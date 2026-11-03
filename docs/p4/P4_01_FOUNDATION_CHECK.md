@@ -2,7 +2,7 @@
 
 **Status (2026-10-21): executed; outcome READY; Codex review closed with 0 findings (section 11). P4.02 starts on a separate instruction.**
 
-Executes [the P4.01 plan](P4_01_FOUNDATION_CHECK_PLAN.md) and section 1 of [PHASE_P4_PLAN.md](../../PHASE_P4_PLAN.md).
+Executes [the P4.01 plan](../development/p4/P4_01_FOUNDATION_CHECK_PLAN.md) and section 1 of [PHASE_P4_PLAN.md](../development/PHASE_P4_PLAN.md).
 
 ## 1. Authorization
 

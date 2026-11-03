@@ -1,6 +1,6 @@
 # P1.08 – Coverage Evaluation: Implementation Plan
 
-**Status: implemented, not yet accepted (2026-10-19).** Code was generated with the local qwen3-coder:30b model from this plan and then reviewed and corrected; see [Implementation notes](#8-implementation-notes-2026-10-19). P1.08 acceptance is still pending. Drafted with the local qwen2.5-coder model and reviewed against [AGENTS.md](../../AGENTS.md), [REQUIREMENTS.md](../../REQUIREMENTS.md) (REQ-086) and the [P1 detailed plan](../../PHASE_P1_PLAN.md), which take precedence. Implements the coverage decision dated 2026-10-19: native Microsoft.CodeCoverage block coverage is the only metric. Replaces the earlier draft `P1_08_PLAN.qwen.md`.
+**Status: implemented, not yet accepted (2026-10-19).** Code was generated with the local qwen3-coder:30b model from this plan and then reviewed and corrected; see [Implementation notes](#8-implementation-notes-2026-10-19). P1.08 acceptance is still pending. Drafted with the local qwen2.5-coder model and reviewed against [AGENTS.md](../../AGENTS.md), [REQUIREMENTS.md](../../REQUIREMENTS.md) (REQ-086) and the [P1 detailed plan](../development/PHASE_P1_PLAN.md), which take precedence. Implements the coverage decision dated 2026-10-19: native Microsoft.CodeCoverage block coverage is the only metric. Replaces the earlier draft `P1_08_PLAN.qwen.md`.
 
 ## 1. Goal and Root Cause
 
@@ -285,7 +285,7 @@ The rule results are structured with per-check verdicts and English diagnostics.
 
 ### P1.08 closure results (2026-10-19, Windows x64)
 
-Implemented according to the [closure plan](P1_08B_COVERAGE_GATE_COMPLETION_PLAN.md). Not yet committed at the time of writing; acceptance is pending review.
+Implemented according to the [closure plan](../development/p1/P1_08B_COVERAGE_GATE_COMPLETION_PLAN.md). Not yet committed at the time of writing; acceptance is pending review.
 
 - **Pinned tool (closure decision):** `dotnet-coverage` 18.11.0 is published on nuget.org and pinned in `.config/dotnet-tools.json`, matching `Microsoft.CodeCoverage` 18.11.0. The SDK 10 default created the manifest at the repository root; it was moved to `.config/` as planned. Its license is the proprietary Microsoft Software License Terms – Microsoft .NET Library (developer tool, not redistributed; see `DEPENDENCIES.md`).
 - **Counter identity:** converting the P1.07 raw report with the pinned 18.11.0 gives exactly the earlier counters: `WeatherParser.Parsing.dll` 57/33, `WeatherParser.Parsing.Tests.dll` 189/4.

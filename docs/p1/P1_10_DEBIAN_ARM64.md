@@ -1,6 +1,6 @@
 # P1.10 – Debian/ARM64 Package Foundations: Result Record
 
-**Status (2026-10-19): implemented and verified on Windows x64 and on the NanoPi R76S (Debian 13 ARM64); gate PASSED on ARM64; accepted by the user ([acceptance](#p110-acceptance-2026-10-19)).** Implements the [P1.10 plan](P1_10_DEBIAN_ARM64_PLAN.md).
+**Status (2026-10-19): implemented and verified on Windows x64 and on the NanoPi R76S (Debian 13 ARM64); gate PASSED on ARM64; accepted by the user ([acceptance](#p110-acceptance-2026-10-19)).** Implements the [P1.10 plan](../development/p1/P1_10_DEBIAN_ARM64_PLAN.md).
 
 ## Decisions (user, 2026-10-19)
 

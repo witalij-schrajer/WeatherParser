@@ -2,7 +2,7 @@
 
 **Status (2026-10-28): outcome READY on candidate `a36d15a` (S0 to S5, sections 2 to 8) and, after the PR #11 review fixes, on candidate `2f1115b` (section 9: S1 Windows, S2 hosted CI run 40736417671 and S3 NanoPi R76S with the authorized rerun repeated and passed; S4 not repeated, unchanged paths).**
 
-Step plan: [P7_11_INTEGRATED_VERIFICATION_PLAN.md](P7_11_INTEGRATED_VERIFICATION_PLAN.md). Contract: [P7_FORECAST_CONTRACT.md](P7_FORECAST_CONTRACT.md) (MF-05, MF-07, MF-17). Phase record: [P7_VERIFICATION.md](P7_VERIFICATION.md).
+Step plan: [P7_11_INTEGRATED_VERIFICATION_PLAN.md](../development/p7/P7_11_INTEGRATED_VERIFICATION_PLAN.md). Contract: [P7_FORECAST_CONTRACT.md](P7_FORECAST_CONTRACT.md) (MF-05, MF-07, MF-17). Phase record: [P7_VERIFICATION.md](P7_VERIFICATION.md).
 
 ## 1. Inputs
 

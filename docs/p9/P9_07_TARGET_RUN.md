@@ -1,6 +1,6 @@
 # P9.07 – NanoPi R76S Target Run (2026-10-31)
 
-Retained procedure and transcript of the S4 target check of [P9.07](P9_07_CLI_DEPLOYMENT_PLAN.md), recorded in [P9_VERIFICATION.md](P9_VERIFICATION.md) section 8. Written by the orchestrating agent; the script below is the one that ran (kept here as evidence, not as a maintained script). The only change to the transcript is the login user's home folder, shown as `~`.
+Retained procedure and transcript of the S4 target check of [P9.07](../development/p9/P9_07_CLI_DEPLOYMENT_PLAN.md), recorded in [P9_VERIFICATION.md](P9_VERIFICATION.md) section 8. Written by the orchestrating agent; the script below is the one that ran (kept here as evidence, not as a maintained script). The only change to the transcript is the login user's home folder, shown as `~`.
 
 ## 1. Inputs
 

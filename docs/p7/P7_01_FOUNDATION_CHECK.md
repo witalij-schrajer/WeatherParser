@@ -1,6 +1,6 @@
 # P7.01 – Foundation Check
 
-**Status (2026-10-26): complete, outcome READY (section 5).** Plan: [P7_01_FOUNDATION_CHECK_PLAN.md](P7_01_FOUNDATION_CHECK_PLAN.md).
+**Status (2026-10-26): complete, outcome READY (section 5).** Plan: [P7_01_FOUNDATION_CHECK_PLAN.md](../development/p7/P7_01_FOUNDATION_CHECK_PLAN.md).
 
 User instruction (2026-10-26, chat): "Start the implementation of the phase P7. Execute step by step. Commit and push the results of every step".
 

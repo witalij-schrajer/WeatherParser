@@ -230,13 +230,27 @@ public class ReadmeCliSectionTests
             Regex.Matches(section, regex).Should().BeEmpty("no private paths should be present");
         }
 
-        var urls = Regex.Matches(section, @"https?://([A-Za-z0-9.-]+)")
-            .Select(match => match.Groups[1].Value)
+        // The README links repository documentation absolutely, so the packed readme can navigate.
+        var repositoryDocumentationPrefixes = new[]
+        {
+            "https://github.com/witalij-schrajer/WeatherParser/blob/develop/",
+            "https://github.com/witalij-schrajer/WeatherParser/tree/develop/"
+        };
+
+        var urls = Regex.Matches(section, @"https?://[^\s)>\]]+")
+            .Select(match => match.Value)
             .ToList();
 
         var allowedHosts = new HashSet<string> { "example.invalid", "opendata.dwd.de", "www.dwd.de", "osthessen-wetter.de" };
-        foreach (var host in urls)
+        foreach (var url in urls)
         {
+            // Repository documentation links skip the host check.
+            if (repositoryDocumentationPrefixes.Any(prefix => url.StartsWith(prefix, StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
+            var host = Regex.Match(url, @"^https?://([A-Za-z0-9.-]+)").Groups[1].Value;
             allowedHosts.Should().Contain(host, $"URL host '{host}' is not allowed");
         }
     }

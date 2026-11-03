@@ -1,6 +1,6 @@
 # P9.01 – Foundation Check
 
-**Status (2026-10-31): complete, outcome READY (section 7).** Plan: [P9_01_FOUNDATION_CHECK_PLAN.md](P9_01_FOUNDATION_CHECK_PLAN.md).
+**Status (2026-10-31): complete, outcome READY (section 7).** Plan: [P9_01_FOUNDATION_CHECK_PLAN.md](../development/p9/P9_01_FOUNDATION_CHECK_PLAN.md).
 
 User instruction (2026-10-31, chat): "P9 Execution".
 

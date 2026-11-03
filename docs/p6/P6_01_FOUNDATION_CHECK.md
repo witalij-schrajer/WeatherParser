@@ -1,6 +1,6 @@
 # P6.01 – Foundation Check
 
-**Status (2026-10-25): complete, outcome READY (section 5).** Plan: [P6_01_FOUNDATION_CHECK_PLAN.md](P6_01_FOUNDATION_CHECK_PLAN.md).
+**Status (2026-10-25): complete, outcome READY (section 5).** Plan: [P6_01_FOUNDATION_CHECK_PLAN.md](../development/p6/P6_01_FOUNDATION_CHECK_PLAN.md).
 
 User instruction (2026-10-25, chat): "I have merged the PR. start the p6 implementation. Executes step by step, commit and push changes after each step".
 

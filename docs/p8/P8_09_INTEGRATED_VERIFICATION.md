@@ -1,6 +1,6 @@
 # P8.09 – Integrated Verification
 
-**Status (2026-10-29): complete, outcome READY on candidate `290a0eb` (Windows, hosted CI and the NanoPi R76S, section 5) and, after the test-only PR #14 review fixes, READY again on candidate `ce166eb` (section 6).** Plan: [P8_09_INTEGRATED_VERIFICATION_PLAN.md](P8_09_INTEGRATED_VERIFICATION_PLAN.md).
+**Status (2026-10-29): complete, outcome READY on candidate `290a0eb` (Windows, hosted CI and the NanoPi R76S, section 5) and, after the test-only PR #14 review fixes, READY again on candidate `ce166eb` (section 6).** Plan: [P8_09_INTEGRATED_VERIFICATION_PLAN.md](../development/p8/P8_09_INTEGRATED_VERIFICATION_PLAN.md).
 
 ## 1. Candidate
 

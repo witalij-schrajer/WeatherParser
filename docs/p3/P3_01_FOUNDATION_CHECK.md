@@ -1,6 +1,6 @@
 # P3.01 – Foundation Check
 
-**Status (2026-10-29): complete, outcome READY (section 7).** Plan: [P3_01_FOUNDATION_CHECK_PLAN.md](P3_01_FOUNDATION_CHECK_PLAN.md).
+**Status (2026-10-29): complete, outcome READY (section 7).** Plan: [P3_01_FOUNDATION_CHECK_PLAN.md](../development/p3/P3_01_FOUNDATION_CHECK_PLAN.md).
 
 User instruction (2026-10-29, chat): "P3 Implmentation".
 

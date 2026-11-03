@@ -1,6 +1,6 @@
 # P4.12 – P4 Acceptance Record
 
-**Status (2026-10-24): the evidence audit (section 5) accepts the new implementation candidate `b6bc47f`, which carries the A10 review fixes (section 8.1). P4.11 S1 to S3 were rerun on it with outcome READY, and S4 was not repeated (SC-16). A2, A5 and the P5 handoff (A6) are refreshed. P4 was accepted by the user on 2026-10-24 (section 6), and the status documents are updated (section 7). P4 is complete: pull request #5 merged into `develop` on 2026-10-24 (merge commit `95bcb1e`, section 8.3).** Plan: [P4_12_ACCEPTANCE_HANDOFF_PLAN.md](P4_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
+**Status (2026-10-24): the evidence audit (section 5) accepts the new implementation candidate `b6bc47f`, which carries the A10 review fixes (section 8.1). P4.11 S1 to S3 were rerun on it with outcome READY, and S4 was not repeated (SC-16). A2, A5 and the P5 handoff (A6) are refreshed. P4 was accepted by the user on 2026-10-24 (section 6), and the status documents are updated (section 7). P4 is complete: pull request #5 merged into `develop` on 2026-10-24 (merge commit `95bcb1e`, section 8.3).** Plan: [P4_12_ACCEPTANCE_HANDOFF_PLAN.md](../development/p4/P4_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P5_HANDOFF.md](P5_HANDOFF.md).
 
 ## 1. Review identity (A1)
 

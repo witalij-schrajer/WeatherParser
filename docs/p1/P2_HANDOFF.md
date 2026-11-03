@@ -31,7 +31,7 @@
 - Exact 100% accepts exactly 100%
 - Never bootstrap again
 - Compare against a deliberate committed target remeasured by the two-pass run
-- Link: [PHASE_P1_PLAN.md section 5](../../PHASE_P1_PLAN.md)
+- Link: [PHASE_P1_PLAN.md section 5](../development/PHASE_P1_PLAN.md)
 
 ## 4. P2 scope
 

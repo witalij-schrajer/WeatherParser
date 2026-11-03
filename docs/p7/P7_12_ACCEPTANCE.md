@@ -1,6 +1,6 @@
 # P7.12 – P7 Acceptance Record
 
-**Status (2026-10-28): the evidence audit (section 5) accepts the implementation candidate `a36d15a` and, after the PR #11 review fixes, `2f1115b` (section 11). P7 was accepted by the user on 2026-10-28 on candidate `2f1115b` (A7, section 6); the user marked pull request #11 ready for review on 2026-10-28 (A9, section 8). P7 is complete: the user merged pull request #11 into `develop` on 2026-10-28 (merge commit `20b2ef0`, A11, section 8).** Plan: [P7_12_ACCEPTANCE_HANDOFF_PLAN.md](P7_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P8_HANDOFF.md](P8_HANDOFF.md).
+**Status (2026-10-28): the evidence audit (section 5) accepts the implementation candidate `a36d15a` and, after the PR #11 review fixes, `2f1115b` (section 11). P7 was accepted by the user on 2026-10-28 on candidate `2f1115b` (A7, section 6); the user marked pull request #11 ready for review on 2026-10-28 (A9, section 8). P7 is complete: the user merged pull request #11 into `develop` on 2026-10-28 (merge commit `20b2ef0`, A11, section 8).** Plan: [P7_12_ACCEPTANCE_HANDOFF_PLAN.md](../development/p7/P7_12_ACCEPTANCE_HANDOFF_PLAN.md); handoff: [P8_HANDOFF.md](P8_HANDOFF.md).
 
 ## 1. Review identity (A1)
 

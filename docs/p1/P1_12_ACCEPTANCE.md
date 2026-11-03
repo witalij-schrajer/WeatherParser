@@ -1,6 +1,6 @@
 # P1.12 – P1 Acceptance Record
 
-**Audit decision (2026-10-19): ACCEPTED for the P1 package/test/coverage foundation. Platform runtime status: PROVEN for the P1-scope checks executed on the NanoPi R76S (Debian 13 ARM64). P1 accepted by the user on 2026-10-19 ([acceptance](#p1-acceptance-2026-10-19)).** Implements the [P1.12 plan](P1_12_ACCEPTANCE_HANDOFF_PLAN.md); the next phase is described in the [P2 handoff](P2_HANDOFF.md).
+**Audit decision (2026-10-19): ACCEPTED for the P1 package/test/coverage foundation. Platform runtime status: PROVEN for the P1-scope checks executed on the NanoPi R76S (Debian 13 ARM64). P1 accepted by the user on 2026-10-19 ([acceptance](#p1-acceptance-2026-10-19)).** Implements the [P1.12 plan](../development/p1/P1_12_ACCEPTANCE_HANDOFF_PLAN.md); the next phase is described in the [P2 handoff](P2_HANDOFF.md).
 
 This is acceptance of the P1 foundation only, not release readiness (P9), not full hardware acceptance (P9) and not a hosted GitHub CI result.
 

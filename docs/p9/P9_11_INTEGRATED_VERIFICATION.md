@@ -1,6 +1,6 @@
 # P9.11 – Integrated Verification of the Release Candidate
 
-**Status (2026-11-02): outcome READY on release candidate `89a83d1` on Windows, hosted CI and the NanoPi R76S (section 5); the P9.10 target evidence of `86e77eb` carries over by the user's decision on the README correction, because the compiled library and CLI are unchanged since `86e77eb` (sections 4 and 4a). `89a83d1` holds the fixes of the pull request review round 2 (a build-input change of `scripts/check-promotion.ps1` and its tests); `41bcffe` was the candidate before (section 3).** Plan: [P9_11_INTEGRATED_VERIFICATION_AND_ACCEPTANCE_PLAN.md](P9_11_INTEGRATED_VERIFICATION_AND_ACCEPTANCE_PLAN.md). Acceptance record: [P9_11_ACCEPTANCE.md](P9_11_ACCEPTANCE.md). Written by the orchestrating agent.
+**Status (2026-11-02): outcome READY on release candidate `89a83d1` on Windows, hosted CI and the NanoPi R76S (section 5); the P9.10 target evidence of `86e77eb` carries over by the user's decision on the README correction, because the compiled library and CLI are unchanged since `86e77eb` (sections 4 and 4a). `89a83d1` holds the fixes of the pull request review round 2 (a build-input change of `scripts/check-promotion.ps1` and its tests); `41bcffe` was the candidate before (section 3).** Plan: [P9_11_INTEGRATED_VERIFICATION_AND_ACCEPTANCE_PLAN.md](../development/p9/P9_11_INTEGRATED_VERIFICATION_AND_ACCEPTANCE_PLAN.md). Acceptance record: [P9_11_ACCEPTANCE.md](P9_11_ACCEPTANCE.md). Written by the orchestrating agent.
 
 ## 1. Candidates, target and decisions
 

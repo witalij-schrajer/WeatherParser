@@ -24,6 +24,13 @@ Example CLI `WeatherParser` (not part of the package; built from source against 
 - Commands `--SelectDWD`, `--ParseDWD`, `--ParseOstHessen`, `--SelectMOSMIX`, `--ParseMOSMIX --Product MOSMIX_S|MOSMIX_L`; JSON, XML and MQTT output; MQTT transport with TLS and certificate validation, credentials from a protected file or the environment; one command per invocation with exit codes 0 to 4; cancellation by SIGINT, SIGTERM and Ctrl+C and a command deadline (P3).
 - Operating guide [docs/OPERATIONS.md](docs/OPERATIONS.md) for Debian 13 ARM64 (P9.07, P9.08).
 
+Documentation:
+
+- [docs/LIBRARY_USAGE.md](docs/LIBRARY_USAGE.md): a complete library walkthrough from the package file to a working application, whose example is compiled and run offline by the package tests (`LibraryUsageExampleTests`).
+- [docs/EXTENDING_DATA_SOURCES.md](docs/EXTENDING_DATA_SOURCES.md): what adding a data source requires.
+- [docs/REPORTING_ISSUES.md](docs/REPORTING_ISSUES.md) and the issue forms for bug reports and data source requests.
+- The README is organized around library use; the example CLI reference follows the library reference.
+
 ### Compatibility
 
 | Platform | Status |

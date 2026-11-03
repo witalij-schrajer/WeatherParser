@@ -2,7 +2,7 @@
 
 **Status (2026-10-24): executed; outcome READY (section 10); Codex review in section 11; checkpoint commit on the user's request. P5.02 starts on a separate instruction.**
 
-Executes [the P5.01 plan](P5_01_FOUNDATION_CHECK_PLAN.md) and section 1 of [PHASE_P5_PLAN.md](../../PHASE_P5_PLAN.md).
+Executes [the P5.01 plan](../development/p5/P5_01_FOUNDATION_CHECK_PLAN.md) and section 1 of [PHASE_P5_PLAN.md](../development/PHASE_P5_PLAN.md).
 
 ## 1. Authorization
 

@@ -2,7 +2,7 @@
 
 **Status (2026-10-24): complete. S0 to S5 executed on candidate `98122e5` (outcome READY, section 8). The A10 review fixes made `b6bc47f` the new implementation candidate; S1 to S3 were rerun on it with outcome READY, S4 not repeated (section 9). Evidence checkpoint `807d29a`, hosted CI run 40026481905 green.**
 
-Plan: [P4_11_INTEGRATED_VERIFICATION_PLAN.md](P4_11_INTEGRATED_VERIFICATION_PLAN.md).
+Plan: [P4_11_INTEGRATED_VERIFICATION_PLAN.md](../development/p4/P4_11_INTEGRATED_VERIFICATION_PLAN.md).
 
 ## 1. Decisions
 
