@@ -129,7 +129,8 @@ dotnet test tests/WeatherParser.Package.Tests/WeatherParser.Package.Tests.csproj
 *Status: Verified (Windows) – [P9 verification record](docs/p9/P9_VERIFICATION.md) section 6*
 
 Decided in the [P9 release contract](docs/p9/P9_RELEASE_CONTRACT.md) (RL-01 A, RL-03 A, RL-04 A, RL-19 A):
-- The package `WeatherParser.Parsing` `1.0.0` contains exactly `lib/net10.0/WeatherParser.Parsing.dll`, `lib/net10.0/WeatherParser.Parsing.xml` (the XML documentation; missing or broken documentation comments fail the library build), `README.md`, `LICENSE`, the export schema and the NuGet metadata files. `dotnet pack` also writes `WeatherParser.Parsing.1.0.0.snupkg` with the PDB. The package carries no repository or project URL (RL-19 A); the repository has been public since 2026-11-03, and setting the URLs is a change of the package metadata that needs its own decision ([record](docs/REPOSITORY_VISIBILITY.md)).
+- The package `WeatherParser.Parsing` (version `1.1.0-dev` on `develop`; the released 1.0.0 is the package validation baseline, `eng/package-validation/`) contains exactly `lib/net10.0/WeatherParser.Parsing.dll`, `lib/net10.0/WeatherParser.Parsing.xml` (the XML documentation; missing or broken documentation comments fail the library build), `README.md`, `LICENSE`, the export schema and the NuGet metadata files. `dotnet pack` also writes `WeatherParser.Parsing.1.1.0-dev.snupkg` with the PDB. The package carries no repository or project URL (RL-19 A); the repository has been public since 2026-11-03, and setting the URLs is a change of the package metadata that needs its own decision ([record](docs/REPOSITORY_VISIBILITY.md)).
+- Package validation (RL-04 A, since 1.0.0): every `dotnet pack` of the library compares the package with the released 1.0.0 in `eng/package-validation/WeatherParser.Parsing.1.0.0.nupkg` and fails on a breaking change of the public API (diagnostics `CP0001` and following, tested by `PackageValidationTests`); a deliberate break needs a new major version and, after its release, that version as the new baseline file.
 - Release builds set `ContinuousIntegrationBuild`, so the DLL contains mapped paths (`/_/…`) instead of the clone directory; `.gitattributes` keeps `README.md` and `LICENSE` LF on every checkout. On Windows, two clean packs of one commit in different directories had identical member contents (P9.05); the zip entry timestamps still differ (file modification and pack times). Packages built on different platforms or with a different runtime hosting the compiler differ (source line endings, the platform newline of the NuGet metadata, the compiler's runtime version recorded in the PDB); the release build therefore runs on one platform and runner type, and the repeat-build proof on Linux belongs to the release procedure (P9.06).
 - `scripts/compare-packages.ps1 -First <a.nupkg> -Second <b.nupkg>` reads and validates both packages first and then compares them: exit 0 `IDENTICAL` (byte-identical), 3 `CONTENT-IDENTICAL` with `TIMESTAMP <member>` lines (same member bytes, different archive bytes), 1 with `ONLY-FIRST`, `ONLY-SECOND` or `DIFFERENT <member>` lines (member names compared case-sensitively), 2 for a missing file, a non-ZIP file or a duplicate member name.
 - `src/WeatherParser.Parsing/PublicApi.txt` lists every exported type (`T:`, with access, kind, modifiers, generic variance and constraints, base type and interfaces), every property with a visible accessor (`P:`, with its type and index parameters), public or protected method (`M:`, accessors and constructors included, with generic arity and constraints, parameter names, directions (`out`, `ref`, `in`) and default values, required modifiers such as the `init` marker, and the access, `static`, `abstract`, `virtual` or `override` modifiers) and field (`F:`, with modifiers and constant values) of the packed assembly, each line followed by the compile-relevant attributes `@Obsolete` (or `@Obsolete(error)`), `@RequiredMember`, `@SetsRequiredMembers`, `@Flags` and `@Extension` where present, sorted ordinally, generated from metadata only by the test helper `PublicApiListing` (behind `IPublicApiListing`); `PublicApiInventoryTests` in the package tests fails on any difference and writes the complete generated listing to `PublicApi.actual.txt` in the test output directory. A deliberate public API change updates the file in the same change after reviewing every changed line. Known limitation: nullable reference annotations (`NullableAttribute`, `NullableContextAttribute`) are not recorded, so a change between `string` and `string?` alone does not change the listing; they affect consumer warnings, not binary compatibility. SDK package validation against a released baseline is a follow-up after the first release (RL-04 A).
@@ -142,7 +143,7 @@ The exact local, uncommitted refresh procedure:
 
 ```powershell
 # Package check: entries, README/LICENSE content and the packed hash
-$package = 'artifacts/local-nuget/WeatherParser.Parsing.1.0.0.nupkg'
+$package = 'artifacts/local-nuget/WeatherParser.Parsing.1.1.0-dev.nupkg'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zip = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $package).Path)
 $zip.Entries.FullName   # only lib/net10.0/WeatherParser.Parsing.dll, lib/net10.0/WeatherParser.Parsing.xml, README.md, LICENSE, schemas/export/v1/weatherparser-export-v1.xsd and NuGet metadata
@@ -156,13 +157,13 @@ $zip.Dispose()
 $packedHash = [Convert]::ToBase64String([Security.Cryptography.SHA512]::HashData([IO.File]::ReadAllBytes((Resolve-Path $package).Path)))
 # Remove the stale cache entry
 $globalPackages = (dotnet nuget locals global-packages --list) -replace '^global-packages:\s*', ''
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $globalPackages 'weatherparser.parsing/1.0.0')
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $globalPackages 'weatherparser.parsing/1.1.0-dev')
 # Refresh the consumer lock; the diff may change only the WeatherParser.Parsing contentHash
 dotnet restore tests/WeatherParser.Package.Tests --force-evaluate
 git diff tests/WeatherParser.Package.Tests/packages.lock.json
 # Locked restore and hash comparison
 dotnet restore tests/WeatherParser.Package.Tests --locked-mode
-$restoredHash = Get-Content (Join-Path $globalPackages 'weatherparser.parsing/1.0.0/weatherparser.parsing.1.0.0.nupkg.sha512')
+$restoredHash = Get-Content (Join-Path $globalPackages 'weatherparser.parsing/1.1.0-dev/weatherparser.parsing.1.1.0-dev.nupkg.sha512')
 if ($restoredHash -ne $packedHash) { throw 'The restored package hash differs from the packed package' }
 # Run the consumer tests
 dotnet test tests/WeatherParser.Package.Tests --configuration Release --no-restore
@@ -449,4 +450,4 @@ Older script revisions shared the per-user tool resolver cache, so a deleted run
 | Literal | Used in | Source of truth |
 |---|---|---|
 | `18.11.0` | `--tool-version` of the runner commands (section 5) | `Microsoft.CodeCoverage` in `Directory.Packages.props` |
-| `1.0.0` | Package file name and stale cache entry path in section 4 | `Version` in `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj` and the `WeatherParser.Parsing` entry in `Directory.Packages.props` |
+| `1.1.0-dev` | Package file name and stale cache entry path in section 4 | `Version` in `src/WeatherParser.Parsing/WeatherParser.Parsing.csproj` and the `WeatherParser.Parsing` entry in `Directory.Packages.props` |

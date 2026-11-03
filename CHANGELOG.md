@@ -2,9 +2,17 @@
 
 All notable changes to WeatherParser are recorded here, one section per version, in the structure of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning 2.0](https://semver.org/spec/v2.0.0.html). From 1.0.0 on, the public API changes only compatibly within a major version; a breaking change needs a new major version.
 
-## [1.0.0] – not yet released
+## [Unreleased]
 
-**Status (2026-11-03): version 1.0.0 in preparation (phase P9.12).** The maintainer set the first released version to 1.0.0 on 2026-11-03 (release contract RL-01 B); the 0.1.0 candidate `89a83d1` was verified but not released. The package `WeatherParser.Parsing` 0.1.0 was built and checksummed by the release build (`.github/workflows/release-build.yml`, run 41507675695 on `89a83d1`); the target acceptance on the NanoPi R76S (P9.10, on candidate `86e77eb`, whose artifacts differ from `89a83d1` only in the README text and commit-derived identity data) is READY ([P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); the integrated verification on `41bcffe` is READY ([P9.11 record](docs/p9/P9_11_INTEGRATED_VERIFICATION.md)); P9 was accepted by the user on 2026-11-02 on `89a83d1` ([P9.11 acceptance record](docs/p9/P9_11_ACCEPTANCE.md)). The package is **not published** on nuget.org or any other feed (user decision of 2026-10-31), and the package carries no repository or project URL (RL-19 A); the repository has been public since 2026-11-03 ([record](docs/REPOSITORY_VISIBILITY.md)). The date is set when the user releases the version.
+Development version `1.1.0-dev` on `develop`.
+
+### Added
+
+- Package validation against the released 1.0.0 (RL-04 A): `dotnet pack` of the library fails on a breaking change of the public API; the baseline is the released package file in `eng/package-validation/`, because the package is not on nuget.org.
+
+## [1.0.0] – 2026-11-03
+
+**Released on 2026-11-03 as the [GitHub release `v1.0.0`](https://github.com/witalij-schrajer/WeatherParser/releases/tag/v1.0.0)** (tag on the `master` merge commit `cb85688`), with the package files of the release candidate `fde4c24` (release build run 41701831724; [release record](docs/p9/P9_12_RELEASE.md)). The maintainer set the first released version to 1.0.0 on 2026-11-03 (release contract RL-01 B); the 0.1.0 candidate `89a83d1` of phase P9 was verified but not released, and its library and CLI code equals the released one. The package is **not published** on nuget.org.
 
 ### Added
 

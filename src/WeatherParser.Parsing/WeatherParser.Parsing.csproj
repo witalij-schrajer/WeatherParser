@@ -2,13 +2,16 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>WeatherParser.Parsing</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.1.0-dev</Version>
     <Authors>WeatherParser contributors</Authors>
     <Description>Parsers, normalized output entities, JSON and XML serialization with an XML schema, station selection and a generic MQTT message serializer for DWD observations, OsthessenWetter observations and DWD MOSMIX_S and MOSMIX_L forecasts, with dependency-injection integration (AddWeatherParsing). Timestamps are UTC. The public API follows Semantic Versioning: within a major version it changes only compatibly.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>weather dwd mosmix forecast observations osthessenwetter mqtt parser</PackageTags>
-    <PackageReleaseNotes>Release notes: CHANGELOG.md of the WeatherParser repository, version 1.0.0.</PackageReleaseNotes>
+    <PackageReleaseNotes>Release notes: CHANGELOG.md of the WeatherParser repository, version 1.1.0-dev.</PackageReleaseNotes>
+    <!-- Package validation against the released 1.0.0 (RL-04 A); the baseline file is the asset of the GitHub release v1.0.0, because the package is not on nuget.org. -->
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselinePath>$(MSBuildThisFileDirectory)../../eng/package-validation/WeatherParser.Parsing.1.0.0.nupkg</PackageValidationBaselinePath>
   </PropertyGroup>
   <PropertyGroup>
     <!-- XML documentation is packed (RL-01 A); missing or broken documentation comments fail the build. -->
