@@ -2,13 +2,13 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>WeatherParser.Parsing</PackageId>
-    <Version>0.1.0</Version>
+    <Version>1.0.0</Version>
     <Authors>WeatherParser contributors</Authors>
     <Description>Parsers, normalized output entities, JSON and XML serialization with an XML schema, station selection and a generic MQTT message serializer for DWD observations, OsthessenWetter observations and DWD MOSMIX_S and MOSMIX_L forecasts, with dependency-injection integration (AddWeatherParsing). Timestamps are UTC. The public API may change between 0.x minor versions.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>weather dwd mosmix forecast observations osthessenwetter mqtt parser</PackageTags>
-    <PackageReleaseNotes>Release notes: CHANGELOG.md of the WeatherParser repository, version 0.1.0.</PackageReleaseNotes>
+    <PackageReleaseNotes>Release notes: CHANGELOG.md of the WeatherParser repository, version 1.0.0.</PackageReleaseNotes>
   </PropertyGroup>
   <PropertyGroup>
     <!-- XML documentation is packed (RL-01 A); missing or broken documentation comments fail the build. -->

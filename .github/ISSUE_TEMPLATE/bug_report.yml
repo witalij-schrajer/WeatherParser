@@ -10,7 +10,7 @@ body:
     id: package
     attributes:
       label: Package version and origin
-      description: For example "WeatherParser.Parsing 0.1.0, release build, SHA256SUMS checked" or "source build of commit <id>".
+      description: For example "WeatherParser.Parsing 1.0.0, GitHub release, SHA256SUMS checked" or "source build of commit <id>".
     validations:
       required: true
   - type: input

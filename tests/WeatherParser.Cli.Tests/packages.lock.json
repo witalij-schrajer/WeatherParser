@@ -57,8 +57,8 @@
       },
       "WeatherParser.Parsing": {
         "type": "Direct",
-        "requested": "[0.1.0, )",
-        "resolved": "0.1.0",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
         "contentHash": "OMQzoichJRnEIdUML0w0P0OQV9dP7JbLiyF4dMkBZZu1n3s5yXayg4+HNGVwJIekgXz6LHX3hEgmFXdeIcudGA==",
         "dependencies": {
           "AngleSharp": "1.8.5",
@@ -167,7 +167,7 @@
           "MQTTnet": "[5.2.0.1603, )",
           "Microsoft.Extensions.DependencyInjection": "[10.0.14, )",
           "Microsoft.Extensions.Logging": "[10.0.14, )",
-          "WeatherParser.Parsing": "[0.1.0, )"
+          "WeatherParser.Parsing": "[1.0.0, )"
         }
       },
       "weatherparser.cli.fixturehost": {

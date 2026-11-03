@@ -4,13 +4,13 @@ German translation: [de/LIBRARY_USAGE.md](de/LIBRARY_USAGE.md).
 
 This guide takes you from the package file to a working .NET application that reads the current DWD 10-minute observations of one station and writes them as JSON. Then it shows the other sources and the MQTT message serializer. The detailed reference of every source (options, limits, exported quantities, error IDs, source conditions) is in the [README](../README.md#library-reference).
 
-Status: version 0.1.0. It is not published on nuget.org. You need the package file (see section 1).
+Status: version 1.0.0. The package file is attached to the GitHub release `v1.0.0`; a publication on nuget.org is a separate decision of the maintainer. Without it you need the package file (see section 1).
 
 ## 1. What you need
 
 - The .NET 10 SDK to build your application, and the .NET 10 runtime 10.0.14 or newer to run it ([CHANGELOG.md](../CHANGELOG.md), "Compatibility").
-- The package file `WeatherParser.Parsing.0.1.0.nupkg`. Either:
-  - take the `.nupkg` of a release build and check it against the release's `SHA256SUMS` file (`sha256sum -c --ignore-missing SHA256SUMS` on Linux), or
+- The package file `WeatherParser.Parsing.1.0.0.nupkg`. Either:
+  - take the `.nupkg` of the GitHub release `v1.0.0` and check it against the release's `SHA256SUMS` file (`sha256sum -c --ignore-missing SHA256SUMS` on Linux), or
   - build it yourself from a checkout as described in [CONTRIBUTING.md section 4](../CONTRIBUTING.md#4-pack-and-package-consumer).
 - Network access to the source servers when the application runs. The library makes plain HTTPS GET requests through the `HttpClient` you supply.
 
@@ -23,17 +23,17 @@ Put the package file into a folder that serves as a local package source, then a
 ```bash
 dotnet new console --framework net10.0 --name MyWeatherApp
 cd MyWeatherApp
-mkdir -p ../local-nuget && cp <path>/WeatherParser.Parsing.0.1.0.nupkg ../local-nuget/
+mkdir -p ../local-nuget && cp <path>/WeatherParser.Parsing.1.0.0.nupkg ../local-nuget/
 dotnet new nugetconfig
 dotnet nuget add source ../local-nuget --name weatherparser-local --configfile nuget.config
-dotnet add package WeatherParser.Parsing --version 0.1.0
+dotnet add package WeatherParser.Parsing --version 1.0.0
 dotnet add package Microsoft.Extensions.DependencyInjection --version 10.0.14
 dotnet add package Microsoft.Extensions.Logging.Console --version 10.0.14
 ```
 
 `dotnet new nugetconfig` creates a `nuget.config` with nuget.org; the next command adds the local folder next to it. Do not restrict a restore to the local folder (`--source`): the library depends on `Microsoft.Extensions.DependencyInjection.Abstractions`, `Microsoft.Extensions.Logging.Abstractions` and `AngleSharp`, which NuGet restores from nuget.org. The container and the console logger above are your application's choice. Any `IServiceProvider` implementation that resolves `ILogger<T>` works.
 
-If an earlier build of `0.1.0` is already in your NuGet cache, NuGet uses the cached copy. Clear the cache entry `weatherparser.parsing/0.1.0` first, as described in CONTRIBUTING.md section 4.
+If an earlier build of `1.0.0` is already in your NuGet cache, NuGet uses the cached copy. Clear the cache entry `weatherparser.parsing/1.0.0` first, as described in CONTRIBUTING.md section 4.
 
 ## 3. Register the library
 
