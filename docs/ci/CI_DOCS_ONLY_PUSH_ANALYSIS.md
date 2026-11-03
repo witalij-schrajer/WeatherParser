@@ -69,3 +69,4 @@ Hosted: the Markdown-only push `c01a597` (one changed file, `docs/ci/CI_DOCS_ONL
 
 - Automatic review round 1, on the analysis (head `ebb3fa9`, [run 41736434335](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41736434335)): 0 findings; the user then chose option A.
 - Automatic review round 2, on the implementation (head `c01a597`, [run 41737274217](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41737274217)): 1 finding, confirmed: [P2] the harness existed only outside the repository, so the Red and Green results could not be checked. It is now `scripts/check-ci-changes-job.sh`, and section 6 names the revisions and the reproduction commands.
+- Automatic review round 3 (head `c6ca48b`): 0 findings. The commit recording this round is reviewed once more; that round is recorded in its pull request comment only.
