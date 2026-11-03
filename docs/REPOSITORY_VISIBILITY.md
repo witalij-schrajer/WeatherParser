@@ -16,7 +16,7 @@ Effect on RL-19: the repository is public from 2026-11-03. Unchanged: `Repositor
 
 ## 2. History check (2026-11-03)
 
-RL-19 B named a recorded secret and personal-data check of the complete history for a public repository (AGENTS.md "Open source and Git"). The user made the repository public before it; the check ran right after, read-only, over all 478 commits of all refs (`git log --all -p -G <pattern>`, each hit filtered with a stricter pattern):
+RL-19 B named a recorded secret and personal-data check of the complete history for a public repository (AGENTS.md "Open source and Git"). The user made the repository public before it; the check ran right after, read-only, over all 478 commits of all refs. The content checks searched the patches of every commit (`git log --all -p -G <pattern>`, each hit filtered with a stricter pattern); `-G` filters by patch content only, so the commit metadata (author and committer names and e-mail addresses) and the commit messages were checked separately (`git log --all --format=…`), after review round 1 of pull request #24 pointed out the gap:
 
 | Check | Result |
 |---|---|
@@ -25,10 +25,11 @@ RL-19 B named a recorded secret and personal-data check of the complete history 
 | Credential values (`"Password": "…"`, `password = …`, `token`/`secret`/`api_key` assignments with 20 or more characters) | One test line with the placeholder values `placeholder-user` and `placeholder-test-value`; one code line reading a password from an environment variable; no real credential |
 | Private IPv4 addresses (10/8, 172.16/12, 192.168/16, four octets) | None (the broad pattern matched only package versions such as `10.0.13`) |
 | Local user paths (`C:\Users\…`, `/home/…`, `Users/wital`) | None |
-| Personal e-mail addresses (the user's address, common mail providers) | None |
+| Personal e-mail addresses (the user's address, common mail providers) in file contents and commit messages | None |
+| Author and committer e-mail addresses (commit metadata) | 914 of the 962 author and committer fields carry the user's personal e-mail address at a common mail provider (the e-mail of the user's Git configuration); the other 48 are GitHub addresses (24 `users.noreply.github.com`, 24 `github.com` of commits made by GitHub). Names: the user's name and account name, and `GitHub`. The address is not reproduced here. Disposition by the user (2026-11-03, "Accept + noreply ahead (Recommended)"): the history stays as it is, because rewriting it would need a force-push of every branch and tag and would change every commit ID the records cite; future commits use the user's GitHub noreply address, which the user sets in the local Git configuration and in the GitHub e-mail settings |
 | Local host names (`.local`, `.lan`, `fritz.box`, `.home.arpa`, `user@nanopi`) and SSH targets | Only `$HOME/.local/…`, `*.local.json` and the SSH host alias `R76S` of the developer's SSH configuration, never with an address or user name |
 
-Nothing had to be removed or rewritten. A pattern search cannot prove the absence of every secret; it covers the patterns listed above.
+Nothing in the file contents had to be removed; the history is not rewritten (commit metadata, above). A pattern search cannot prove the absence of every secret; it covers the patterns listed above.
 
 ## 3. Documentation changes
 
@@ -43,3 +44,9 @@ Nothing had to be removed or rewritten. A pattern search cannot prove the absenc
 - Links and anchors of every changed document resolve (script check, 0 errors).
 - Package check and P1.09 script (AGENTS.md consistency table, `README.md` changed): `pwsh ./scripts/ci-local.ps1 -TargetRef origin/develop -RunSettings coverage.runsettings -PullRequestHeadRepository witalij-schrajer/WeatherParser -PullRequestBranch features/develop/public-repository` on the committed revision `8b96b4c`, exit 0, run folder `artifacts/ci/8b96b4c-20261103T121435Z` (not committed). Tests: Parsing 3213 passed and 7 skipped, Coverage 170, Coverage.Runner 72, SchemaGeneration 46, Package 141, Cli 719 passed and 14 skipped; 0 failed. Package hash `9/FbJuQMocguL6ED0QwZw5mGXLQRoBkOdMA3tXV0W26yHSU8oL/QL7JA8BEdcb+kb1fs9501PjKXQugIHvkhgg==`; the packed `README.md` has SHA-256 `5E1B8C1B37EBEF75DB8C4FFA0BAD31D9627043F3310CA7CF18B16D7F2F1E316A`, equal to the committed file. Library gate 11102/11103 and CLI gate 2875/2920, both passed.
 - Private vulnerability reporting: enabled by the user in the repository settings ("It's enabled", 2026-11-03); `gh api repos/witalij-schrajer/WeatherParser/private-vulnerability-reporting` answered `{"enabled":true}` (before: `{"enabled":false}`).
+
+## 5. Automatic Codex review rounds (pull request #24)
+
+| Round | Head | Run | Findings | Disposition |
+|---|---|---|---|---|
+| 1 | `de16da4` | 41636932130 | 1 | [P2] Section 2 claimed no personal e-mail address, but -G searches patch content only, and the author and committer metadata carry the user's personal address. Confirmed. Fixed: section 2 states the scope of each check, records the metadata check and its result without the address, and the user's disposition |
