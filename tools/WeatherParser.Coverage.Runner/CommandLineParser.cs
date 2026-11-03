@@ -4,6 +4,7 @@ namespace WeatherParser.Coverage.Runner;
 /// Parses runner command-line arguments into <see cref="EvaluateCommand"/>, <see cref="WriteBaselineCommand"/>
 /// or a <see cref="UsageError"/>. Option names are matched case-sensitively; user input never causes an exception.
 /// The options <c>--gated-input-set</c>, <c>--gate-name</c>, <c>--reconciliation</c>, <c>--head-repository</c> and <c>--head-branch</c> implement the REQ-086 amendment 2.
+/// The options <c>--base-repository</c> and <c>--base-branch</c> implement the REQ-086 amendment 3.
 /// </summary>
 public sealed class CommandLineParser : ICommandLineParser
 {
@@ -17,11 +18,13 @@ public sealed class CommandLineParser : ICommandLineParser
     private const string Reconciliation = "reconciliation";
     private const string HeadRepository = "head-repository";
     private const string HeadBranch = "head-branch";
+    private const string BaseRepository = "base-repository";
+    private const string BaseBranch = "base-branch";
 
     private static readonly HashSet<string> EvaluateOptions = new(StringComparer.Ordinal)
     {
         "report", "baseline", "changed-files", "expected-baseline-commit", "tool-name", "tool-version", Exclude, Bootstrap, GatedInput,
-        GatedInputSet, GateName, Reconciliation, HeadRepository, HeadBranch
+        GatedInputSet, GateName, Reconciliation, HeadRepository, HeadBranch, BaseRepository, BaseBranch
     };
 
     private static readonly HashSet<string> WriteBaselineOptions = new(StringComparer.Ordinal)
@@ -145,6 +148,8 @@ public sealed class CommandLineParser : ICommandLineParser
         values.TryGetValue(Reconciliation, out var reconciliation);
         values.TryGetValue(HeadRepository, out var headRepository);
         values.TryGetValue(HeadBranch, out var headBranch);
+        values.TryGetValue(BaseRepository, out var baseRepository);
+        values.TryGetValue(BaseBranch, out var baseBranch);
 
         if (gatedInputSet is not null)
         {
@@ -185,7 +190,9 @@ public sealed class CommandLineParser : ICommandLineParser
             gateName,
             reconciliation,
             headRepository,
-            headBranch);
+            headBranch,
+            baseRepository,
+            baseBranch);
     }
 
     private static RunnerCommand CreateWriteBaseline(Dictionary<string, string> values, List<string> exclusions)

@@ -215,6 +215,9 @@ function Get-GateArguments([string]$GateName) {
     $result = @('--gated-input-set', $GateName, '--gate-name', $GateName, '--reconciliation', (Join-Path "$script:WorkDir/src" 'coverage-reconciliation.json'))
     if (-not [string]::IsNullOrWhiteSpace($PullRequestHeadRepository) -and -not [string]::IsNullOrWhiteSpace($PullRequestBranch)) {
         $result += @('--head-repository', $PullRequestHeadRepository, '--head-branch', $PullRequestBranch)
+        if (-not [string]::IsNullOrWhiteSpace($PullRequestBaseRepository) -and -not [string]::IsNullOrWhiteSpace($PullRequestBaseBranch)) {
+            $result += @('--base-repository', $PullRequestBaseRepository, '--base-branch', $PullRequestBaseBranch)
+        }
     }
     return $result
 }
