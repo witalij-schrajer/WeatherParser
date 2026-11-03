@@ -222,3 +222,5 @@ Evidence (Windows, SDK 10.0.402):
 - Links: all relative links and anchors of the Markdown files checked by script; no new problem (only the historical P2 plan anchor of section 10).
 
 Automatic pull request review after this fix (continuing the rounds of section 10): round 3 on `74ee824` (run 41590953265) reported 0 findings before the user's review; round 4 on `9c5502f` (run 41596930387) reported 0 findings. The commit recording round 4 is reviewed once more, and that round is recorded in its pull request comment only.
+
+Merge and cleanup: the user merged pull request #21 into `develop` on 2026-11-03 (merge commit `58eac05`). Its `coverage-reconciliation.json` entry was removed afterwards on the branch `features/develop/reconciliation-cleanup` on the user's instruction ("Yes, remove it", 2026-11-03), which restores the file of `69604b9` (`{ "entries": [] }`).
