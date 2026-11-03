@@ -16,6 +16,8 @@ namespace WeatherParser.Coverage;
 /// <param name="ReconciliationPath">Path to <c>coverage-reconciliation.json</c>; null or a missing file means no recorded reconciliation.</param>
 /// <param name="HeadRepository">Head repository of the pull request as <c>owner/name</c>; without it no reconciliation applies.</param>
 /// <param name="HeadBranch">Head branch of the pull request; without it no reconciliation applies.</param>
+/// <param name="BaseRepository">Base repository of the pull request as <c>owner/name</c>; without it the release rule does not apply.</param>
+/// <param name="BaseBranch">Base branch of the pull request; without it the release rule does not apply.</param>
 public sealed record CoverageGateRequest(
     string ReportPath,
     string? BaselinePath,
@@ -29,4 +31,6 @@ public sealed record CoverageGateRequest(
     string? GateName = null,
     string? ReconciliationPath = null,
     string? HeadRepository = null,
-    string? HeadBranch = null);
+    string? HeadBranch = null,
+    string? BaseRepository = null,
+    string? BaseBranch = null);

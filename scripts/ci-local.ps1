@@ -27,6 +27,10 @@ Run directory of a -CollectOnly run: verify its resume package, convert both raw
 Head repository of the pull request as owner/name (REQ-086 amendment 2); together with -PullRequestBranch it selects the recorded baseline reconciliations of coverage-reconciliation.json in the commit under test. Without both, no reconciliation applies.
 .PARAMETER PullRequestBranch
 Head branch of the pull request (REQ-086 amendment 2); see -PullRequestHeadRepository.
+.PARAMETER PullRequestBaseRepository
+Base repository of the pull request as owner/name (REQ-086 amendment 3); together with the head identity and -PullRequestBaseBranch it selects the release rule. Without all four, the release rule does not apply.
+.PARAMETER PullRequestBaseBranch
+Base branch of the pull request (REQ-086 amendment 3); see -PullRequestBaseRepository.
 .EXAMPLE
 ci-local.ps1 -Commit 2f8c670 -TargetRef HEAD
 .EXAMPLE
@@ -45,7 +49,9 @@ param(
     [string]$FaultInjection,
     [string]$ResumeFrom,
     [string]$PullRequestHeadRepository,
-    [string]$PullRequestBranch
+    [string]$PullRequestBranch,
+    [string]$PullRequestBaseRepository,
+    [string]$PullRequestBaseBranch
 )
 
 $script:BoundParameterNames = @($PSBoundParameters.Keys)
