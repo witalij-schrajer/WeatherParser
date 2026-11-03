@@ -36,7 +36,7 @@ Nothing in the file contents had to be removed; the history is not rewritten (co
 - The README, `docs/LIBRARY_USAGE.md`, `docs/REPORTING_ISSUES.md` and their German translations no longer say that the repository is private or that its links and issues need repository access; the security section names GitHub's private vulnerability reporting.
 - CHANGELOG.md: the status paragraph and the known limitation of RL-19 A state the public repository and the unchanged package metadata.
 - CONTRIBUTING.md section 4 states why the package carries no repository URL.
-- The [P9 release contract](p9/P9_RELEASE_CONTRACT.md) section 1 records the amendment; the current status lines (AGENTS.md, DEVELOPMENT_PLAN.md, `docs/development/PHASE_STATUS.md`, `docs/development/PHASE_P1_PLAN.md`) name it. Historical records that state "the repository stays private" remain accurate for their date.
+- The [P9 release contract](p9/P9_RELEASE_CONTRACT.md) section 1 records the amendment; the current status passages (AGENTS.md status line and "Binding phase status and sequence", the status passages of DEVELOPMENT_PLAN.md, `docs/development/PHASE_STATUS.md`, `docs/development/PHASE_P1_PLAN.md` and `docs/development/PHASE_P9_PLAN.md`) name it. Historical records that state "the repository stays private" remain accurate for their date.
 - The German translations carry the same changes; their translation note names the English revision `58eac05` plus these visibility changes.
 
 ## 4. Verification
@@ -50,3 +50,4 @@ Nothing in the file contents had to be removed; the history is not rewritten (co
 | Round | Head | Run | Findings | Disposition |
 |---|---|---|---|---|
 | 1 | `de16da4` | 41636932130 | 1 | [P2] Section 2 claimed no personal e-mail address, but -G searches patch content only, and the author and committer metadata carry the user's personal address. Confirmed. Fixed: section 2 states the scope of each check, records the metadata check and its result without the address, and the user's disposition |
+| 2 | `b83fd96` | 41637362458 | 1 | [P3] The amendment was missing from the current-status passages AGENTS.md "Binding phase status and sequence", `docs/development/PHASE_STATUS.md`, DEVELOPMENT_PLAN.md and the P9 phase plan status. Confirmed. Fixed: every status passage that ends with "nothing is published (RL-19 A)" names the amendment; historical decision records are unchanged |
