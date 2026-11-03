@@ -35,7 +35,7 @@ public sealed class PackageMetadataTests
     public void Package_Id_Version_Authors_License_AsDecided()
     {
         Value("id").Should().Be("WeatherParser.Parsing");
-        Value("version").Should().Be("0.1.0");
+        Value("version").Should().Be("1.0.0");
         Value("authors").Should().Be("WeatherParser contributors");
 
         var metadata = Metadata();
@@ -68,10 +68,11 @@ public sealed class PackageMetadataTests
     /// </summary>
     public void Package_DescriptionAndTags_Present()
     {
-        Value("description").Should().Be("Parsers, normalized output entities, JSON and XML serialization with an XML schema, station selection and a generic MQTT message serializer for DWD observations, OsthessenWetter observations and DWD MOSMIX_S and MOSMIX_L forecasts, with dependency-injection integration (AddWeatherParsing). Timestamps are UTC. The public API may change between 0.x minor versions.");
+        Value("description").Should().Be("Parsers, normalized output entities, JSON and XML serialization with an XML schema, station selection and a generic MQTT message serializer for DWD observations, OsthessenWetter observations and DWD MOSMIX_S and MOSMIX_L forecasts, with dependency-injection integration (AddWeatherParsing). Timestamps are UTC. The public API follows Semantic Versioning: within a major version it changes only compatibly.");
         Value("tags").Should().Be("weather dwd mosmix forecast observations osthessenwetter mqtt parser");
 
         Value("description").Should().NotContain("not available yet");
+        Value("description").Should().NotContain("0.x");
     }
 
     [TestMethod]
@@ -81,7 +82,7 @@ public sealed class PackageMetadataTests
     /// </summary>
     public void Package_ReleaseNotesLink_Present()
     {
-        Value("releaseNotes").Should().Be("Release notes: CHANGELOG.md of the WeatherParser repository, version 0.1.0.");
+        Value("releaseNotes").Should().Be("Release notes: CHANGELOG.md of the WeatherParser repository, version 1.0.0.");
     }
 
     [TestMethod]

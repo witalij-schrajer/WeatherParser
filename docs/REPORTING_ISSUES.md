@@ -39,7 +39,7 @@ A report that lets someone reproduce the problem contains:
 
 | What | Example |
 | --- | --- |
-| Package version and where it came from | `WeatherParser.Parsing` 0.1.0, release build `SHA256SUMS` checked; or a source build of commit `<id>` |
+| Package version and where it came from | `WeatherParser.Parsing` 1.0.0, GitHub release `SHA256SUMS` checked; or a source build of commit `<id>` |
 | Your runtime and platform | .NET runtime 10.0.14, Debian 13 ARM64 |
 | Affected part | `IDwdObservationParser`; or the CLI command `--ParseMOSMIX --Product MOSMIX_S` |
 | Library only, CLI only, or both | |

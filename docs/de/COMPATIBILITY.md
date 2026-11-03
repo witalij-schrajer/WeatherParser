@@ -1,6 +1,6 @@
 # Kompatibilität
 
-> Deutsche Übersetzung von [docs/COMPATIBILITY.md](../COMPATIBILITY.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `develop` `58eac05` (2026-11-03). Die verlinkten Protokolle und Herstellerseiten sind englisch.
+> Deutsche Übersetzung von [docs/COMPATIBILITY.md](../COMPATIBILITY.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `fde4c24` (2026-11-03, Version 1.0.0). Die verlinkten Protokolle und Herstellerseiten sind englisch.
 
 Verifizierte Kompatibilität der Paketgrundlage im Umfang von P1, Stand 2026-10-19. Die geforderte Unterstützung stammt aus REQUIREMENTS.md (REQ-004, REQ-017); die Herstellerunterstützung wird aus offiziellen Quellen mit Prüfdatum zitiert; Projektnachweise sind Klasse A (Build/Restore auf dem Windows-Entwicklungsrechner, nie ein Laufzeitnachweis) oder Klasse B (Laufzeitnachweis auf dem Debian-13-ARM64-Zielsystem) oder OFFEN.
 
@@ -79,7 +79,7 @@ Kandidat `a36d15a538e6ddc9cdf01d47b2ff45073a36cd95` gegen die PR-Basis `8009f1c4
 | Gehostete GitHub-Umgebungen `windows-x64`, `ubuntu-x64`, Container `debian13-arm64` | Gehosteter Workflow (Lauf 40615010706 an `a36d15a`) | Alle Jobs erfolgreich; getrennt festgehalten und nicht als Nachweis auf dem Zielsystem gezählt |
 | Windows x64 (Entwicklungsrechner), Live-MOSMIX-Dateien des DWD | Ausdrücklich eingeschaltete Live-Prüfungen (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=mosmix-l` und `mosmix-s`), ein genehmigter Lauf je Produkt am Kandidaten `a36d15a` | MOSMIX_L: 1 Anfrage bei einem Budget von 1, HTTP 200, 247 Schritte, aktuell, schemagültig, keine Auslassungen; MOSMIX_S: 1 Anfrage, HTTP 200, 35.966.201 Bytes, 240 Schritte, aktuell, schemagültig, keine Auslassungen, Parse-Vorgang 8.967 ms; Vorhersagewerte nicht festgehalten (MF-17) |
 
-## Umfang Release 0.1.0 (P9.10, verifiziert 2026-11-01 bis 2026-11-02)
+## Umfang Release 1.0.0 (P9.10, verifiziert 2026-11-01 bis 2026-11-02 am Build 0.1.0 derselben Bibliotheks- und CLI-Quellen)
 
 Zeilen in P9.08 vorbereitet und von P9.10 am Release-Kandidaten `86e77eb` ausgefüllt (RL-15 A, [P9.10-Protokoll](../p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); die Prüfung der CLI-Bereitstellung ohne root in P9.07 ([P9-Verifikationsprotokoll](../p9/P9_VERIFICATION.md) Abschnitt 8) wird durch diese Zeilen abgelöst.
 

@@ -1,6 +1,6 @@
 # WeatherParser-Betrieb
 
-> Deutsche Übersetzung von [docs/OPERATIONS.md](../OPERATIONS.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `develop` `58eac05` (2026-11-03). Die verlinkten Protokolle sind englisch.
+> Deutsche Übersetzung von [docs/OPERATIONS.md](../OPERATIONS.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `fde4c24` (2026-11-03, Version 1.0.0). Die verlinkten Protokolle sind englisch.
 
 **Status (2026-10-31): geschrieben in P9.07 (Bereitstellung) und P9.08 (der Rest der Anleitung); die Beispiele tragen ihren Verifikationsstatus (Abschnitt 11); auf dem NanoPi R76S in P9.10 am Release-Kandidaten `86e77eb` geprüft (2026-11-01 bis 2026-11-02).** Diese Anleitung behandelt die Beispiel-CLI `WeatherParser` auf Debian 13 ARM64 (`linux-arm64`, zum Beispiel der NanoPi R76S). Die Bibliothek selbst wird als NuGet-Paket genutzt und benötigt keine eigene Bereitstellung; ihre Konsumenten folgen den README-Abschnitten der jeweiligen Quelle. Jeder Host, jede ID, jeder Pfad und jedes Topic unten ist ein Platzhalter.
 

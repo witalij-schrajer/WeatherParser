@@ -79,7 +79,7 @@ Candidate `a36d15a538e6ddc9cdf01d47b2ff45073a36cd95` against PR base `8009f1c413
 | GitHub-hosted `windows-x64`, `ubuntu-x64`, `debian13-arm64` container | Hosted workflow (run 40615010706 on `a36d15a`) | All jobs succeeded; recorded separately and not counted as target evidence |
 | Windows x64 (developer machine), live DWD MOSMIX files | Explicitly enabled live checks (`WEATHERPARSER_LIVE_CHECK=1`, `WEATHERPARSER_LIVE_CHECK_MODE=mosmix-l` and `mosmix-s`), one authorized run per product on candidate `a36d15a` | MOSMIX_L: 1 request of a budget of 1, HTTP 200, 247 steps, fresh, schema-valid, no omissions; MOSMIX_S: 1 request, HTTP 200, 35,966,201 bytes, 240 steps, fresh, schema-valid, no omissions, parse 8,967 ms; forecast values not recorded (MF-17) |
 
-## Release 0.1.0 scope (P9.10, verified 2026-11-01 to 2026-11-02)
+## Release 1.0.0 scope (P9.10, verified 2026-11-01 to 2026-11-02 on the 0.1.0 build of the same library and CLI sources)
 
 Rows prepared in P9.08 and filled in by P9.10 on release candidate `86e77eb` (RL-15 A, [P9.10 record](p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); the CLI deployment check without root in P9.07 ([P9 verification record](p9/P9_VERIFICATION.md) section 8) is superseded by these rows.
 

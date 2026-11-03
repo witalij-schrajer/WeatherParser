@@ -1,6 +1,6 @@
 # Ein Problem melden
 
-> Deutsche Übersetzung von [docs/REPORTING_ISSUES.md](../REPORTING_ISSUES.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `develop` `58eac05` (2026-11-03) mit den Änderungen zur Sichtbarkeit des Repositorys vom 2026-11-03.
+> Deutsche Übersetzung von [docs/REPORTING_ISSUES.md](../REPORTING_ISSUES.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `fde4c24` (2026-11-03, Version 1.0.0).
 
 ## Wo melden
 
@@ -39,7 +39,7 @@ Eine Meldung, mit der sich das Problem nachvollziehen lässt, enthält:
 
 | Was | Beispiel |
 | --- | --- |
-| Paketversion und ihre Herkunft | `WeatherParser.Parsing` 0.1.0, `SHA256SUMS` des Release-Builds geprüft; oder ein Build aus dem Quellcode von Commit `<ID>` |
+| Paketversion und ihre Herkunft | `WeatherParser.Parsing` 1.0.0, `SHA256SUMS` des GitHub-Releases geprüft; oder ein Build aus dem Quellcode von Commit `<ID>` |
 | Ihre Laufzeit und Plattform | .NET-Laufzeit 10.0.14, Debian 13 ARM64 |
 | Betroffener Teil | `IDwdObservationParser`; oder der CLI-Befehl `--ParseMOSMIX --Product MOSMIX_S` |
 | Nur Bibliothek, nur CLI oder beides | |
