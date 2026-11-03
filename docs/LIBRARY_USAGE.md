@@ -1,5 +1,7 @@
 # Using the WeatherParser library
 
+German translation: [de/LIBRARY_USAGE.md](de/LIBRARY_USAGE.md).
+
 This guide takes you from the package file to a working .NET application that reads the current DWD 10-minute observations of one station and writes them as JSON. Then it shows the other sources and the MQTT message serializer. The detailed reference of every source (options, limits, exported quantities, error IDs, source conditions) is in the [README](../README.md#library-reference).
 
 Status: version 0.1.0. It is not published on nuget.org, and the repository is private. You need access to the package file (see section 1).

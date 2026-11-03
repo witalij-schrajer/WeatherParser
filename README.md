@@ -6,6 +6,8 @@ To use the library, start with [Getting started](#getting-started) and the compl
 
 This README is also the readme of the package, so its links to other files are absolute links to the `develop` branch of the repository <https://github.com/witalij-schrajer/WeatherParser>. The repository is private: opening them needs repository access.
 
+A German translation of this README and of the user guides is in [docs/de](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/de/README.md) (see [Languages](#languages)).
+
 ## Capabilities
 
 | What you want | Interface | Result |
@@ -683,7 +685,9 @@ See the [development plan](https://github.com/witalij-schrajer/WeatherParser/blo
 
 ## Languages
 
-English is the sole maintained language for project documentation and instructions. Use one canonical English file at each standard unsuffixed path; do not maintain German or `.en.md` counterparts. Preserve requirement IDs, commands, data fields, units, examples and original source names. This decision dated 2026-10-19 supersedes the earlier bilingual policy.
+English is the sole maintained language for project documentation and instructions. Use one canonical English file at each standard unsuffixed path; do not maintain `.en.md` counterparts. Preserve requirement IDs, commands, data fields, units, examples and original source names. This decision dated 2026-10-19 supersedes the earlier bilingual policy.
+
+The user documentation has a German translation in [docs/de](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/de/README.md) (user decision dated 2026-11-03): this README without the contributor sections, [docs/LIBRARY_USAGE.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/LIBRARY_USAGE.md), [docs/OPERATIONS.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/OPERATIONS.md), [docs/COMPATIBILITY.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/COMPATIBILITY.md), [docs/REPORTING_ISSUES.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/REPORTING_ISSUES.md) and [docs/EXTENDING_DATA_SOURCES.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/EXTENDING_DATA_SOURCES.md). English remains authoritative; each translation names the English revision it was translated from and is brought in line with its source before every new version. Development documentation is not translated.
 
 **All code comments must be written in English**, including inline/block comments, XML documentation comments, and comments in scripts and configuration examples. All program-generated runtime messages must be English. The binding MIT license text in `LICENSE` remains in English.
 

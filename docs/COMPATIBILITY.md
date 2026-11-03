@@ -1,5 +1,7 @@
 # Compatibility
 
+German translation: [de/COMPATIBILITY.md](de/COMPATIBILITY.md).
+
 Verified compatibility of the package foundation at P1 scope, as of 2026-10-19. Requested support comes from REQUIREMENTS.md (REQ-004, REQ-017); vendor support is quoted from official sources with the check date; project evidence is Class A (build/restore on Windows developer machine, never runtime evidence) or Class B (runtime evidence on the Debian 13 ARM64 target), or OPEN. 
 
 Status legend:
