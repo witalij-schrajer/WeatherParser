@@ -70,6 +70,8 @@ Every gate decision on `develop` was made against the then-current `develop`, so
 
 - Automatic review round 1 (head `d5d1639`, [run 41730174976](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41730174976)): 1 finding, confirmed against `RuleEvaluator`: [P3] the record omitted the exact-100% exception of REQ-086; sections 1 and 3 now state it.
 - Automatic review round 2 (head `de6d959`, [run 41730779825](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41730779825)): 1 finding, confirmed against REQ-086 and its amendments: [P3] section 4 said every pull request into `develop` keeps strict improvement, which ignores the existing exceptions; corrected.
+- Automatic review round 3 (head `93d28ab`, [run 41731523989](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41731523989)): 0 findings; the user then chose option A.
+- Automatic review round 4, on the implementation (head `74d116c`, [run 41734926760](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41734926760)): 0 findings. The commit recording this round is reviewed once more; that round is recorded in its pull request comment only.
 
 ## 6. Decision
 
