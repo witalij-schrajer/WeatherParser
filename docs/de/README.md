@@ -1,12 +1,12 @@
 # WeatherParser
 
-> Deutsche Übersetzung der englischen [README.md](../../README.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `develop` `58eac05` (2026-11-03). Die Abschnitte für Mitwirkende sind nicht übersetzt (siehe [Mitwirken und Entwicklung](#mitwirken-und-entwicklung)).
+> Deutsche Übersetzung der englischen [README.md](../../README.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `develop` `58eac05` (2026-11-03) mit den Änderungen zur Sichtbarkeit des Repositorys vom 2026-11-03. Die Abschnitte für Mitwirkende sind nicht übersetzt (siehe [Mitwirken und Entwicklung](#mitwirken-und-entwicklung)).
 
 WeatherParser ist eine .NET-10-Bibliothek, die Wetterstationen in der Nähe eines Standorts findet, aktuelle Beobachtungen und Punktvorhersagen des Deutschen Wetterdienstes (DWD) und von OsthessenWetter liest, die Werte auf einen gemeinsamen Datenvertrag mit UTC-Zeiten normalisiert und die Ergebnisse als JSON- oder XML-Dokumente oder als MQTT-Nachrichten schreibt. Sie ist ein NuGet-Paket (`WeatherParser.Parsing`) für Ihre eigene Anwendung; ein optionales Beispiel-Kommandozeilenprogramm zeigt die Verwendung.
 
 Für den Einstieg in die Bibliothek beginnen Sie mit [Erste Schritte](#erste-schritte) und der vollständigen Anleitung in [LIBRARY_USAGE.md](LIBRARY_USAGE.md).
 
-Das Repository <https://github.com/witalij-schrajer/WeatherParser> ist privat: Links zu anderen Dateien des Repositorys lassen sich nur mit Zugriff auf das Repository öffnen.
+Das Repository <https://github.com/witalij-schrajer/WeatherParser> ist öffentlich.
 
 ## Fähigkeiten
 
@@ -74,7 +74,7 @@ Die Bibliothek hat keinen Plugin-Mechanismus. Eine neue Quelle ist entweder ein 
 
 ## Ein Problem melden
 
-Melden Sie Fehler und Wünsche nach Datenquellen in den [Issues dieses Repositorys](https://github.com/witalij-schrajer/WeatherParser/issues); das Repository ist privat, dafür ist also Zugriff auf das Repository nötig. [REPORTING_ISSUES.md](REPORTING_ISSUES.md) beschreibt, was eine hilfreiche Meldung enthält und was niemals veröffentlicht werden darf (Zugangsdaten, private Adressen, unlizenzierte Kopien von Quelldaten). Beschreiben Sie Sicherheitsprobleme nicht in einem Issue: Es gibt noch keinen vertraulichen Kanal, und die Anleitung beschreibt, wie Sie um einen privaten Kontakt bitten.
+Melden Sie Fehler und Wünsche nach Datenquellen in den [Issues dieses Repositorys](https://github.com/witalij-schrajer/WeatherParser/issues). [REPORTING_ISSUES.md](REPORTING_ISSUES.md) beschreibt, was eine hilfreiche Meldung enthält und was niemals veröffentlicht werden darf (Zugangsdaten, private Adressen, unlizenzierte Kopien von Quelldaten). Beschreiben Sie Sicherheitsprobleme nicht in einem Issue: Melden Sie sie vertraulich über die private Meldung von Sicherheitslücken von GitHub, wie es die Anleitung beschreibt.
 
 ## Bibliotheksreferenz
 
@@ -637,7 +637,7 @@ Geplant gegenüber umgesetzt (REQ-090), Stand 2026-11-02:
 |---|---|
 | Paket `WeatherParser.Parsing` 0.1.0 mit XML-Dokumentation, Symbolpaket und Auflistung der öffentlichen API | Umgesetzt und vom Release-Build gebaut (P9.05, P9.06) |
 | Release-Abnahme des Kandidaten auf dem NanoPi R76S | Verifiziert in P9.10 auf Debian 13 ARM64 mit der Laufzeit 10.0.14: das Paket ohne Quellcode genutzt, die CLI nach [OPERATIONS.md](OPERATIONS.md) installiert und als Dienstbenutzer offline und live ausgeführt, Signale, Update und Rollback sowie eine zeitgesteuerte Serie über 36,5 Stunden ([P9.10-Protokoll](../p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md), Englisch) |
-| Veröffentlichung auf nuget.org | Für dieses Release nicht geplant (Entscheidung des Nutzers vom 2026-10-31); das Repository bleibt privat |
+| Veröffentlichung auf nuget.org | Für dieses Release nicht geplant (Entscheidung des Nutzers vom 2026-10-31); das Repository ist seit dem 2026-11-03 öffentlich, die Paketmetadaten enthalten keine Repository-URL ([Protokoll](../REPOSITORY_VISIBILITY.md), Englisch) |
 | Installation aus einem Feed: `dotnet add package WeatherParser.Parsing --version 0.1.0` | Geplant; funktioniert erst nach einer Veröffentlichung, die eine eigene Entscheidung erfordert |
 | Beispiel-CLI auf Debian 13 ARM64 | Umgesetzt; Bereitstellung in [OPERATIONS.md](OPERATIONS.md) dokumentiert (RL-07 A); die CLI ist nicht Teil des Pakets und wird aus dem Quellcode gegen das Paket gebaut (RL-08 A) |
 

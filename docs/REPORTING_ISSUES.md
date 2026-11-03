@@ -4,7 +4,7 @@ German translation: [de/REPORTING_ISSUES.md](de/REPORTING_ISSUES.md).
 
 ## Where to report
 
-Report problems and requests in the GitHub issues of this repository: <https://github.com/witalij-schrajer/WeatherParser/issues>. The repository is private, so only people with access to it can open and read issues. If you use the library without repository access, ask the person who gave you the package to report it for you.
+Report problems and requests in the GitHub issues of this repository: <https://github.com/witalij-schrajer/WeatherParser/issues>. The repository is public, so issues are visible to everyone; opening one needs a GitHub account.
 
 Two forms are available under **New issue**:
 
@@ -20,7 +20,7 @@ Before you open an issue:
 
 ## What to leave out
 
-Issues are visible to everyone with access to the repository. Never post:
+Issues are visible to everyone. Never post:
 
 - passwords, tokens, API keys, broker credentials or credential files;
 - private URLs, host names, IP addresses or file paths of your installation;
@@ -31,7 +31,7 @@ Replace such values with placeholders such as `<broker host>` before you paste c
 
 ## Security problems
 
-There is no confidential reporting channel yet: GitHub's private vulnerability reporting was not available for this private repository when checked on 2026-11-02, and no other channel has been set up. Do not describe a vulnerability in an issue. If you found one, open an issue with the title "Security: request for a private contact" and write nothing else about the problem; share the details only after a private contact has been agreed in that issue.
+Do not describe a vulnerability in an issue. Report it privately through GitHub's private vulnerability reporting: on the repository page open **Security**, then **Report a vulnerability** (<https://github.com/witalij-schrajer/WeatherParser/security/advisories/new>). The report is visible only to the repository's maintainers.
 
 ## Report a bug
 

@@ -4,7 +4,7 @@ All notable changes to WeatherParser are recorded here, one section per version,
 
 ## [0.1.0] – not yet released
 
-**Status (2026-11-02): release candidate `89a83d1` verified (phase P9).** The package `WeatherParser.Parsing` 0.1.0 is built and checksummed by the release build (`.github/workflows/release-build.yml`, run 41507675695 on `89a83d1`); the target acceptance on the NanoPi R76S (P9.10, on candidate `86e77eb`, whose artifacts differ from `89a83d1` only in the README text and commit-derived identity data) is READY ([P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); the integrated verification on `41bcffe` is READY ([P9.11 record](docs/p9/P9_11_INTEGRATED_VERIFICATION.md)); P9 was accepted by the user on 2026-11-02 on `89a83d1` ([P9.11 acceptance record](docs/p9/P9_11_ACCEPTANCE.md)). The package is **not published** on nuget.org or any other feed (user decision of 2026-10-31), and the repository stays private (RL-19 A), so the package carries no repository or project URL. The date is set when the user releases the version.
+**Status (2026-11-02): release candidate `89a83d1` verified (phase P9).** The package `WeatherParser.Parsing` 0.1.0 is built and checksummed by the release build (`.github/workflows/release-build.yml`, run 41507675695 on `89a83d1`); the target acceptance on the NanoPi R76S (P9.10, on candidate `86e77eb`, whose artifacts differ from `89a83d1` only in the README text and commit-derived identity data) is READY ([P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)); the integrated verification on `41bcffe` is READY ([P9.11 record](docs/p9/P9_11_INTEGRATED_VERIFICATION.md)); P9 was accepted by the user on 2026-11-02 on `89a83d1` ([P9.11 acceptance record](docs/p9/P9_11_ACCEPTANCE.md)). The package is **not published** on nuget.org or any other feed (user decision of 2026-10-31), and the package carries no repository or project URL (RL-19 A); the repository has been public since 2026-11-03 ([record](docs/REPOSITORY_VISIBILITY.md)). The date is set when the user releases the version.
 
 ### Added
 
@@ -53,7 +53,7 @@ Build: .NET SDK 10.0.402 (pinned). The update to SDK 10.0.403 is an open item of
 
 | Limitation | Owner |
 |---|---|
-| Not published on any feed; repository private, no repository URL in the package metadata (RL-19 A) | The user |
+| Not published on any feed; no repository URL in the package metadata (RL-19 A), although the repository is public since 2026-11-03 | The user |
 | A failed MOSMIX file retrieval is reported as `MOSMIX-RETRIEVAL-FAILED` with the cause `CATALOG-RETRIEVAL-FAILED` only; the HTTP status or timeout is not named (seen three times in the P9.10 series, [P9.10 record](docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md) section 9) | The user (P9.11) |
 | TLS and authentication were verified against one broker product (Mosquitto 2.1.2) with a self-signed test CA given in `Tls.CaFile` (P9.09); the system trust store, a public CA and an ACL denial of a single message were not shown | Recorded |
 | MQTT 3.1.1: a broker can acknowledge a message it then drops; only 5.0 reports such a refusal (`CLI-MQTT-MESSAGE-REFUSED`) | Recorded (CL-13) |

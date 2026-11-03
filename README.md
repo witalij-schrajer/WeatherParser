@@ -4,7 +4,7 @@ WeatherParser is a .NET 10 library that finds weather stations near a location, 
 
 To use the library, start with [Getting started](#getting-started) and the complete walkthrough in [docs/LIBRARY_USAGE.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/LIBRARY_USAGE.md).
 
-This README is also the readme of the package, so its links to other files are absolute links to the `develop` branch of the repository <https://github.com/witalij-schrajer/WeatherParser>. The repository is private: opening them needs repository access.
+This README is also the readme of the package, so its links to other files are absolute links to the `develop` branch of the public repository <https://github.com/witalij-schrajer/WeatherParser>.
 
 A German translation of this README and of the user guides is in [docs/de](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/de/README.md) (see [Languages](#languages)).
 
@@ -74,7 +74,7 @@ The library has no plugin mechanism. A new source is either a contribution to th
 
 ## Reporting a problem
 
-Report bugs and data source requests in the [issues of this repository](https://github.com/witalij-schrajer/WeatherParser/issues); the repository is private, so this needs repository access. [docs/REPORTING_ISSUES.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/REPORTING_ISSUES.md) says what a useful report contains and what never to post (credentials, private addresses, unlicensed copies of source data). Do not describe security problems in an issue: no confidential channel exists yet, and the guide describes how to ask for a private contact.
+Report bugs and data source requests in the [issues of this repository](https://github.com/witalij-schrajer/WeatherParser/issues). [docs/REPORTING_ISSUES.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/REPORTING_ISSUES.md) says what a useful report contains and what never to post (credentials, private addresses, unlicensed copies of source data). Do not describe security problems in an issue: report them privately through GitHub's private vulnerability reporting, as the guide describes.
 
 ## Library reference
 
@@ -637,7 +637,7 @@ Planned versus implemented (REQ-090), as of 2026-11-02:
 |---|---|
 | Package `WeatherParser.Parsing` 0.1.0 with XML documentation, symbols package and public API listing | Implemented and built by the release build (P9.05, P9.06) |
 | Release acceptance of the candidate on the NanoPi R76S | Verified in P9.10 on Debian 13 ARM64 with runtime 10.0.14: the package consumed without the source, the CLI installed per [docs/OPERATIONS.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/OPERATIONS.md) and run as a service user offline and live, signals, update and rollback, and a 36.5-hour scheduled series ([P9.10 record](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)) |
-| Publication on nuget.org | Not planned for this release (user decision of 2026-10-31); the repository stays private |
+| Publication on nuget.org | Not planned for this release (user decision of 2026-10-31); the repository is public since 2026-11-03, the package metadata carries no repository URL ([record](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/REPOSITORY_VISIBILITY.md)) |
 | Installation from a feed: `dotnet add package WeatherParser.Parsing --version 0.1.0` | Planned; works only after a publication, which needs a separate decision |
 | Example CLI on Debian 13 ARM64 | Implemented; deployment documented in [docs/OPERATIONS.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/OPERATIONS.md) (RL-07 A); the CLI is not part of the package and is built from the source against the package (RL-08 A) |
 
