@@ -1,6 +1,6 @@
 # Eine Datenquelle hinzufügen
 
-> Deutsche Übersetzung von [docs/EXTENDING_DATA_SOURCES.md](../EXTENDING_DATA_SOURCES.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `develop` `58eac05` (2026-11-03). Die verlinkten Verträge und Entwicklerdokumente sind englisch.
+> Deutsche Übersetzung von [docs/EXTENDING_DATA_SOURCES.md](../EXTENDING_DATA_SOURCES.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `8659f5b` (2026-11-03, Version 1.0.0). Die verlinkten Verträge und Entwicklerdokumente sind englisch.
 
 Diese Anleitung richtet sich an Entwickler, die möchten, dass WeatherParser eine weitere Wetterdatenquelle liest. Sie nennt, was vor dem ersten Code entschieden werden muss, wie die bestehenden Quellen aufgebaut sind, welche Tests und Nachweise erforderlich sind und was dokumentiert werden muss. Sie beschreibt Anforderungen und bestehende Muster. Sie genehmigt keine neue Quelle, und außer den DWD-CDC-Beobachtungen, OsthessenWetter und DWD MOSMIX gibt es keine Quelle in der Bibliothek.
 

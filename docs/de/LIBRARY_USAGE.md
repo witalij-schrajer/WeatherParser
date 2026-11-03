@@ -1,16 +1,16 @@
 # Die WeatherParser-Bibliothek verwenden
 
-> Deutsche Übersetzung von [docs/LIBRARY_USAGE.md](../LIBRARY_USAGE.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `develop` `58eac05` (2026-11-03) mit den Änderungen zur Sichtbarkeit des Repositorys vom 2026-11-03. Die Codebeispiele sind unverändert übernommen; ihre Kommentare bleiben englisch.
+> Deutsche Übersetzung von [docs/LIBRARY_USAGE.md](../LIBRARY_USAGE.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `8659f5b` (2026-11-03, Version 1.0.0). Die Codebeispiele sind unverändert übernommen; ihre Kommentare bleiben englisch.
 
 Diese Anleitung führt Sie von der Paketdatei zu einer lauffähigen .NET-Anwendung, die die aktuellen DWD-10-Minuten-Beobachtungen einer Station liest und als JSON schreibt. Danach zeigt sie die anderen Quellen und den MQTT-Nachrichten-Serialisierer. Die ausführliche Referenz jeder Quelle (Optionen, Grenzen, exportierte Größen, Fehler-IDs, Quellenbedingungen) steht in der [README](README.md#bibliotheksreferenz).
 
-Status: Version 0.1.0. Sie ist nicht auf nuget.org veröffentlicht. Sie benötigen die Paketdatei (siehe Abschnitt 1).
+Status: Version 1.0.0. Die Paketdatei ist dem GitHub-Release `v1.0.0` beigefügt; eine Veröffentlichung auf nuget.org ist eine eigene Entscheidung des Maintainers. Ohne sie benötigen Sie die Paketdatei (siehe Abschnitt 1).
 
 ## 1. Was Sie benötigen
 
 - Das .NET-10-SDK zum Bauen Ihrer Anwendung und die .NET-10-Laufzeit 10.0.14 oder neuer zum Ausführen ([CHANGELOG.md](../../CHANGELOG.md), „Compatibility“, Englisch).
-- Die Paketdatei `WeatherParser.Parsing.0.1.0.nupkg`. Entweder:
-  - Sie nehmen die `.nupkg` eines Release-Builds und prüfen sie gegen die Datei `SHA256SUMS` des Releases (`sha256sum -c --ignore-missing SHA256SUMS` unter Linux), oder
+- Die Paketdatei `WeatherParser.Parsing.1.0.0.nupkg`. Entweder:
+  - Sie nehmen die `.nupkg` des GitHub-Releases `v1.0.0` und prüfen sie gegen die Datei `SHA256SUMS` des Releases (`sha256sum -c --ignore-missing SHA256SUMS` unter Linux), oder
   - Sie bauen sie selbst aus einem Checkout wie in [CONTRIBUTING.md Abschnitt 4](../../CONTRIBUTING.md#4-pack-and-package-consumer) (Englisch) beschrieben.
 - Netzwerkzugriff auf die Server der Quellen, wenn die Anwendung läuft. Die Bibliothek stellt einfache HTTPS-GET-Anfragen über den `HttpClient`, den Sie bereitstellen.
 
@@ -23,17 +23,17 @@ Legen Sie die Paketdatei in einen Ordner, der als lokale Paketquelle dient, und 
 ```bash
 dotnet new console --framework net10.0 --name MyWeatherApp
 cd MyWeatherApp
-mkdir -p ../local-nuget && cp <Pfad>/WeatherParser.Parsing.0.1.0.nupkg ../local-nuget/
+mkdir -p ../local-nuget && cp <Pfad>/WeatherParser.Parsing.1.0.0.nupkg ../local-nuget/
 dotnet new nugetconfig
 dotnet nuget add source ../local-nuget --name weatherparser-local --configfile nuget.config
-dotnet add package WeatherParser.Parsing --version 0.1.0
+dotnet add package WeatherParser.Parsing --version 1.0.0
 dotnet add package Microsoft.Extensions.DependencyInjection --version 10.0.14
 dotnet add package Microsoft.Extensions.Logging.Console --version 10.0.14
 ```
 
 `dotnet new nugetconfig` legt eine `nuget.config` mit nuget.org an; der nächste Befehl fügt den lokalen Ordner daneben hinzu. Beschränken Sie eine Wiederherstellung nicht auf den lokalen Ordner (`--source`): Die Bibliothek hängt von `Microsoft.Extensions.DependencyInjection.Abstractions`, `Microsoft.Extensions.Logging.Abstractions` und `AngleSharp` ab, die NuGet von nuget.org wiederherstellt. Der Container und der Konsolen-Logger oben sind die Wahl Ihrer Anwendung. Jede Implementierung von `IServiceProvider`, die `ILogger<T>` auflöst, funktioniert.
 
-Liegt ein früherer Build von `0.1.0` bereits in Ihrem NuGet-Cache, verwendet NuGet die zwischengespeicherte Kopie. Löschen Sie zuerst den Cache-Eintrag `weatherparser.parsing/0.1.0`, wie in CONTRIBUTING.md Abschnitt 4 beschrieben.
+Liegt ein früherer Build von `1.0.0` bereits in Ihrem NuGet-Cache, verwendet NuGet die zwischengespeicherte Kopie. Löschen Sie zuerst den Cache-Eintrag `weatherparser.parsing/1.0.0`, wie in CONTRIBUTING.md Abschnitt 4 beschrieben.
 
 ## 3. Die Bibliothek registrieren
 
