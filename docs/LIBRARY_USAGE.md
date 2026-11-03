@@ -4,7 +4,7 @@ German translation: [de/LIBRARY_USAGE.md](de/LIBRARY_USAGE.md).
 
 This guide takes you from the package file to a working .NET application that reads the current DWD 10-minute observations of one station and writes them as JSON. Then it shows the other sources and the MQTT message serializer. The detailed reference of every source (options, limits, exported quantities, error IDs, source conditions) is in the [README](../README.md#library-reference).
 
-Status: version 1.0.0. The package file is attached to the GitHub release `v1.0.0`; a publication on nuget.org is a separate decision of the maintainer. Without it you need the package file (see section 1).
+Status: version 1.0.0. Released package files are distributed as assets of the GitHub release of their version (`v1.0.0` for this version); a publication on nuget.org is a separate decision of the maintainer. Without it you need the package file (see section 1).
 
 ## 1. What you need
 

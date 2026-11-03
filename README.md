@@ -29,14 +29,14 @@ All of them are registered with one call, `AddWeatherParsing()`, and receive the
 - **Library** `WeatherParser.Parsing`: station and location selection, DWD 10-minute observations, OsthessenWetter observations, MOSMIX_L and MOSMIX_S forecasts, JSON and XML export with an output schema, an MQTT message serializer and DI registration (`AddWeatherParsing`). The export format version 1 is stable; it only receives additive, optional changes.
 - **Example CLI** `WeatherParser`: the five commands with JSON, XML and MQTT output (see [Example CLI](#example-cli)).
 - **Verified** on Windows, in the hosted CI and on the target, a NanoPi R76S with Debian 13 ARM64 and .NET 10, including scheduled runs against the live sources.
-- **Distribution**: the package file is attached to the GitHub release `v1.0.0` with its `SHA256SUMS`; a publication on nuget.org is a separate decision of the maintainer (see [Release and installation](#release-and-installation)).
+- **Distribution**: released package files are assets of the GitHub release of their version (`v1.0.0` for this version), each with a `SHA256SUMS` file; a publication on nuget.org is a separate decision of the maintainer (see [Release and installation](#release-and-installation)).
 - **Limitation**: OsthessenWetter values must not be redistributed until the source conditions are clarified (see [OsthessenWetter values](#osthessenwetter-values)).
 
 Known limitations are listed in [CHANGELOG.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/CHANGELOG.md); the development history is in [PHASE_STATUS.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/development/PHASE_STATUS.md).
 
 ## Getting started
 
-You need the .NET 10 SDK, the runtime 10.0.14 or newer, and the package `WeatherParser.Parsing` 1.0.0. Take the file `WeatherParser.Parsing.1.0.0.nupkg` from the GitHub release `v1.0.0` (checked against its `SHA256SUMS`) or build it as described in [CONTRIBUTING.md section 4](https://github.com/witalij-schrajer/WeatherParser/blob/develop/CONTRIBUTING.md#4-pack-and-package-consumer). Add the folder that holds it as a package source next to nuget.org, which provides the library's dependencies:
+You need the .NET 10 SDK, the runtime 10.0.14 or newer, and the package `WeatherParser.Parsing` 1.0.0. Take the file `WeatherParser.Parsing.1.0.0.nupkg` from the assets of the GitHub release `v1.0.0` (checked against its `SHA256SUMS`) or build it as described in [CONTRIBUTING.md section 4](https://github.com/witalij-schrajer/WeatherParser/blob/develop/CONTRIBUTING.md#4-pack-and-package-consumer). Add the folder that holds it as a package source next to nuget.org, which provides the library's dependencies:
 
 ```bash
 dotnet new nugetconfig
@@ -637,7 +637,7 @@ Planned versus implemented (REQ-090), as of 2026-11-03:
 |---|---|
 | Package `WeatherParser.Parsing` 1.0.0 with XML documentation, symbols package and public API listing | Implemented and built by the release build (P9.05, P9.06; version 1.0.0 decided by the maintainer on 2026-11-03) |
 | Release acceptance of the candidate on the NanoPi R76S | Verified in P9.10 on Debian 13 ARM64 with runtime 10.0.14, on the build of the same library and CLI sources as version 0.1.0: the package consumed without the source, the CLI installed per [docs/OPERATIONS.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/OPERATIONS.md) and run as a service user offline and live, signals, update and rollback, and a 36.5-hour scheduled series ([P9.10 record](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md)) |
-| Publication on nuget.org | A separate decision of the maintainer; the package file is attached to the GitHub release `v1.0.0`; the repository is public since 2026-11-03, the package metadata carries no repository URL ([record](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/REPOSITORY_VISIBILITY.md)) |
+| Publication on nuget.org | A separate decision of the maintainer; released package files are distributed as assets of the GitHub release of their version; the repository is public since 2026-11-03, the package metadata carries no repository URL ([record](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/REPOSITORY_VISIBILITY.md)) |
 | Installation from nuget.org: `dotnet add package WeatherParser.Parsing --version 1.0.0` without a local package source | Works only once the package is published there |
 | Example CLI on Debian 13 ARM64 | Implemented; deployment documented in [docs/OPERATIONS.md](https://github.com/witalij-schrajer/WeatherParser/blob/develop/docs/OPERATIONS.md) (RL-07 A); the CLI is not part of the package and is built from the source against the package (RL-08 A) |
 
