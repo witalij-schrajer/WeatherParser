@@ -195,6 +195,7 @@ Automatic pull request review (`.github/workflows/review.yml`) of pull request #
 | Round | Head | Run | Findings | Disposition |
 | --- | --- | --- | --- | --- |
 | 1 | `ac37bd8` | 41590374029 | 2 | Both confirmed and fixed: this record did not name the revisions, runs and hashes of its evidence and lacked the P1.09 run on the committed revision (added above); the change of `.github/review/prompt-documentation.md` had no companion note in CONTRIBUTING.md section 6, `DEPENDENCIES.md` and AGENTS.md "Second reviewer: Codex" as the consistency table requires (added: the brief names the status documents at their `docs/development/` paths; triggers, classification, pinned actions and the Codex version are unchanged) |
+| 2 | `9ec34a9` | 41590759751 | 0 | No findings; the commit recording this round is reviewed once more, and that round is recorded in its pull request comment only |
 
 Open items:
 
