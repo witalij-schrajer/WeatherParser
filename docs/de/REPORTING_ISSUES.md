@@ -1,10 +1,10 @@
 # Ein Problem melden
 
-> Deutsche Übersetzung von [docs/REPORTING_ISSUES.md](../REPORTING_ISSUES.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `develop` `58eac05` (2026-11-03).
+> Deutsche Übersetzung von [docs/REPORTING_ISSUES.md](../REPORTING_ISSUES.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `develop` `58eac05` (2026-11-03) mit den Änderungen zur Sichtbarkeit des Repositorys vom 2026-11-03.
 
 ## Wo melden
 
-Melden Sie Probleme und Wünsche in den GitHub-Issues dieses Repositorys: <https://github.com/witalij-schrajer/WeatherParser/issues>. Das Repository ist privat; nur Personen mit Zugriff darauf können Issues öffnen und lesen. Wenn Sie die Bibliothek ohne Zugriff auf das Repository nutzen, bitten Sie die Person, die Ihnen das Paket gegeben hat, die Meldung für Sie einzureichen.
+Melden Sie Probleme und Wünsche in den GitHub-Issues dieses Repositorys: <https://github.com/witalij-schrajer/WeatherParser/issues>. Das Repository ist öffentlich; Issues sind also für alle sichtbar, und zum Öffnen eines Issues ist ein GitHub-Konto nötig.
 
 Unter **New issue** stehen zwei Formulare zur Verfügung:
 
@@ -20,7 +20,7 @@ Bevor Sie ein Issue öffnen:
 
 ## Was Sie weglassen müssen
 
-Issues sind für alle sichtbar, die Zugriff auf das Repository haben. Veröffentlichen Sie niemals:
+Issues sind für alle sichtbar. Veröffentlichen Sie niemals:
 
 - Passwörter, Tokens, API-Schlüssel, Broker-Zugangsdaten oder Dateien mit Zugangsdaten;
 - private URLs, Hostnamen, IP-Adressen oder Dateipfade Ihrer Installation;
@@ -31,7 +31,7 @@ Ersetzen Sie solche Werte durch Platzhalter wie `<Broker-Host>`, bevor Sie Konfi
 
 ## Sicherheitsprobleme
 
-Es gibt noch keinen vertraulichen Meldeweg: Die private Meldung von Sicherheitslücken von GitHub war für dieses private Repository bei der Prüfung am 2026-11-02 nicht verfügbar, und kein anderer Kanal wurde eingerichtet. Beschreiben Sie eine Sicherheitslücke nicht in einem Issue. Wenn Sie eine gefunden haben, öffnen Sie ein Issue mit dem Titel „Security: request for a private contact“ und schreiben Sie sonst nichts über das Problem; teilen Sie die Einzelheiten erst, nachdem in diesem Issue ein privater Kontakt vereinbart wurde.
+Beschreiben Sie eine Sicherheitslücke nicht in einem Issue. Melden Sie sie vertraulich über die private Meldung von Sicherheitslücken von GitHub: Öffnen Sie auf der Seite des Repositorys **Security** und dann **Report a vulnerability** (<https://github.com/witalij-schrajer/WeatherParser/security/advisories/new>). Die Meldung ist nur für die Maintainer des Repositorys sichtbar.
 
 ## Einen Fehler melden
 
