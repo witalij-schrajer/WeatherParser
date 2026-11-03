@@ -37,3 +37,8 @@ Nothing had to be removed or rewritten. A pattern search cannot prove the absenc
 - CONTRIBUTING.md section 4 states why the package carries no repository URL.
 - The [P9 release contract](p9/P9_RELEASE_CONTRACT.md) section 1 records the amendment; the current status lines (AGENTS.md, DEVELOPMENT_PLAN.md, `docs/development/PHASE_STATUS.md`, `docs/development/PHASE_P1_PLAN.md`) name it. Historical records that state "the repository stays private" remain accurate for their date.
 - The German translations carry the same changes; their translation note names the English revision `58eac05` plus these visibility changes.
+
+## 4. Verification
+
+- Links and anchors of every changed document resolve (script check, 0 errors).
+- Package check and P1.09 script (AGENTS.md consistency table, `README.md` changed): `pwsh ./scripts/ci-local.ps1 -TargetRef origin/develop -RunSettings coverage.runsettings -PullRequestHeadRepository witalij-schrajer/WeatherParser -PullRequestBranch features/develop/public-repository` on the committed revision `8b96b4c`, exit 0, run folder `artifacts/ci/8b96b4c-20261103T121435Z` (not committed). Tests: Parsing 3213 passed and 7 skipped, Coverage 170, Coverage.Runner 72, SchemaGeneration 46, Package 141, Cli 719 passed and 14 skipped; 0 failed. Package hash `9/FbJuQMocguL6ED0QwZw5mGXLQRoBkOdMA3tXV0W26yHSU8oL/QL7JA8BEdcb+kb1fs9501PjKXQugIHvkhgg==`; the packed `README.md` has SHA-256 `5E1B8C1B37EBEF75DB8C4FFA0BAD31D9627043F3310CA7CF18B16D7F2F1E316A`, equal to the committed file. Library gate 11102/11103 and CLI gate 2875/2920, both passed.
