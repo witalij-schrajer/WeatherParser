@@ -68,10 +68,11 @@ public sealed class PackageMetadataTests
     /// </summary>
     public void Package_DescriptionAndTags_Present()
     {
-        Value("description").Should().Be("Parsers, normalized output entities, JSON and XML serialization with an XML schema, station selection and a generic MQTT message serializer for DWD observations, OsthessenWetter observations and DWD MOSMIX_S and MOSMIX_L forecasts, with dependency-injection integration (AddWeatherParsing). Timestamps are UTC. The public API may change between 0.x minor versions.");
+        Value("description").Should().Be("Parsers, normalized output entities, JSON and XML serialization with an XML schema, station selection and a generic MQTT message serializer for DWD observations, OsthessenWetter observations and DWD MOSMIX_S and MOSMIX_L forecasts, with dependency-injection integration (AddWeatherParsing). Timestamps are UTC. The public API follows Semantic Versioning: within a major version it changes only compatibly.");
         Value("tags").Should().Be("weather dwd mosmix forecast observations osthessenwetter mqtt parser");
 
         Value("description").Should().NotContain("not available yet");
+        Value("description").Should().NotContain("0.x");
     }
 
     [TestMethod]
