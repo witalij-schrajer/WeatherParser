@@ -1,13 +1,3 @@
 {
-  "entries": [
-    {
-      "gate": "cli",
-      "targetCommit": "69604b934e1b40f1e22ce83b308aa561e2636bbf",
-      "pullRequest": 21,
-      "headRepository": "witalij-schrajer/WeatherParser",
-      "headBranch": "features/develop/docs-development-layout",
-      "approvedOn": "2026-11-03",
-      "record": "docs/LIBRARY_USER_DOCUMENTATION_REVIEW.md#11-pull-request-review-fixes-2026-11-03"
-    }
-  ]
+  "entries": []
 }

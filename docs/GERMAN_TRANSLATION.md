@@ -57,3 +57,7 @@ Round 1:
 Round 2:
 
 1. [P3] The clause "a translation that lags behind its source is not a finding before a release is prepared" in `.github/review/prompt-documentation.md` item 8 is a blanket instruction on how to classify findings and could let outdated operational or security guidance pass. Confirmed. Fixed: item 8 now states the facts instead: a translation must agree with its English source at the revision it names (no added, dropped or changed facts), English changes after that revision must reach the translation before the release of the next version, and a pull request that prepares a release must include them.
+
+## 5. Merge
+
+The user merged pull request #22 into `develop` on 2026-11-03 (merge commit `94902c0`) after the final review round on `a4826c3` (run 41623135825, 0 findings).
