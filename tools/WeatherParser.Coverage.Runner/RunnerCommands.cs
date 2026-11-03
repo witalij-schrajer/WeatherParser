@@ -21,6 +21,8 @@ public abstract record RunnerCommand;
 /// <param name="ReconciliationPath">Path to <c>coverage-reconciliation.json</c>, or null.</param>
 /// <param name="HeadRepository">Head repository of the pull request as <c>owner/name</c>, or null.</param>
 /// <param name="HeadBranch">Head branch of the pull request, or null.</param>
+/// <param name="BaseRepository">Base repository of the pull request as <c>owner/name</c>, or null.</param>
+/// <param name="BaseBranch">Base branch of the pull request, or null.</param>
 public sealed record EvaluateCommand(
     string ReportPath,
     string? BaselinePath,
@@ -34,7 +36,9 @@ public sealed record EvaluateCommand(
     string? GateName = null,
     string? ReconciliationPath = null,
     string? HeadRepository = null,
-    string? HeadBranch = null) : RunnerCommand;
+    string? HeadBranch = null,
+    string? BaseRepository = null,
+    string? BaseBranch = null) : RunnerCommand;
 
 /// <summary>
 /// Command to write a baseline.

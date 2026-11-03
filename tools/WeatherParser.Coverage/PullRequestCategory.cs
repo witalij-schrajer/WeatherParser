@@ -23,5 +23,10 @@ public enum PullRequestCategory
     /// <summary>
     /// Code changes covered by a user-approved, recorded baseline reconciliation for this gate, target, head repository and head branch (REQ-086 amendment 2): equal coverage is accepted, a decrease fails.
     /// </summary>
-    Reconciled
+    Reconciled,
+
+    /// <summary>
+    /// Code changes of a release pull request from develop into master of the same repository (REQ-086 amendment 3): equal coverage is accepted, a decrease fails.
+    /// </summary>
+    ReleasePullRequest
 }

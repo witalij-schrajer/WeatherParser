@@ -5,6 +5,9 @@ namespace WeatherParser.Coverage;
 /// </summary>
 public sealed class CoverageGate : ICoverageGate
 {
+    private const string ReleaseHeadBranch = "develop";
+    private const string ReleaseBaseBranch = "master";
+
     private readonly ICoverageReportReader _reportReader;
     private readonly IBaselineMetadataReader _baselineReader;
     private readonly IChangedFileListReader _changesReader;
@@ -44,6 +47,12 @@ public sealed class CoverageGate : ICoverageGate
         _classifier = classifier ?? throw new ArgumentNullException(nameof(classifier));
         _reconciliationReader = reconciliationReader ?? throw new ArgumentNullException(nameof(reconciliationReader));
     }
+
+    private static bool IsReleasePullRequest(CoverageGateRequest request) =>
+        string.Equals(request.HeadBranch, ReleaseHeadBranch, StringComparison.Ordinal)
+        && string.Equals(request.BaseBranch, ReleaseBaseBranch, StringComparison.Ordinal)
+        && !string.IsNullOrEmpty(request.HeadRepository)
+        && string.Equals(request.HeadRepository, request.BaseRepository, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
     public async Task<CoverageResult> EvaluateAsync(CoverageGateRequest request, CancellationToken cancellationToken)
@@ -117,6 +126,20 @@ public sealed class CoverageGate : ICoverageGate
                 }
             }
 
+            // REQ-086 amendment 3: a release pull request from develop into master of the same repository.
+            RuleResult? releaseResult = null;
+            if (category == PullRequestCategory.Code
+                && baseline != null
+                && comparabilityResult is { Verdict: true }
+                && IsReleasePullRequest(request))
+            {
+                category = PullRequestCategory.ReleasePullRequest;
+                releaseResult = new RuleResult(
+                    "ReleasePullRequest",
+                    true,
+                    $"Applied the release rule for {request.HeadRepository}:{request.HeadBranch} into {request.BaseBranch}: equal coverage is accepted, a decrease still fails.");
+            }
+
             // 6. Evaluate rules; an incomparable baseline is never used for comparison and is not bootstrap.
             var ruleResults = comparabilityResult is { Verdict: false }
                 ? _evaluator.Evaluate(aggregated, null, category, false)
@@ -132,6 +155,11 @@ public sealed class CoverageGate : ICoverageGate
             if (reconciliationResult != null)
             {
                 allRuleResults.Add(reconciliationResult);
+            }
+
+            if (releaseResult != null)
+            {
+                allRuleResults.Add(releaseResult);
             }
 
             allRuleResults.AddRange(ruleResults);
