@@ -52,3 +52,7 @@ The harness extracts the real step from `ci.yml` and runs it against scratch Git
 
 - Red, on the unchanged step: 6 of 7 passed; the documentation-only push to a code pull request gave `false`.
 - Green, after the edit: 7 of 7 passed.
+
+## 7. Review rounds
+
+- Automatic review round 1, on the analysis (head `ebb3fa9`, [run 41736434335](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41736434335)): 0 findings; the user then chose option A.
