@@ -44,6 +44,9 @@ Translation revision: the English files at `develop` `58eac05`. In the same chan
 |---|---|---|---|---|
 | 1 | `2f3014b` | 41622134307 | 3 | See below |
 | 2 | `0630885` | 41622597012 | 1 | See below |
+| 3 | `033c4b3` | 41622867916 | 0 | – |
+
+The commit that records round 3 is reviewed once more; that last round is recorded in its pull request comment only (AGENTS.md "Plan generation" step 3).
 
 Round 1:
 
