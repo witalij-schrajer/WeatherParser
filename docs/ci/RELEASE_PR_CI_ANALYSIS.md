@@ -64,11 +64,12 @@ Every gate decision on `develop` was made against the then-current `develop`, so
 | C: minimum only on release pull requests | Skip the comparison; only the 80% minimum applies | Simple | A release-wide decrease goes unnoticed, down to the minimum. Not recommended |
 | D: keep the rule | Nothing changes | Releases with strict improvement pass; others stay red, as #26 was, and the user merges past a failed check (the ruleset requires no status check) | Red release pull requests carry no information about whether something is wrong. Not recommended |
 
-**Recommendation: A.** It matches the existing pattern of the amendments (equal accepted, decrease fails), needs no per-release ceremony, and does not disturb the promotion check. A narrows no other rule: every pull request into `develop` keeps strict improvement.
+**Recommendation: A.** It matches the existing pattern of the amendments (equal accepted, decrease fails), needs no per-release ceremony, and does not disturb the promotion check. A narrows no other rule: pull requests into `develop` keep the existing REQ-086 rules and exceptions.
 
 ## 5. Review rounds
 
 - Automatic review round 1 (head `d5d1639`, [run 41730174976](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41730174976)): 1 finding, confirmed against `RuleEvaluator`: [P3] the record omitted the exact-100% exception of REQ-086; sections 1 and 3 now state it.
+- Automatic review round 2 (head `de6d959`, [run 41730779825](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41730779825)): 1 finding, confirmed against REQ-086 and its amendments: [P3] section 4 said every pull request into `develop` keeps strict improvement, which ignores the existing exceptions; corrected.
 
 ## 6. Decision
 
