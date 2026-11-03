@@ -1,6 +1,6 @@
 # Kompatibilität
 
-> Deutsche Übersetzung von [docs/COMPATIBILITY.md](../COMPATIBILITY.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `8659f5b` (2026-11-03, Version 1.0.0). Die verlinkten Protokolle und Herstellerseiten sind englisch.
+> Deutsche Übersetzung von [docs/COMPATIBILITY.md](../COMPATIBILITY.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `fde4c24` (2026-11-03, Version 1.0.0). Die verlinkten Protokolle und Herstellerseiten sind englisch.
 
 Verifizierte Kompatibilität der Paketgrundlage im Umfang von P1, Stand 2026-10-19. Die geforderte Unterstützung stammt aus REQUIREMENTS.md (REQ-004, REQ-017); die Herstellerunterstützung wird aus offiziellen Quellen mit Prüfdatum zitiert; Projektnachweise sind Klasse A (Build/Restore auf dem Windows-Entwicklungsrechner, nie ein Laufzeitnachweis) oder Klasse B (Laufzeitnachweis auf dem Debian-13-ARM64-Zielsystem) oder OFFEN.
 

@@ -1,6 +1,6 @@
 # Ein Problem melden
 
-> Deutsche Übersetzung von [docs/REPORTING_ISSUES.md](../REPORTING_ISSUES.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `8659f5b` (2026-11-03, Version 1.0.0).
+> Deutsche Übersetzung von [docs/REPORTING_ISSUES.md](../REPORTING_ISSUES.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `fde4c24` (2026-11-03, Version 1.0.0).
 
 ## Wo melden
 

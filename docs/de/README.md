@@ -1,6 +1,6 @@
 # WeatherParser
 
-> Deutsche Übersetzung der englischen [README.md](../../README.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `8659f5b` (2026-11-03, Version 1.0.0). Die Abschnitte für Mitwirkende sind nicht übersetzt (siehe [Mitwirken und Entwicklung](#mitwirken-und-entwicklung)).
+> Deutsche Übersetzung der englischen [README.md](../../README.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `fde4c24` (2026-11-03, Version 1.0.0). Die Abschnitte für Mitwirkende sind nicht übersetzt (siehe [Mitwirken und Entwicklung](#mitwirken-und-entwicklung)).
 
 WeatherParser ist eine .NET-10-Bibliothek, die Wetterstationen in der Nähe eines Standorts findet, aktuelle Beobachtungen und Punktvorhersagen des Deutschen Wetterdienstes (DWD) und von OsthessenWetter liest, die Werte auf einen gemeinsamen Datenvertrag mit UTC-Zeiten normalisiert und die Ergebnisse als JSON- oder XML-Dokumente oder als MQTT-Nachrichten schreibt. Sie ist ein NuGet-Paket (`WeatherParser.Parsing`) für Ihre eigene Anwendung; ein optionales Beispiel-Kommandozeilenprogramm zeigt die Verwendung.
 
@@ -29,14 +29,14 @@ Alle werden mit einem Aufruf registriert, `AddWeatherParsing()`, und erhalten ih
 - **Bibliothek** `WeatherParser.Parsing`: Stations- und Standortauswahl, DWD-10-Minuten-Beobachtungen, OsthessenWetter-Beobachtungen, MOSMIX_L- und MOSMIX_S-Vorhersagen, JSON- und XML-Export mit Ausgabeschema, ein MQTT-Nachrichten-Serialisierer und DI-Registrierung (`AddWeatherParsing`). Das Exportformat Version 1 ist stabil; es erhält nur additive, optionale Änderungen.
 - **Beispiel-CLI** `WeatherParser`: die fünf Befehle mit JSON-, XML- und MQTT-Ausgabe (siehe [Beispiel-CLI](#beispiel-cli)).
 - **Verifiziert** unter Windows, in der gehosteten CI und auf dem Zielsystem, einem NanoPi R76S mit Debian 13 ARM64 und .NET 10, einschließlich zeitgesteuerter Läufe gegen die Live-Quellen.
-- **Verteilung**: Die Paketdatei ist dem GitHub-Release `v1.0.0` mit ihren `SHA256SUMS` beigefügt; eine Veröffentlichung auf nuget.org ist eine eigene Entscheidung des Maintainers (siehe [Release und Installation](#release-und-installation)).
+- **Verteilung**: Veröffentlichte Paketdateien sind Anhänge des GitHub-Releases ihrer Version (`v1.0.0` für diese Version), jeweils mit einer Datei `SHA256SUMS`; eine Veröffentlichung auf nuget.org ist eine eigene Entscheidung des Maintainers (siehe [Release und Installation](#release-und-installation)).
 - **Einschränkung**: OsthessenWetter-Werte dürfen nicht weiterverbreitet werden, bis die Quellenbedingungen geklärt sind (siehe [OsthessenWetter-Werte](#osthessenwetter-werte)).
 
 Bekannte Einschränkungen stehen in [CHANGELOG.md](../../CHANGELOG.md) (Englisch); die Entwicklungshistorie steht in [PHASE_STATUS.md](../development/PHASE_STATUS.md) (Englisch).
 
 ## Erste Schritte
 
-Sie benötigen das .NET-10-SDK, die Laufzeit 10.0.14 oder neuer und das Paket `WeatherParser.Parsing` 1.0.0. Entnehmen Sie die Datei `WeatherParser.Parsing.1.0.0.nupkg` dem GitHub-Release `v1.0.0` (geprüft gegen dessen `SHA256SUMS`) oder bauen Sie sie wie in [CONTRIBUTING.md Abschnitt 4](../../CONTRIBUTING.md#4-pack-and-package-consumer) (Englisch) beschrieben. Fügen Sie den Ordner, der sie enthält, als Paketquelle neben nuget.org hinzu, das die Abhängigkeiten der Bibliothek liefert:
+Sie benötigen das .NET-10-SDK, die Laufzeit 10.0.14 oder neuer und das Paket `WeatherParser.Parsing` 1.0.0. Entnehmen Sie die Datei `WeatherParser.Parsing.1.0.0.nupkg` den Anhängen des GitHub-Releases `v1.0.0` (geprüft gegen dessen `SHA256SUMS`) oder bauen Sie sie wie in [CONTRIBUTING.md Abschnitt 4](../../CONTRIBUTING.md#4-pack-and-package-consumer) (Englisch) beschrieben. Fügen Sie den Ordner, der sie enthält, als Paketquelle neben nuget.org hinzu, das die Abhängigkeiten der Bibliothek liefert:
 
 ```bash
 dotnet new nugetconfig
@@ -637,7 +637,7 @@ Geplant gegenüber umgesetzt (REQ-090), Stand 2026-11-03:
 |---|---|
 | Paket `WeatherParser.Parsing` 1.0.0 mit XML-Dokumentation, Symbolpaket und Auflistung der öffentlichen API | Umgesetzt und vom Release-Build gebaut (P9.05, P9.06; Version 1.0.0 vom Maintainer am 2026-11-03 festgelegt) |
 | Release-Abnahme des Kandidaten auf dem NanoPi R76S | Verifiziert in P9.10 auf Debian 13 ARM64 mit der Laufzeit 10.0.14, am Build derselben Bibliotheks- und CLI-Quellen als Version 0.1.0: das Paket ohne Quellcode genutzt, die CLI nach [OPERATIONS.md](OPERATIONS.md) installiert und als Dienstbenutzer offline und live ausgeführt, Signale, Update und Rollback sowie eine zeitgesteuerte Serie über 36,5 Stunden ([P9.10-Protokoll](../p9/P9_10_ARM64_RELEASE_ACCEPTANCE.md), Englisch) |
-| Veröffentlichung auf nuget.org | Eine eigene Entscheidung des Maintainers; die Paketdatei ist dem GitHub-Release `v1.0.0` beigefügt; das Repository ist seit dem 2026-11-03 öffentlich, die Paketmetadaten enthalten keine Repository-URL ([Protokoll](../REPOSITORY_VISIBILITY.md), Englisch) |
+| Veröffentlichung auf nuget.org | Eine eigene Entscheidung des Maintainers; veröffentlichte Paketdateien werden als Anhänge des GitHub-Releases ihrer Version verteilt; das Repository ist seit dem 2026-11-03 öffentlich, die Paketmetadaten enthalten keine Repository-URL ([Protokoll](../REPOSITORY_VISIBILITY.md), Englisch) |
 | Installation von nuget.org: `dotnet add package WeatherParser.Parsing --version 1.0.0` ohne lokale Paketquelle | Funktioniert erst, wenn das Paket dort veröffentlicht ist |
 | Beispiel-CLI auf Debian 13 ARM64 | Umgesetzt; Bereitstellung in [OPERATIONS.md](OPERATIONS.md) dokumentiert (RL-07 A); die CLI ist nicht Teil des Pakets und wird aus dem Quellcode gegen das Paket gebaut (RL-08 A) |
 

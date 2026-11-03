@@ -1,10 +1,10 @@
 # Die WeatherParser-Bibliothek verwenden
 
-> Deutsche Übersetzung von [docs/LIBRARY_USAGE.md](../LIBRARY_USAGE.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `8659f5b` (2026-11-03, Version 1.0.0). Die Codebeispiele sind unverändert übernommen; ihre Kommentare bleiben englisch.
+> Deutsche Übersetzung von [docs/LIBRARY_USAGE.md](../LIBRARY_USAGE.md). Maßgeblich ist die englische Fassung; die Übersetzung wird vor jeder neuen Version mit ihr abgeglichen und kann bis dahin zurückliegen. Übersetzungsstand: englische Fassung von `features/develop/release-1.0.0` `fde4c24` (2026-11-03, Version 1.0.0). Die Codebeispiele sind unverändert übernommen; ihre Kommentare bleiben englisch.
 
 Diese Anleitung führt Sie von der Paketdatei zu einer lauffähigen .NET-Anwendung, die die aktuellen DWD-10-Minuten-Beobachtungen einer Station liest und als JSON schreibt. Danach zeigt sie die anderen Quellen und den MQTT-Nachrichten-Serialisierer. Die ausführliche Referenz jeder Quelle (Optionen, Grenzen, exportierte Größen, Fehler-IDs, Quellenbedingungen) steht in der [README](README.md#bibliotheksreferenz).
 
-Status: Version 1.0.0. Die Paketdatei ist dem GitHub-Release `v1.0.0` beigefügt; eine Veröffentlichung auf nuget.org ist eine eigene Entscheidung des Maintainers. Ohne sie benötigen Sie die Paketdatei (siehe Abschnitt 1).
+Status: Version 1.0.0. Veröffentlichte Paketdateien werden als Anhänge des GitHub-Releases ihrer Version verteilt (`v1.0.0` für diese Version); eine Veröffentlichung auf nuget.org ist eine eigene Entscheidung des Maintainers. Ohne sie benötigen Sie die Paketdatei (siehe Abschnitt 1).
 
 ## 1. Was Sie benötigen
 
