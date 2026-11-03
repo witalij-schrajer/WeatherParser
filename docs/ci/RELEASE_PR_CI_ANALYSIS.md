@@ -43,7 +43,7 @@ A manual `ci.yml` run on `develop` with `target_ref` `cb85688` ([run 41728881253
 
 Each job's `gate-result.json` reports the failed rule `Comparison`: "Block coverage 11102/11103 (99.99%) is equal to baseline 11102/11103 (99.99%); a code PR must strictly increase block coverage below 100%." The script stops at the library gate, so the CLI gate is not evaluated; the CLI columns are the counters in the run artifacts, equal on each platform, so the CLI gate would fail the same way.
 
-The cause is the rule, not a defect. Since the release, `develop` changed gated inputs (`Directory.Packages.props` and the library project file, for `1.1.0-dev` and package validation) without library code. Such a change keeps strict improvement unless a recorded baseline reconciliation applies. On `develop` the two pull requests with this change carried reconciliations, but those were bound to their own head branches and targets (REQ-086 amendment 2), so they do not apply to a release pull request.
+The cause is the rule, not a defect. Since the release, `develop` changed gated inputs (`Directory.Packages.props` and the library project file, for `1.1.0-dev` and package validation) without library code. Such a change keeps strict improvement unless a recorded baseline reconciliation applies. On `develop` pull request #27 made this change under two reconciliation entries, but those were bound to its own head branch and target (REQ-086 amendment 2) and were removed after its merge, so they do not apply to a release pull request.
 
 ### When the gate would pass today
 
