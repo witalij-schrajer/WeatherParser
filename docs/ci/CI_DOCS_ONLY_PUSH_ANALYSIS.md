@@ -46,13 +46,26 @@ The user chose option A on 2026-11-04 ("Option A, whole PR", the answer to the q
 
 `changes` now always uses `base...head`, and the inputs `EVENT_ACTION` and `BEFORE_SHA` are gone. The comment on `cancel-in-progress` no longer gave a valid reason and was reworded; the behavior is unchanged.
 
-Authorship: qwen3-coder:30b generated the `ci.yml` edit. The orchestrating agent wrote this record, the amended sentences in AGENTS.md, CONTRIBUTING.md section 6 and `DEPENDENCIES.md`, and a scratch harness outside the repository, because the repository has no test harness for workflow steps.
+Authorship: qwen3-coder:30b generated the `ci.yml` edit and `scripts/check-ci-changes-job.sh`. Its first script version found no step and passed extra arguments in three cases, so two cases passed or failed for the wrong reason; both defects were described to it and it corrected them. The orchestrating agent wrote this record and the amended sentences in AGENTS.md, CONTRIBUTING.md section 6 and `DEPENDENCIES.md`.
 
-The harness extracts the real step from `ci.yml` and runs it against scratch Git repositories. Seven cases: documentation-only push to a code pull request (the jobs run), code push, ready for review, documentation-only push to a documentation-only pull request (skipped), documentation-only pull request opened (skipped), `README.md`-only pull request (the jobs run) and a manual run.
+`scripts/check-ci-changes-job.sh` extracts the real step from a workflow file and runs it against throwaway Git repositories, in seven cases. To reproduce on any commit that has the script, from the repository root:
 
-- Red, on the unchanged step: 6 of 7 passed; the documentation-only push to a code pull request gave `false`.
-- Green, after the edit: 7 of 7 passed.
+```bash
+git show ebb3fa9:.github/workflows/ci.yml > /tmp/ci-before.yml
+bash scripts/check-ci-changes-job.sh /tmp/ci-before.yml
+bash scripts/check-ci-changes-job.sh
+```
+
+| Workflow revision | Exit | Result |",
+"|---|---|---|",
+"| Before the change (`ebb3fa9`) | 1 | 6 of 7 passed; `FAIL documentation-only push to a code pull request: got false, want true` |",
+"| After the change (`d0e72e2`) | 0 | 7 of 7 passed |",
+
+Both results are from Git Bash on Windows; `ci.yml` has not changed since `d0e72e2`. The script is run by hand and is not part of CI.
+
+Hosted: the Markdown-only push `c01a597` (one changed file, `docs/ci/CI_DOCS_ONLY_PUSH_ANALYSIS.md`) started [run 41737207372](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41737207372) while the pull request was a draft, so this run came from the push. `changes` passed, and `windows-x64`, `ubuntu-x64` and `debian13-arm64` ran and passed instead of being skipped. The same case skipped all three jobs on pull request #29.
 
 ## 7. Review rounds
 
 - Automatic review round 1, on the analysis (head `ebb3fa9`, [run 41736434335](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41736434335)): 0 findings; the user then chose option A.
+- Automatic review round 2, on the implementation (head `c01a597`, [run 41737274217](https://github.com/witalij-schrajer/WeatherParser/actions/runs/41737274217)): 1 finding, confirmed: [P2] the harness existed only outside the repository, so the Red and Green results could not be checked. It is now `scripts/check-ci-changes-job.sh`, and section 6 names the revisions and the reproduction commands.
