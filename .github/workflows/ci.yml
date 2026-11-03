@@ -1,7 +1,7 @@
 # Continuous integration workflow for WeatherParser repository
 # Runs the same local CI script as documented in CONTRIBUTING.md section 6
 # For pull requests, compares against the PR base; for manual runs, uses a deliberate target
-# The three CI jobs run only when code changed; documentation-only changes skip them (see the changes job)
+# The three CI jobs run only when the pull request changes code; documentation-only pull requests skip them (see the changes job)
 name: CI
 on:
   pull_request:
@@ -22,7 +22,7 @@ env:
   DOTNET_CLI_UI_LANGUAGE: en
 permissions:
   contents: read
-# No cancel-in-progress: a later documentation-only push skips the CI jobs, so it must not cancel a run that still verifies earlier code changes.
+# No cancel-in-progress: every run of a pull request completes, so each head keeps its own results.
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -40,8 +40,6 @@ jobs:
         id: detect
         env:
           EVENT_NAME: ${{ github.event_name }}
-          EVENT_ACTION: ${{ github.event.action }}
-          BEFORE_SHA: ${{ github.event.before }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
@@ -51,12 +49,8 @@ jobs:
             echo "Manual run: the CI jobs run."
             exit 0
           fi
-          # A push (synchronize) is judged by its own commits; opened, reopened, ready_for_review and force pushes by the whole pull request.
-          if [ "$EVENT_ACTION" = synchronize ] && [ -n "$BEFORE_SHA" ] && git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null && git merge-base --is-ancestor "$BEFORE_SHA" "$HEAD_SHA"; then
-            range="$BEFORE_SHA..$HEAD_SHA"
-          else
-            range="$BASE_SHA...$HEAD_SHA"
-          fi
+          # Every event is judged by the whole pull request, so a documentation-only push to a code pull request still runs the jobs and its head has real results.
+          range="$BASE_SHA...$HEAD_SHA"
           changed="$RUNNER_TEMP/changed-files.txt"
           git -c core.quotePath=false diff --name-only --no-renames "$range" > "$changed"
           count=$(wc -l < "$changed")
